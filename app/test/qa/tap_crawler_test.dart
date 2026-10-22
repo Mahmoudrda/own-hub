@@ -82,6 +82,7 @@ const _skip = {
   'Train',
   'Community',
   'Eat',
+  'Insights',
   'Today',
   'Clients',
   'Chats',

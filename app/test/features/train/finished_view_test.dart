@@ -20,6 +20,7 @@ import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/finish_reveal.dart';
 import 'package:own_hub/features/train/presentation/finished_view.dart';
+import 'package:own_hub/features/train/presentation/session_share_card.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
@@ -659,5 +660,144 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('the share section (card first, then actions)', () {
+    const summary = SessionSummary(
+      sessionId: 'live-1',
+      source: SessionSource.live,
+      moves: 4,
+      sets: 12,
+      minutes: 30,
+      durationSec: 1800,
+      volumeKg: 960,
+      totalReps: 120,
+      repSets: 12,
+      weightedSets: 12,
+    );
+
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(1080, 7000);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('sits under the hero and ahead of the week, card above Share', (
+      tester,
+    ) async {
+      tall(tester);
+      await tester.pumpWidget(
+        _host(
+          FinishedView(
+            session: _live,
+            summary: summary,
+            workoutName: 'Legs and glutes',
+            bodyWeightKg: 70,
+            finishedOn: DateTime(2026, 9, 15),
+            onShareImage: (_, _) async {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final hero = tester.getTopLeft(find.text("That's Tuesday done")).dy;
+      final card = tester.getTopLeft(find.byType(SessionShareCard)).dy;
+      final share = tester.getTopLeft(find.text('Share')).dy;
+      final week = tester.getTopLeft(find.text('This week')).dy;
+      expect(hero, lessThan(card));
+      expect(card, lessThan(share));
+      expect(share, lessThan(week));
+      // Calories are named an estimate and use her weight: 3.5 x 70 x 0.5.
+      expect(find.text('Calories (est.)'), findsWidgets);
+      expect(find.text('123'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('is drawn only for a live session that logged something', (
+      tester,
+    ) async {
+      tall(tester);
+      for (final view in [
+        const FinishedView(session: _live),
+        const FinishedView(
+          session: _live,
+          summary: SessionSummary(
+            sessionId: 'live-1',
+            source: SessionSource.live,
+          ),
+        ),
+        const FinishedView(
+          session: _recalled,
+          summary: SessionSummary(
+            sessionId: 'r',
+            source: SessionSource.recalled,
+            moves: 2,
+            sets: 6,
+            minutes: 20,
+          ),
+        ),
+        const FinishedView(
+          session: _live,
+          awaitingSummary: true,
+          summary: summary,
+        ),
+      ]) {
+        await tester.pumpWidget(_host(view));
+        await tester.pumpAndSettle();
+        expect(find.byType(SessionShareCard), findsNothing);
+        expect(find.byKey(const ValueKey('r10-share')), findsNothing);
+      }
+    });
+
+    testWidgets('Share hands the sheet a PNG; the page keeps its one kitten', (
+      tester,
+    ) async {
+      tall(tester);
+      // No accelerometer in a test; the hero's tilt reads this instead.
+      final saved = TiltParallax.source;
+      TiltParallax.source = () => const Stream.empty();
+      addTearDown(() => TiltParallax.source = saved);
+      final sent = <Uint8List>[];
+      await tester.pumpWidget(
+        _host(
+          FinishedView(
+            session: _live,
+            summary: summary,
+            onShareImage: (png, origin) async => sent.add(png),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(Kitten), findsOneWidget);
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Share'));
+        await tester.pump();
+        for (var i = 0; i < 100 && sent.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+          await tester.pump();
+        }
+      });
+      await tester.pumpAndSettle();
+      expect(sent, hasLength(1));
+      expect(sent.single.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
+    });
+
+    testWidgets('does not overflow at 2.0x text in Arabic', (tester) async {
+      tall(tester);
+      await tester.pumpWidget(
+        _host(
+          FinishedView(
+            session: _live,
+            summary: summary,
+            onShareImage: (_, _) async {},
+          ),
+          locale: const Locale('ar'),
+          textScale: 2.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
   });
 }

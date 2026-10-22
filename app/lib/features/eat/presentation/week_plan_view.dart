@@ -43,7 +43,18 @@ class WeekPlanView extends StatefulWidget {
     this.fillFrom = const <String>[],
     this.recipeTitle,
     this.lead,
+    this.embedded = false,
+    this.onChanged,
   });
+
+  /// Drawn inside the Eat hub's Plan segment: the week's dinners with no
+  /// scaffold or top bar, the rearrange control as a button in the page, and no
+  /// link to the grocery list (the hub draws the list under the dinners).
+  final bool embedded;
+
+  /// The week changed (a dinner picked, filled, swapped or rearranged), so the
+  /// grocery list under it can read the plan again.
+  final VoidCallback? onChanged;
 
   /// The line under the title, in place of the one the plan decides. The
   /// tour's sample week says it is a sample: "built from recipes you have
@@ -95,9 +106,11 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     unawaited(_load());
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool changed = false}) async {
     final plan = await _repo.mealPlan(_weekId);
-    if (mounted) setState(() => _plan = plan);
+    if (!mounted) return;
+    setState(() => _plan = plan);
+    if (changed) widget.onChanged?.call();
   }
 
   /// Rearranges the week — the same five dinners, moved on by a day.
@@ -127,7 +140,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
         recipeId: recipes[(i + 1) % recipes.length],
       );
     }
-    await _load();
+    await _load(changed: true);
     if (!mounted) return;
     offerUndo(
       context,
@@ -141,7 +154,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
             recipeId: entry.value,
           );
         }
-        await _load();
+        await _load(changed: true);
       },
     );
   }
@@ -153,7 +166,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     final pick = widget.onPickDinner;
     if (pick == null) return;
     await pick(day);
-    await _load();
+    await _load(changed: true);
   }
 
   /// Puts one of [WeekPlanView.fillFrom] on every day that has no dinner,
@@ -178,7 +191,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
       );
       next++;
     }
-    await _load();
+    await _load(changed: true);
   }
 
   String _title(AppL10n l10n, String recipeId) =>
@@ -196,6 +209,166 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     final l10n = AppL10n.of(context);
     final view = const WeekPlanViewModel().build(weekId: _weekId, plan: _plan);
 
+    final footer = <Widget>[
+      // One action while nothing is planned: fill the week, or choose the
+      // first dinner when there is no pack to fill from.
+      if (!view.hasPlan && widget.fillFrom.isNotEmpty)
+        AppButton(
+          l10n.fillMyWeekFromRahmasRecipes,
+          key: const ValueKey('e07-fill-week'),
+          onPressed: () => unawaited(_fillWeek()),
+        )
+      else if (!view.hasPlan && widget.onPickDinner != null)
+        AppButton(
+          l10n.planMyWeek,
+          key: const ValueKey('e07-plan-week'),
+          onPressed: () => unawaited(_pick(view.dinners.first.day)),
+        ),
+      if (!widget.embedded && AppRouter.screenIsOn('E08'))
+        if (view.hasPlan)
+          AppButton(
+            l10n.seeTheGroceryList,
+            onPressed: () =>
+                openScreen(context, 'E08', widget.onOpenGroceryList),
+          ),
+    ];
+    final children = <Widget>[
+      // "Five dinners, built from recipes you have logged before. Swap any
+      // of them." — over five rows all reading "Need an idea for dinner?",
+      // which is what a woman with no plan saw. There were no five dinners,
+      // nothing had been built, and there was nothing to swap.
+      //
+      // The guard was already written and this screen was not using it:
+      // `WeekPlanView.hasPlan` carries the doc "True once anything has been
+      // planned. Before that E07 offers to build one rather than showing five
+      // blank rows with no explanation."
+      Text(
+        widget.lead ??
+            (view.hasPlan
+                ? l10n.fiveDinnersBuiltFromRecipesYouHave
+                : l10n.nothingIsPlannedForThisWeekYet),
+        style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+      ),
+      // A planner page: one ink rule heads the week, and each day below it
+      // is a pencil-ruled line of its own.
+      const HandRule(seed: 23, ink: true, height: 10),
+      // One tap fills every empty day from Rahma's dinners; a day she chose
+      // stays hers. Once a dinner exists the button gives way to the rows.
+      if (view.hasPlan &&
+          widget.fillFrom.isNotEmpty &&
+          view.dinners.any((d) => !d.isPlanned))
+        AppButton(
+          l10n.fillMyWeekFromRahmasRecipes,
+          key: const ValueKey('e07-fill-week'),
+          variant: AppButtonVariant.outlined,
+          onPressed: () => unawaited(_fillWeek()),
+        ),
+      if (view.hasPlan)
+        for (final row in view.dinners)
+          AppListItem(
+            key: ValueKey('e07-day-${row.day.name}'),
+            title: row.recipeId == null
+                ? l10n.needAnIdeaForDinner
+                : _title(l10n, row.recipeId!),
+            subtitle: weekdayLabelFor(l10n, row.day),
+            // swap_horiz is directional and flips in Arabic. It is the way to
+            // change a day she has already planned. With no way to pick a
+            // dinner the row only opens it, so it shows a chevron rather than
+            // a swap nothing performs.
+            trailing: widget.onPickDinner == null
+                ? const AppChevron(color: AppColors.primaryDim)
+                : IconButton(
+                    key: ValueKey('e07-swap-${row.day.name}'),
+                    onPressed: () => unawaited(_pick(row.day)),
+                    tooltip: l10n.changeThisDinner,
+                    iconSize: 22,
+                    color: AppColors.primaryDim,
+                    icon: const Icon(Icons.swap_horiz),
+                  ),
+            onTap: () {
+              // An empty day asks what she wants on it.
+              if (row.recipeId == null && widget.onPickDinner != null) {
+                unawaited(_pick(row.day));
+                return;
+              }
+              final open = widget.onOpenRecipe;
+              if (open != null && row.recipeId != null) {
+                open(row.recipeId!);
+                return;
+              }
+              openScreen(context, 'E06');
+            },
+          ),
+      // First view of a week with nothing planned only: it waves once.
+      if (!view.hasPlan)
+        const Kitten(
+          pose: KittenPose.wave,
+          size: 56,
+          moment: 'E07',
+          sessionBudget: true,
+        ),
+      if (!widget.embedded && AppRouter.screenIsOn('E08'))
+        if (view.hasPlan)
+          AppCard(
+            variant: AppCardVariant.tonal,
+            onTap: () => openScreen(context, 'E08', widget.onOpenGroceryList),
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.shopping_cart,
+                    size: 24,
+                    color: AppColors.primaryDim,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(l10n.oneShopCoversIt, style: AppText.titleM),
+                        // Withheld rather than stated.
+                        //
+                        // This read `n23ItemsAbout640Egp` — "23 items · about
+                        // 640 EGP" — the prototype's list and the prototype's
+                        // bill, shown to a woman whose plan holds four dinners
+                        // and whose market is not Cairo's. The dictionary does
+                        // carry `countItemsAboutEgpEgp` and `view.itemCount` is
+                        // her real count, but NOTHING in this product costs a
+                        // grocery line: `GroceryLine` has an ingredient, a group
+                        // and a tick, and no price. Half of that sentence would
+                        // have to be invented, so the sentence is not said. The
+                        // dictionary gap is a price on the line, not a string.
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+    ];
+
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: kStackGap,
+        children: [
+          // The week's own buttons sit with the week, not pinned below it.
+          ...children.take(2),
+          ...footer,
+          ...children.skip(2),
+          if (view.hasPlan)
+            AppButton(
+              l10n.rearrangeTheWeek,
+              key: const ValueKey('e07-rearrange'),
+              variant: AppButtonVariant.outlined,
+              onPressed: widget.onRegenerate ?? () => unawaited(_rearrange()),
+            ),
+        ],
+      );
+    }
+
     return AppScaffold(
       appBar: AppTopBar(
         title: l10n.thisWeek,
@@ -210,144 +383,8 @@ class _WeekPlanViewState extends State<WeekPlanView> {
           ),
         ],
       ),
-      footer: [
-        // One action while nothing is planned: fill the week, or choose the
-        // first dinner when there is no pack to fill from.
-        if (!view.hasPlan && widget.fillFrom.isNotEmpty)
-          AppButton(
-            l10n.fillMyWeekFromRahmasRecipes,
-            key: const ValueKey('e07-fill-week'),
-            onPressed: () => unawaited(_fillWeek()),
-          )
-        else if (!view.hasPlan && widget.onPickDinner != null)
-          AppButton(
-            l10n.planMyWeek,
-            key: const ValueKey('e07-plan-week'),
-            onPressed: () => unawaited(_pick(view.dinners.first.day)),
-          ),
-        if (AppRouter.screenIsOn('E08'))
-          if (view.hasPlan)
-            AppButton(
-              l10n.seeTheGroceryList,
-              onPressed: () =>
-                  openScreen(context, 'E08', widget.onOpenGroceryList),
-            ),
-      ],
-      children: [
-        // "Five dinners, built from recipes you have logged before. Swap any
-        // of them." — over five rows all reading "Need an idea for dinner?",
-        // which is what a woman with no plan saw. There were no five dinners,
-        // nothing had been built, and there was nothing to swap.
-        //
-        // The guard was already written and this screen was not using it:
-        // `WeekPlanView.hasPlan` carries the doc "True once anything has been
-        // planned. Before that E07 offers to build one rather than showing five
-        // blank rows with no explanation."
-        Text(
-          widget.lead ??
-              (view.hasPlan
-                  ? l10n.fiveDinnersBuiltFromRecipesYouHave
-                  : l10n.nothingIsPlannedForThisWeekYet),
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-        // A planner page: one ink rule heads the week, and each day below it
-        // is a pencil-ruled line of its own.
-        const HandRule(seed: 23, ink: true, height: 10),
-        // One tap fills every empty day from Rahma's dinners; a day she chose
-        // stays hers. Once a dinner exists the button gives way to the rows.
-        if (view.hasPlan &&
-            widget.fillFrom.isNotEmpty &&
-            view.dinners.any((d) => !d.isPlanned))
-          AppButton(
-            l10n.fillMyWeekFromRahmasRecipes,
-            key: const ValueKey('e07-fill-week'),
-            variant: AppButtonVariant.outlined,
-            onPressed: () => unawaited(_fillWeek()),
-          ),
-        if (view.hasPlan)
-          for (final row in view.dinners)
-            AppListItem(
-              key: ValueKey('e07-day-${row.day.name}'),
-              title: row.recipeId == null
-                  ? l10n.needAnIdeaForDinner
-                  : _title(l10n, row.recipeId!),
-              subtitle: weekdayLabelFor(l10n, row.day),
-              // swap_horiz is directional and flips in Arabic. It is the way to
-              // change a day she has already planned. With no way to pick a
-              // dinner the row only opens it, so it shows a chevron rather than
-              // a swap nothing performs.
-              trailing: widget.onPickDinner == null
-                  ? const AppChevron(color: AppColors.primaryDim)
-                  : IconButton(
-                      key: ValueKey('e07-swap-${row.day.name}'),
-                      onPressed: () => unawaited(_pick(row.day)),
-                      tooltip: l10n.changeThisDinner,
-                      iconSize: 22,
-                      color: AppColors.primaryDim,
-                      icon: const Icon(Icons.swap_horiz),
-                    ),
-              onTap: () {
-                // An empty day asks what she wants on it.
-                if (row.recipeId == null && widget.onPickDinner != null) {
-                  unawaited(_pick(row.day));
-                  return;
-                }
-                final open = widget.onOpenRecipe;
-                if (open != null && row.recipeId != null) {
-                  open(row.recipeId!);
-                  return;
-                }
-                openScreen(context, 'E06');
-              },
-            ),
-        // First view of a week with nothing planned only: it waves once.
-        if (!view.hasPlan)
-          const Kitten(
-            pose: KittenPose.wave,
-            size: 56,
-            moment: 'E07',
-            sessionBudget: true,
-          ),
-        if (AppRouter.screenIsOn('E08'))
-          if (view.hasPlan)
-            AppCard(
-              variant: AppCardVariant.tonal,
-              onTap: () => openScreen(context, 'E08', widget.onOpenGroceryList),
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.shopping_cart,
-                      size: 24,
-                      color: AppColors.primaryDim,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(l10n.oneShopCoversIt, style: AppText.titleM),
-                          // Withheld rather than stated.
-                          //
-                          // This read `n23ItemsAbout640Egp` — "23 items · about
-                          // 640 EGP" — the prototype's list and the prototype's
-                          // bill, shown to a woman whose plan holds four dinners
-                          // and whose market is not Cairo's. The dictionary does
-                          // carry `countItemsAboutEgpEgp` and `view.itemCount` is
-                          // her real count, but NOTHING in this product costs a
-                          // grocery line: `GroceryLine` has an ingredient, a group
-                          // and a tick, and no price. Half of that sentence would
-                          // have to be invented, so the sentence is not said. The
-                          // dictionary gap is a price on the line, not a string.
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-      ],
+      footer: footer,
+      children: children,
     );
   }
 }

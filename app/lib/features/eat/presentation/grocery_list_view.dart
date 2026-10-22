@@ -48,7 +48,13 @@ class GroceryListView extends StatefulWidget {
     this.recipeOf,
     this.recipeTitle,
     this.onPlanWeek,
+    this.embedded = false,
   });
+
+  /// Drawn inside the Eat hub's Plan segment, under the week's dinners: just
+  /// the list, with no scaffold, top bar or bottom bar. With nothing to shop
+  /// for it says so in one line and leaves "Plan my week" to the dinners above.
+  final bool embedded;
 
   /// Finds one of Rahma's recipes by id. Given it, the list is made from the
   /// dinners on the week plan, in her own words; without it the screen draws
@@ -147,6 +153,24 @@ class _GroceryListViewState extends State<GroceryListView> {
     final view = _view ?? _model.build(weekId: _weekId);
     final nothingToShopFor = _view != null && view.itemCount == 0;
 
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: kStackGap,
+        children: nothingToShopFor
+            ? [
+                Text(
+                  l10n.pickYourDinnersForTheWeekAnd,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ]
+            : _listChildren(l10n, view),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(
@@ -196,42 +220,46 @@ class _GroceryListViewState extends State<GroceryListView> {
               onPressed: () => openScreen(context, 'E07', widget.onPlanWeek),
             ),
           ] else ...[
-            Text(
-              l10n.groupedTheWayYouShopTickAs,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-            ),
-            // A list she keeps, not a stack of cards: each dinner or market
-            // stop is an open section on the page, and a pencil rule separates
-            // one from the next.
-            for (var i = 0; i < view.groups.length; i++) ...[
-              if (i > 0) HandRule(seed: 50 + i, height: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    view.groups[i].recipeId == null
-                        ? groceryGroupLabel(l10n, view.groups[i].group)
-                        : (widget.recipeTitle?.call(view.groups[i].recipeId!) ??
-                              recipeLabel(l10n, view.groups[i].recipeId!)),
-                    style: AppText.titleS.copyWith(color: AppColors.primaryDim),
-                  ),
-                  const SizedBox(height: 4),
-                  for (final line in view.groups[i].lines)
-                    _GroceryTick(
-                      label: line.text ?? groceryLabel(l10n, line.ingredientId),
-                      ticked: line.ticked,
-                      drawOn: line.itemKey == _justTicked,
-                      onTap: () => _tick(line.itemKey, !line.ticked),
-                    ),
-                ],
-              ),
-            ],
+            ..._listChildren(l10n, view),
           ],
         ],
       ),
     );
   }
+
+  List<Widget> _listChildren(AppL10n l10n, WeekPlanView view) => [
+    Text(
+      l10n.groupedTheWayYouShopTickAs,
+      style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+    ),
+    // A list she keeps, not a stack of cards: each dinner or market
+    // stop is an open section on the page, and a pencil rule separates
+    // one from the next.
+    for (var i = 0; i < view.groups.length; i++) ...[
+      if (i > 0) HandRule(seed: 50 + i, height: 12),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            view.groups[i].recipeId == null
+                ? groceryGroupLabel(l10n, view.groups[i].group)
+                : (widget.recipeTitle?.call(view.groups[i].recipeId!) ??
+                      recipeLabel(l10n, view.groups[i].recipeId!)),
+            style: AppText.titleS.copyWith(color: AppColors.primaryDim),
+          ),
+          const SizedBox(height: 4),
+          for (final line in view.groups[i].lines)
+            _GroceryTick(
+              label: line.text ?? groceryLabel(l10n, line.ingredientId),
+              ticked: line.ticked,
+              drawOn: line.itemKey == _justTicked,
+              onTap: () => _tick(line.itemKey, !line.ticked),
+            ),
+        ],
+      ),
+    ],
+  ];
 }
 
 /// One line. A filled tick or an empty pencil ring — shape, not colour alone.

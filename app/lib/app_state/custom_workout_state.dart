@@ -56,6 +56,9 @@ class CustomWorkoutState {
   /// Set by a door that wants Train to open the builder as soon as it shows.
   bool builderRequested = false;
 
+  /// Set by a door that wants R03 to open with Edit workout already on.
+  bool editRequested = false;
+
   /// Identifies a session by its own id and what it contains, so an edit made
   /// to one is never applied to another, and a language switch does not lose
   /// the edits (the title is translated, the id is not).
@@ -263,11 +266,19 @@ class CustomWorkoutState {
     return asked;
   }
 
+  /// Asks R03 to open in edit mode. One use.
+  bool takeEditRequest() {
+    final asked = editRequested;
+    editRequested = false;
+    return asked;
+  }
+
   /// Back to nothing: an account deleted, or a test.
   void reset() {
     workouts = const <CustomWorkout>[];
     deletedIds = const <String>[];
     draft = null;
     builderRequested = false;
+    editRequested = false;
   }
 }

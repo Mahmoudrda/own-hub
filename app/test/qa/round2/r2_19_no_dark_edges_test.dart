@@ -118,6 +118,18 @@ final FeatureFlags _shipping = FeatureFlags.allOff.with_(<Feature, bool>{
     }
   }
 
+  // E01, E02 and E04 are one page built by a helper, so its calls are theirs.
+  final hub = lines.indexWhere((l) => l.contains('static Widget _eatHub('));
+  if (hub != -1) {
+    for (var i = hub + 1; i < lines.length && lines[i] != '  }'; i++) {
+      for (final e in edge.allMatches(lines[i])) {
+        for (final id in const ['E01', 'E02', 'E04']) {
+          edges[id]?.add(e.group(1)!);
+        }
+      }
+    }
+  }
+
   return (built: built, edges: edges);
 }
 
@@ -247,7 +259,7 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   ),
   'E07->E08': (
     file: 'lib/features/eat/presentation/week_plan_view.dart',
-    guard: "if (AppRouter.screenIsOn('E08'))",
+    guard: "if (!widget.embedded && AppRouter.screenIsOn('E08'))",
   ),
   'Y03->Y07': (
     file: 'lib/routing/app_router.dart',
@@ -336,23 +348,7 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   ),
   'R03->R04': (
     file: 'lib/features/train/presentation/workout_day_view.dart',
-    guard: "AppRouter.screenIsOn('R04') && canOpen(moves[i])",
-  ),
-  'E01->E05': (
-    file: 'lib/features/eat/presentation/eat_view.dart',
-    guard: "if (AppRouter.screenIsOn('E05'))",
-  ),
-  'E04->E05': (
-    file: 'lib/features/eat/presentation/eat_view.dart',
-    guard: "if (AppRouter.screenIsOn('E05'))",
-  ),
-  'E01->E07': (
-    file: 'lib/features/eat/presentation/eat_view.dart',
-    guard: "AppRouter.screenIsOn('E07')",
-  ),
-  'E04->E07': (
-    file: 'lib/features/eat/presentation/eat_view.dart',
-    guard: "AppRouter.screenIsOn('E07')",
+    guard: "AppRouter.screenIsOn('R04')",
   ),
   'T01->E07': (
     file: 'lib/features/today/presentation/today_view.dart',
@@ -365,6 +361,34 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
   'Y03->Y08': (
     file: 'lib/features/cycle/presentation/cycle_widgets.dart',
     guard: "AppRouter.screenIsOn('Y08')) CycleTab.calendar",
+  ),
+  'E01->E06': (
+    file: 'lib/features/eat/presentation/eat_hub_view.dart',
+    guard: "AppRouter.screenIsOn('E05'))",
+  ),
+  'E01->E11': (
+    file: 'lib/features/eat/presentation/eat_hub_view.dart',
+    guard: "AppRouter.screenIsOn('E05'))",
+  ),
+  'E02->E06': (
+    file: 'lib/features/eat/presentation/eat_hub_view.dart',
+    guard: "AppRouter.screenIsOn('E05'))",
+  ),
+  'E02->E11': (
+    file: 'lib/features/eat/presentation/eat_hub_view.dart',
+    guard: "AppRouter.screenIsOn('E05'))",
+  ),
+  'E04->E06': (
+    file: 'lib/features/eat/presentation/eat_hub_view.dart',
+    guard: "AppRouter.screenIsOn('E05'))",
+  ),
+  'E04->E11': (
+    file: 'lib/features/eat/presentation/eat_hub_view.dart',
+    guard: "AppRouter.screenIsOn('E05'))",
+  ),
+  'P01->Y10': (
+    file: 'lib/features/progress/presentation/progress_view.dart',
+    guard: "if (AppRouter.screenIsOn('Y10'))",
   ),
   'Y10->Y08': (
     file: 'lib/features/cycle/presentation/cycle_widgets.dart',

@@ -270,7 +270,7 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
             children: [
               Text(l10n.contains, style: AppText.titleS),
               const SizedBox(height: 6),
-              if (!recipe.allergensReviewed)
+              if (!recipe.allergensKnown)
                 Text(
                   l10n.nobodyHasSignedOffWhatIsIn,
                   style: AppText.bodyM.copyWith(color: HandInk.print),
@@ -290,6 +290,15 @@ class _RahmaRecipeViewState extends State<RahmaRecipeView> {
                         _ContentsChip(label: label),
                   ],
                 ),
+              if (recipe.check == RecipeCheck.autoChecked) ...[
+                const SizedBox(height: 8),
+                Text(
+                  l10n.checkedByOwnHub,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
               for (final advisory in recipe.advisories)
                 if (advisoryLine(l10n, advisory) case final line?) ...[
                   const SizedBox(height: 10),

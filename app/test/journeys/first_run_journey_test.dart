@@ -286,27 +286,42 @@ void main() {
   });
 
   group('the two doors that were invisible', () {
-    testWidgets('the week block says it opens something', (tester) async {
-      _phone(tester);
-      await _boot(tester);
-      AppRouter.todayRepository.recordMeal(at: DateTime.now());
-      await tester.pumpAndSettle();
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('the week block says it opens something'
+          '${scale == 1.0 ? '' : ' (text scale $scale)'}', (tester) async {
+        _phone(tester);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await _boot(tester);
+        AppRouter.todayRepository.recordMeal(at: DateTime.now());
+        await tester.pumpAndSettle();
 
-      // A 358×159 point paragraph with no chevron, no card and no underline
-      // was the only door to Progress, personal bests, milestones, body, the
-      // rest-week explainer and the tier-slip explainer.
-      expect(
-        find.descendant(
-          of: find.byType(WeekCard),
-          matching: find.byIcon(Icons.chevron_right),
-        ),
-        findsOneWidget,
-      );
+        // A 358×159 point paragraph with no chevron, no card and no underline
+        // was the only door to Progress, personal bests, milestones, body, the
+        // rest-week explainer and the tier-slip explainer.
+        expect(
+          find.descendant(
+            of: find.byType(WeekCard),
+            matching: find.byIcon(Icons.chevron_right),
+          ),
+          findsOneWidget,
+        );
 
-      await tester.tap(find.text('This week, 0 of 3'));
-      await tester.pumpAndSettle();
-      expect(find.text('Your progress'), findsOneWidget);
-    });
+        // Home grows with the tier facts and her training row, so the block can
+        // sit under the bottom bar until it is scrolled into the clear.
+        await tester.ensureVisible(find.text('This week, 0 of 3'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('This week, 0 of 3'));
+        await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.text('Insights'),
+          ),
+          findsOneWidget,
+        );
+      });
+    }
 
     testWidgets(
       'Progress counts her first week instead of saying "All five done"',

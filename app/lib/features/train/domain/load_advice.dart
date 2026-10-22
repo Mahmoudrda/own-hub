@@ -154,4 +154,5 @@ PlannedMove withSuggestedWeight(PlannedMove move, double kg, String label) =>
       needsEquipment: move.needsEquipment,
       floorOnly: move.floorOnly,
       videoAssetId: move.videoAssetId,
+      restSeconds: move.restSeconds,
     );

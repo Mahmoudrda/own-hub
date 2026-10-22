@@ -113,10 +113,7 @@ class _MealPhotoConsentBodyState extends State<MealPhotoConsentBody> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                l10n.beforeYourFirstPhoto,
-                style: AppText.titleL,
-              ),
+              child: Text(l10n.beforeYourFirstPhoto, style: AppText.titleL),
             ),
           ],
         ),

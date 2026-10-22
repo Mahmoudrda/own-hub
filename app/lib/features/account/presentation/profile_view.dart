@@ -43,6 +43,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../app_state/honest_notice.dart';
+import '../../../app_state/profile_photo_state.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -56,12 +57,15 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/sign_in_pill.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/profile_photo_crop.dart';
 import '../domain/dietary_profile.dart';
 import 'allergen_labels.dart';
 import '../domain/privacy_settings.dart';
 import '../domain/verification_claim.dart';
 import 'account_view_models.dart';
 import '../../../ui/medical_disclaimer.dart';
+
+enum _PhotoChoice { camera, gallery, remove }
 
 class ProfileView extends StatefulWidget {
   const ProfileView({
@@ -183,6 +187,79 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
+  /// Add, change or remove the photo. Nothing changes unless she finishes.
+  Future<void> _editPhoto() async {
+    final l10n = AppL10n.of(context);
+    final photo = ProfilePhotoState.instance;
+    final choice = await showAppSheet<_PhotoChoice>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(
+          photo.hasPhoto ? l10n.changePhoto : l10n.addAPhoto,
+          style: AppText.titleL,
+        ),
+        Text(
+          l10n.yourPhotoIsKeptOnThisPhone,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        _photoOption(
+          icon: Icons.photo_camera_outlined,
+          title: l10n.takeAPhoto,
+          choice: _PhotoChoice.camera,
+        ),
+        _photoOption(
+          icon: Icons.photo_library_outlined,
+          title: l10n.chooseFromYourPhotos,
+          choice: _PhotoChoice.gallery,
+        ),
+        if (photo.hasPhoto)
+          _photoOption(
+            icon: Icons.delete_outline,
+            title: l10n.removePhoto,
+            choice: _PhotoChoice.remove,
+          ),
+      ],
+    );
+    if (choice == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (choice == _PhotoChoice.remove) {
+      await photo.remove();
+      showHonestNoticeOn(messenger, l10n.yourPhotoWasRemoved);
+      return;
+    }
+    final outcome = await photo.change(
+      choice == _PhotoChoice.camera ? PhotoSource.camera : PhotoSource.gallery,
+      crop: (picture) async =>
+          mounted ? showProfilePhotoCrop(context, picture) : null,
+    );
+    switch (outcome) {
+      case ProfilePhotoOutcome.saved:
+        showHonestNoticeOn(messenger, l10n.yourPhotoIsSet);
+      case ProfilePhotoOutcome.denied:
+        showHonestNoticeOn(messenger, l10n.ownHubCouldNotOpenTheCamera);
+      case ProfilePhotoOutcome.failed:
+        showHonestNoticeOn(messenger, l10n.thatPhotoCouldNotBeUsedPlease);
+      case ProfilePhotoOutcome.cancelled:
+        break;
+    }
+  }
+
+  Widget _photoOption({
+    required IconData icon,
+    required String title,
+    required _PhotoChoice choice,
+  }) {
+    return Builder(
+      builder: (sheet) => AppListItem(
+        leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+        title: title,
+        onTap: () => Navigator.of(sheet).pop(choice),
+      ),
+    );
+  }
+
   /// Whether this build has a community at all. Several rows here describe
   /// one, and a subtitle about members is a claim as much as a button is.
   bool get _community => AppRouter.featureFlags.isOn(Feature.community);
@@ -219,6 +296,15 @@ class _ProfileViewState extends State<ProfileView> {
             child: SignInPill(onTap: widget.onSignIn!),
           ),
         _header(l10n, view),
+
+        // Her picture, kept on this phone only. Add, change and remove all
+        // happen in one sheet behind this row.
+        _row(
+          icon: Icons.photo_camera_outlined,
+          title: l10n.profilePhoto,
+          subtitle: l10n.yourPhotoIsKeptOnThisPhone,
+          onTap: _editPhoto,
+        ),
 
         // First, because it is the only row that changes what the app gives
         // her: her goal, her days a week, her minutes a session, her equipment

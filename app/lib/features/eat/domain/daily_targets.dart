@@ -29,9 +29,11 @@ class DailyTargets {
   static const int defaultHeightCm = 160;
   static const int defaultAgeYears = 30;
 
-  /// Protein per kilo of body weight. Stronger asks for more.
+  /// Protein per kilo of body weight. Stronger asks for more, and building
+  /// muscle a little more again.
   static const double proteinPerKg = 1.6;
   static const double proteinPerKgStronger = 1.8;
+  static const double proteinPerKgMuscle = 1.9;
 
   /// Share of the day's kcal that comes from fat.
   static const double fatShare = 0.28;
@@ -73,14 +75,18 @@ class DailyTargets {
     );
     final adjust = switch (goal) {
       TrainingGoal.loseSteadily => loseAdjust,
-      TrainingGoal.stronger => strongerAdjust,
-      _ => 1.0,
+      TrainingGoal.stronger || TrainingGoal.buildMuscle => strongerAdjust,
+      TrainingGoal.feelBetter || TrainingGoal.backIntoIt => 1.0,
     };
     final kcal = (bmr * factor * adjust).round();
 
-    final perKg = goal == TrainingGoal.stronger
-        ? proteinPerKgStronger
-        : proteinPerKg;
+    final perKg = switch (goal) {
+      TrainingGoal.buildMuscle => proteinPerKgMuscle,
+      TrainingGoal.stronger => proteinPerKgStronger,
+      TrainingGoal.loseSteadily ||
+      TrainingGoal.feelBetter ||
+      TrainingGoal.backIntoIt => proteinPerKg,
+    };
     final protein = (weight * perKg).round();
     final fat = (kcal * fatShare / 9).round();
     final carbs = ((kcal - protein * 4 - fat * 9) / 4).round();

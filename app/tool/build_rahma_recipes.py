@@ -27,6 +27,14 @@ file for a recipe nobody checked would be forging a signature on an allergen
 check, which is the single worst fabrication available in this feature, so the
 file is edited by a person and never by this script.
 
+Every recipe is then put through `verify_recipes.py` (ingredients, allergens,
+figures, method, diet tags). An Own Hub recipe (`source: authored`) nobody signed
+that passes ships `published` with a `verification` record
+(`ownhub-auto-check-v1`) and still has no `allergenReviewedBy` or `cookedBy`: the
+record says a script checked it, never that a person did. One that fails stays
+`review` and is printed with the reason. A book card nobody signed stays
+`review` whatever the check says: Rahma's cards need a person.
+
 `authoredBy` is `ownhub_kitchen` on every row. The words of the thirty-nine are
 Rahma's (`source: book`, `sourcePage`), and the structured record the app
 ships is Own Hub's: the split into steps, the ingredient rows linked to the
@@ -55,8 +63,9 @@ reason.
 ## The eleven recipes of Own Hub's kitchen
 
 `ownhub_recipes.py` holds recipes written by Own Hub, not by Rahma
-(`source: authored`). They carry English and Egyptian Arabic, are never drawn as
-hers, and stay `review` until the sign-off file lists them.
+(`source: authored`). They carry English and Egyptian Arabic and are never drawn
+as hers. They ship `published` on the automated check alone and are signed by
+nobody until the sign-off file lists them.
 """
 
 import json
@@ -68,6 +77,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from allergen_tripwire import scan  # noqa: E402
 from ownhub_recipes import RECIPES as OWNHUB  # noqa: E402
 from recipe_links import LAHMA_ROWS, LINKS  # noqa: E402
+import verify_recipes  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CARDS = os.path.join(HERE, "rahma_book_cards.json")
@@ -1014,8 +1024,9 @@ def _ownhub_recipe(data, section, order_in_section, pack, signed):
     entry = signed.get(rid)
     if entry is None:
         first = (
-            "Written by the Own Hub kitchen, not by Rahma. She has not cooked "
-            "it or checked its allergens yet, so it stays in review."
+            "Written by the Own Hub kitchen, not by Rahma. Checked by the "
+            "Own Hub automated check (ingredients, allergens, figures); no "
+            "person has cooked it or signed its allergens."
         )
     else:
         first = (
@@ -1077,6 +1088,20 @@ def _ownhub_recipe(data, section, order_in_section, pack, signed):
     }
 
 
+def _carry_checked_at(recipes):
+    """Lets `verify_recipes` keep the date of a record that did not change."""
+    if not os.path.exists(OUT):
+        return
+    try:
+        old = json.load(open(OUT, encoding="utf-8"))["recipes"]
+    except (ValueError, KeyError):
+        return
+    by_id = {r["recipeId"]: r.get("verification") for r in old}
+    for recipe in recipes:
+        if by_id.get(recipe["recipeId"]):
+            recipe["verification"] = by_id[recipe["recipeId"]]
+
+
 def build():
     pack = _load_pack()
     signed = _load_signoff()
@@ -1124,6 +1149,9 @@ def build():
                 or bool(row.get("side")),
                 "brandHint": meta.get("brands", {}).get(text),
             })
+            if row.get("skip"):
+                # The second of two methods: on the card, not in the figures.
+                ingredients[-1]["inFigures"] = False
 
         def refs_for(step_text, rows=ingredients):
             return [r["ingredientRef"] for r in rows
@@ -1270,6 +1298,19 @@ def build():
 
     unknown = set(signed) - {r["recipeId"] for r in recipes}
     assert not unknown, f"the sign-off names recipes that do not exist: {unknown}"
+
+    # The automated check runs on every rebuild, so the records it writes are
+    # never lost and a recipe whose data drifts goes back to review. Dates are
+    # kept from the last run when nothing about a record changed.
+    _carry_checked_at(recipes)
+    results = verify_recipes.apply_all(recipes, pack)
+    held = [r.recipe_id for r, rec in zip(results, recipes)
+            if not r.ok and not rec.get("allergenReviewedBy")]
+    print(f"auto-check: {sum(1 for r in results if r.ok)} verified, "
+          f"{len(held)} held in review")
+    for res in results:
+        if not res.ok:
+            print(f"  {res.recipe_id}: {'; '.join(res.problems)}")
 
     payload = {
         "schemaVersion": SCHEMA_VERSION,

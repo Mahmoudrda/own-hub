@@ -584,7 +584,7 @@ void main() {
         Feature.eat: true,
         Feature.events: true,
       });
-      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'T09', 'E01']);
+      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E01', 'T09']);
     });
 
     test('the community keeps its slot when it is on', () {
@@ -595,7 +595,7 @@ void main() {
         Feature.events: true,
         Feature.community: true,
       });
-      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'M01', 'E01']);
+      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E01', 'M01']);
     });
 
     test('with Events off too, the bar is three tabs', () {

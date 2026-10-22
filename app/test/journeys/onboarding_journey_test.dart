@@ -207,7 +207,7 @@ void main() {
 
       expect(find.byType(StartingProgramView), findsOneWidget);
       expect(
-        find.text('4 days a week · 15 min a session · At a ladies-only gym'),
+        find.text('4 days a week · 45 min a session · At a ladies-only gym'),
         findsOneWidget,
       );
       expect(find.byType(EquipmentView, skipOffstage: false), findsNothing);
@@ -361,11 +361,11 @@ void main() {
       await _tap(tester, find.text('Your training'));
       expect(find.byType(GoalView), findsOneWidget);
 
-      // Three days a week was the default she never chose. Two is.
+      // Three days a week was the default she never chose. Four is.
       await _tap(tester, find.text('Continue')); // O01
       await _tap(tester, find.text('Continue')); // O02
       await _tap(tester, find.text('Continue')); // O06
-      await _tap(tester, find.text('1-2'));
+      await _tap(tester, find.text('4'));
       await _tap(tester, find.text('Continue')); // O03
       await _tap(tester, find.text('Continue')); // O04
       // From her profile O05 saves her changes rather than offering to
@@ -376,13 +376,13 @@ void main() {
       // Back where she opened them from, not on Home, and told her week.
       expect(find.byType(ProfileView), findsOneWidget);
       expect(
-        find.textContaining('Your week is updated · 2 days'),
+        find.textContaining('Your week is updated · 4 days'),
         findsOneWidget,
       );
       expect(find.byType(TodayView), findsNothing);
-      expect(AppRouter.intakeRepository.read().days, 2);
-      expect(_progressTarget, 2);
-      expect(_homeTarget, 2);
+      expect(AppRouter.intakeRepository.read().days, 4);
+      expect(_progressTarget, 4);
+      expect(_homeTarget, 4);
     });
 
     testWidgets('the Home tab works from Profile', (tester) async {

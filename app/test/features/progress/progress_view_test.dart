@@ -573,9 +573,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Milestones'));
-      await tester.tap(find.text('Bests'));
-      await tester.tap(find.text('Body'));
+      // Insights is one long scroll: bring each tile into view first.
+      for (final label in ['Milestones', 'Bests', 'Body']) {
+        await tester.ensureVisible(find.text(label));
+        await tester.pump();
+        await tester.tap(find.text(label));
+      }
       await tester.pump();
 
       expect(milestones, 1);

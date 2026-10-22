@@ -387,6 +387,23 @@ void main() {
         expect(find.text('one'), findsNothing);
       },
     );
+
+    testWidgets('a swap that changes size under Reduce Motion does not throw', (
+      tester,
+    ) async {
+      Widget card(double height) => _host(
+        HandSwap(
+          child: SizedBox(key: ValueKey(height), height: height, width: 100),
+        ),
+        still: true,
+      );
+      await tester.pumpWidget(card(40));
+      await tester.pumpWidget(card(120));
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(tester.getSize(find.byType(HandSwap)).height, 120);
+    });
   });
 
   group('shared motion', () {

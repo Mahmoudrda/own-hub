@@ -17,22 +17,26 @@ class HandSwap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final d = handMotionOff(context) ? Duration.zero : HandTiming.medium;
+    final switcher = AnimatedSwitcher(
+      duration: d,
+      switchInCurve: HandTiming.standard,
+      switchOutCurve: HandTiming.exit,
+      // Passthrough, so a child stretched by its column stays stretched.
+      layoutBuilder: (current, previous) => Stack(
+        alignment: Alignment.topCenter,
+        fit: StackFit.passthrough,
+        children: [...previous, ?current],
+      ),
+      child: child,
+    );
+    // A zero-length size animation trips a debug assertion when the child's
+    // size changes, so with motion off there is no size animation at all.
+    if (d == Duration.zero) return switcher;
     return AnimatedSize(
       duration: d,
       curve: HandTiming.standard,
       alignment: Alignment.topCenter,
-      child: AnimatedSwitcher(
-        duration: d,
-        switchInCurve: HandTiming.standard,
-        switchOutCurve: HandTiming.exit,
-        // Passthrough, so a child stretched by its column stays stretched.
-        layoutBuilder: (current, previous) => Stack(
-          alignment: Alignment.topCenter,
-          fit: StackFit.passthrough,
-          children: [...previous, ?current],
-        ),
-        child: child,
-      ),
+      child: switcher,
     );
   }
 }

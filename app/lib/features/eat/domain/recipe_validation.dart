@@ -53,8 +53,22 @@ List<String> recipeProblems(Recipe recipe, {required Set<String> sectionIds}) {
       reviewer == recipe.authoredBy) {
     fail('reviewed by its own author');
   }
+  // The automated check is a basis to publish, but only a record that holds up:
+  // the right method, a date, and nothing it derived missing from the final
+  // allergens. A record that disagrees with its own recipe is a problem even
+  // when a signature is there as well.
+  final record = recipe.verification;
+  if (record != null) {
+    if (!record.isAutoCheck) fail('a check by a method nobody knows');
+    if (record.checkedAt == null) fail('a check with no date');
+    if (!recipe.allergensFinal.containsAll(record.allergensDerived)) {
+      fail('the check derived allergens the recipe does not list');
+    }
+  }
   if (recipe.status == RecipeStatus.published) {
-    if (!recipe.allergensReviewed) fail('published without a signature');
+    if (!recipe.allergensKnown) {
+      fail('published without a signature or an automated check');
+    }
     for (final i in recipe.ingredients) {
       if (i.foodId == null) {
         fail('published with an ingredient nobody can look up');

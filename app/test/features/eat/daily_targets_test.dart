@@ -2,7 +2,7 @@
 //
 // Mifflin-St Jeor for women: 10 w + 6.25 h - 5 a - 161, times an activity
 // factor from the weekly minutes, then the goal. Protein is 1.6 g/kg (1.8 for
-// stronger), fat 28% of kcal, carbs the rest, fibre 25 g.
+// stronger, 1.9 for building muscle), fat 28% of kcal, carbs the rest, fibre 25 g.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/eat/domain/daily_targets.dart';
@@ -85,5 +85,20 @@ void main() {
     final strong = DailyTargets.compute(goal: TrainingGoal.stronger);
     expect(base.proteinG, 96);
     expect(strong.proteinG, 108);
+  });
+
+  test('building muscle: 1.9 g/kg, and the same energy nudge as stronger', () {
+    // 60 kg default: 1.9 x 60 = 114, inside the 1.8 to 2.0 g/kg asked for.
+    final muscle = DailyTargets.compute(goal: TrainingGoal.buildMuscle);
+    final strong = DailyTargets.compute(goal: TrainingGoal.stronger);
+    expect(muscle.proteinG, 114);
+    expect(muscle.kcal, strong.kcal);
+    expect(muscle.proteinG, greaterThan(strong.proteinG));
+    // At 72 kg the figure is still within 1.8 to 2.0 g/kg.
+    final heavier = DailyTargets.compute(
+      body: const BodyData(weightKg: 72, heightCm: 165, ageYears: 30),
+      goal: TrainingGoal.buildMuscle,
+    );
+    expect(heavier.proteinG / 72, inInclusiveRange(1.8, 2.0));
   });
 }

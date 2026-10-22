@@ -75,6 +75,8 @@ import '../features/eat/domain/custom_food.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/onboarding/domain/body_data.dart';
 import '../features/onboarding/domain/intake.dart';
+import '../features/onboarding/domain/starting_program.dart'
+    show migratedProgrammeFamily, splitDaysOf;
 import 'pledge.dart';
 import 'guest_session.dart';
 import 'onboarding_state.dart';
@@ -84,6 +86,7 @@ import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
 import '../features/train/domain/custom_workout.dart';
 import '../features/train/domain/getting_started_tips.dart';
+import '../features/train/domain/my_plan.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
 import '../features/train/domain/training_reminders.dart';
@@ -95,6 +98,8 @@ import '../routing/app_router.dart';
 import 'coach_invite_state.dart';
 import 'coach_profile_state.dart';
 import 'custom_workout_state.dart';
+import 'my_plan_state.dart';
+import 'rest_timer_prefs.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
 import 'rewards_state.dart';
@@ -156,6 +161,8 @@ abstract final class AppSnapshot {
     'chosenProgramme': ?_captureChosenProgramme(),
     'followUps': ?_captureFollowUps(),
     'customWorkouts': ?_captureCustomWorkouts(),
+    'myPlan': ?_captureMyPlan(),
+    'restTimer': ?_captureRestTimer(),
     'guest': ?_captureGuest(),
   };
 
@@ -230,6 +237,8 @@ abstract final class AppSnapshot {
     'chosenProgramme': _readChosenProgramme,
     'followUps': _readFollowUps,
     'customWorkouts': _readCustomWorkouts,
+    'myPlan': _readMyPlan,
+    'restTimer': _readRestTimer,
     'guest': _readGuest,
     // After `train`: it points at a session that section restores.
     'liveSession': _readLiveSession,
@@ -841,6 +850,7 @@ Map<String, Object?> _plannedMove(PlannedMove move) => <String, Object?>{
   if (move.needsEquipment) 'needsEquipment': true,
   if (move.floorOnly) 'floorOnly': true,
   'videoAssetId': ?move.videoAssetId,
+  'restSeconds': ?move.restSeconds,
 };
 
 PlannedMove? _readPlannedMove(Object? raw) {
@@ -865,6 +875,7 @@ PlannedMove? _readPlannedMove(Object? raw) {
     needsEquipment: _bool(row['needsEquipment']) ?? false,
     floorOnly: _bool(row['floorOnly']) ?? false,
     videoAssetId: _str(row['videoAssetId']),
+    restSeconds: _int(row['restSeconds']),
   );
 }
 
@@ -1769,11 +1780,7 @@ void Function()? _readIntake(Object? raw) {
         _wire(LifeStage.values, section['lifeStage']) ?? defaults.lifeStage,
     // A document from before the tiers read as the level her answers suggest.
     level:
-        TrainingLevel.fromWire(section['level']) ??
-        TrainingLevel.suggestedFor(
-          days: Intake.daysOk(days) ? days : defaults.days,
-          minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
-        ),
+        TrainingLevel.fromWire(section['level']) ?? TrainingLevel.defaultLevel,
     weekdays: weekdays,
     minutesCustom: _bool(section['minutesCustom']) ?? false,
   );
@@ -1853,6 +1860,18 @@ Map<String, Object?> _captureReminders() => <String, Object?>{
   'restAlert': ReminderState.instance.prefs.restAlert,
   'tipsOn': ReminderState.instance.prefs.tips,
   'nudgesOn': ReminderState.instance.prefs.nudges,
+  'eventsOn': ReminderState.instance.prefs.events,
+  // The event notes on the phone: id, time and which text, nothing about the
+  // event itself. Only written while there are some.
+  if (ReminderState.instance.eventPlan.isNotEmpty)
+    'eventPlan': [
+      for (final note in ReminderState.instance.eventPlan)
+        <String, Object?>{
+          'id': note.id,
+          'at': note.at.toIso8601String(),
+          'variant': note.variant,
+        },
+    ],
   'lastActiveAt': _dayOf(ReminderState.instance.lastActiveAt),
   'lastSessionAt': _dayOf(ReminderState.instance.lastSessionAt),
   // The getting started tips. To the minute, unlike the two above: a tip's
@@ -1877,7 +1896,9 @@ void Function()? _readReminders(Object? raw) {
     restAlert: _bool(section['restAlert']) ?? true,
     tips: _bool(section['tipsOn']) ?? true,
     nudges: _bool(section['nudgesOn']) ?? true,
+    events: _bool(section['eventsOn']) ?? true,
   );
+  final eventPlan = _readEventPlan(section['eventPlan']);
   final active = DateTime.tryParse(_str(section['lastActiveAt']) ?? '');
   final session = DateTime.tryParse(_str(section['lastSessionAt']) ?? '');
   final tips = TipSeries.fromJson(section['tips']);
@@ -1895,6 +1916,7 @@ void Function()? _readReminders(Object? raw) {
       ..schedule = schedule
       ..permissionGranted = permission
       ..prefs = prefs
+      ..eventPlan = eventPlan
       ..lastActiveAt = active
       ..lastSessionAt = session
       ..tips = tips
@@ -1902,6 +1924,26 @@ void Function()? _readReminders(Object? raw) {
       ..tipsOfferDue = tipsOfferDue
       ..tipsOffered = tipsOffered;
   };
+}
+
+// The event notes last scheduled. Anything that is not a whole note inside the
+// event id block is dropped, so a damaged entry can never schedule a stray id.
+List<PlannedNotification> _readEventPlan(Object? raw) {
+  if (raw is! List) return const <PlannedNotification>[];
+  final last = kEventFirstId + kEventMaxPlanned * kEventStepsPerEvent;
+  return [
+    for (final entry in raw)
+      if (entry is Map)
+        if (_int(entry['id']) case final id?
+            when id >= kEventFirstId && id < last)
+          if (DateTime.tryParse(_str(entry['at']) ?? '') case final at?)
+            PlannedNotification(
+              id: id,
+              kind: PlanKind.eventReminder,
+              at: at,
+              variant: _int(entry['variant']) ?? 0,
+            ),
+  ];
 }
 
 void Function()? _readFirstGymGuide(Object? raw) {
@@ -2286,7 +2328,17 @@ void Function()? _readChosenProgramme(Object? raw) {
   final section = _map(raw);
   final family = section == null ? null : _str(section['family']);
   if (family == null || family.isEmpty) return null;
-  return () => ChosenProgramme.family = family;
+  // A family from before the three splits becomes the split nearest her days,
+  // and her days a week become that split's so every day of it is reached.
+  return () {
+    final intake = AppRouter.intakeRepository;
+    final migrated = migratedProgrammeFamily(family, days: intake.read().days);
+    ChosenProgramme.family = migrated;
+    final days = splitDaysOf(migrated);
+    if (migrated != family && days != null) {
+      ChosenProgramme.alignDays(intake, days);
+    }
+  };
 }
 
 // ------------------------------------------------------------- followUps ---
@@ -2382,4 +2434,43 @@ void Function()? _readCustomWorkouts(Object? raw) {
   ];
   return () =>
       CustomWorkoutState.instance.restoreSaved(saved: saved, deleted: deleted);
+}
+
+// ----------------------------------------------------------------- myPlan ---
+
+// Her own plan. Phone only: this section is in the snapshot and in no cloud
+// document. A snapshot from before it existed has no such section and reads as
+// no plan.
+Map<String, Object?>? _captureMyPlan() => MyPlanState.instance.plan?.toJson();
+
+void Function()? _readMyPlan(Object? raw) {
+  final plan = MyPlan.tryParse(raw);
+  if (plan == null) return null;
+  return () => MyPlanState.instance.restore(plan);
+}
+
+// -------------------------------------------------------------- restTimer ---
+
+// The rest she set for each move on R09, in seconds. Phone only: this section
+// is in the snapshot and in no cloud document. Written only once she has set
+// one, so an old snapshot has none and reads as none.
+Map<String, Object?>? _captureRestTimer() {
+  final saved = RestTimerPrefs.instance.toJson();
+  if (saved.isEmpty) return null;
+  return <String, Object?>{'moves': saved};
+}
+
+void Function()? _readRestTimer(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final moves = _map(section['moves']);
+  if (moves == null) return null;
+  final saved = <String, int>{
+    for (final entry in moves.entries)
+      if (entry.key.isNotEmpty)
+        if (_int(entry.value) case final seconds? when seconds > 0)
+          entry.key: seconds,
+  };
+  if (saved.isEmpty) return null;
+  return () => RestTimerPrefs.instance.restore(saved);
 }

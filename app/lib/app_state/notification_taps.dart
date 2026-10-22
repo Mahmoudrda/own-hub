@@ -41,6 +41,8 @@ class NotificationTaps {
     // week her progress.
     'E01',
     'P01',
+    // A note before an event opens the events list.
+    'T09',
     ...tipDestinations,
   };
 
@@ -61,6 +63,7 @@ class NotificationTaps {
   static const Map<String, List<String>> fallbacks = {
     'E01': ['E01', 'T01'],
     'P01': ['P01', 'T01'],
+    'T09': ['T09', 'T01'],
     'R03': ['R03', 'T01'],
     'R01': ['R01'],
     // A reminder scheduled before Explore replaced the library.

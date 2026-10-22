@@ -58,6 +58,7 @@ void main() {
       expect(find.text('Pick one. It shapes your program.'), findsOneWidget);
       for (final goal in [
         'Get stronger',
+        'Build muscle',
         'Feel better in my body',
         'Lose weight steadily',
         'Get back into it',
@@ -79,6 +80,56 @@ void main() {
         find.text('Slowly, without cutting food you love'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('Build muscle says honestly what it needs', (tester) async {
+      await tester.pumpWidget(
+        _host(GoalView(repository: InMemoryIntakeRepository())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Heavier lifts, built up a little each week. Best with a gym or '
+          'dumbbells.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Build muscle is written as its own wire value', (
+      tester,
+    ) async {
+      final repository = InMemoryIntakeRepository();
+      await tester.pumpWidget(_host(GoalView(repository: repository)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Build muscle'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(repository.read().goal, TrainingGoal.buildMuscle);
+      expect(repository.read().goal.wireName, 'build_muscle');
+      expect(repository.writes, [
+        {'goal'},
+      ]);
+    });
+
+    testWidgets('in Arabic and at 2.0 text the five goals do not overflow', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          GoalView(repository: InMemoryIntakeRepository()),
+          locale: const Locale('ar'),
+          textScale: 2.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('ابني عضلاتك'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('shows which question of the walk this is', (tester) async {

@@ -46,6 +46,7 @@ import '../data/exercise_media_store.dart';
 import '../domain/custom_workout.dart';
 import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
+import 'plan_entry_cards.dart';
 import 'program_view.dart' show ProgramDay;
 import 'train_explore.dart';
 import 'train_widgets.dart';
@@ -100,7 +101,21 @@ class TrainView extends StatefulWidget {
     this.onStartMine,
     this.onEditMine,
     this.onDeleteMine,
+    this.hasMyPlan = false,
+    this.onCustomizePlan,
+    this.onStartPlanFromScratch,
+    this.onEditSplit,
   });
+
+  /// She has a plan of her own.
+  final bool hasMyPlan;
+
+  /// The card at the top: copy the plan she follows into hers (or open hers),
+  /// start an empty one, or pick which of the three splits to copy. Give
+  /// either of the first two to draw the card.
+  final VoidCallback? onCustomizePlan;
+  final VoidCallback? onStartPlanFromScratch;
+  final VoidCallback? onEditSplit;
 
   /// The workouts she built herself, newest first.
   final List<CustomWorkout> myWorkouts;
@@ -194,6 +209,7 @@ class _TrainViewState extends State<TrainView> {
   late final ExploreFilter _filter = ExploreFilter(widget.focus);
   final GlobalKey _exploreKey = GlobalKey();
   final TextEditingController _search = TextEditingController();
+  final GlobalKey _mineKey = GlobalKey();
 
   @override
   void initState() {
@@ -221,6 +237,26 @@ class _TrainViewState extends State<TrainView> {
   }
 
   void _changed() => setState(() {});
+
+  bool get _showPlanCard =>
+      widget.onCustomizePlan != null || widget.onStartPlanFromScratch != null;
+
+  /// "My workouts": the list further down, or the builder when there is none
+  /// yet.
+  void _openMyWorkouts() {
+    final target = _mineKey.currentContext;
+    if (widget.myWorkouts.isEmpty || target == null) {
+      widget.onBuildOwn?.call();
+      return;
+    }
+    Scrollable.ensureVisible(
+      target,
+      duration: handMotionOff(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   List<LibraryExercise> _shownMoves() =>
       widget.exercises.where(_filter.keepMove).toList();
@@ -298,6 +334,15 @@ class _TrainViewState extends State<TrainView> {
           ),
         ],
       ),
+      if (_showPlanCard)
+        BuildOwnPlanCard(
+          hasMyPlan: widget.hasMyPlan,
+          onCustomizePlan: widget.onCustomizePlan,
+          onStartFromScratch: widget.onStartPlanFromScratch,
+          onEditSplit: widget.onEditSplit,
+          onBuildWorkout: widget.onBuildOwn,
+          onMyWorkouts: _openMyWorkouts,
+        ),
       _WeekStrip(
         title: widget.programWeek ?? l10n.thisWeek,
         programTitle: widget.programTitle,
@@ -336,7 +381,7 @@ class _TrainViewState extends State<TrainView> {
           fontSize: 15,
           onPressed: widget.onSeeProgram,
         ),
-      if (widget.onBuildOwn != null)
+      if (widget.onBuildOwn != null && !_showPlanCard)
         AppButton(
           l10n.buildMyOwnWorkout,
           key: const ValueKey('r01-build-own'),
@@ -363,7 +408,11 @@ class _TrainViewState extends State<TrainView> {
           children: [
             Semantics(
               header: true,
-              child: Text(l10n.myWorkouts, style: AppText.titleM),
+              child: Text(
+                l10n.myWorkouts,
+                key: _mineKey,
+                style: AppText.titleM,
+              ),
             ),
             for (final mine in widget.myWorkouts)
               AppListItem(

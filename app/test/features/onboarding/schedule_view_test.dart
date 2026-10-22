@@ -63,22 +63,24 @@ void main() {
       // Fourth of five at home: goal, place, what she has there, then this.
       expect(find.text('4 of 5'), findsOneWidget);
 
-      // One to two, then three to seven: every weekly goal the rewards system
-      // accepts is one tap away, and a single day is a custom schedule.
-      for (final n in ['1-2', '3', '4', '5', '6', '7']) {
+      // The three coach splits, 3, 4 and 5 days: every other week is a custom
+      // schedule, which maps to the nearest split.
+      for (final n in ['3', '4', '5']) {
         expect(find.text(n), findsOneWidget, reason: n);
+      }
+      for (final n in ['1-2', '6', '7']) {
+        expect(find.text(n), findsNothing, reason: n);
       }
       // Minutes a session are asked on the same screen, each said in minutes,
       // with a custom length after the presets.
       expect(find.text('Days a week'), findsOneWidget);
       expect(find.text('Minutes a session'), findsOneWidget);
       for (final chip in [
-        '15 min',
-        '20 min',
         '30 min',
         '45 min',
         '60 min',
         '75+ min',
+        '15 min · short day',
         'Custom',
       ]) {
         expect(find.text(chip), findsOneWidget, reason: chip);
@@ -112,9 +114,11 @@ void main() {
       expect(_chipSelected(tester, '3'), isTrue);
       expect(_chipSelected(tester, '4'), isFalse);
       expect(_chipSelected(tester, 'Beginner'), isTrue);
-      // Fifteen minutes is preselected too.
-      expect(_chipSelected(tester, '15 min'), isTrue);
+      // Forty-five minutes is preselected too, and the 15 minute day is named
+      // as the short one rather than offered as a normal length.
+      expect(_chipSelected(tester, '45 min'), isTrue);
       expect(_chipSelected(tester, '30 min'), isFalse);
+      expect(_chipSelected(tester, '15 min · short day'), isFalse);
     });
   });
 
@@ -202,28 +206,68 @@ void main() {
       await tester.pumpWidget(
         _host(
           ScheduleView(
-            repository: InMemoryIntakeRepository(const Intake(days: 2)),
+            repository: InMemoryIntakeRepository(const Intake(days: 4)),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(_chipSelected(tester, '1-2'), isTrue);
+      expect(_chipSelected(tester, '4'), isTrue);
       expect(_chipSelected(tester, '3'), isFalse);
+    });
+
+    testWidgets('D3 — a week of another size selects no split chip', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          ScheduleView(
+            repository: InMemoryIntakeRepository(const Intake(days: 6)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      for (final n in ['3', '4', '5']) {
+        expect(_chipSelected(tester, n), isFalse, reason: n);
+      }
     });
 
     testWidgets('D3 — minutes open on what is stored', (tester) async {
       await tester.pumpWidget(
         _host(
           ScheduleView(
-            repository: InMemoryIntakeRepository(const Intake(minutes: 45)),
+            repository: InMemoryIntakeRepository(const Intake(minutes: 60)),
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(_chipSelected(tester, '45 min'), isTrue);
-      expect(_chipSelected(tester, '15 min'), isFalse);
+      expect(_chipSelected(tester, '60 min'), isTrue);
+      expect(_chipSelected(tester, '45 min'), isFalse);
+    });
+
+    testWidgets('a saved 15 stays the short day, not a custom length', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          ScheduleView(
+            repository: InMemoryIntakeRepository(const Intake(minutes: 15)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(_chipSelected(tester, '15 min · short day'), isTrue);
+      expect(_chipSelected(tester, 'Custom'), isFalse);
+      expect(find.byKey(const ValueKey('o03-minutes-slider')), findsNothing);
+    });
+
+    test('a new setup starts on 45 minutes', () {
+      expect(const Intake().minutes, 45);
+      expect(Intake.defaults.minutes, 45);
+      expect(Intake.allowedMinutes, [30, 45, 60, 75, 15]);
     });
   });
 
@@ -246,12 +290,11 @@ void main() {
       expect(find.text('How many days, and for how long?'), findsNothing);
       // The minutes chips stay in Western numerals as well (P0-A11Y-01).
       for (final chip in [
-        '15 دقيقة',
-        '20 دقيقة',
         '30 دقيقة',
         '45 دقيقة',
         '60 دقيقة',
         '75+ دقيقة',
+        '15 دقيقة · يوم خفيف',
       ]) {
         expect(find.text(chip), findsOneWidget, reason: chip);
       }
@@ -259,7 +302,7 @@ void main() {
         expect(find.textContaining(eastern), findsNothing, reason: eastern);
       }
 
-      for (final n in ['1-2', '3', '4', '5', '6', '7']) {
+      for (final n in ['3', '4', '5']) {
         expect(
           find.text(n),
           findsOneWidget,

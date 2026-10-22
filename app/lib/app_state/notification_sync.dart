@@ -9,17 +9,26 @@
 /// Every call is safe to repeat and asks for nothing. A failure is swallowed:
 /// a notification that could not be set must never stop a feature (U09).
 ///
+/// The event notes ride along too: each call works them out from the events
+/// `EventsState` last read and the seats she holds. Until an events read has
+/// succeeded in this run, the notes already on the phone are kept as they
+/// are, so opening the app with no network does not cancel them. The events
+/// state calls [reapplyLast] itself after every read and every seat change.
+///
 /// The getting started tips ride along: each call works them out again from
 /// the moment and what she has done (`GettingStarted.facts`), and what the
 /// phone accepted is remembered, so the next open can tell a tip that was
 /// shown from one still to come.
 library;
 
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show listEquals, visibleForTesting;
 
+import '../features/events/domain/event_reminder_plan.dart';
 import '../features/train/domain/getting_started_tips.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'app_changes.dart';
+import 'events_state.dart';
 import 'getting_started.dart';
 import 'reminder_scheduler.dart';
 
@@ -68,10 +77,34 @@ abstract final class NotificationSync {
                 DateTime(anchor.year, anchor.month, anchor.day + tip.day),
             ],
       tipsLeftOut: leftOut,
+      events: state.permitted && state.prefs.events
+          ? _eventNotes(now, state)
+          : const <PlannedNotification>[],
     );
     return (
       plan: plan,
       tips: tipsApplied(tips.series, plan, tipsOn: tipsOn, leftOut: leftOut),
+    );
+  }
+
+  /// The event notes at [now]: worked out from the events read, or, before
+  /// any read has succeeded, the ones already on the phone that are still to
+  /// come.
+  static List<PlannedNotification> _eventNotes(
+    DateTime now,
+    ReminderState state,
+  ) {
+    final known = EventsState.instance.reminderInput();
+    if (known == null) {
+      return [
+        for (final note in state.eventPlan)
+          if (note.at.isAfter(now)) note,
+      ];
+    }
+    return EventReminderPlan.build(
+      now: now,
+      events: known.events,
+      booked: known.booked,
     );
   }
 
@@ -126,6 +159,14 @@ abstract final class NotificationSync {
       // does not later read as one that was shown; and not over a series a
       // sign-out cleared meanwhile.
       if (identical(state.tips, before)) state.tips = next.tips;
+      final notes = [
+        for (final n in next.plan)
+          if (n.kind == PlanKind.eventReminder) n,
+      ];
+      if (!listEquals(notes, state.eventPlan)) {
+        state.eventPlan = notes;
+        AppChanges.bump();
+      }
     } catch (_) {
       // Only the sheet that just asked wants to hear that it failed.
       if (!quiet) rethrow;

@@ -275,3 +275,340 @@ test("decline needs two steps and sends only a known reason", () => {
   assert.equal(L.declineReason(undefined), "other");
   assert.deepEqual(L.DECLINE_REASONS.map((r) => r.value), ["notClear", "notMatching", "other"]);
 });
+
+test("exercise media paths are built only from safe parts", () => {
+  assert.equal(L.exerciseMediaPath("arm_circles", "arm_circles_front_007ce952.mp4"), "content/exercises/arm_circles/arm_circles_front_007ce952.mp4");
+  assert.equal(L.exerciseMediaPath("arm_circles", "../secret.mp4"), "");
+  assert.equal(L.exerciseMediaPath("arm_circles", "a/b.mp4"), "");
+  assert.equal(L.exerciseMediaPath("arm_circles", "a..b.mp4"), "");
+  assert.equal(L.exerciseMediaPath("Arm Circles", "a.mp4"), "");
+  assert.equal(L.exerciseMediaPath("", "a.mp4"), "");
+  assert.equal(L.exerciseMediaPath("arm_circles", ""), "");
+  assert.equal(L.exerciseMediaPath("arm_circles", undefined), "");
+  assert.equal(L.posterMime("x.webp"), "image/webp");
+  assert.equal(L.posterMime("x.JPG"), "image/jpeg");
+  assert.equal(L.posterMime("x.png"), "image/png");
+});
+
+test("clips show front first and the labels say what is on screen", () => {
+  const clips = [{ angle: "otherSide", file: "d" }, { angle: "side", file: "b" }, { angle: "mystery", file: "e" }, { angle: "front", file: "a" }, { angle: "rear", file: "c" }];
+  assert.deepEqual(L.orderClips(clips).map((c) => c.file), ["a", "b", "c", "d", "e"]);
+  assert.deepEqual(L.orderClips([{ angle: "x", file: "1" }, { angle: "y", file: "2" }]).map((c) => c.file), ["1", "2"]);
+  assert.deepEqual(L.orderClips(null), []);
+  assert.equal(L.angleLabel("front"), "Front view");
+  assert.equal(L.angleLabel("otherSide"), "Other side view");
+  assert.equal(L.angleLabel("three_quarter"), "Three quarter");
+  assert.equal(L.viewLabel("front", "Arm circles"), "Front view of Arm circles");
+  assert.equal(L.viewLabel("side", "  "), "Side view of this exercise");
+  assert.equal(L.clipSecondsText(8.46), "8.5 s");
+  assert.equal(L.clipSecondsText(12), "12 s");
+  assert.equal(L.clipSecondsText(0), "");
+  assert.equal(L.clipSecondsText(null), "");
+  assert.equal(L.slotCaption({ angle: "front", seconds: 8.5, uploading: false }), "Front view · 8.5 s");
+  assert.equal(L.slotCaption({ angle: "side", seconds: null, uploading: true }), "Side view · uploading");
+});
+
+test("the watch list merges saved clips with clips chosen on this machine", () => {
+  const clips = [{ angle: "side", file: "s.mp4", seconds: 6 }, { angle: "front", file: "f.mp4", seconds: 8 }];
+  const saved = L.watchItems(clips, []);
+  assert.deepEqual(saved.map((i) => [i.key, i.angle, i.localUrl]), [["file:f.mp4", "front", null], ["file:s.mp4", "side", null]]);
+
+  const uploading = [{ angle: "front", url: "blob:1", file: null, seconds: null, uploading: true }];
+  const mid = L.watchItems(clips, uploading);
+  assert.deepEqual(mid.map((i) => [i.key, i.uploading, i.localUrl]), [["local:blob:1", true, "blob:1"], ["file:s.mp4", false, null]]);
+
+  const done = [{ angle: "front", url: "blob:1", file: "f2.mp4", seconds: 9, uploading: false }];
+  const after = L.watchItems([{ angle: "front", file: "f2.mp4", seconds: 9 }, clips[0]], done);
+  assert.equal(after[0].key, "local:blob:1");
+  assert.equal(after[0].localUrl, "blob:1");
+  assert.equal(after[0].file, "f2.mp4");
+  assert.equal(after[1].key, "file:s.mp4");
+
+  assert.deepEqual(L.watchItems([], []), []);
+  assert.deepEqual(L.watchItems(undefined, undefined), []);
+  const stale = L.watchItems(clips, [{ angle: "front", url: "blob:9", file: "gone.mp4", uploading: false }]);
+  assert.deepEqual(stale.map((i) => i.key), ["file:f.mp4", "file:s.mp4"]);
+});
+
+test("the cache drops the least recently used entry and spares pinned ones", () => {
+  const evicted = [];
+  const pinned = new Set();
+  const cache = new L.LruCache(3, { onEvict: (value, key) => evicted.push(key), isPinned: (key) => pinned.has(key) });
+  cache.set("a", 1); cache.set("b", 2); cache.set("c", 3);
+  cache.get("a");
+  cache.set("d", 4);
+  assert.deepEqual(evicted, ["b"]);
+  assert.deepEqual(cache.keys(), ["c", "a", "d"]);
+
+  pinned.add("c");
+  cache.set("e", 5);
+  assert.deepEqual(evicted, ["b", "a"]);
+  assert.deepEqual(cache.keys(), ["c", "d", "e"]);
+
+  pinned.add("d"); pinned.add("e"); pinned.add("f");
+  cache.set("f", 6);
+  assert.equal(cache.size, 4);
+  pinned.clear();
+  cache.set("g", 7);
+  assert.equal(cache.size, 3);
+
+  cache.set("g", 8);
+  assert.ok(evicted.includes("g"));
+  assert.equal(cache.get("missing"), undefined);
+  assert.equal(cache.delete("missing"), false);
+  const before = evicted.length;
+  cache.clear();
+  assert.equal(cache.size, 0);
+  assert.equal(evicted.length, before + 3);
+  assert.equal(L.MEDIA_CACHE.videos, 12);
+  assert.equal(L.MEDIA_CACHE.posters, 60);
+});
+
+test("the limiter never runs more than four tasks at once and keeps order", async () => {
+  const run = L.createLimiter(L.POSTER_CONCURRENCY);
+  let active = 0, peak = 0;
+  const started = [];
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const results = await Promise.all(Array.from({ length: 10 }, (_, i) => run(async () => {
+    started.push(i);
+    active += 1; peak = Math.max(peak, active);
+    await wait(5);
+    active -= 1;
+    return i * 2;
+  })));
+  assert.equal(peak, 4);
+  assert.deepEqual(started, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.deepEqual(results, [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]);
+  await assert.rejects(run(() => { throw new Error("boom"); }), /boom/);
+  assert.equal(await run(() => "still works"), "still works");
+});
+
+/* usability pass */
+
+const VOCAB = {
+  kinds: ["strength", "stretch"], patterns: ["squat", "hinge", "mobility"], bodyRegions: ["lower_body", "core"],
+  places: ["both", "gym"], levels: ["beginner", "intermediate"],
+};
+const exRow = (id, extra = {}) => ({
+  id, nameEn: id.toUpperCase(), nameAr: "ا", kind: "strength", pattern: "squat", primaryMuscles: ["glutes"],
+  secondaryMuscles: [], equipment: ["none"], tags: ["none"], clips: [{ file: `${id}_front_ab.mp4`, angle: "front", seconds: 4 }],
+  poster: { file: `${id}_ab.webp` }, ...extra,
+});
+
+test("error wording: known codes keep their words, unknown ones show the code", () => {
+  assert.equal(L.friendlyMessage("auth/invalid-credential"), "Wrong email or password.");
+  assert.equal(L.friendlyMessage("functions/not-found"), "That request is gone. Refresh the list.");
+  assert.match(L.friendlyMessage("functions/unavailable"), /can not be reached/);
+  assert.equal(L.friendlyMessage("functions/weird"), "Something went wrong (functions/weird). Try again, or tell the owner.");
+  assert.equal(L.friendlyMessage(undefined), "Something went wrong. Try again, or tell the owner.");
+});
+
+test("server problems lose their developer prefix and read plainly", () => {
+  assert.equal(L.plainProblem("hip_x: tag 'none' cannot sit with other tags"), "Safety tags: pick \"none\" on its own, or pick the real tags.");
+  assert.equal(L.plainProblem("hip_x: a muscle is both primary and secondary"), "A muscle can be a main muscle or a helping muscle, not both.");
+  assert.equal(L.plainProblem("squat: one or 2 clips"), "Add at least one video before saving.");
+  assert.equal(L.plainProblem("x_front_ab.mp4 is not uploaded"), "A file (x_front_ab.mp4) is not uploaded yet. Upload the video again.");
+  assert.equal(L.plainProblem("the library would be 950000 bytes"), "The library would be 950000 bytes.");
+});
+
+test("a storage failure says why, in words, with the code after it", () => {
+  const missing = L.storageErrorText({ code: "storage/object-not-found", status_: 404 });
+  assert.equal(missing.kind, "missing");
+  assert.equal(missing.retry, false);
+  assert.match(missing.text, /^Not found in storage\./);
+  assert.match(missing.text, /\(storage\/object-not-found, HTTP 404\)$/);
+  assert.equal(L.storageErrorText({ code: "storage/unauthorized" }).kind, "denied");
+  assert.match(L.storageErrorText({ code: "storage/unauthenticated" }).text, /^Not allowed\./);
+  assert.equal(L.storageErrorText({ code: "storage/retry-limit-exceeded" }).kind, "network");
+  assert.equal(L.storageErrorText({ code: "storage/unknown", status_: 0 }).kind, "network");
+  assert.equal(L.storageErrorText({ name: "TypeError", message: "Failed to fetch" }).kind, "network");
+  assert.equal(L.storageErrorText({ code: "storage/unknown" }, false).kind, "network");
+  assert.equal(L.storageErrorText({ code: "storage/unknown", status_: 503 }).kind, "server");
+  const odd = L.storageErrorText({ code: "storage/something" });
+  assert.equal(odd.kind, "unknown");
+  assert.equal(odd.text, "Unexpected error while loading the video. (storage/something)");
+  assert.equal(L.storageErrorText(null).text, "Unexpected error while loading the video.");
+  assert.equal(L.httpStatusOf({ customData: { status: 403 } }), 403);
+  assert.ok(L.isRetryableLoad({ code: "storage/retry-limit-exceeded" }));
+  assert.ok(!L.isRetryableLoad({ code: "storage/object-not-found" }));
+});
+
+test("playback errors map the browser's media codes", () => {
+  assert.match(L.playbackErrorText(4), /can not play this file/);
+  assert.match(L.playbackErrorText(3), /damaged/);
+  assert.match(L.playbackErrorText(2), /Network/);
+  assert.equal(L.playbackErrorText(undefined), "This video could not be played.");
+  assert.ok(L.SLOW_LOAD_MS >= 5000 && L.SLOW_LOAD_TEXT.includes("slow"));
+});
+
+test("the checklist has six items and the filters follow it", () => {
+  const good = exRow("a");
+  const items = L.exerciseChecklist(good, true, VOCAB);
+  assert.deepEqual(items.map((i) => i.key), ["video", "kind", "pattern", "muscles", "tags", "checked"]);
+  assert.ok(items.every((i) => i.ok));
+  assert.deepEqual(L.exerciseState(good, true, VOCAB).missing, []);
+  const unchecked = L.exerciseState(good, false, VOCAB);
+  assert.ok(unchecked.needsTags && !unchecked.needsVideo && !unchecked.complete);
+  const noClip = L.exerciseState(exRow("b", { clips: [] }), true, VOCAB);
+  assert.ok(noClip.needsVideo && !noClip.needsTags);
+  const bare = L.exerciseState(exRow("c", { primaryMuscles: [], tags: [], clips: [] }), true, VOCAB);
+  assert.deepEqual(bare.missing.sort(), ["muscles", "tags", "video"]);
+  assert.ok(bare.needsVideo && bare.needsTags);
+  assert.ok(L.exerciseState(exRow("d", { kind: "yoga" }), true, VOCAB).needsTags);
+  assert.ok(L.exerciseState(exRow("d", { kind: "yoga" }), true).complete);
+});
+
+test("progress counts, text and the filter row", () => {
+  const rows = [exRow("a"), exRow("b"), exRow("c", { clips: [] }), exRow("d", { tags: [] })];
+  const checked = new Set(["a", "c", "d"]);
+  const counts = L.exerciseCounts(rows, (id) => checked.has(id), VOCAB);
+  assert.deepEqual(counts, { total: 4, complete: 1, tags: 2, video: 1, all: 4 });
+  assert.equal(L.progressText(counts), "1 of 4 complete");
+  assert.equal(L.progressFraction(counts), 0.25);
+  assert.equal(L.progressFraction({ total: 0, complete: 0 }), 0);
+  const names = (filter, query = "") => L.filterExercises(rows, { filter, query, isChecked: (id) => checked.has(id), vocab: VOCAB }).map((r) => r.id);
+  assert.deepEqual(names("tags"), ["b", "d"]);
+  assert.deepEqual(names("video"), ["c"]);
+  assert.deepEqual(names("complete"), ["a"]);
+  assert.deepEqual(names("all"), ["a", "b", "c", "d"]);
+  assert.deepEqual(names("all", "glutes"), ["a", "b", "c", "d"]);
+  assert.deepEqual(names("all", "zzz"), []);
+  assert.deepEqual(L.EX_FILTERS.map((f) => f.label), ["Needs tags", "Needs video", "Complete", "All"]);
+});
+
+test("next to review and the walk through a queue", () => {
+  const rows = [exRow("b"), exRow("a"), exRow("c")];
+  const done = new Set(["a"]);
+  assert.equal(L.firstToReview(rows, (id) => done.has(id), VOCAB), "b");
+  assert.equal(L.firstToReview(rows, () => true, VOCAB), null);
+  const queue = ["a", "b", "c", "d"];
+  assert.equal(L.neighbour(queue, "b", 1), "c");
+  assert.equal(L.neighbour(queue, "a", -1), null);
+  assert.equal(L.neighbour(queue, "d", 1), null);
+  assert.equal(L.neighbour(queue, "zz", 1), null);
+  assert.deepEqual(L.queuePosition(queue, "c"), { index: 2, number: 3, total: 4 });
+  assert.equal(L.queuePosition(queue, "zz"), null);
+  const finished = new Set(["a", "b", "c"]);
+  assert.equal(L.nextUnfinished(queue, "b", (id) => finished.has(id)), "d");
+  assert.equal(L.nextUnfinished(queue, "d", (id) => id === "b" || id === "c" || id === "d"), "a");
+  assert.equal(L.nextUnfinished(queue, "a", () => true), null);
+  assert.equal(L.nextUnfinished(["x"], "x", () => false), null);
+});
+
+test("ids come from names and avoid the ones in use", () => {
+  assert.equal(L.exerciseId("Lat pulldown, wide grip"), "lat_pulldown_wide_grip");
+  assert.equal(L.exerciseId("  Plank!! "), "plank");
+  assert.equal(L.exerciseId("لا"), "");
+  assert.equal(L.exerciseId("Plank", ["plank", "plank_2"]), "plank_3");
+  assert.ok(L.exerciseId("x".repeat(100)).length <= 56);
+});
+
+test("none excludes the other tags and picking a real tag drops none", () => {
+  assert.deepEqual(L.toggleExclusive(["jumping", "high_impact"], "none", true), ["none"]);
+  assert.deepEqual(L.toggleExclusive(["none"], "jumping", true), ["jumping"]);
+  assert.deepEqual(L.toggleExclusive(["jumping"], "high_impact", true), ["jumping", "high_impact"]);
+  assert.deepEqual(L.toggleExclusive(["jumping", "high_impact"], "jumping", false), ["high_impact"]);
+  assert.deepEqual(L.toggleExclusive(["none"], "none", false), []);
+});
+
+test("exercise problems mirror the server and name their field", () => {
+  const form = L.formFromRow(exRow("a"), true);
+  assert.deepEqual(L.exerciseProblems(form), []);
+  const fields = (patch, opts) => L.exerciseProblems({ ...form, ...patch }, opts).map((p) => p.field);
+  assert.deepEqual(fields({ name_en: "  " }), ["name_en"]);
+  assert.deepEqual(fields({ name_ar: "a — b" }), ["name_ar"]);
+  assert.deepEqual(fields({ name_en: "x".repeat(301) }), ["name_en"]);
+  assert.deepEqual(fields({ kind: "stretch" }), ["pattern"]);
+  assert.deepEqual(fields({ pattern: "mobility" }), ["pattern"]);
+  assert.deepEqual(fields({ kind: "stretch", pattern: "mobility" }), []);
+  assert.deepEqual(fields({ primaryMuscles: [] }), ["primaryMuscles"]);
+  assert.deepEqual(fields({ secondaryMuscles: ["glutes"] }), ["secondaryMuscles"]);
+  assert.deepEqual(fields({ equipment: ["none", "mat"] }), ["equipment"]);
+  assert.deepEqual(fields({ contraindicationTags: [] }), ["contraindicationTags"]);
+  assert.deepEqual(fields({ contraindicationTags: ["none", "jumping"] }), ["contraindicationTags"]);
+  assert.deepEqual(fields({ clips: [] }), ["clips"]);
+  assert.deepEqual(fields({ isNew: true, exerciseId: "Bad Id" }), ["exerciseId"]);
+  assert.deepEqual(fields({ isNew: true, exerciseId: "a" }, { taken: ["a"] }), ["exerciseId"]);
+  assert.deepEqual(fields({ isNew: true, exerciseId: "fresh" }, { taken: ["a"] }), []);
+  assert.match(L.exerciseProblems({ ...form, secondaryMuscles: ["glutes"] })[0].message, /glutes can not be both/);
+});
+
+test("a new exercise starts with no safety tag chosen and a checked tick", () => {
+  const f = L.blankExercise({ ...VOCAB });
+  assert.deepEqual(f.contraindicationTags, []);
+  assert.deepEqual(f.equipment, ["none"]);
+  assert.equal(f.isNew, true);
+  assert.equal(f.checked, true);
+  assert.equal(f.kind, "strength");
+});
+
+test("the form round trip keeps the row, and the save payload drops local fields", () => {
+  const row = exRow("a", { setupEn: "Stand tall.", setupAr: "اقفي" });
+  const f = L.formFromRow(row, true);
+  assert.equal(f.exerciseId, "a");
+  assert.deepEqual(f.contraindicationTags, ["none"]);
+  assert.equal(f.setup_en, "Stand tall.");
+  const payload = L.savePayload(f);
+  assert.ok(!("isNew" in payload) && !("checked" in payload));
+  assert.equal(payload.name_en, "A");
+  const back = L.rowFromForm({ ...f, name_en: " New name ", contraindicationTags: ["jumping"] }, { clips: [{ file: "a_front_ab.mp4", bytes: 99 }], poster: { file: "a_ab.webp", bytes: 7 } });
+  assert.equal(back.nameEn, "New name");
+  assert.deepEqual(back.tags, ["jumping"]);
+  assert.equal(back.clips[0].bytes, 99);
+  assert.equal(back.poster.bytes, 7);
+  assert.equal(back.setupEn, "Stand tall.");
+  const fresh = L.rowFromForm({ ...f, clips: [{ file: "n.mp4", angle: "side", seconds: 3 }], poster: { file: "n.webp" } }, null);
+  assert.equal(fresh.clips[0].bytes, 0);
+  assert.equal(fresh.poster.bytes, 0);
+});
+
+test("the form signature ignores tick order and spaces but sees real edits", () => {
+  const a = L.formFromRow(exRow("a", { primaryMuscles: ["glutes", "quads"] }), true);
+  const same = { ...a, primaryMuscles: ["quads", "glutes"], name_en: " A " };
+  assert.equal(L.formSignature(a), L.formSignature(same));
+  assert.notEqual(L.formSignature(a), L.formSignature({ ...a, pattern: "hinge" }));
+  assert.notEqual(L.formSignature(a), L.formSignature({ ...a, checked: false }));
+  assert.notEqual(L.formSignature(a), L.formSignature({ ...a, clips: [] }));
+  assert.equal(L.formSignature(null), "");
+});
+
+test("every safety tag, kind and pattern in the contract has a plain hint", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const contract = JSON.parse(await readFile(new URL("../contracts/exercise_library_contract.json", import.meta.url), "utf8"));
+  for (const t of contract.contraindicationTags) assert.ok(L.hintFor("tags", t), `tag ${t}`);
+  for (const k of contract.kinds) assert.ok(L.hintFor("kind", k), `kind ${k}`);
+  for (const p of contract.patterns) assert.ok(L.hintFor("pattern", p), `pattern ${p}`);
+  for (const text of [...Object.values(L.TAG_HINTS), ...Object.values(L.PATTERN_HINTS), ...Object.values(L.KIND_HINTS)]) {
+    assert.ok(!/[–—]/.test(text), "no long dashes");
+  }
+  assert.equal(L.hintFor("tags", "nope"), "");
+});
+
+test("her ticks are read back safely from the browser's storage", () => {
+  const set = new Set(["b", "a"]);
+  assert.equal(L.serializeChecked(set), '["a","b"]');
+  assert.deepEqual([...L.parseChecked('["a","b",3]')], ["a", "b"]);
+  assert.equal(L.parseChecked("not json").size, 0);
+  assert.equal(L.parseChecked(null).size, 0);
+  assert.equal(L.parseChecked('{"a":1}').size, 0);
+});
+
+test("events and foods filter by status and search, and badges stay short", () => {
+  const events = [
+    { eventId: "e1", titleEn: "Yoga night", titleAr: "يوجا", status: "published", endsAt: "2099-01-01T00:00:00Z" },
+    { eventId: "e2", titleEn: "Run club", titleAr: "جري", status: "draft", placeName: "Zamalek", endsAt: "2000-01-01T00:00:00Z" },
+    { eventId: "e3", titleEn: "Old", titleAr: "قديم", status: "cancelled" },
+  ];
+  assert.deepEqual(L.countBy(events, (e) => e.status), { published: 1, draft: 1, cancelled: 1 });
+  assert.deepEqual(L.filterEvents(events, { status: "draft" }).map((e) => e.eventId), ["e2"]);
+  assert.deepEqual(L.filterEvents(events, { query: "zamalek" }).map((e) => e.eventId), ["e2"]);
+  assert.deepEqual(L.filterEvents(events, { status: "published", query: "run" }), []);
+  assert.deepEqual(L.filterEvents(events).map((e) => e.eventId), ["e1", "e2", "e3"]);
+  assert.equal(L.upcomingEvents(events, Date.parse("2026-10-21")), 1);
+  const foods = [{ key: "k1", nameEn: "Koshari", nameAr: "كشري", items: [{ name: "Lentils", grams: 100 }] }, { key: "k2", nameEn: "Foul", items: [] }];
+  assert.deepEqual(L.filterFoods(foods, "lentil").map((f) => f.key), ["k1"]);
+  assert.equal(L.filterFoods(foods, "").length, 2);
+  assert.equal(L.badgeText(0), "");
+  assert.equal(L.badgeText(7), "7");
+  assert.equal(L.badgeText(250), "99+");
+});

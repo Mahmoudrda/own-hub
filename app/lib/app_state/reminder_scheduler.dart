@@ -24,6 +24,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../features/train/domain/getting_started_tips.dart';
+import '../l10n/app_l10n.dart';
 import '../features/train/domain/notification_plan.dart';
 import 'notification_taps.dart';
 
@@ -63,6 +64,10 @@ class ReminderText {
     this.nudgeBodies = const <String>[],
     this.nudgeChannelName = '',
     this.nudgeChannelDescription = '',
+    this.eventBodies = const <String>[],
+    this.bookedEventBodies = const <String>[],
+    this.eventChannelName = '',
+    this.eventChannelDescription = '',
   });
 
   final String title;
@@ -97,6 +102,42 @@ class ReminderText {
   final String nudgeChannelName;
   final String nudgeChannelDescription;
 
+  /// The notes before an event she has no seat on, and before one she has,
+  /// [kEventVariants] of each. Empty until [withEventCopy] fills them; an
+  /// event note with no text is not scheduled.
+  final List<String> eventBodies;
+  final List<String> bookedEventBodies;
+  final String eventChannelName;
+  final String eventChannelDescription;
+
+  /// This text with the event reminder words in [l10n]'s language.
+  ReminderText withEventCopy(AppL10n l10n) => ReminderText(
+    title: title,
+    body: body,
+    channelName: channelName,
+    channelDescription: channelDescription,
+    logBody: logBody,
+    checkInBodies: checkInBodies,
+    restBody: restBody,
+    checkInChannelName: checkInChannelName,
+    checkInChannelDescription: checkInChannelDescription,
+    restChannelName: restChannelName,
+    restChannelDescription: restChannelDescription,
+    tipBodies: tipBodies,
+    tipChannelName: tipChannelName,
+    tipChannelDescription: tipChannelDescription,
+    nudgeBodies: nudgeBodies,
+    nudgeChannelName: nudgeChannelName,
+    nudgeChannelDescription: nudgeChannelDescription,
+    eventBodies: [l10n.anOwnHubEventIsComingUp, l10n.aNewOwnHubEventIsOpen],
+    bookedEventBodies: [
+      l10n.yourSeatIsWaiting,
+      l10n.yourOwnHubEventIsAlmostHere,
+    ],
+    eventChannelName: l10n.eventReminders,
+    eventChannelDescription: l10n.aNoteBeforeEventsYouCanJoin,
+  );
+
   /// Every sentence a notification can carry, for the copy policy.
   List<String> get allBodies => <String>[
     body,
@@ -105,6 +146,8 @@ class ReminderText {
     restBody,
     ...tipBodies,
     ...nudgeBodies,
+    ...eventBodies,
+    ...bookedEventBodies,
   ];
 }
 
@@ -143,6 +186,7 @@ const String kCheckInChannelId = 'gentle_checkins';
 const String kRestChannelId = 'rest_timer';
 const String kTipChannelId = 'getting_started_tips';
 const String kNudgeChannelId = 'friendly_nudges';
+const String kEventChannelId = 'event_reminders';
 
 /// The small icon: a white silhouette, kept from resource shrinking by
 /// `res/raw/keep.xml`.
@@ -198,6 +242,91 @@ class LocalZone {
     return true;
   }
 }
+
+/// The Android channel a note of [kind] shows in: id, name, description and
+/// importance. Every kind has its own; an event note never falls back to the
+/// training channel.
+@visibleForTesting
+(String, String, String, Importance) reminderChannelFor(
+  PlanKind kind,
+  ReminderText text,
+) => switch (kind) {
+  PlanKind.checkIn => (
+    kCheckInChannelId,
+    text.checkInChannelName,
+    text.checkInChannelDescription,
+    Importance.defaultImportance,
+  ),
+  PlanKind.restOver => (
+    kRestChannelId,
+    text.restChannelName,
+    text.restChannelDescription,
+    Importance.high,
+  ),
+  PlanKind.tip => (
+    kTipChannelId,
+    text.tipChannelName,
+    text.tipChannelDescription,
+    Importance.defaultImportance,
+  ),
+  PlanKind.nudge => (
+    kNudgeChannelId,
+    text.nudgeChannelName,
+    text.nudgeChannelDescription,
+    Importance.defaultImportance,
+  ),
+  PlanKind.eventReminder => (
+    kEventChannelId,
+    text.eventChannelName,
+    text.eventChannelDescription,
+    Importance.defaultImportance,
+  ),
+  _ => (
+    kReminderChannelId,
+    text.channelName,
+    text.channelDescription,
+    Importance.defaultImportance,
+  ),
+};
+
+/// The words of an event note, or null when [text] has none yet.
+@visibleForTesting
+String? eventReminderBody(PlannedNotification item, ReminderText text) {
+  final code = eventFromCode(item.variant);
+  final bodies = code.booked ? text.bookedEventBodies : text.eventBodies;
+  return bodies.isEmpty ? null : bodies[code.variant % bodies.length];
+}
+
+/// The words a note carries.
+@visibleForTesting
+String reminderBodyFor(PlannedNotification item, ReminderText text) =>
+    switch (item.kind) {
+      PlanKind.training => text.body,
+      PlanKind.didYouTrain => text.logBody,
+      PlanKind.checkIn =>
+        text.checkInBodies[item.variant % text.checkInBodies.length],
+      PlanKind.restOver => text.restBody,
+      PlanKind.tip =>
+        item.variant >= 0 && item.variant < text.tipBodies.length
+            ? text.tipBodies[item.variant]
+            : text.body,
+      PlanKind.nudge =>
+        item.variant >= 0 && item.variant < text.nudgeBodies.length
+            ? text.nudgeBodies[item.variant]
+            : text.body,
+      PlanKind.eventReminder => eventReminderBody(item, text) ?? text.body,
+    };
+
+/// The screen a tap opens. A screen id and nothing else.
+@visibleForTesting
+String reminderPayloadFor(PlannedNotification item) => switch (item.kind) {
+  PlanKind.didYouTrain => 'T02',
+  PlanKind.restOver => 'R09',
+  PlanKind.tip => GettingStartedTip.of(item)?.screen ?? 'T01',
+  PlanKind.nudge => nudgeScreen(item.variant),
+  PlanKind.eventReminder => 'T09',
+  _ => 'T01',
+};
 
 class LocalNotificationsReminderScheduler implements ReminderScheduler {
   LocalNotificationsReminderScheduler({
@@ -259,38 +388,7 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
   }
 
   NotificationDetails _details(PlanKind kind, ReminderText text) {
-    final (id, name, description, importance) = switch (kind) {
-      PlanKind.checkIn => (
-        kCheckInChannelId,
-        text.checkInChannelName,
-        text.checkInChannelDescription,
-        Importance.defaultImportance,
-      ),
-      PlanKind.restOver => (
-        kRestChannelId,
-        text.restChannelName,
-        text.restChannelDescription,
-        Importance.high,
-      ),
-      PlanKind.tip => (
-        kTipChannelId,
-        text.tipChannelName,
-        text.tipChannelDescription,
-        Importance.defaultImportance,
-      ),
-      PlanKind.nudge => (
-        kNudgeChannelId,
-        text.nudgeChannelName,
-        text.nudgeChannelDescription,
-        Importance.defaultImportance,
-      ),
-      _ => (
-        kReminderChannelId,
-        text.channelName,
-        text.channelDescription,
-        Importance.defaultImportance,
-      ),
-    };
+    final (id, name, description, importance) = reminderChannelFor(kind, text);
     return NotificationDetails(
       android: AndroidNotificationDetails(
         id,
@@ -303,32 +401,6 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
     );
   }
 
-  String _bodyFor(PlannedNotification item, ReminderText text) =>
-      switch (item.kind) {
-        PlanKind.training => text.body,
-        PlanKind.didYouTrain => text.logBody,
-        PlanKind.checkIn =>
-          text.checkInBodies[item.variant % text.checkInBodies.length],
-        PlanKind.restOver => text.restBody,
-        PlanKind.tip =>
-          item.variant >= 0 && item.variant < text.tipBodies.length
-              ? text.tipBodies[item.variant]
-              : text.body,
-        PlanKind.nudge =>
-          item.variant >= 0 && item.variant < text.nudgeBodies.length
-              ? text.nudgeBodies[item.variant]
-              : text.body,
-      };
-
-  /// The screen a tap opens. A screen id and nothing else.
-  String _payloadFor(PlannedNotification item) => switch (item.kind) {
-    PlanKind.didYouTrain => 'T02',
-    PlanKind.restOver => 'R09',
-    PlanKind.tip => GettingStartedTip.of(item)?.screen ?? 'T01',
-    PlanKind.nudge => nudgeScreen(item.variant),
-    _ => 'T01',
-  };
-
   tz.TZDateTime _zoned(DateTime at) =>
       tz.TZDateTime(tz.local, at.year, at.month, at.day, at.hour, at.minute);
 
@@ -339,7 +411,7 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
   }) => _plugin.zonedSchedule(
     id: item.id,
     title: text.title,
-    body: _bodyFor(item, text),
+    body: reminderBodyFor(item, text),
     scheduledDate: item.kind == PlanKind.restOver
         ? tz.TZDateTime.from(item.at, tz.local)
         : _zoned(item.at),
@@ -348,7 +420,7 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
     matchDateTimeComponents: item.weekly
         ? DateTimeComponents.dayOfWeekAndTime
         : null,
-    payload: _payloadFor(item),
+    payload: reminderPayloadFor(item),
   );
 
   @override
@@ -359,6 +431,12 @@ class LocalNotificationsReminderScheduler implements ReminderScheduler {
       await _plugin.cancel(id: id);
     }
     for (final item in plan) {
+      // Never an event note in the training words: with no event text yet it
+      // is left out.
+      if (item.kind == PlanKind.eventReminder &&
+          eventReminderBody(item, text) == null) {
+        continue;
+      }
       // Inexact: a few minutes either way, and nothing to ask her for.
       await _schedule(
         item,

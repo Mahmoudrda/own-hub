@@ -5,6 +5,12 @@
 /// small documents. Offline or refused, the list is simply empty and both
 /// places show their empty state. Reading the list sends nothing about her;
 /// her seat is asked for only when she taps Reserve or Cancel.
+///
+/// The same read feeds her event reminders (`EventReminderPlan`): after each
+/// read, and after each seat she takes or gives back, the notes on the phone
+/// are worked out again. Which of the next events she holds a seat on is
+/// read from her own attendee document, one small read each, and kept for the
+/// run; it never leaves the phone.
 library;
 
 import 'dart:async';
@@ -19,9 +25,12 @@ import '../features/events/data/firestore_events.dart';
 import '../features/events/domain/event_registration.dart';
 import '../features/events/domain/event_repository.dart';
 import '../features/events/domain/hub_event.dart';
+import '../features/train/domain/notification_plan.dart' show kEventMaxPlanned;
+import '../features/train/domain/training_reminders.dart' show ReminderState;
 import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'firebase_boot.dart';
+import 'notification_sync.dart';
 
 class EventsState {
   EventsState._();
@@ -55,6 +64,13 @@ class EventsState {
       for (final e in _events)
         e.id == eventId ? e.copyWith(seatsTaken: seatsTaken) : e,
     ];
+    unawaited(_seatChanged(eventId));
+  }
+
+  /// A seat was just taken or given back: ask which, then plan the notes.
+  Future<void> _seatChanged(String eventId) async {
+    await _readBooked([eventId]);
+    await _replan();
   }
 
   static const Duration readEvery = Duration(hours: 1);
@@ -62,6 +78,24 @@ class EventsState {
   List<HubEvent> _events = const [];
   DateTime? _readAt;
   Future<void>? _inFlight;
+
+  /// Counts the times the list was dropped for another woman, so a read that
+  /// started before it cannot put the old list back.
+  int _epoch = 0;
+
+  /// The events she holds a seat on, as far as this run has read. Not an
+  /// event here means "not known to be booked".
+  final Set<String> _booked = <String>{};
+
+  /// A read has succeeded in this run (or the feature is off), so the list is
+  /// the truth and not just the empty start.
+  bool _listKnown = false;
+
+  /// What the reminders are worked out from, or null before the list is
+  /// known: the notes already on the phone then stand.
+  ({List<HubEvent> events, Set<String> booked})? reminderInput() => _listKnown
+      ? (events: _events, booked: Set<String>.unmodifiable(_booked))
+      : null;
 
   /// Published events not over yet, soonest first.
   List<HubEvent> get upcoming => upcomingOf(_events, now());
@@ -83,9 +117,14 @@ class EventsState {
 
   Future<void> _refresh(bool force) async {
     if (!AppRouter.featureFlags.isOn(Feature.events)) {
-      if (_events.isNotEmpty) {
-        _events = const [];
+      final had =
+          _events.isNotEmpty || ReminderState.instance.eventPlan.isNotEmpty;
+      _events = const [];
+      _booked.clear();
+      _listKnown = true;
+      if (had) {
         AppChanges.bump();
+        await _replan();
       }
       return;
     }
@@ -94,13 +133,71 @@ class EventsState {
     if (!force && last != null && at.difference(last) < readEvery) return;
     final reader = source();
     if (reader == null) return;
+    final epoch = _epoch;
     try {
-      _events = await reader.upcoming(at.toUtc());
+      final read = await reader.upcoming(at.toUtc());
+      if (epoch != _epoch) return;
+      _events = read;
       _readAt = at;
+      _listKnown = true;
       AppChanges.bump();
     } catch (_) {
       // The last list stands.
+      return;
     }
+    await _readBooked([
+      for (final e in upcomingOf(_events, at).take(kEventMaxPlanned)) e.id,
+    ]);
+    if (epoch != _epoch) return;
+    await _replan();
+  }
+
+  /// Which of [ids] she holds a seat on. A read that fails leaves what was
+  /// known. With no one to ask there is no account to hold a seat, so nothing
+  /// is known to be booked.
+  Future<void> _readBooked(List<String> ids) async {
+    final asker = registrar();
+    if (asker == null) {
+      _booked.clear();
+      return;
+    }
+    final epoch = _epoch;
+    await Future.wait([
+      for (final id in ids)
+        () async {
+          try {
+            final held = await asker.isRegistered(id);
+            if (epoch != _epoch) return;
+            if (held) {
+              _booked.add(id);
+            } else {
+              _booked.remove(id);
+            }
+          } catch (_) {}
+        }(),
+    ]);
+  }
+
+  /// Works the event notes out again. Never throws.
+  Future<void> _replan() async {
+    try {
+      await NotificationSync.reapplyLast(
+        AppRouter.reminderScheduler,
+        now: now(),
+      );
+    } catch (_) {}
+  }
+
+  /// Drops the list and her seats: the account that read them is gone, on
+  /// delete, sign out or a different woman signing in. The notes on the phone
+  /// are cancelled by the caller.
+  void erase() {
+    _epoch++;
+    _events = const [];
+    _booked.clear();
+    _listKnown = false;
+    _readAt = null;
+    _inFlight = null;
   }
 
   /// Puts a list in place. Tests only.
@@ -108,11 +205,22 @@ class EventsState {
   void seed(List<HubEvent> events) {
     _events = List.unmodifiable(events);
     _readAt = now();
+    _listKnown = true;
+  }
+
+  /// Marks the events she holds a seat on. Tests only.
+  @visibleForTesting
+  void seedBooked(Iterable<String> ids) {
+    _booked
+      ..clear()
+      ..addAll(ids);
   }
 
   @visibleForTesting
   void reset() {
     _events = const [];
+    _booked.clear();
+    _listKnown = false;
     _readAt = null;
     _inFlight = null;
     source = _liveSource;

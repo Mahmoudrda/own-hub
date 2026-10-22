@@ -188,7 +188,17 @@
    "reviewNotes": [
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_pancakes",
@@ -318,7 +328,17 @@
    "reviewNotes": [
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_chia_pudding",
@@ -626,7 +646,16 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: a large tub of Greek yoghurt, 200 g assumed; small cubes, about a third of an apple.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "coconut",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_overnight_oats",
@@ -1191,7 +1220,18 @@
    "reviewNotes": [
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_cottage_freshy_salad",
@@ -1506,7 +1546,18 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: a tub of Greek yoghurt, 150 g assumed; a light spray; her shop-bought potato seasoning.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "gluten",
+     "milk",
+     "mustard"
+    ]
+   }
   },
   {
    "recipeId": "rahma_creamy_cottage_cheese",
@@ -1711,7 +1762,19 @@
     "Amounts that are ours, marked estimated on the row: half a pepper; 1 tablespoon, optional.",
     "Not counted in the figures: 1 tablespoon, optional.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "sesame",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_egg_pizza",
@@ -1903,7 +1966,18 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: a light smear, amount not in the book; a sprinkle, amount not in the book; one small olive; a few slices, amount not in the book; a few slices, amount not in the book.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_shakshoka",
@@ -2230,7 +2304,17 @@
     "Amounts that are ours, marked estimated on the row: 2 baked pieces, 30 g each assumed.",
     "Not counted in the figures: half a loaf, her serving suggestion.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "fava",
+     "gluten",
+     "sesame"
+    ]
+   }
   },
   {
    "recipeId": "rahma_potato_w_eggs",
@@ -2376,7 +2460,15 @@
    "reviewNotes": [
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs"
+    ]
+   }
   },
   {
    "recipeId": "rahma_pizza_toast",
@@ -2685,7 +2777,19 @@
     "Amounts that are ours, marked estimated on the row: 2 pane fillets of 90 g, size assumed; a sprinkle, amount not in the book; a pinch.",
     "The card names what goes on the pizza and not how much: the pane, the cheese and the sauce are our assumed amounts.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "sesame",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_bbq_burger",
@@ -2897,7 +3001,17 @@
     "Amounts that are ours, marked estimated on the row: one burger, 120 g assumed; onion rings, amount not in the book.",
     "Not counted in the figures: her 20 g, optional.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "gluten",
+     "milk",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_hwawshi",
@@ -3167,7 +3281,16 @@
     "Amounts that are ours, marked estimated on the row: two breasts, 400 g raw assumed; 1 tablespoon of oil for the marinade; the lemon, garlic and spices are seasoning.",
     "The card names no amount of chicken: 400 g raw, two servings, is our assumption.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "sesame"
+    ]
+   }
   },
   {
    "recipeId": "rahma_chicken_ranch_salad",
@@ -3360,7 +3483,20 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: 2 pane fillets of 90 g, size assumed; lettuce and other vegetables, amount not in the book; cubes, amount not in the book; a light spray; her shop-bought potato seasoning; the ranch sauce: yoghurt, garlic, parsley.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "eggs",
+     "gluten",
+     "milk",
+     "mustard",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_tuna_wrap",
@@ -3542,7 +3678,19 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: caramelised onion, amount not in the book; a few leaves.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "fish",
+     "gluten",
+     "mustard",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_shrimp_white_pasta",
@@ -3763,7 +3911,18 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: amount not in the book; her marinade, 2 teaspoons assumed; salt, spices and lemon are seasoning; a smear; one sachet.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "crustaceans",
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_steak_meal",
@@ -3937,7 +4096,15 @@
     "Amounts that are ours, marked estimated on the row: two small steaks, 80 g each assumed; lettuce, tomato and cucumber, her serving suggestion.",
     "Not counted in the figures: lettuce, tomato and cucumber, her serving suggestion.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_oven_tender_chicken",
@@ -4184,7 +4351,16 @@
     "Amounts that are ours, marked estimated on the row: one chicken cut in four, about 800 g of meat and skin, bones not counted; salt and lemon to wash the chicken; pepper, zucchini, carrot, potato, onion and tomato in the tray.",
     "The card is for a whole chicken cut in four; four servings is our assumption.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "mustard"
+    ]
+   }
   },
   {
    "recipeId": "rahma_buffalo_sweet_wings",
@@ -4422,7 +4598,16 @@
     "Not counted in the figures: 1 tablespoon, her alternative to the stevia.",
     "The card is for a kilo of wings; four servings is our assumption.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "mustard"
+    ]
+   }
   },
   {
    "recipeId": "rahma_makrona_bashmel",
@@ -4703,7 +4888,17 @@
     "Amounts that are ours, marked estimated on the row: half of a 400 g bag, bag size assumed; one sachet; one small onion; a sprinkle, amount not in the book.",
     "The card is for half a bag of pasta and a quarter kilo of mince; four servings is our assumption.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_kebda_meal",
@@ -4955,7 +5150,19 @@
     "Not counted in the figures: one loaf, her serving suggestion; green salad, her serving suggestion.",
     "The card is for half a kilo of liver; four servings is our assumption. The bread and the salad are her serving suggestions and are not counted.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "gluten",
+     "milk",
+     "sesame",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_fattah",
@@ -5260,7 +5467,16 @@
     "Amounts that are ours, marked estimated on the row: amount not in the book; half a loaf, amount not in the book; yoghurt sauce, amount not in the book; grated tomato, amount not in the book.",
     "The card gives no amounts for the chicken, the bread or the sauces: they are our assumed amounts. The rice in her assembly line is not in her ingredients and is not counted.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_lahma_bel_basl",
@@ -5463,7 +5679,17 @@
     "Not counted in the figures: her serving suggestion.",
     "The card is written as a method with no amounts: the meat, the oil, the vegetables and the tomato are our assumed amounts for one serving, and the rice is her serving suggestion, not counted.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "gluten",
+     "mustard"
+    ]
+   }
   },
   {
    "recipeId": "rahma_shorbet_3ads",
@@ -5701,7 +5927,18 @@
     "Not counted in the figures: her 5 g, optional; 1 slice, her serving suggestion.",
     "The card gives no weight for the lentils or the vegetables: the lentils, onion and vegetables are our assumed amounts for two servings.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "gluten",
+     "milk",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_btates_bel_lahma",
@@ -5955,7 +6192,15 @@
     "Not counted in the figures: her 20 g a serving, optional; green salad or cucumber yoghurt, her serving suggestion.",
     "The card is for two potatoes (her 20 g of cheese is 'per serving'), so two servings; the mince and the sauce are our assumed amounts.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_cookies_shay_blabn",
@@ -6117,7 +6362,16 @@
    "reviewNotes": [
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk",
+     "peanuts"
+    ]
+   }
   },
   {
    "recipeId": "rahma_bagel",
@@ -6331,7 +6585,18 @@
     "Amounts that are ours, marked estimated on the row: nigella and sesame for the top.",
     "The dough makes about four bagels; four servings is our assumption.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "sesame"
+    ]
+   }
   },
   {
    "recipeId": "rahma_crepe",
@@ -6590,7 +6855,17 @@
     "Amounts that are ours, marked estimated on the row: a few slices, amount not in the book.",
     "Not counted in the figures: 1 tablespoon, her alternative to the stevia.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_banana_pudding",
@@ -6777,7 +7052,16 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: a small Egyptian yoghurt cup, 105 g assumed.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "gluten",
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "rahma_cheese_cake",
@@ -6837,7 +7121,8 @@
      "gramsNote": "1 slice (method two)",
      "optional": false,
      "servingSideOnly": false,
-     "brandHint": null
+     "brandHint": null,
+     "inFigures": false
     },
     {
      "ingredientRef": "rahma_cheese_cake_5",
@@ -6848,7 +7133,8 @@
      "gramsNote": "sweet cottage cheese, 60 g assumed (method two)",
      "optional": false,
      "servingSideOnly": false,
-     "brandHint": null
+     "brandHint": null,
+     "inFigures": false
     },
     {
      "ingredientRef": "rahma_cheese_cake_6",
@@ -6859,7 +7145,8 @@
      "gramsNote": "1 tablespoon (method two)",
      "optional": false,
      "servingSideOnly": false,
-     "brandHint": null
+     "brandHint": null,
+     "inFigures": false
     },
     {
      "ingredientRef": "rahma_cheese_cake_7",
@@ -6870,7 +7157,8 @@
      "gramsNote": "a drizzle (method two)",
      "optional": false,
      "servingSideOnly": false,
-     "brandHint": null
+     "brandHint": null,
+     "inFigures": false
     }
    ],
    "ingredientsBasis": "measures",
@@ -7180,7 +7468,18 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: a smear; a tub of Greek yoghurt, 150 g assumed; a drizzle, with the cinnamon.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "rahma_ice_cream",
@@ -7310,14 +7609,22 @@
     "Serves 1: our assumption, the book does not give a number of servings.",
     "Amounts that are ours, marked estimated on the row: a tub of Greek yoghurt, 150 g assumed; any fruit she likes, counted as strawberries.",
     "Figures are one serving, summed from the food pack over the weights on the rows."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_shish_tawook_bowl",
    "source": "authored",
    "sectionId": "lunchy_junky_yum",
    "orderInSection": 17,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Shish tawook rice bowl",
    "titleAr": "طبق شيش طاووق بالرز",
@@ -7518,17 +7825,25 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_lemon_garlic_tilapia",
    "source": "authored",
    "sectionId": "lunchy_junky_yum",
    "orderInSection": 18,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Oven-baked lemon garlic tilapia",
    "titleAr": "بلطي بالليمون والتوم في الفرن",
@@ -7697,17 +8012,25 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "fish"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_beef_kofta_tahini_salad",
    "source": "authored",
    "sectionId": "lunchy_junky_yum",
    "orderInSection": 19,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Grilled lean beef kofta with light tahini and salad",
    "titleAr": "كفتة لحمة مشوية مع طحينة لايت وسلطة",
@@ -7926,17 +8249,26 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk",
+     "sesame"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_chicken_freekeh",
    "source": "authored",
    "sectionId": "lunchy_junky_yum",
    "orderInSection": 20,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Chicken freekeh",
    "titleAr": "فريك بالفراخ",
@@ -8121,17 +8453,26 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "celery",
+     "gluten"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_light_mahshi_peppers",
    "source": "authored",
    "sectionId": "lunchy_junky_yum",
    "orderInSection": 21,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Light mahshi bell peppers with lean mince",
    "titleAr": "فلفل رومي محشي لايت باللحمة المفرومة",
@@ -8319,17 +8660,23 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": []
+   }
   },
   {
    "recipeId": "ownhub_spinach_chickpea_chicken_stew",
    "source": "authored",
    "sectionId": "comfy_dinner",
    "orderInSection": 8,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Spinach and chickpea stew with chicken breast",
    "titleAr": "طاجن سبانخ وحمص بصدر الفراخ",
@@ -8508,17 +8855,23 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": []
+   }
   },
   {
    "recipeId": "ownhub_air_fried_taameya_rocket_bowl",
    "source": "authored",
    "sectionId": "salty_fulling_breakfast",
    "orderInSection": 11,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Air-fried ta'ameya and rocket salad bowl",
    "titleAr": "طبق طعمية إير فراير وجرجير",
@@ -8735,17 +9088,29 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "fava",
+     "gluten",
+     "milk",
+     "sesame"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_areesh_avocado_zaatar_toast",
    "source": "authored",
    "sectionId": "salty_fulling_breakfast",
    "orderInSection": 12,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Whipped areesh cheese and avocado za'atar toast",
    "titleAr": "توست جبنة قريش مخفوقة وأفوكادو بالزعتر",
@@ -8947,17 +9312,28 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "gluten",
+     "milk",
+     "sesame",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_egg_spinach_wrap",
    "source": "authored",
    "sectionId": "salty_fulling_breakfast",
    "orderInSection": 13,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Egg and spinach whole-wheat wrap",
    "titleAr": "راب بيض وسبانخ بالقمح الكامل",
@@ -9147,17 +9523,28 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "eggs",
+     "gluten",
+     "milk",
+     "soy"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_yoghurt_strawberry_chia_parfait",
    "source": "authored",
    "sectionId": "sweet_tooth_breakfast",
    "orderInSection": 7,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Greek yoghurt strawberry almond chia parfait",
    "titleAr": "بارفيه زبادي يوناني وفراولة ولوز وشيا",
@@ -9308,17 +9695,26 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 1: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "milk",
+     "tree_nuts"
+    ]
+   }
   },
   {
    "recipeId": "ownhub_cocoa_oat_date_bites",
    "source": "authored",
    "sectionId": "sweet_tooth_breakfast",
    "orderInSection": 8,
-   "status": "review",
+   "status": "published",
    "version": 1,
    "titleEn": "Dark cocoa oat and date energy bites",
    "titleAr": "كور الشوفان والتمر والكاكاو",
@@ -9494,10 +9890,21 @@
    "tier": "free",
    "brandHints": {},
    "reviewNotes": [
-    "Written by the Own Hub kitchen, not by Rahma. She has not cooked it or checked its allergens yet, so it stays in review.",
+    "Written by the Own Hub kitchen, not by Rahma. Checked by the Own Hub automated check (ingredients, allergens, figures); no person has cooked it or signed its allergens.",
     "Serves 2: the card says so.",
     "Figures are one serving, summed from the food pack over the weights on the rows. Meat, fish and liver are raw weights."
-   ]
+   ],
+   "verification": {
+    "method": "ownhub-auto-check-v1",
+    "checkedAt": "2026-10-21T00:00:00Z",
+    "macroDeltaPct": 0.0,
+    "allergensDerived": [
+     "gluten",
+     "milk",
+     "sesame",
+     "tree_nuts"
+    ]
+   }
   }
  ],
  "assemblies": []

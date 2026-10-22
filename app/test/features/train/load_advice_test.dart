@@ -132,4 +132,20 @@ void main() {
       expect(move.sets.map((s) => s.weightKg), [12, 12, 12]);
     },
   );
+
+  test('the suggested weight keeps the rest the plan gave the move', () {
+    final base = _move();
+    final move = withSuggestedWeight(
+      PlannedMove(
+        exerciseId: base.exerciseId,
+        name: base.name,
+        prescriptionLabel: base.prescriptionLabel,
+        sets: base.sets,
+        restSeconds: 120,
+      ),
+      12,
+      '12 kg',
+    );
+    expect(move.restSeconds, 120);
+  });
 }

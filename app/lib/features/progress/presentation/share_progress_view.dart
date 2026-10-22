@@ -175,7 +175,7 @@ class _ShareProgressViewState extends State<ShareProgressView> {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.yourProgressCard, onBack: widget.onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'P01',
+        activeScreenId: 'P05',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {

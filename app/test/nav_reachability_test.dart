@@ -257,8 +257,11 @@ bool _excusedForHavingNoRoute(
   final entry = RegExp(r"^    '([A-Z]\d{2}[a-z]?)':\s*\(context\)");
   // Both ways a screen pushes another. `_goCarryingHandle` is the R08 path: it
   // carries a LogHandle as a route argument, and it is still one tap.
+  //
+  // The third form is a screen pushed by name with an argument, the dinner
+  // picker E05 opened from a day of the week.
   final edge = RegExp(
-    r"(?:goTo|_goCarryingHandle)\(\s*context,\s*'([A-Z]\d{2}[a-z]?)'",
+    r"(?:(?:goTo|_goCarryingHandle)\(\s*context,\s*|appRoutes\[)'([A-Z]\d{2}[a-z]?)'",
   );
 
   final start = lines.indexWhere(
@@ -290,6 +293,18 @@ bool _excusedForHavingNoRoute(
     if (current == null) continue;
     for (final e in edge.allMatches(line)) {
       edges[current]!.add(e.group(1)!);
+    }
+  }
+
+  // E01, E02 and E04 are one page built by a helper, so its calls are theirs.
+  final hub = lines.indexWhere((l) => l.contains('static Widget _eatHub('));
+  if (hub != -1) {
+    for (var i = hub + 1; i < lines.length && lines[i] != '  }'; i++) {
+      for (final e in edge.allMatches(lines[i])) {
+        for (final id in const ['E01', 'E02', 'E04']) {
+          edges[id]?.add(e.group(1)!);
+        }
+      }
     }
   }
 
@@ -452,7 +467,16 @@ void main() {
       // worth recording; accepting only the first name here would have reported
       // W01 and W10 as inert bars while both are wired, which is the opposite
       // of what this test is for.
-      if (!block.contains('onSelectTab') && !block.contains('onTab')) {
+      // The Eat tab is built by a helper (E01, E02, E04), so its bar is wired
+      // there.
+      final hub = RegExp(r'static Widget _eatHub\([\s\S]*?\n  }\n')
+          .firstMatch(src)
+          ?.group(0);
+      final viaHub =
+          block.contains('_eatHub(') && (hub?.contains('onSelectTab') ?? false);
+      if (!viaHub &&
+          !block.contains('onSelectTab') &&
+          !block.contains('onTab')) {
         missing.add(id);
       }
     }

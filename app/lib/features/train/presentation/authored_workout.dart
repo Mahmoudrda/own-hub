@@ -53,6 +53,7 @@ PlannedMove plannedMoveFrom(
     quiet: move.quiet,
     floorOnly: move.floorOnly,
     needsEquipment: move.needsEquipment,
+    restSeconds: move.restSeconds > 0 ? move.restSeconds : null,
     // The safety line first: it is the one she must not miss.
     cues: [
       for (final text in [
@@ -171,6 +172,7 @@ PlannedMove plannedMoveFromCustom(
         ? [setup]
         : (like?.cues ?? const <String>[]),
     videoAssetId: like?.videoAssetId,
+    restSeconds: like?.restSeconds,
     sets: [
       for (var i = 1; i <= move.sets; i++)
         PrescribedSet(

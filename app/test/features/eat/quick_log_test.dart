@@ -1,4 +1,4 @@
-// Food from anywhere, in few taps: the centre Log food button, Recent /
+// Food from anywhere, in few taps: the Eat tab, Recent /
 // Frequent / Favourites with a one-tap "+", units, a favourite star, a quick
 // custom food, and the ring moving while the undo window is still open.
 // Counted through the real app, like the tap-count test.
@@ -18,6 +18,7 @@ import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
     show PlusButton;
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/ui/app_nav_bar.dart';
 
 NavigatorState _nav(WidgetTester tester) =>
     tester.state<NavigatorState>(find.byType(Navigator).first);
@@ -103,28 +104,26 @@ void main() {
     expect(_written.length, 2);
   }
 
-  testWidgets('the centre Log food button opens the food search', (
+  testWidgets('there is no floating Log food button: Eat is a tab', (
     tester,
   ) async {
     await boot(tester);
     await _open(tester, 'E01');
 
-    final button = find.byKey(const ValueKey('nav-log-food'));
-    expect(button, findsOneWidget);
-    await _tap(tester, button);
-
-    expect(find.byKey(const ValueKey('eat-quick-tabs')), findsOneWidget);
-    expect(find.text('Recent'), findsOneWidget);
-    expect(find.text('Frequent'), findsOneWidget);
-    expect(find.text('Favourites'), findsOneWidget);
+    expect(find.byKey(const ValueKey('nav-log-food')), findsNothing);
+    expect(find.text('Log food'), findsNothing);
   });
 
-  testWidgets('it is not a tab: the bar still has four', (tester) async {
+  testWidgets('the bar is Home, Train, Eat and Insights', (tester) async {
     await boot(tester);
     await _open(tester, 'E01');
-    expect(find.text('Log food'), findsOneWidget);
-    for (final tab in ['Home', 'Train', 'Eat']) {
-      expect(find.text(tab), findsOneWidget, reason: tab);
+    final bar = find.byType(AppNavBar);
+    for (final tab in ['Home', 'Train', 'Eat', 'Insights']) {
+      expect(
+        find.descendant(of: bar, matching: find.text(tab)),
+        findsOneWidget,
+        reason: tab,
+      );
     }
   });
 
@@ -313,17 +312,11 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.descendant(of: ring(), matching: find.text('of 1,624 kcal')),
+      find.descendant(of: ring(), matching: find.text('of 1,861 kcal')),
       findsOneWidget,
     );
 
-    await _tap(
-      tester,
-      find.descendant(
-        of: find.byKey(const ValueKey('eat-quick-add')),
-        matching: find.byTooltip('Add Koshari bowl'),
-      ),
-    );
+    await _tap(tester, find.byTooltip('Add Koshari bowl').first);
     // Still inside the five seconds: nothing is written, the ring has moved.
     expect(_written.length, 2);
     expect(

@@ -7,6 +7,8 @@
 /// leaves.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
@@ -19,18 +21,23 @@ import '../../../ui/app_list_item.dart';
 import '../../../ui/app_scaffold.dart';
 import '../data/exercise_media_store.dart';
 import '../domain/exercise_library.dart';
+import 'exercise_clip_player.dart';
 import 'exercise_labels.dart';
+import 'move_preview_sheet.dart';
 import 'train_explore.dart';
 
 /// Opens the picker over [context] and answers the moves she added, in the
-/// order she ticked them, or null when she backed out.
+/// order she ticked them, or null when she backed out. Tapping a move opens
+/// its video; the circle beside it ticks it without.
 Future<List<LibraryExercise>?> pickMoves(
   BuildContext context, {
   required List<LibraryExercise> exercises,
   required ExerciseMediaStore media,
+  ExerciseClipPlayerFactory? players,
 }) => Navigator.of(context).push<List<LibraryExercise>>(
   MaterialPageRoute<List<LibraryExercise>>(
-    builder: (_) => MovePickerView(exercises: exercises, media: media),
+    builder: (_) =>
+        MovePickerView(exercises: exercises, media: media, players: players),
   ),
 );
 
@@ -39,10 +46,14 @@ class MovePickerView extends StatefulWidget {
     super.key,
     required this.exercises,
     this.media = const NoExerciseMedia(),
+    this.players,
   });
 
   final List<LibraryExercise> exercises;
   final ExerciseMediaStore media;
+
+  /// Makes the player for the preview's clip. Null shows the poster alone.
+  final ExerciseClipPlayerFactory? players;
 
   @override
   State<MovePickerView> createState() => _MovePickerViewState();
@@ -65,6 +76,17 @@ class _MovePickerViewState extends State<MovePickerView> {
     setState(() {
       if (!_picked.remove(exercise)) _picked.add(exercise);
     });
+  }
+
+  Future<void> _preview(LibraryExercise exercise) async {
+    final use = await showMovePreview(
+      context,
+      exercise: exercise,
+      media: widget.media,
+      players: widget.players,
+    );
+    if (!mounted || !use || _picked.contains(exercise)) return;
+    setState(() => _picked.add(exercise));
   }
 
   @override
@@ -169,15 +191,22 @@ class _MovePickerViewState extends State<MovePickerView> {
                                   ),
                                 ),
                               ),
-                              trailing: Icon(
-                                on
-                                    ? Icons.check_circle
-                                    : Icons.add_circle_outline,
-                                color: on
-                                    ? AppColors.primary
-                                    : AppColors.onSurfaceVariant,
+                              trailing: IconButton(
+                                key: ValueKey('picker-toggle-${exercise.id}'),
+                                tooltip: on
+                                    ? l10n.removeName(exercise.name(language))
+                                    : l10n.addName(exercise.name(language)),
+                                onPressed: () => _toggle(exercise),
+                                icon: Icon(
+                                  on
+                                      ? Icons.check_circle
+                                      : Icons.add_circle_outline,
+                                  color: on
+                                      ? AppColors.primary
+                                      : AppColors.onSurfaceVariant,
+                                ),
                               ),
-                              onTap: () => _toggle(exercise),
+                              onTap: () => unawaited(_preview(exercise)),
                             ),
                           );
                         },

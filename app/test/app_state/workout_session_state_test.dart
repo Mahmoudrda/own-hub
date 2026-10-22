@@ -4,6 +4,7 @@
 
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/rest_timer_prefs.dart';
 import 'package:own_hub/app_state/rewards_state.dart';
 import 'package:own_hub/app_state/training_streak_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
@@ -31,6 +32,17 @@ final WorkoutDay day = WorkoutDay(
   moves: [move('squat', 3), move('bridge', 2)],
 );
 
+PlannedMove restMove(String id, int? rest) => PlannedMove(
+  exerciseId: id,
+  name: id,
+  prescriptionLabel: '',
+  restSeconds: rest,
+  sets: [
+    for (var i = 1; i <= 3; i++)
+      PrescribedSet(exerciseId: id, order: i, reps: 10),
+  ],
+);
+
 void main() {
   final state = WorkoutSessionState.instance;
   late InMemoryTrainRepository repository;
@@ -46,6 +58,53 @@ void main() {
     state.start(day, repository);
     await Future<void>.delayed(Duration.zero);
   }
+
+  group('rest after a set', () {
+    setUp(RestTimerPrefs.instance.reset);
+    tearDown(RestTimerPrefs.instance.reset);
+
+    WorkoutDay restDay() => WorkoutDay(
+      id: '2026-10-13',
+      title: 'Legs',
+      summary: '',
+      constraints: '',
+      moves: [restMove('squat', 90), restMove('bridge', null)],
+    );
+
+    test('a swapped move keeps the plan\'s rest', () async {
+      state.start(restDay(), repository);
+      await Future<void>.delayed(Duration.zero);
+      state.swapCurrent(
+        const MoveAlternative(
+          exerciseId: 'goblet_squat',
+          name: 'Goblet squat',
+          reason: '',
+        ),
+        repository,
+        record: false,
+      );
+      expect(state.currentMove!.exerciseId, 'goblet_squat');
+      expect(state.currentMove!.restSeconds, 90);
+    });
+
+    test("follows the plan's rest, else the standard minute", () async {
+      state.start(restDay(), repository);
+      await Future<void>.delayed(Duration.zero);
+      state.setLogged();
+      expect(state.restDuration, const Duration(seconds: 90));
+      state.moveLogged();
+      state.moveLogged();
+      expect(state.restDuration, const Duration(seconds: 60));
+    });
+
+    test('her own rest for the move beats the plan', () async {
+      RestTimerPrefs.instance.setFor('squat', const Duration(seconds: 45));
+      state.start(restDay(), repository);
+      await Future<void>.delayed(Duration.zero);
+      state.setLogged();
+      expect(state.restDuration, const Duration(seconds: 45));
+    });
+  });
 
   test('one start is one session', () async {
     await started();
@@ -258,5 +317,27 @@ void main() {
     expect(summary!.credit.sessionPoints, greaterThan(0));
     expect(progress.rewards.sessionsLogged, 1);
     expect(repository.sessionById('live-1')?.endedReason, EndedReason.finished);
+  });
+
+  test('a discarded workout counts nowhere, even with sets logged', () async {
+    await started();
+    final progress = ProgressStore();
+    state.setLogged();
+    state.setLogged();
+    final summary = await state.finish(
+      repository: repository,
+      today: InMemoryTodayRepository(),
+      progress: progress,
+      reason: EndedReason.abandoned,
+    );
+    expect(summary, isNotNull);
+    expect(summary!.credit.sessionPoints, 0);
+    expect(progress.rewards.sessionsLogged, 0);
+    expect(
+      repository.sessionById('live-1')?.endedReason,
+      EndedReason.abandoned,
+    );
+    expect(state.isLive, isFalse);
+    expect(state.day, isNull);
   });
 }

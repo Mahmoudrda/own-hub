@@ -459,3 +459,561 @@ export function foodPayload(form, action) {
 export function allergenLabel(token) {
   return token.replace(/_/g, " ");
 }
+
+/* exercise videos */
+
+export const MEDIA_CACHE = { videos: 12, posters: 60 };
+export const POSTER_CONCURRENCY = 4;
+export const CLIP_MAX_BYTES = 10 * 1024 * 1024;
+export const POSTER_MAX_BYTES = 2 * 1024 * 1024;
+
+const CLIP_ORDER = ["front", "side", "rear", "otherSide"];
+const ANGLE_NAMES = { front: "Front view", side: "Side view", rear: "Rear view", otherSide: "Other side view" };
+
+export function exerciseMediaPath(exerciseId, file) {
+  if (!/^[a-z0-9_]{1,64}$/.test(exerciseId ?? "")) return "";
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(file ?? "") || String(file).includes("..")) return "";
+  return `content/exercises/${exerciseId}/${file}`;
+}
+
+export function posterMime(file) {
+  const ext = String(file ?? "").split(".").pop().toLowerCase();
+  if (ext === "png") return "image/png";
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  return "image/webp";
+}
+
+export function angleLabel(angle) {
+  return ANGLE_NAMES[angle] ?? String(angle ?? "View").replace(/[_-]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+}
+
+export function viewLabel(angle, name) {
+  return `${angleLabel(angle)} of ${String(name ?? "").trim() || "this exercise"}`;
+}
+
+export function orderClips(items) {
+  const rank = (a) => {
+    const i = CLIP_ORDER.indexOf(a?.angle);
+    return i < 0 ? CLIP_ORDER.length : i;
+  };
+  return (items ?? []).map((item, i) => ({ item, i })).sort((a, b) => rank(a.item) - rank(b.item) || a.i - b.i).map((x) => x.item);
+}
+
+export function clipSecondsText(seconds) {
+  const n = Number(seconds);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  return `${Math.round(n * 10) / 10} s`;
+}
+
+export function slotCaption(item) {
+  const parts = [angleLabel(item.angle)];
+  const length = clipSecondsText(item.seconds);
+  if (length) parts.push(length);
+  if (item.uploading) parts.push("uploading");
+  return parts.join(" · ");
+}
+
+// What the Watch panel shows: saved clips in view order, plus clips chosen on
+// this machine. A local clip plays from its own file straight away.
+export function watchItems(clips, locals = []) {
+  const uploading = locals.filter((l) => l.uploading);
+  const replaced = new Set(uploading.map((l) => l.angle));
+  const items = [];
+  for (const c of clips ?? []) {
+    if (replaced.has(c.angle)) continue;
+    const local = locals.find((l) => !l.uploading && l.file === c.file);
+    items.push({
+      key: local ? `local:${local.url}` : `file:${c.file}`,
+      angle: c.angle, file: c.file, seconds: c.seconds ?? null, localUrl: local ? local.url : null, uploading: false,
+    });
+  }
+  for (const l of uploading) {
+    items.push({ key: `local:${l.url}`, angle: l.angle, file: null, seconds: null, localUrl: l.url, uploading: true });
+  }
+  return orderClips(items);
+}
+
+// Least recently used cache. Pinned keys (still on screen) are never evicted.
+export class LruCache {
+  constructor(max, { onEvict = () => {}, isPinned = () => false } = {}) {
+    this.max = max;
+    this.onEvict = onEvict;
+    this.isPinned = isPinned;
+    this.map = new Map();
+  }
+
+  get size() { return this.map.size; }
+
+  has(key) { return this.map.has(key); }
+
+  keys() { return [...this.map.keys()]; }
+
+  get(key) {
+    if (!this.map.has(key)) return undefined;
+    const value = this.map.get(key);
+    this.map.delete(key);
+    this.map.set(key, value);
+    return value;
+  }
+
+  set(key, value) {
+    if (this.map.has(key)) {
+      const old = this.map.get(key);
+      this.map.delete(key);
+      if (old !== value) this.onEvict(old, key);
+    }
+    this.map.set(key, value);
+    this.trim();
+  }
+
+  delete(key) {
+    if (!this.map.has(key)) return false;
+    const value = this.map.get(key);
+    this.map.delete(key);
+    this.onEvict(value, key);
+    return true;
+  }
+
+  clear() {
+    for (const key of this.keys()) this.delete(key);
+  }
+
+  trim() {
+    for (const key of this.keys()) {
+      if (this.map.size <= this.max) break;
+      if (this.isPinned(key)) continue;
+      this.delete(key);
+    }
+  }
+}
+
+// Runs at most `max` tasks at once; the rest wait in order.
+export function createLimiter(max) {
+  let active = 0;
+  const queue = [];
+  const pump = () => {
+    while (active < max && queue.length) {
+      const { task, resolve, reject } = queue.shift();
+      active += 1;
+      Promise.resolve().then(task).then(resolve, reject).finally(() => {
+        active -= 1;
+        pump();
+      });
+    }
+  };
+  return (task) => new Promise((resolve, reject) => {
+    queue.push({ task, resolve, reject });
+    pump();
+  });
+}
+
+/* plain-language errors */
+
+const FRIENDLY_CODES = {
+  "functions/unauthenticated": "Your account is not set up as a reviewer. Ask the owner.",
+  "functions/permission-denied": "This account can not do that. Ask the owner.",
+  "functions/failed-precondition": "That did not work yet. Refresh and try again.",
+  "functions/not-found": "That request is gone. Refresh the list.",
+  "functions/unavailable": "The service can not be reached right now. Check your internet and try again.",
+  "functions/deadline-exceeded": "That took too long. Try again.",
+  "functions/internal": "The server had a problem. Try again, or tell the owner.",
+  "functions/invalid-argument": "Some of what was sent was not accepted. Check the form and try again.",
+  "functions/resource-exhausted": "Too many requests. Wait a minute and try again.",
+  "auth/invalid-credential": "Wrong email or password.",
+  "auth/invalid-login-credentials": "Wrong email or password.",
+  "auth/too-many-requests": "Too many tries. Wait a minute and try again.",
+  "auth/network-request-failed": "No connection. Check your internet.",
+};
+
+export function friendlyMessage(code) {
+  if (FRIENDLY_CODES[code]) return FRIENDLY_CODES[code];
+  return code ? `Something went wrong (${code}). Try again, or tell the owner.` : "Something went wrong. Try again, or tell the owner.";
+}
+
+// The server writes problems for developers ("hip_x: tag 'none' cannot sit with other tags").
+export function plainProblem(text) {
+  let t = String(text ?? "").trim().replace(/^[a-z0-9_]{1,64}: /, "");
+  const rules = [
+    [/^tag 'none' cannot sit with other tags/, "Safety tags: pick \"none\" on its own, or pick the real tags."],
+    [/^equipment 'none' cannot sit with other equipment/, "Equipment: \"none\" can not be combined with other equipment."],
+    [/^a muscle is both primary and secondary/, "A muscle can be a main muscle or a helping muscle, not both."],
+    [/^a stretch is a mobility move/, "A stretch must use the mobility pattern, and only a stretch can."],
+    [/^contraindicationTags is empty/, "Pick at least one safety tag, or \"none\"."],
+    [/^primaryMuscles is empty/, "Pick at least one main muscle."],
+    [/^one or \d+ clips/, "Add at least one video before saving."],
+    [/^name_en is empty/, "Add the English name."],
+    [/^name_ar is empty/, "Add the Arabic name."],
+    [/^the exercise id may hold/, "The id may only hold lowercase letters, digits and underscores."],
+    [/^(.+) is not uploaded$/, "A file ($1) is not uploaded yet. Upload the video again."],
+  ];
+  for (const [re, out] of rules) {
+    if (re.test(t)) return t.replace(re, out);
+  }
+  if (!/[.!?]$/.test(t)) t += ".";
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+export function httpStatusOf(e) {
+  const n = e?.status_ ?? e?.customData?.status ?? e?.customData?.httpStatus ?? e?.status;
+  return Number.isInteger(n) ? n : null;
+}
+
+const detailOf = (code, status) => {
+  const bits = [code, status != null ? `HTTP ${status}` : ""].filter(Boolean);
+  return bits.length ? ` (${bits.join(", ")})` : "";
+};
+
+// Why a storage read failed, in words, with the code or HTTP status after it.
+export function storageErrorText(e, online = true) {
+  const code = String(e?.code ?? "");
+  const status = httpStatusOf(e);
+  const detail = detailOf(code, status);
+  if (code === "storage/object-not-found" || status === 404) {
+    return { kind: "missing", retry: false, text: `Not found in storage. The library lists this video, but the file is not there.${detail}` };
+  }
+  if (code === "storage/unauthorized" || code === "storage/unauthenticated" || status === 401 || status === 403) {
+    return { kind: "denied", retry: true, text: `Not allowed. Your sign-in may have expired: sign out and in again, then retry.${detail}` };
+  }
+  if (!online || code === "storage/retry-limit-exceeded" || code === "storage/canceled" || code === "storage/network-request-failed" || status === 0 || e?.name === "TypeError") {
+    return { kind: "network", retry: true, text: `Network problem. Check your internet connection, then retry.${detail}` };
+  }
+  if (code === "storage/quota-exceeded" || status === 429 || (status != null && status >= 500)) {
+    return { kind: "server", retry: true, text: `Storage is busy or not answering. Try again in a minute.${detail}` };
+  }
+  if (code === "storage/invalid-argument" || code === "storage/invalid-root-operation") {
+    return { kind: "badname", retry: false, text: `The video name in the library is not valid.${detail}` };
+  }
+  return { kind: "unknown", retry: true, text: `Unexpected error while loading the video.${detail}` };
+}
+
+// MediaError codes from the video element.
+export function playbackErrorText(code) {
+  switch (code) {
+    case 1: return "Playback was stopped.";
+    case 2: return "The video stopped downloading part way. Network problem. (media error 2)";
+    case 3: return "This browser could not read the video data. The file may be damaged. (media error 3)";
+    case 4: return "This browser can not play this file. (media error 4)";
+    default: return "This video could not be played.";
+  }
+}
+
+export const SLOW_LOAD_MS = 8000;
+export const SLOW_LOAD_TEXT = "Still loading. The connection looks slow, and a video can be up to 10 MB.";
+
+export function isRetryableLoad(e, online = true) {
+  const t = storageErrorText(e, online);
+  return t.kind === "network" || t.kind === "server";
+}
+
+/* exercise review workflow */
+
+export const EX_FILTERS = [
+  { key: "tags", label: "Needs tags" },
+  { key: "video", label: "Needs video" },
+  { key: "complete", label: "Complete" },
+  { key: "all", label: "All" },
+];
+
+export const CHECKLIST_LABELS = {
+  video: "Video added",
+  kind: "Type chosen",
+  pattern: "Movement pattern chosen",
+  muscles: "Main muscles chosen",
+  tags: "Safety tags chosen",
+  checked: "Checked by you",
+};
+
+const inVocab = (value, list) => Boolean(value) && (!Array.isArray(list) || list.includes(value));
+
+// The six things a finished exercise has. `checked` is her own tick on this browser.
+export function exerciseChecklist(row, checked = false, vocab = null) {
+  const ok = {
+    video: (row?.clips?.length ?? 0) > 0,
+    kind: inVocab(row?.kind, vocab?.kinds),
+    pattern: inVocab(row?.pattern, vocab?.patterns),
+    muscles: (row?.primaryMuscles?.length ?? 0) > 0,
+    tags: (row?.tags?.length ?? 0) > 0,
+    checked: Boolean(checked),
+  };
+  return Object.keys(CHECKLIST_LABELS).map((key) => ({ key, label: CHECKLIST_LABELS[key], ok: ok[key] }));
+}
+
+export function exerciseState(row, checked = false, vocab = null) {
+  const items = exerciseChecklist(row, checked, vocab);
+  const bad = new Set(items.filter((i) => !i.ok).map((i) => i.key));
+  const needsVideo = bad.has("video");
+  const needsTags = ["kind", "pattern", "muscles", "tags", "checked"].some((k) => bad.has(k));
+  return { items, needsVideo, needsTags, complete: bad.size === 0, missing: [...bad] };
+}
+
+export function exerciseCounts(rows, isChecked = () => false, vocab = null) {
+  const counts = { total: rows.length, complete: 0, tags: 0, video: 0, all: rows.length };
+  for (const r of rows) {
+    const s = exerciseState(r, isChecked(r.id), vocab);
+    if (s.complete) counts.complete += 1;
+    if (s.needsTags) counts.tags += 1;
+    if (s.needsVideo) counts.video += 1;
+  }
+  return counts;
+}
+
+export function progressText(counts) {
+  return `${counts.complete} of ${counts.total} complete`;
+}
+
+export function progressFraction(counts) {
+  return counts.total ? counts.complete / counts.total : 0;
+}
+
+const byName = (a, b) => String(a.nameEn ?? "").localeCompare(String(b.nameEn ?? ""));
+
+export function exerciseMatches(row, query) {
+  const q = String(query ?? "").trim().toLowerCase();
+  if (!q) return true;
+  return [row.id, row.nameEn, row.nameAr, row.pattern, row.kind, ...(row.primaryMuscles ?? [])].join(" ").toLowerCase().includes(q);
+}
+
+// The rows to show for a filter and a search, in name order.
+export function filterExercises(rows, { filter = "all", query = "", isChecked = () => false, vocab = null } = {}) {
+  return rows
+    .filter((r) => {
+      if (!exerciseMatches(r, query)) return false;
+      const s = exerciseState(r, isChecked(r.id), vocab);
+      if (filter === "tags") return s.needsTags;
+      if (filter === "video") return s.needsVideo;
+      if (filter === "complete") return s.complete;
+      return true;
+    })
+    .sort(byName);
+}
+
+// Position in a review queue: "3 of 40".
+export function queuePosition(queue, id) {
+  const i = queue.indexOf(id);
+  return i < 0 ? null : { index: i, number: i + 1, total: queue.length };
+}
+
+export function neighbour(queue, id, step) {
+  const i = queue.indexOf(id);
+  if (i < 0) return null;
+  return queue[i + step] ?? null;
+}
+
+// The next exercise after `id` that is not done, going round the end of the queue once.
+export function nextUnfinished(queue, id, isDone) {
+  const start = queue.indexOf(id);
+  for (let step = 1; step <= queue.length; step += 1) {
+    const candidate = queue[(start + step + queue.length) % queue.length];
+    if (candidate !== id && !isDone(candidate)) return candidate;
+  }
+  return null;
+}
+
+// The first exercise still to do, in name order. `null` when everything is done.
+export function firstToReview(rows, isChecked = () => false, vocab = null) {
+  const list = [...rows].sort(byName);
+  return list.find((r) => !exerciseState(r, isChecked(r.id), vocab).complete)?.id ?? null;
+}
+
+export function exerciseId(name, taken = []) {
+  const base = String(name ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 56);
+  if (!base) return "";
+  const used = new Set(taken);
+  if (!used.has(base)) return base;
+  for (let n = 2; n < 100; n += 1) if (!used.has(`${base}_${n}`)) return `${base}_${n}`;
+  return base;
+}
+
+export function toggleExclusive(list, token, on, exclusive = "none") {
+  const rest = list.filter((t) => t !== token);
+  if (!on) return rest;
+  if (token === exclusive) return [exclusive];
+  return [...rest.filter((t) => t !== exclusive), token];
+}
+
+export function blankExercise(vocab) {
+  return {
+    exerciseId: "", name_en: "", name_ar: "", kind: vocab.kinds[0], primaryMuscles: [], secondaryMuscles: [],
+    bodyRegion: vocab.bodyRegions[0], pattern: vocab.patterns[0], equipment: ["none"], place: vocab.places[0], level: vocab.levels[0],
+    quiet: false, floorOnly: false, contraindicationTags: [], setup_en: "", setup_ar: "",
+    clips: [], poster: { file: "" }, isNew: true, checked: true,
+  };
+}
+
+export function formFromRow(r, checked = false) {
+  return {
+    exerciseId: r.id, name_en: r.nameEn, name_ar: r.nameAr, kind: r.kind,
+    primaryMuscles: [...(r.primaryMuscles ?? [])], secondaryMuscles: [...(r.secondaryMuscles ?? [])],
+    bodyRegion: r.bodyRegion, pattern: r.pattern, equipment: [...(r.equipment ?? [])], place: r.place, level: r.level,
+    quiet: Boolean(r.quiet), floorOnly: Boolean(r.floorOnly), contraindicationTags: [...(r.tags ?? [])],
+    setup_en: r.setupEn ?? "", setup_ar: r.setupAr ?? "",
+    clips: (r.clips ?? []).map((c) => ({ file: c.file, angle: c.angle, seconds: c.seconds })),
+    poster: { file: r.poster?.file ?? "" }, isNew: false, checked: Boolean(checked),
+  };
+}
+
+// What the save call receives: the form without its local-only fields.
+export function savePayload(form) {
+  const { isNew, checked, ...row } = form;
+  return row;
+}
+
+// Changes when anything she can edit changes. Used to tell whether leaving loses work.
+export function formSignature(form) {
+  if (!form) return "";
+  const p = savePayload(form);
+  const sorted = (a) => [...a].sort();
+  return JSON.stringify({
+    ...p, primaryMuscles: sorted(p.primaryMuscles), secondaryMuscles: sorted(p.secondaryMuscles),
+    equipment: sorted(p.equipment), contraindicationTags: sorted(p.contraindicationTags),
+    name_en: p.name_en.trim(), name_ar: p.name_ar.trim(), checked: Boolean(form.checked),
+  });
+}
+
+// The library row the list shows after a save, before the server list is read again.
+export function rowFromForm(form, prev = null) {
+  const p = savePayload(form);
+  const bytes = new Map((prev?.clips ?? []).map((c) => [c.file, c.bytes]));
+  const row = {
+    id: p.exerciseId, nameEn: p.name_en.trim(), nameAr: p.name_ar.trim(), kind: p.kind,
+    primaryMuscles: [...p.primaryMuscles], secondaryMuscles: [...p.secondaryMuscles],
+    bodyRegion: p.bodyRegion, pattern: p.pattern, equipment: [...p.equipment], place: p.place, level: p.level,
+    quiet: p.quiet, floorOnly: p.floorOnly, tags: [...p.contraindicationTags],
+    clips: p.clips.map((c) => ({ file: c.file, angle: c.angle, seconds: c.seconds, bytes: bytes.get(c.file) ?? 0 })),
+    poster: { file: p.poster.file, bytes: prev?.poster?.file === p.poster.file ? prev.poster.bytes : 0 },
+  };
+  if (p.setup_en) { row.setupEn = p.setup_en; row.setupAr = p.setup_ar; }
+  return row;
+}
+
+const DASH = /[–—]/;
+
+// The server's checks for one exercise, run before the call. Each problem names its field.
+export function exerciseProblems(form, { taken = [] } = {}) {
+  const out = [];
+  const add = (field, message) => out.push({ field, message });
+  const name = (key, label) => {
+    const v = String(form[key] ?? "").trim();
+    if (!v) add(key, `Add the ${label} name.`);
+    else if (v.length > 300) add(key, `The ${label} name is over 300 characters.`);
+    else if (DASH.test(v)) add(key, `The ${label} name has a long dash. Use a comma or a full stop.`);
+  };
+  name("name_en", "English");
+  name("name_ar", "Arabic");
+  if (form.isNew) {
+    if (!/^[a-z0-9_]{1,64}$/.test(form.exerciseId)) add("exerciseId", "The id may only hold lowercase letters, digits and underscores.");
+    else if (taken.includes(form.exerciseId)) add("exerciseId", "Another exercise already uses this id.");
+  }
+  if ((form.kind === "stretch") !== (form.pattern === "mobility")) {
+    add("pattern", form.kind === "stretch" ? "A stretch must use the mobility pattern." : "The mobility pattern is only for stretches. Change the type to stretch, or pick another pattern.");
+  }
+  if (!form.primaryMuscles.length) add("primaryMuscles", "Pick at least one main muscle.");
+  const both = form.primaryMuscles.filter((m) => form.secondaryMuscles.includes(m));
+  if (both.length) add("secondaryMuscles", `${both.map((m) => m.replace(/_/g, " ")).join(", ")} can not be both a main and a helping muscle.`);
+  if (!form.equipment.length) add("equipment", "Pick the equipment, or \"none\".");
+  if (form.equipment.includes("none") && form.equipment.length > 1) add("equipment", "\"none\" can not be combined with other equipment.");
+  if (!form.contraindicationTags.length) add("contraindicationTags", "Pick at least one safety tag, or \"none\" if nothing needs avoiding.");
+  if (form.contraindicationTags.includes("none") && form.contraindicationTags.length > 1) add("contraindicationTags", "\"none\" can not be combined with other safety tags.");
+  if (!form.clips.length) add("clips", "Add at least one video before saving.");
+  return out;
+}
+
+// One line each: what the tag means for this move, in the words of the movement.
+export const TAG_HINTS = {
+  high_impact: "Hard landings or forceful impact through the body.",
+  jumping: "Both feet leave the floor.",
+  deep_knee_flexion: "The knees bend deeply, such as a deep squat or lunge.",
+  loaded_twisting: "Turning the trunk while holding weight.",
+  pelvic_floor_load: "Pushes or bears down through the pelvic floor.",
+  breath_hold_valsalva: "Holding the breath while straining.",
+  prone_position: "Lying face down on the belly.",
+  supine_load: "Lying on the back while working against load.",
+  overhead_load: "Weight held or pressed above the head.",
+  wrist_load: "Weight through the hands and wrists, such as a plank or push-up.",
+  none: "Nothing in this move needs avoiding. Pick this on its own.",
+};
+
+export const KIND_HINTS = {
+  strength: "A move that works muscles against effort or weight.",
+  stretch: "A stretch or mobility move. It uses the mobility pattern.",
+};
+
+export const PATTERN_HINTS = {
+  squat: "Bending the knees and hips to lower the body.",
+  hinge: "Folding at the hips with the back flat.",
+  lunge: "One leg forward or back, lowering the body.",
+  hip_thrust_bridge: "Lifting the hips from the floor or a bench.",
+  push_horizontal: "Pressing away from the chest.",
+  push_vertical: "Pressing overhead.",
+  pull_horizontal: "Rowing toward the body.",
+  pull_vertical: "Pulling down from above.",
+  isolation_lower: "Works one lower-body muscle on its own.",
+  isolation_upper: "Works one upper-body muscle on its own.",
+  core_anti_extension: "Holding the trunk still, such as a plank.",
+  core_flexion: "Curling the trunk, such as a crunch.",
+  core_rotation: "Turning the trunk.",
+  carry: "Walking while holding weight.",
+  mobility: "A stretch or range-of-motion move.",
+};
+
+export function hintFor(group, token) {
+  const table = group === "tags" ? TAG_HINTS : group === "kind" ? KIND_HINTS : group === "pattern" ? PATTERN_HINTS : {};
+  return table[token] ?? "";
+}
+
+export const FIELD_LABELS = {
+  name_en: "English name", name_ar: "Arabic name", exerciseId: "Id", kind: "Type", pattern: "Movement pattern",
+  primaryMuscles: "Main muscles", secondaryMuscles: "Helping muscles", equipment: "Equipment",
+  contraindicationTags: "Safety tags", clips: "Video",
+};
+
+// Her ticks live in this browser only. Stored as a JSON list of exercise ids.
+export const CHECKED_KEY = "ownhub.reviewer.checkedExercises.v1";
+
+export function parseChecked(text) {
+  try {
+    const v = JSON.parse(text);
+    return new Set(Array.isArray(v) ? v.filter((x) => typeof x === "string") : []);
+  } catch (e) {
+    return new Set();
+  }
+}
+
+export function serializeChecked(set) {
+  return JSON.stringify([...set].sort());
+}
+
+/* counts and search for the other tabs */
+
+export function countBy(rows, keyOf) {
+  const out = {};
+  for (const r of rows) {
+    const k = keyOf(r);
+    out[k] = (out[k] ?? 0) + 1;
+  }
+  return out;
+}
+
+export function filterEvents(rows, { status = "all", query = "" } = {}) {
+  const q = String(query ?? "").trim().toLowerCase();
+  return rows.filter((r) => {
+    if (status !== "all" && r.status !== status) return false;
+    if (!q) return true;
+    return [r.titleEn, r.titleAr, r.placeName, r.eventId].join(" ").toLowerCase().includes(q);
+  });
+}
+
+export function filterFoods(list, query = "") {
+  const q = String(query ?? "").trim().toLowerCase();
+  if (!q) return list;
+  return list.filter((f) => [f.nameEn, f.nameAr, f.key, f.category, ...(f.items ?? []).map((i) => i.name)].join(" ").toLowerCase().includes(q));
+}
+
+export function upcomingEvents(rows, now = Date.now()) {
+  return rows.filter((r) => r.status !== "cancelled" && (!r.endsAt || Date.parse(r.endsAt) >= now)).length;
+}
+
+export function badgeText(n, cap = 99) {
+  if (!n || n < 0) return "";
+  return n > cap ? `${cap}+` : String(n);
+}

@@ -283,18 +283,20 @@ class AllergyGuard {
   ///
   ///  * **A named allergen.** `allergensFinal` intersects what she declared.
   ///    Same rule as a food, same case-insensitive comparison.
-  ///  * **An unsigned recipe.** `allergenReviewedBy` is null, which means
-  ///    nobody has put their name to what is in this dish. That is not the same
-  ///    fact as an empty allergen set, and collapsing the two is how a library
-  ///    that nobody has checked comes to look checked. Extended from the
-  ///    existing `allergens == null` rule for foods, for the same reason:
-  ///    unknown is unsafe, never safe by default.
+  ///  * **A recipe whose allergens are not known.** Neither a person's
+  ///    signature nor Own Hub's automated check stands behind the list
+  ///    ([Recipe.allergensKnown]). That is not the same fact as an empty
+  ///    allergen set, and collapsing the two is how a library that nobody has
+  ///    checked comes to look checked. Extended from the existing
+  ///    `allergens == null` rule for foods, for the same reason: unknown is
+  ///    unsafe, never safe by default.
   ///
-  /// As with foods, an unsigned recipe is removed **only for a woman who has
-  /// declared an allergy**. For everyone else it stays in the list and the
-  /// screen says out loud that it has not been checked, because hiding the
-  /// whole library from everybody would not make anyone safer and would make
-  /// the tab look broken.
+  /// As with foods, such a recipe is removed **only for a woman who has
+  /// declared an allergy**. For everyone else, including a woman who has not
+  /// answered the question yet, every recipe stays in the list and the screen
+  /// says out loud which ones are not checked, because hiding the library
+  /// would not make anyone safer and would make the tab look broken. A recipe
+  /// the check has verified passes unless it holds something she named.
   ///
   /// [Recipe.advisories] are deliberately not consulted. A pregnancy note or a
   /// favism note is not something she ticked, so filtering on it would be the
@@ -306,7 +308,7 @@ class AllergyGuard {
 
     return candidates.where((recipe) {
       if (declared) {
-        if (!recipe.allergensReviewed) return false;
+        if (!recipe.allergensKnown) return false;
         if (recipe.allergensFinal.any(_matches(allergies))) return false;
       }
       if (dietary != null && dietary.isNotEmpty) {
@@ -338,10 +340,10 @@ class AllergyGuard {
   /// This exists because the two reasons are not the same fact and a screen
   /// that adds them together tells a woman something false about her own body.
   ///
-  /// Today every one of the thirty-nine recipes is unsigned, so declaring an
-  /// allergy that appears in none of them — molluscs, say — hid the entire book
-  /// and the foot of the list said "39 dishes are hidden because of what you
-  /// avoid." Nothing she avoids is in any of them. The app had taken its own
+  /// When none of the thirty-nine recipes was signed, declaring an allergy that
+  /// appears in none of them — molluscs, say — hid the entire book and the foot
+  /// of the list said "39 dishes are hidden because of what you avoid." Nothing
+  /// she avoids was in any of them. The app had taken its own
   /// caution and attributed it to her body, which on a women's health product
   /// is the worst version of this failure available.
   ///
@@ -357,7 +359,7 @@ class AllergyGuard {
     for (final recipe in candidates) {
       // Ordered as `screenRecipes` orders its tests, so a recipe is counted
       // under the first reason that removed it and never under two.
-      if (declared && !recipe.allergensReviewed) {
+      if (declared && !recipe.allergensKnown) {
         unsigned++;
         continue;
       }
@@ -400,7 +402,8 @@ class AllergyGuard {
 /// Three fields rather than one total, because the three are different things
 /// to say to her:
 ///
-///  * [unsigned] — nobody has checked these. It is a fact about the library,
+///  * [unsigned] — nobody has checked these (no signature and no automated
+///    check). It is a fact about the library,
 ///    not about her, and saying it any other way is a lie about her body.
 ///  * [namedAllergen] — these contain something she named. This one *is* about
 ///    her, and it is the only one of the three that is.

@@ -356,7 +356,9 @@ void main() {
             .isSelected ==
         Tristate.isTrue;
     expect(selected(), isFalse);
-    await tester.tap(row);
+    await tester.tap(
+      find.byKey(ValueKey('picker-toggle-${exercises.first.id}')),
+    );
     await tester.pumpAndSettle();
     expect(selected(), isTrue);
     handle.dispose();

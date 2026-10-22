@@ -24,9 +24,9 @@ Future<void> _toO03(WidgetTester t) async {
 
 void main() {
   useShippingApp();
-  // `Intake.allowedDays` is the list, and this sweep walks exactly what the
-  // screen draws: the "1-2" chip stands for two days.
-  for (final days in ['3', '4', '5', '6', '7']) {
+  // The screen draws the three coach splits, and this sweep walks exactly
+  // those chips: 3, 4 and 5 days. Other weeks are a custom schedule.
+  for (final days in ['3', '4', '5']) {
     testWidgets('she picks $days days a week', (t) async {
       phone(t);
       final s = t.ensureSemantics();

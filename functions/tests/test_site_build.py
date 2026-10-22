@@ -618,3 +618,15 @@ def test_the_launch_is_free_and_nothing_promises_a_paid_plan():
             assert not re.search(r"\bPro\b", text), (lang, page)
     assert "Free, all of it." in _home(_SITE, "en")
     assert "مجاني بالكامل" in _home(_SITE, "ar")
+
+
+def test_the_policy_does_not_promise_a_phone_backup_forgets_the_profile_photo():
+    # The photo is deleted from the phone; a backup of the whole phone made
+    # earlier can still hold it, and the policy says so.
+    for folder, needle in (
+        (_SITE, "a copy made earlier stays in that backup"),
+        (os.path.join(_SITE, "ar"), "أي نسخة اتعملت قبل كده بتفضل في النسخة الاحتياطية دي"),
+    ):
+        with open(os.path.join(folder, "privacy.html"), encoding="utf-8") as f:
+            text = " ".join(f.read().split())
+        assert needle in text, folder

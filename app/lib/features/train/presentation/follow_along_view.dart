@@ -39,6 +39,7 @@ import '../data/exercise_media_store.dart';
 import '../domain/clock_label.dart';
 import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
+import 'end_workout_sheet.dart';
 import 'exercise_clip_frame.dart';
 import 'exercise_clip_player.dart';
 import 'exercise_labels.dart';
@@ -76,7 +77,11 @@ class FollowAlongView extends StatefulWidget {
     this.media = const NoExerciseMedia(),
     this.players,
     this.notice,
+    this.end,
   });
+
+  /// The way to end the workout from here. Null draws no control.
+  final SessionEnd? end;
 
   /// A swap or a skip that brought her here, with its Undo, in the page.
   final SessionNotice? notice;
@@ -258,6 +263,14 @@ class _FollowAlongViewState extends State<FollowAlongView>
       body: SafeArea(
         child: Column(
           children: [
+            if (widget.end case final end?)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: SessionEndButton(end: end, color: _onDarkMuted),
+                ),
+              ),
             if (widget.notice case final notice?)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

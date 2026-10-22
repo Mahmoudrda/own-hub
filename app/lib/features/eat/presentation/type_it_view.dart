@@ -74,7 +74,22 @@ class TypeItView extends StatefulWidget {
     this.onLogged,
     this.onBlocked,
     this.requireAccount,
+    this.embedded = false,
+    this.controller,
+    this.fieldFocus,
   });
+
+  /// Drawn inside the Eat hub, under its search bar: only the results and the
+  /// rows, with no scaffold, text field or footer. The hub owns the text
+  /// ([controller]) and the focus ([fieldFocus]); this reads them.
+  final bool embedded;
+
+  /// The hub's search text. Used only when [embedded]; this screen listens to it
+  /// and never disposes it.
+  final TextEditingController? controller;
+
+  /// The hub's search field focus, so "Edit" on the result card returns to it.
+  final FocusNode? fieldFocus;
 
   /// See `EatView.constraints` — required, never defaulted.
   final DietaryConstraints constraints;
@@ -133,6 +148,8 @@ class TypeItView extends StatefulWidget {
 
 class _TypeItViewState extends State<TypeItView> {
   late final TextEditingController _controller;
+  late final bool _ownsController;
+  String _heardText = '';
   late final MealRepository _repo;
   late final LogCommandBus _bus;
   late final bool _ownsRepo;
@@ -156,7 +173,10 @@ class _TypeItViewState extends State<TypeItView> {
   /// she has typed: the words search inside the shelf.
   FoodCategory? _category;
 
-  late final FocusNode _fieldFocus = FocusNode();
+  late final bool _ownsFocus = !widget.embedded || widget.fieldFocus == null;
+  late final FocusNode _fieldFocus = _ownsFocus
+      ? FocusNode()
+      : widget.fieldFocus!;
 
   /// The meal a Log pill on E01 named, read once when the screen opens.
   MealSlot? _preset;
@@ -171,14 +191,50 @@ class _TypeItViewState extends State<TypeItView> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialText ?? '');
+    _ownsController = !widget.embedded || widget.controller == null;
+    _controller = _ownsController
+        ? TextEditingController(text: widget.initialText ?? '')
+        : widget.controller!;
+    _heardText = _controller.text;
+    if (!_ownsController) _controller.addListener(_heard);
+    if (widget.embedded) widget.session?.addListener(_sessionChanged);
     _preset = widget.slot;
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryMealRepository();
     _ownsBus = widget.bus == null && widget.session == null;
     _bus = widget.bus ?? widget.session?.bus ?? LogCommandBus();
-    _preset ??= widget.session?.takeLogSlot();
+    // The hub chooses the meal itself; the session's preset belongs to E02.
+    if (!widget.embedded) _preset ??= widget.session?.takeLogSlot();
     unawaited(_loadPrefs());
+  }
+
+  /// Inside the hub the page stays open while she logs, so her usual picks are
+  /// read again whenever a meal is written or taken back.
+  void _sessionChanged() {
+    if (mounted) unawaited(_loadPrefs());
+  }
+
+  /// The hub's box changed: parse what is in it. Selection moves alone do not.
+  void _heard() {
+    final text = _controller.text;
+    if (text == _heardText || !mounted) return;
+    _heardText = text;
+    _onChanged(text);
+  }
+
+  @override
+  void didUpdateWidget(TypeItView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.embedded && widget.slot != oldWidget.slot) {
+      _preset = widget.slot;
+    }
+    // The held parse carries the plates she has had. With nothing typed there
+    // is nothing of hers to keep, so a changed list is simply read again.
+    if (_state != null &&
+        _controller.text.trim().isEmpty &&
+        !_sameEntries(widget.history, oldWidget.history)) {
+      _state = null;
+    }
   }
 
   Future<void> _loadPrefs() async {
@@ -186,10 +242,28 @@ class _TypeItViewState extends State<TypeItView> {
     if (mounted) setState(() => _prefs = prefs);
   }
 
+  static bool _sameEntries(List<ParsedItem> a, List<ParsedItem> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].food.foodId != b[i].food.foodId ||
+          a[i].size.id != b[i].size.id ||
+          a[i].servings != b[i].servings) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @override
   void dispose() {
-    _controller.dispose();
-    _fieldFocus.dispose();
+    if (widget.embedded) widget.session?.removeListener(_sessionChanged);
+    if (_ownsController) {
+      _controller.dispose();
+    } else {
+      _controller.removeListener(_heard);
+    }
+    if (_ownsFocus) _fieldFocus.dispose();
     if (_ownsBus) unawaited(_bus.flushAll());
     if (_ownsRepo) unawaited(_repo.dispose());
     super.dispose();
@@ -324,6 +398,85 @@ class _TypeItViewState extends State<TypeItView> {
     final l10n = AppL10n.of(context);
     final state = _current(l10n);
 
+    final single = !_isSentence(state) || state.items.isEmpty || !state.canLog;
+    final body = <Widget>[
+      if (widget.embedded)
+        // The footer's job, at the head of the list where the hub's tall
+        // header and the keyboard cannot cover it.
+        if (state.canLog && single && _controller.text.trim().isNotEmpty)
+          AppButton(
+            key: const ValueKey('type-it-add'),
+            l10n.addIt,
+            onPressed: () => _log(state.items),
+          ),
+      FoodCategoryChips(
+        key: const ValueKey('type-it-categories'),
+        selected: _category,
+        onChanged: (category) => setState(() => _category = category),
+      ),
+      if (_isSentence(state))
+        Text(
+          l10n.wellAdd,
+          style: AppText.titleS.copyWith(color: AppColors.tertiary),
+        ),
+      if (_isSentence(state) && state.items.isNotEmpty)
+        MealResultCard(
+          items: state.items,
+          onYes: state.canLog ? () => _log(state.items) : null,
+          onEdit: _fieldFocus.requestFocus,
+        ),
+      if (_isSentence(state))
+        for (var i = 0; i < state.items.length; i++)
+          ParsedRow(
+            name: state.items[i].food.names.first,
+            meta: _metaFor(l10n, state.items[i]),
+            sizeLabels: [
+              for (final size in state.items[i].food.sizes) size.label,
+            ],
+            selectedSize: state.items[i].food.sizes.indexWhere(
+              (s) => s.id == state.items[i].size.id,
+            ),
+            onPickSize: (index) => _resize(i, state.items[i].food.sizes[index]),
+            onRemove: () => _remove(i),
+            removeTooltip: l10n.edit,
+            imageAsset: state.items[i].food.imageAsset,
+          ),
+      // An unmatched fragment stays visible. Never dropped, never guessed.
+      if (state.hasUnresolved)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            // Her words in a dashed pencil box: space still waiting for a
+            // food, which is exactly what an unmatched fragment is.
+            for (final fragment in state.unresolved)
+              HandSurface(
+                seed: handSeed(['unresolved', fragment.text]),
+                frame: AppColors.outline,
+                dashed: true,
+                radius: 4,
+                looseCorner: 12,
+                child: Chip(
+                  label: Text(fragment.text, style: AppText.bodyM),
+                  backgroundColor: Colors.transparent,
+                  side: BorderSide.none,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+          ],
+        ),
+      ..._results(l10n, state),
+    ];
+
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: kStackGap,
+        children: body,
+      );
+    }
+
     return AppScaffold(
       // E02 sits over Eat rather than after it, so it closes rather than
       // going back.
@@ -371,64 +524,7 @@ class _TypeItViewState extends State<TypeItView> {
             height: 48,
             fontSize: 16,
           ),
-        FoodCategoryChips(
-          key: const ValueKey('type-it-categories'),
-          selected: _category,
-          onChanged: (category) => setState(() => _category = category),
-        ),
-        if (_isSentence(state))
-          Text(
-            l10n.wellAdd,
-            style: AppText.titleS.copyWith(color: AppColors.tertiary),
-          ),
-        if (_isSentence(state) && state.items.isNotEmpty)
-          MealResultCard(
-            items: state.items,
-            onYes: state.canLog ? () => _log(state.items) : null,
-            onEdit: _fieldFocus.requestFocus,
-          ),
-        if (_isSentence(state))
-          for (var i = 0; i < state.items.length; i++)
-            ParsedRow(
-              name: state.items[i].food.names.first,
-              meta: _metaFor(l10n, state.items[i]),
-              sizeLabels: [
-                for (final size in state.items[i].food.sizes) size.label,
-              ],
-              selectedSize: state.items[i].food.sizes.indexWhere(
-                (s) => s.id == state.items[i].size.id,
-              ),
-              onPickSize: (index) =>
-                  _resize(i, state.items[i].food.sizes[index]),
-              onRemove: () => _remove(i),
-              removeTooltip: l10n.edit,
-              imageAsset: state.items[i].food.imageAsset,
-            ),
-        // An unmatched fragment stays visible. Never dropped, never guessed.
-        if (state.hasUnresolved)
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              // Her words in a dashed pencil box: space still waiting for a
-              // food, which is exactly what an unmatched fragment is.
-              for (final fragment in state.unresolved)
-                HandSurface(
-                  seed: handSeed(['unresolved', fragment.text]),
-                  frame: AppColors.outline,
-                  dashed: true,
-                  radius: 4,
-                  looseCorner: 12,
-                  child: Chip(
-                    label: Text(fragment.text, style: AppText.bodyM),
-                    backgroundColor: Colors.transparent,
-                    side: BorderSide.none,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-            ],
-          ),
-        ..._results(l10n, state),
+        ...body,
       ],
     );
   }
@@ -539,12 +635,16 @@ class _TypeItViewState extends State<TypeItView> {
           ? guard.screenSuggestions(library.mostPopular(24)).take(8)
           : library.resolve(query);
     }
-    final foods = <Food>[
+    final unlisted = <Food>[
       for (final food in candidates)
         if (!listed.any((i) => i.food.foodId == food.foodId) &&
             !had.any((h) => h.food.foodId == food.foodId))
           food,
-    ].take(shelf != null && query.isEmpty ? 60 : 12).toList();
+    ];
+    // Browsing a shelf lists all of it; typing, or the opening picks, stop short.
+    final foods = shelf != null && query.isEmpty
+        ? unlisted
+        : unlisted.take(12).toList();
 
     // The Recent tab sits right below the picks; a food listed there is not
     // offered twice.
@@ -597,6 +697,16 @@ class _TypeItViewState extends State<TypeItView> {
             addLabel: l10n.addName(food.names.first),
             note: containsNoteFor(l10n, guard, food),
             onTap: () => _pick(food),
+          ),
+        if (query.isEmpty && shelf == null)
+          AppButton(
+            key: const ValueKey('type-it-show-egyptian'),
+            l10n.showAllEgyptianDishes,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 16,
+            onPressed: () =>
+                setState(() => _category = FoodCategory.egyptianDishes),
           ),
       ],
     ];

@@ -59,10 +59,10 @@ void main() {
     await answer();
     await open(t, appDestinations['R02']!.name, locale: const Locale('en'));
 
-    expect(find.text('Get stronger, at home'), findsOneWidget);
-    expect(find.text('Legs and glutes'), findsOneWidget);
-    expect(find.text('Upper body and core'), findsOneWidget);
-    expect(find.text('Glutes and full body'), findsOneWidget);
+    expect(find.text('3-day split'), findsOneWidget);
+    expect(find.text('Upper'), findsOneWidget);
+    expect(find.text('Lower'), findsOneWidget);
+    expect(find.text('Lower II'), findsOneWidget);
     final week = rows(t);
     expect(week, hasLength(3));
     expect(week.map((r) => r.done), [false, false, false]);
@@ -93,9 +93,9 @@ void main() {
     await answer(minutes: 10);
     await open(t, appDestinations['R02']!.name, locale: const Locale('en'));
 
-    expect(await tapControl(t, RegExp('Upper body and core')), isTrue);
+    expect(await tapControl(t, RegExp('Lower II')), isTrue);
     expect(topScreen(t), 'R03');
-    expect(find.text('Upper body and core'), findsWidgets);
+    expect(find.text('Lower II'), findsWidgets);
     expect(find.text('10 minutes, 4 moves'), findsOneWidget);
   });
 
@@ -103,7 +103,7 @@ void main() {
     phone(t);
     await answer();
     await open(t, appDestinations['R03']!.name, locale: const Locale('en'));
-    expect(find.text('Legs and glutes'), findsWidgets);
+    expect(find.text('Upper'), findsWidgets);
   });
 
   testWidgets('the first-gym guide comes once, before a gym session', (

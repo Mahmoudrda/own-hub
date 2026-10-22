@@ -1,8 +1,8 @@
 /// O03 — How many days a week, and for how long?
 ///
 /// Matches `6-v2/src/screens-onboarding.mjs` → `O03`, grown for the owner's
-/// 18 October brief: session lengths from 15 to 75+ minutes or any length from
-/// 10 to 180, one to seven days, a custom schedule of weekdays, and a level.
+/// 18 October brief: session lengths from 30 to 75+ minutes, a 15 minute short day, or any length from
+/// 10 to 180, the 3, 4 or 5 day split, a custom schedule of weekdays, and a level.
 ///
 /// # This screen defines the rewards system
 ///
@@ -31,12 +31,10 @@ import '../../../ui/app_chip_row.dart';
 import '../../train/domain/viewed_tier.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
+import '../domain/starting_program.dart' show kSplitDays;
 import 'intake_option.dart' show IntakeAnswerGroup;
 import 'intake_step_scaffold.dart';
 import '../../../app_state/onboarding_state.dart' show setupProgress;
-
-/// The label of the first days chip: it stands for two sessions a week.
-const String _oneToTwo = '1-2';
 
 class ScheduleView extends StatefulWidget {
   const ScheduleView({
@@ -74,9 +72,6 @@ class _ScheduleViewState extends State<ScheduleView> {
   late Set<int> _weekdays;
   late bool _customSchedule;
 
-  /// Once she picks a level herself, her days and minutes stop moving it.
-  late bool _levelChosen;
-
   @override
   void initState() {
     super.initState();
@@ -88,29 +83,17 @@ class _ScheduleViewState extends State<ScheduleView> {
     _level = intake.level;
     _weekdays = {...intake.weekdays};
     _customSchedule = _weekdays.isNotEmpty;
-    _levelChosen =
-        intake.level !=
-        TrainingLevel.suggestedFor(days: intake.days, minutes: intake.minutes);
-  }
-
-  TrainingLevel get _suggested =>
-      TrainingLevel.suggestedFor(days: _days, minutes: _minutes);
-
-  void _answersMoved() {
-    if (!_levelChosen) _level = _suggested;
   }
 
   void _setDays(int days) => setState(() {
     _days = days;
     _weekdays = {};
     _customSchedule = false;
-    _answersMoved();
   });
 
   void _toggleCustomSchedule() => setState(() {
     _customSchedule = !_customSchedule;
     _weekdays = _customSchedule ? Intake.spreadWeekdays(_days) : {};
-    _answersMoved();
   });
 
   void _toggleWeekday(int weekday) => setState(() {
@@ -120,13 +103,11 @@ class _ScheduleViewState extends State<ScheduleView> {
     if (next.isEmpty) return;
     _weekdays = next;
     _days = next.length;
-    _answersMoved();
   });
 
   void _setMinutes(int minutes, {required bool custom}) => setState(() {
     _minutes = minutes.clamp(Intake.minCustomMinutes, Intake.maxCustomMinutes);
     _customMinutes = custom;
-    _answersMoved();
   });
 
   Future<void> _continue() async {
@@ -163,7 +144,9 @@ class _ScheduleViewState extends State<ScheduleView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
-    final presetDays = Intake.allowedDays;
+    // The days a week are the three coach splits; any other number a custom
+    // schedule makes maps to the nearest split.
+    final presetDays = kSplitDays;
     final presetMinutes = Intake.allowedMinutes;
     final customChip = presetMinutes.length;
     final at = setupProgress('O03', widget.repository.read());
@@ -182,7 +165,7 @@ class _ScheduleViewState extends State<ScheduleView> {
         IntakeAnswerGroup(
           label: l10n.daysAWeek,
           child: AppChipRow(
-            items: [for (final d in presetDays) d == 2 ? _oneToTwo : '$d'],
+            items: [for (final d in presetDays) '$d'],
             selected: _customSchedule
                 ? const {}
                 : {if (presetDays.contains(_days)) presetDays.indexOf(_days)},
@@ -241,7 +224,10 @@ class _ScheduleViewState extends State<ScheduleView> {
           child: AppChipRow(
             items: [
               for (final m in presetMinutes)
-                l10n.nMin(m == presetMinutes.last ? '$m+' : '$m'),
+                if (m == Intake.shortDayMinutes)
+                  l10n.nMinShortDay('$m')
+                else
+                  l10n.nMin(m == Intake.longestPresetMinutes ? '$m+' : '$m'),
               l10n.custom,
             ],
             selected: {
@@ -277,19 +263,8 @@ class _ScheduleViewState extends State<ScheduleView> {
                 selected: {TrainingLevel.values.indexOf(_level)},
                 onTap: (i) => setState(() {
                   _level = TrainingLevel.values[i];
-                  _levelChosen = _level != _suggested;
                 }),
               ),
-              if (_level == _suggested && _suggested != TrainingLevel.beginner)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    l10n.suggestedFromYourWeek,
-                    style: AppText.bodyM.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

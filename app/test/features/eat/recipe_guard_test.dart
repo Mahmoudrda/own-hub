@@ -6,11 +6,13 @@
 // this dish" and "this dish contains none of the sixteen" are different facts,
 // and a library that collapses them is a library that looks checked.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/recipe.dart';
 import 'package:own_hub/features/eat/domain/recipe_access_gate.dart';
@@ -21,9 +23,11 @@ Recipe _recipe({
   String? reviewedBy = 'qa_reviewer',
   Set<String> dietTags = const <String>{},
   RecipeTier tier = RecipeTier.free,
+  RecipeVerification? verification,
+  RecipeSource source = RecipeSource.book,
 }) => Recipe(
   recipeId: id,
-  source: RecipeSource.book,
+  source: source,
   sectionId: 'sweet_tooth_breakfast',
   orderInSection: 1,
   status: RecipeStatus.review,
@@ -47,7 +51,23 @@ Recipe _recipe({
   allergenReviewedBy: reviewedBy,
   tier: tier,
   brandHints: const {},
+  verification: verification,
 );
+
+/// The record Own Hub's automated check leaves, deriving [derived].
+RecipeVerification _checked([Set<String> derived = const <String>{}]) =>
+    RecipeVerification(
+      method: RecipeVerification.autoCheckMethod,
+      checkedAt: DateTime.utc(2026, 10, 21),
+      allergensDerived: derived,
+    );
+
+/// The sixteen allergen tokens the app knows.
+const _sixteen = [
+  'celery', 'coconut', 'crustaceans', 'eggs', 'fava', 'fish', 'gluten',
+  'lupin', 'milk', 'molluscs', 'mustard', 'peanuts', 'sesame', 'soy',
+  'sulphites', 'tree_nuts', //
+];
 
 void main() {
   group('screening a recipe', () {
@@ -221,6 +241,212 @@ void main() {
       final liver = _recipe(id: 'liver');
       final kept = AllergyGuard(constraints).screenRecipes([liver]);
       expect(kept, hasLength(1));
+    });
+  });
+
+  group('the automated check stands in for a signature, and only so far', () {
+    const peanuts = DietaryConstraints(
+      allergies: {'peanuts'},
+      dietary: <String>{},
+    );
+
+    test('a verified recipe reaches a woman with an allergy it lacks', () {
+      final kept = AllergyGuard(peanuts).screenRecipes([
+        _recipe(
+          id: 'verified',
+          reviewedBy: null,
+          allergens: {'milk'},
+          verification: _checked({'milk'}),
+          source: RecipeSource.authored,
+        ),
+      ]);
+      expect(kept.map((r) => r.recipeId), ['verified']);
+    });
+
+    test('a verified recipe is still removed when it holds her allergen', () {
+      final kept = AllergyGuard(peanuts).screenRecipes([
+        _recipe(
+          id: 'verified_nutty',
+          reviewedBy: null,
+          allergens: {'peanuts'},
+          verification: _checked({'peanuts'}),
+          source: RecipeSource.authored,
+        ),
+      ]);
+      expect(kept, isEmpty);
+    });
+
+    test('a record that disagrees with its recipe counts for nothing', () {
+      // The check derived peanuts; the recipe does not list them. Whoever
+      // edited the list afterwards, the record can no longer be trusted.
+      final recipe = _recipe(
+        id: 'drifted',
+        reviewedBy: null,
+        verification: _checked({'peanuts'}),
+        source: RecipeSource.authored,
+      );
+      expect(recipe.autoChecked, isFalse);
+      expect(recipe.allergensKnown, isFalse);
+      expect(AllergyGuard(peanuts).screenRecipes([recipe]), isEmpty);
+    });
+
+    test('a record by any other method counts for nothing', () {
+      final recipe = _recipe(
+        id: 'other_method',
+        reviewedBy: null,
+        verification: RecipeVerification(
+          method: 'someone-elses-check',
+          checkedAt: DateTime.utc(2026, 10, 21),
+          allergensDerived: const {},
+        ),
+        source: RecipeSource.authored,
+      );
+      expect(recipe.allergensKnown, isFalse);
+      expect(AllergyGuard(peanuts).screenRecipes([recipe]), isEmpty);
+    });
+
+    test('an undated record counts for nothing', () {
+      final recipe = _recipe(
+        id: 'undated',
+        reviewedBy: null,
+        verification: const RecipeVerification(
+          method: RecipeVerification.autoCheckMethod,
+          checkedAt: null,
+          allergensDerived: <String>{},
+        ),
+        source: RecipeSource.authored,
+      );
+      expect(recipe.allergensKnown, isFalse);
+    });
+
+    test('a book card is never auto-checked, whatever its record says', () {
+      final card = _recipe(
+        id: 'card',
+        reviewedBy: null,
+        verification: _checked(),
+      );
+      expect(card.source, RecipeSource.book);
+      expect(card.autoChecked, isFalse);
+      expect(card.allergensKnown, isFalse);
+      expect(card.check, RecipeCheck.unchecked);
+      expect(card.verifiedLabel, isNull);
+      expect(AllergyGuard(peanuts).screenRecipes([card]), isEmpty);
+      final ours = _recipe(
+        id: 'ours',
+        reviewedBy: null,
+        verification: _checked(),
+        source: RecipeSource.authored,
+      );
+      expect(ours.autoChecked, isTrue);
+    });
+
+    test('a signature outranks the check in the label and the kind', () {
+      final signed = _recipe(id: 'both', verification: _checked());
+      expect(signed.check, RecipeCheck.signed);
+      expect(signed.verifiedLabel, "From Rahma's book");
+      final auto = _recipe(
+        id: 'auto',
+        reviewedBy: null,
+        verification: _checked(),
+        source: RecipeSource.authored,
+      );
+      expect(auto.check, RecipeCheck.autoChecked);
+      expect(auto.verifiedLabel, 'Checked by Own Hub');
+      final neither = _recipe(id: 'neither', reviewedBy: null);
+      expect(neither.check, RecipeCheck.unchecked);
+      expect(neither.verifiedLabel, isNull);
+    });
+
+    test('the label never puts her name on a recipe she did not write', () {
+      final ours = Recipe.fromJson({
+        ...((jsonDecode(
+                  File('assets/content/rahma_recipes.json').readAsStringSync(),
+                ) as Map)['recipes']
+                as List)
+            .cast<Map<String, Object?>>()
+            .firstWhere((r) => r['recipeId'] == 'ownhub_shish_tawook_bowl'),
+      });
+      expect(ours.verifiedLabel, 'Checked by Own Hub');
+      expect(ours.verifiedLabel, isNot(contains('Rahma')));
+    });
+
+    test('a woman who has not answered sees every recipe, none hidden', () {
+      final all = [
+        _recipe(id: 'unchecked', reviewedBy: null),
+        _recipe(
+          id: 'verified',
+          reviewedBy: null,
+          allergens: {'tree_nuts'},
+          verification: _checked({'tree_nuts'}),
+          source: RecipeSource.authored,
+        ),
+        _recipe(id: 'signed', allergens: {'sesame'}),
+      ];
+      for (final constraints in [
+        DietaryConstraints.none,
+        DietaryConstraints.unknown,
+      ]) {
+        final guard = AllergyGuard(constraints);
+        expect(guard.screenRecipes(all), hasLength(3));
+        expect(guard.hiddenCount(all), 0);
+      }
+    });
+  });
+
+  group('for each of the sixteen, no shown recipe contains it', () {
+    late List<Recipe> seed;
+
+    setUpAll(() {
+      final raw = (jsonDecode(
+        File('assets/content/rahma_recipes.json').readAsStringSync(),
+      ) as Map).cast<String, Object?>();
+      seed = RecipeBook.fromJson(raw).recipes;
+    });
+
+    for (final allergen in _sixteen) {
+      test(allergen, () {
+        final guard = AllergyGuard(
+          DietaryConstraints(allergies: {allergen}, dietary: const <String>{}),
+        );
+        final shown = guard.screenRecipes(seed);
+        for (final recipe in shown) {
+          expect(
+            recipe.allergensFinal,
+            isNot(contains(allergen)),
+            reason: '${recipe.recipeId} is shown to a woman allergic to it',
+          );
+          expect(recipe.allergensKnown, isTrue, reason: recipe.recipeId);
+        }
+        // And the reverse: everything removed was removed for a reason.
+        final hidden = seed.where((r) => !shown.contains(r));
+        for (final recipe in hidden) {
+          expect(
+            recipe.allergensFinal.contains(allergen) || !recipe.allergensKnown,
+            isTrue,
+            reason: '${recipe.recipeId} was hidden for no reason',
+          );
+        }
+      });
+    }
+
+    test(
+      'every allergen is held by something, so the property is not vacuous',
+      () {
+        final held = {for (final r in seed) ...r.allergensFinal};
+        // Not all sixteen appear in the book, but most do. A seed where none
+        // did would make every case above pass without removing anything.
+        expect(held.length, greaterThanOrEqualTo(10));
+        expect(held.difference(_sixteen.toSet()), isEmpty);
+      },
+    );
+
+    test('a woman allergic to milk is shown none of the dairy dishes', () {
+      final guard = AllergyGuard(
+        const DietaryConstraints(allergies: {'milk'}, dietary: <String>{}),
+      );
+      final shown = guard.screenRecipes(seed);
+      expect(shown, isNotEmpty);
+      expect(shown.length, lessThan(seed.length));
     });
   });
 

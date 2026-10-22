@@ -39,7 +39,6 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_chevron.dart';
 import '../../../ui/app_empty_state.dart';
-import '../../../ui/app_avatar.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
@@ -51,6 +50,7 @@ import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_scope.dart';
 import '../../../theme/screen_art.dart';
 import '../../onboarding/domain/intake.dart';
+import '../../train/domain/tier_facts.dart';
 import '../../onboarding/presentation/her_answers.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/rewards/training_streak.dart';
@@ -102,6 +102,10 @@ class TodayView extends StatefulWidget {
     this.mealRepository,
     this.onSignIn,
     this.tierTabs,
+    this.tierFacts,
+    this.onChangeTraining,
+    this.trainingLine,
+    this.planLinks,
     this.followUp,
   });
 
@@ -125,6 +129,21 @@ class TodayView extends StatefulWidget {
   /// The Beginner / Intermediate / Advanced tabs under the greeting. Switching
   /// one changes the session the Today card shows. Null draws nothing.
   final Widget? tierTabs;
+
+  /// What the viewed tier's session holds (moves, sets and reps, rest, about
+  /// how long) and how that differs from her own level. Shown on the Today
+  /// card; null shows the plain minutes as before.
+  final TierFacts? tierFacts;
+
+  /// Opens the "Your training" sheet. Supplied, a row under the tabs shows
+  /// [trainingLine] and calls it; null draws no row.
+  final VoidCallback? onChangeTraining;
+
+  /// Her place, goal and level in one line, for the "Your training" row.
+  final String? trainingLine;
+
+  /// The Edit and Change plan links, drawn under the "Your training" row.
+  final Widget? planLinks;
 
   /// The follow-up card (how she feels after a session, her week review),
   /// or null when there is nothing to ask.
@@ -219,10 +238,9 @@ class TodayView extends StatefulWidget {
   final VoidCallback? onOpenWeek;
   final VoidCallback? onOpenCycle;
 
-  /// Where her profile picture goes.
-  ///
-  /// D11 makes the avatar the entry to her profile and, for a woman who chose
-  /// both roles, the control that switches between the trainee and coach apps.
+  /// Where her profile picture goes. The picture itself is page chrome now
+  /// (the strip above Home draws it), and opens A02 on its own; this is kept
+  /// for the router's existing wiring.
   final VoidCallback? onOpenProfile;
 
   final VoidCallback? onAsk;
@@ -413,18 +431,23 @@ class _TodayViewState extends State<TodayView> {
             icon: const Icon(Icons.notifications_none),
             onPressed: () => openScreen(context, 'A01', widget.onNotifications),
           ),
-          // D11's role switch, and the way into My profile. 44 points: My
-          // cycle, Language, notification settings, Privacy, the Safety Centre
-          // and "delete everything" are all behind this one control.
-          AppAvatar(
-            size: 44,
-            firstName: widget.firstName,
-            onOpenProfile: () =>
-                openScreen(context, 'A02', widget.onOpenProfile),
-          ),
         ],
       ),
       ?widget.tierTabs,
+      if (widget.onChangeTraining case final change?)
+        AppListItem(
+          key: const ValueKey('today-your-training'),
+          leading: const Icon(
+            Icons.tune,
+            size: 22,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.yourTraining,
+          subtitle: widget.trainingLine ?? '',
+          trailing: const AppChevron(),
+          onTap: change,
+        ),
+      ?widget.planLinks,
       ?widget.followUp,
       HomeWeekStrip(
         today: _day.date,
@@ -478,6 +501,7 @@ class _TodayViewState extends State<TodayView> {
       // programme name she did not choose.
       title: widget.sessionTitle,
       minutes: widget.sessionMinutes,
+      tierFacts: widget.tierFacts,
       week: _day.programWeek,
       totalWeeks: _day.programTotalWeeks,
       art: AppArt.image(art.length > 1 ? art[1] : AppArt.running, size: 112),
@@ -779,15 +803,7 @@ class _TodayViewState extends State<TodayView> {
   /// state, because every one of them is a claim about a history nothing has
   /// read yet.
   List<Widget> _stillLooking(BuildContext context, AppL10n l10n) => [
-    TodayGreeting(
-      day: weekdayLabel(l10n, _day.date),
-      actions: [
-        AppAvatar(
-          size: 44,
-          onOpenProfile: () => openScreen(context, 'A02', widget.onOpenProfile),
-        ),
-      ],
-    ),
+    TodayGreeting(day: weekdayLabel(l10n, _day.date)),
     Text(
       l10n.lookingForWhatYouHaveAdded,
       style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
@@ -812,15 +828,6 @@ class _TodayViewState extends State<TodayView> {
             l10n.day1_4ehtd,
             background: AppColors.surfaceContainer,
             foreground: AppColors.onSurfaceVariant,
-          ),
-          const SizedBox(width: 8),
-          // Day one needs the profile as much as any other day: a woman who
-          // chose both roles would first look here for the coach side.
-          AppAvatar(
-            size: 44,
-            firstName: widget.firstName,
-            onOpenProfile: () =>
-                openScreen(context, 'A02', widget.onOpenProfile),
           ),
         ],
       ),

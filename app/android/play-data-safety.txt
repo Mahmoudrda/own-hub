@@ -128,15 +128,26 @@ Not collected
 -------------
 Precise location, contacts, messages (the SMS code is read by the SMS
 Retriever, not READ_SMS), audio, files and docs, calendar, web browsing,
-financial info, in-app search history, the Advertising ID, and photos from the
-gallery (the app cannot read the gallery).
+financial info, in-app search history and the Advertising ID. The app has no
+photo-library permission and cannot read the gallery. The one place she can
+pick an existing picture is her own profile photo, through the system photo
+picker, which hands the app only the single picture she chooses; the profile
+photo stays on the phone, is never uploaded and is removed by Delete
+everything, so it is not collected.
 There is no video review. A woman from Own Hub who reviews a case contacts
 her by phone, outside the app; nothing from that contact is collected by the
 app.
-Training reminders are scheduled on the phone (local notifications, opt-in,
-asked after her first finished session). The days and time she picks stay on
-the phone; nothing about them is sent to Own Hub. The manifest carries
-RECEIVE_BOOT_COMPLETED so they survive a restart; no exact-alarm permission.
+Training reminders and event reminders are scheduled on the phone (local
+notifications, opt-in; the training ones are asked after her first finished
+session). The days and time she picks, and which events she booked, are read
+on the phone to plan them; nothing about the notes is sent to Own Hub, and they
+do not name the event. The manifest carries RECEIVE_BOOT_COMPLETED so they
+survive a restart. It also carries SCHEDULE_EXACT_ALARM, used only for the
+"Rest is over" alert while a rest timer runs (and only when the phone allows
+it); reminders and event notes are inexact. The Play exact-alarm declaration
+is an owner step.
+The workout share card is drawn on the phone and leaves it only through the
+system share sheet when she taps Share; nothing is uploaded by the app.
 
 Health apps declaration (Play Console > App content > Health apps)
 -----------------------------------------------------------------

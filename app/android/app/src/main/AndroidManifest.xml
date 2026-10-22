@@ -14,7 +14,11 @@
          picture of somebody else's card, which is the entire attack the
          women-only gate has to survive. It is also a Play Data Safety
          declaration and a policy conversation we would have to have for a
-         capability the product does not want. -->
+         capability the product does not want. The one place she can pick an
+         existing picture is her own profile photo (A02), through the system
+         photo picker, which hands the app only the single picture she chooses
+         and needs no permission; nothing in the identity check or the meal
+         scan can use it, and the photo never leaves the phone. -->
 
     <!-- Stripped from the MERGED manifest, because plugins add them. The
          camera plugin declares RECORD_AUDIO for video, and this app records no

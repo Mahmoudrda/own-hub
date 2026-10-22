@@ -7,6 +7,11 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/app_snapshot.dart';
+import 'package:own_hub/app_state/events_state.dart';
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/features/events/domain/event_registration.dart';
+import 'package:own_hub/features/events/domain/event_repository.dart';
+import 'package:own_hub/features/events/domain/hub_event.dart';
 import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/features/train/domain/getting_started_tips.dart';
 import 'package:own_hub/app_state/notification_sync.dart';
@@ -63,9 +68,30 @@ class _Store implements DeviceStore {
   Future<void> remove(String uid, String docId) async => docs.remove(docId);
 }
 
+class _Registrar implements EventRegistrar {
+  _Registrar(Set<String> mine, {this.offline = false}) : mine = {...mine};
+
+  final Set<String> mine;
+  final bool offline;
+
+  @override
+  Future<bool> isRegistered(String eventId) async {
+    if (offline) throw const EventRegistrationException(SeatFailure.offline);
+    return mine.contains(eventId);
+  }
+
+  @override
+  Future<SeatResult> register(String eventId) async =>
+      SeatResult(registered: true, seatsTaken: 1);
+
+  @override
+  Future<SeatResult> cancel(String eventId) async =>
+      SeatResult(registered: false, seatsTaken: 0);
+}
+
 void main() {
   final en = lookupAppL10n(const Locale('en'));
-  final text = AppRouter.reminderText(en);
+  final text = AppRouter.reminderText(en).withEventCopy(en);
   final now = DateTime(2026, 10, 14, 10);
 
   setUp(() => ReminderState.instance.reset());
@@ -426,6 +452,325 @@ void main() {
     });
   });
 
+  group('event reminders', () {
+    final shipped = AppRouter.featureFlags;
+    final start = DateTime(2026, 10, 20, 19);
+
+    HubEvent event(String id, DateTime at, {int taken = 3}) => HubEvent(
+      id: id,
+      titleEn: 'Class $id',
+      titleAr: 'حصة $id',
+      startsAt: at.toUtc(),
+      endsAt: at.add(const Duration(hours: 1)).toUtc(),
+      mode: EventMode.online,
+      status: EventStatus.published,
+      capacity: 20,
+      seatsTaken: taken,
+    );
+
+    List<PlannedNotification> events(_Scheduler s) =>
+        s.applied.last.where((n) => n.kind == PlanKind.eventReminder).toList();
+
+    setUp(() {
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.today: true,
+        Feature.events: true,
+      });
+      EventsState.instance.reset();
+      ReminderState.instance.permissionGranted = true;
+    });
+    tearDown(() {
+      AppRouter.featureFlags = shipped;
+      AppRouter.reminderScheduler = null;
+      EventsState.instance.reset();
+    });
+
+    test('the plan carries the notes for the events she can join', () async {
+      EventsState.instance.now = () => now;
+      EventsState.instance.seed([event('a', start)]);
+      final scheduler = _Scheduler();
+      await NotificationSync.reapply(scheduler, text, now: now);
+      final notes = events(scheduler);
+      expect(notes.map((n) => n.at), [
+        DateTime(2026, 10, 17, 10),
+        DateTime(2026, 10, 19, 18),
+        DateTime(2026, 10, 20, 16),
+      ]);
+      expect(ReminderState.instance.eventPlan, notes);
+    });
+
+    test('a seat she holds changes the notes to the booked pair', () async {
+      EventsState.instance.now = () => now;
+      EventsState.instance.seed([event('a', start)]);
+      EventsState.instance.seedBooked(['a']);
+      final scheduler = _Scheduler();
+      await NotificationSync.reapply(scheduler, text, now: now);
+      expect(events(scheduler).map((n) => n.at), [
+        DateTime(2026, 10, 20, 9),
+        DateTime(2026, 10, 20, 16),
+      ]);
+    });
+
+    test('with the switch off there are none, and the saved ones go', () async {
+      EventsState.instance.now = () => now;
+      EventsState.instance.seed([event('a', start)]);
+      final scheduler = _Scheduler();
+      await NotificationSync.reapply(scheduler, text, now: now);
+      expect(ReminderState.instance.eventPlan, isNotEmpty);
+      ReminderState.instance.prefs = const NotificationPrefs(events: false);
+      await NotificationSync.reapply(scheduler, text, now: now);
+      expect(events(scheduler), isEmpty);
+      expect(ReminderState.instance.eventPlan, isEmpty);
+    });
+
+    test('before any read, the notes already on the phone stand', () async {
+      ReminderState.instance.eventPlan = [
+        PlannedNotification(
+          id: 7171,
+          kind: PlanKind.eventReminder,
+          at: DateTime(2026, 10, 17, 10),
+        ),
+        PlannedNotification(
+          id: 7172,
+          kind: PlanKind.eventReminder,
+          at: DateTime(2026, 10, 12, 10),
+        ),
+      ];
+      final scheduler = _Scheduler();
+      await NotificationSync.reapply(scheduler, text, now: now);
+      // The one still ahead is kept; the one gone by is not.
+      expect(events(scheduler).map((n) => n.id), [7171]);
+    });
+
+    test('a read that finds no events cancels what was saved', () async {
+      ReminderState.instance.eventPlan = [
+        PlannedNotification(
+          id: 7171,
+          kind: PlanKind.eventReminder,
+          at: DateTime(2026, 10, 17, 10),
+        ),
+      ];
+      EventsState.instance.now = () => now;
+      EventsState.instance.seed(const []);
+      final scheduler = _Scheduler();
+      await NotificationSync.reapply(scheduler, text, now: now);
+      expect(events(scheduler), isEmpty);
+      expect(ReminderState.instance.eventPlan, isEmpty);
+    });
+
+    test('a refresh plans the notes once the seats are known', () async {
+      final scheduler = _Scheduler();
+      AppRouter.reminderScheduler = scheduler;
+      await NotificationSync.reapply(scheduler, text, now: now);
+      final registrar = _Registrar({'a'});
+      final reader = InMemoryEvents([
+        event('a', start),
+        event('b', DateTime(2026, 10, 24, 19)),
+      ]);
+      EventsState.instance.now = () => now;
+      EventsState.instance.source = () => reader;
+      EventsState.instance.registrar = () => registrar;
+      await EventsState.instance.refresh(force: true);
+      final notes = events(scheduler);
+      // a is booked (two notes), b is not (three).
+      expect(notes, hasLength(5));
+      expect(notes.where((n) => eventFromCode(n.variant).booked), hasLength(2));
+    });
+
+    test('booking and cancelling plan the notes again', () async {
+      final scheduler = _Scheduler();
+      AppRouter.reminderScheduler = scheduler;
+      await NotificationSync.reapply(scheduler, text, now: now);
+      final registrar = _Registrar({});
+      EventsState.instance.now = () => now;
+      EventsState.instance.seed([event('a', start)]);
+      EventsState.instance.registrar = () => registrar;
+      registrar.mine.add('a');
+      EventsState.instance.setSeats('a', 4);
+      await pumpEventQueue();
+      expect(events(scheduler).map((n) => n.at), [
+        DateTime(2026, 10, 20, 9),
+        DateTime(2026, 10, 20, 16),
+      ]);
+      registrar.mine.clear();
+      EventsState.instance.setSeats('a', 3);
+      await pumpEventQueue();
+      expect(events(scheduler), hasLength(3));
+    });
+
+    test('switching events off in the app cancels the saved notes', () async {
+      final scheduler = _Scheduler();
+      AppRouter.reminderScheduler = scheduler;
+      ReminderState.instance.eventPlan = [
+        PlannedNotification(
+          id: 7171,
+          kind: PlanKind.eventReminder,
+          at: DateTime(2026, 10, 17, 10),
+        ),
+      ];
+      await NotificationSync.reapply(scheduler, text, now: now);
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.today: true,
+        Feature.events: false,
+      });
+      EventsState.instance.now = () => now;
+      await EventsState.instance.refresh(force: true);
+      expect(events(scheduler), isEmpty);
+      expect(ReminderState.instance.eventPlan, isEmpty);
+    });
+
+    test('an unreadable seat does not stop the notes', () async {
+      final scheduler = _Scheduler();
+      AppRouter.reminderScheduler = scheduler;
+      await NotificationSync.reapply(scheduler, text, now: now);
+      final reader = InMemoryEvents([event('a', start)]);
+      EventsState.instance.now = () => now;
+      EventsState.instance.source = () => reader;
+      EventsState.instance.registrar = () => _Registrar({}, offline: true);
+      await EventsState.instance.refresh(force: true);
+      expect(events(scheduler), hasLength(3));
+    });
+
+    test('the adapter gives them their own channel, words and screen', () {
+      final note = PlannedNotification(
+        id: 7171,
+        kind: PlanKind.eventReminder,
+        at: start,
+        variant: eventVariantCode(booked: false, variant: 1),
+      );
+      final booked = PlannedNotification(
+        id: 7173,
+        kind: PlanKind.eventReminder,
+        at: start,
+        variant: eventVariantCode(booked: true, variant: 0),
+      );
+      expect(reminderPayloadFor(note), 'T09');
+      expect(reminderBodyFor(note, text), text.eventBodies[1]);
+      expect(reminderBodyFor(booked, text), text.bookedEventBodies[0]);
+      final channel = reminderChannelFor(PlanKind.eventReminder, text);
+      expect(channel.$1, kEventChannelId);
+      expect(channel.$2, text.eventChannelName);
+      expect(channel.$3, text.eventChannelDescription);
+      expect(channel.$1, isNot(reminderChannelFor(PlanKind.training, text).$1));
+    });
+
+    test('with no event words yet, an event note is never scheduled', () {
+      final full = AppRouter.reminderText(en);
+      final bare = ReminderText(
+        title: full.title,
+        body: full.body,
+        channelName: full.channelName,
+        channelDescription: full.channelDescription,
+        logBody: full.logBody,
+        checkInBodies: full.checkInBodies,
+        restBody: full.restBody,
+        checkInChannelName: full.checkInChannelName,
+        checkInChannelDescription: full.checkInChannelDescription,
+        restChannelName: full.restChannelName,
+        restChannelDescription: full.restChannelDescription,
+      );
+      final note = PlannedNotification(
+        id: 7171,
+        kind: PlanKind.eventReminder,
+        at: start,
+      );
+      expect(eventReminderBody(note, bare), isNull);
+      expect(eventReminderBody(note, text), isNotNull);
+    });
+
+    test('a tap opens the events list, or Today when events are off', () {
+      expect(NotificationTaps.routeFor('T09', sessionLive: false), isNotNull);
+      expect(
+        NotificationTaps.routeFor(
+          'T09',
+          sessionLive: false,
+          isOn: (id) => id == 'T09',
+        ),
+        '/today/t09',
+      );
+      expect(
+        NotificationTaps.routeFor(
+          'T09',
+          sessionLive: false,
+          isOn: (id) => id == 'T01',
+        ),
+        '/today/t01',
+      );
+      expect(
+        NotificationTaps.routeFor(
+          'T09',
+          sessionLive: false,
+          top: '/today/t09',
+          isOn: (id) => true,
+        ),
+        isNull,
+      );
+    });
+  });
+
+  group('event reminder choices survive a restart', () {
+    test('the switch and the saved notes round-trip', () {
+      ReminderState.instance
+        ..permissionGranted = true
+        ..prefs = const NotificationPrefs(events: false)
+        ..eventPlan = [
+          PlannedNotification(
+            id: 7172,
+            kind: PlanKind.eventReminder,
+            at: DateTime(2026, 10, 19, 18),
+            variant: 3,
+          ),
+        ];
+      final saved = jsonEncode(AppSnapshot.capture());
+      ReminderState.instance.reset();
+      AppSnapshot.restore(saved);
+      expect(ReminderState.instance.prefs.events, isFalse);
+      expect(ReminderState.instance.eventPlan, [
+        PlannedNotification(
+          id: 7172,
+          kind: PlanKind.eventReminder,
+          at: DateTime(2026, 10, 19, 18),
+          variant: 3,
+        ),
+      ]);
+    });
+
+    test('a snapshot from before this switch reads as on', () {
+      ReminderState.instance
+        ..permissionGranted = true
+        ..prefs = const NotificationPrefs(nudges: false);
+      final snapshot =
+          jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
+      final section = Map<String, Object?>.from(snapshot['reminders']! as Map)
+        ..remove('eventsOn')
+        ..remove('eventPlan');
+      snapshot['reminders'] = section;
+      ReminderState.instance.reset();
+      AppSnapshot.restore(jsonEncode(snapshot));
+      expect(ReminderState.instance.prefs.events, isTrue);
+      expect(ReminderState.instance.prefs.nudges, isFalse);
+      expect(ReminderState.instance.eventPlan, isEmpty);
+    });
+
+    test('a damaged saved note is dropped, not scheduled', () {
+      ReminderState.instance.permissionGranted = true;
+      final snapshot =
+          jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
+      final section = Map<String, Object?>.from(snapshot['reminders']! as Map)
+        ..['eventPlan'] = [
+          {'id': 7101, 'at': '2026-10-19T18:00:00.000', 'variant': 0},
+          {'id': 7172, 'at': 'not a time', 'variant': 0},
+          {'id': 7173, 'variant': 0},
+          'junk',
+          {'id': 7175, 'at': '2026-10-19T18:00:00.000', 'variant': 1},
+        ];
+      snapshot['reminders'] = section;
+      ReminderState.instance.reset();
+      AppSnapshot.restore(jsonEncode(snapshot));
+      expect(ReminderState.instance.eventPlan.map((n) => n.id), [7175]);
+    });
+  });
+
   group('a tap on a notification', () {
     test('opens only a screen on the list', () {
       expect(NotificationTaps.destinations, {
@@ -434,6 +779,7 @@ void main() {
         'R09',
         'E01',
         'P01',
+        'T09',
         ...NotificationTaps.tipDestinations,
       });
       expect(NotificationTaps.routeFor('X99', sessionLive: true), isNull);

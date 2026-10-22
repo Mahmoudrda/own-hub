@@ -51,7 +51,8 @@ void main() {
       final hers = _book.recipes.where((r) => r.source == RecipeSource.book);
       expect(hers, hasLength(39));
       // The eleven are not hers and are never drawn as hers: authored by Own
-      // Hub's kitchen, in review until the sign-off file lists them.
+      // Hub's kitchen, published on the automated check alone, signed by
+      // nobody.
       final ours = _book.recipes
           .where((r) => r.source == RecipeSource.authored)
           .toList();
@@ -60,9 +61,14 @@ void main() {
         expect(recipe.isOwnHub, isTrue, reason: recipe.recipeId);
         expect(recipe.authoredBy, kOwnHubKitchen, reason: recipe.recipeId);
         expect(recipe.recipeId, startsWith('ownhub_'));
-        expect(recipe.status, RecipeStatus.review, reason: recipe.recipeId);
+        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
+        expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+        expect(recipe.verifiedLabel, 'Checked by Own Hub');
+        // The check is a script, never a person: no name, ever.
         expect(recipe.allergenReviewedBy, isNull, reason: recipe.recipeId);
+        expect(recipe.allergenReviewedAt, isNull, reason: recipe.recipeId);
         expect(recipe.cookedBy, isNull, reason: recipe.recipeId);
+        expect(recipe.cookedAt, isNull, reason: recipe.recipeId);
       }
       expect(_book.recipes, hasLength(50));
     });
@@ -485,19 +491,29 @@ void main() {
       expect(withDraft.recipes, hasLength(_book.recipes.length));
     });
 
-    test('nothing is published until two people have signed it', () {
-      // Vacuously true today and deliberately so: `allergenReviewedBy` has to be
-      // a person, and it must not be the person who authored the row. Writing a
-      // name into that field to make a recipe visible would be forging a
-      // signature on an allergen check.
+    test('nothing is published without a signature or the automated check', () {
+      // `allergenReviewedBy` has to be a person, and it must not be the person
+      // who authored the row. Writing a name into that field to make a recipe
+      // visible would be forging a signature on an allergen check, so a recipe
+      // nobody signed is published on the automated check or not at all.
       for (final recipe in _book.recipes) {
         if (recipe.status != RecipeStatus.published) continue;
-        expect(recipe.allergenReviewedBy, isNotNull, reason: recipe.recipeId);
         expect(
-          recipe.allergenReviewedBy,
-          isNot(recipe.authoredBy),
-          reason: '${recipe.recipeId}: one person cannot review their own work',
+          recipe.allergensKnown,
+          isTrue,
+          reason: '${recipe.recipeId}: neither signed nor auto-checked',
         );
+        if (recipe.allergensReviewed) {
+          expect(
+            recipe.allergenReviewedBy,
+            isNot(recipe.authoredBy),
+            reason:
+                '${recipe.recipeId}: one person cannot review their own work',
+          );
+        } else {
+          expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+          expect(recipe.cookedBy, isNull, reason: recipe.recipeId);
+        }
         for (final ingredient in recipe.ingredients) {
           expect(
             ingredient.foodId,

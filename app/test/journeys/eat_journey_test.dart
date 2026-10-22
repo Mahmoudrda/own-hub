@@ -17,8 +17,6 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/eat_sample_library.dart';
-import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
-    show PlusButton, QuickAddCard;
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/main.dart';
@@ -265,16 +263,16 @@ void main() {
       await _windowCloses(tester);
 
       await _open(tester, 'E01');
+      final plate = find.byTooltip('Add Koshari bowl').first;
       expect(
-        find.widgetWithText(QuickAddCard, 'Koshari bowl'),
+        plate,
         findsOneWidget,
         reason: 'log something twice and it becomes a plate — E09 says so',
       );
-      expect(find.text('540 kcal · 18 g protein'), findsOneWidget);
 
-      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.ensureVisible(plate);
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(PlusButton).first);
+      await tester.tap(plate);
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
       expect(find.text('54 of 108 g'), findsOneWidget);
@@ -283,32 +281,37 @@ void main() {
       expect(_written.length, 3);
     });
 
-    testWidgets("Home's plate logs, with the five seconds", (tester) async {
-      _phone(tester);
-      await _boot(tester);
-      await _typeAndLog(tester, 'koshari');
-      await _windowCloses(tester);
-      await _home(tester);
+    for (final scale in [1.0, 2.0]) {
+      testWidgets("Home's plate logs, with the five seconds"
+          '${scale == 1.0 ? '' : ' (text scale $scale)'}', (tester) async {
+        _phone(tester);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await _boot(tester);
+        await _typeAndLog(tester, 'koshari');
+        await _windowCloses(tester);
+        await _home(tester);
 
-      // Home is a scrolling page and its bottom bar sits over the foot of it,
-      // so the plate has to be clear of the bar before it can be pressed.
-      await tester.drag(find.byType(Scrollable).first, const Offset(0, -240));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Koshari bowl'));
-      await tester.pumpAndSettle();
+        // Home is a scrolling page and its bottom bar sits over the foot of it,
+        // so the plate has to be clear of the bar before it can be pressed.
+        await tester.ensureVisible(find.text('Koshari bowl'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Koshari bowl'));
+        await tester.pumpAndSettle();
 
-      // It logged, and it landed on the logged day rather than merely
-      // navigating there.
-      expect(find.byType(AppUndoBar), findsOneWidget);
-      // One offer, here too: Home used to raise a snackbar of its own and then
-      // carry the same handle to E04's bar.
-      expect(find.byType(SnackBar), findsNothing);
-      expect(find.text('Undo'), findsOneWidget);
-      expect(find.text('36 of 108 g'), findsOneWidget);
+        // It logged, and it landed on the logged day rather than merely
+        // navigating there.
+        expect(find.byType(AppUndoBar), findsOneWidget);
+        // One offer, here too: Home used to raise a snackbar of its own and then
+        // carry the same handle to E04's bar.
+        expect(find.byType(SnackBar), findsNothing);
+        expect(find.text('Undo'), findsOneWidget);
+        expect(find.text('36 of 108 g'), findsOneWidget);
 
-      await _windowCloses(tester);
-      expect(_written.length, 2);
-    });
+        await _windowCloses(tester);
+        expect(_written.length, 2);
+      });
+    }
   });
 
   group('recipes', () {
@@ -503,8 +506,8 @@ void main() {
       await _home(tester);
       await _open(tester, 'E01');
       expect(
-        find.widgetWithText(QuickAddCard, 'Ful and baladi'),
-        findsOneWidget,
+        find.text('Ful and baladi'),
+        findsWidgets,
         reason:
             'only a dish known to hold tree nuts is hidden from suggestions',
       );

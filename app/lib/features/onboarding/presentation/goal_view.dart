@@ -67,6 +67,11 @@ class _GoalViewState extends State<GoalView> {
     final options = <(TrainingGoal, String, String)>[
       (TrainingGoal.stronger, l10n.getStronger, l10n.buildUpLiftABitMoreEach),
       (
+        TrainingGoal.buildMuscle,
+        l10n.buildMuscle,
+        l10n.heavierLiftsBuiltUpALittleEach,
+      ),
+      (
         TrainingGoal.feelBetter,
         l10n.feelBetterInMyBody,
         l10n.energySleepLessBackPain,

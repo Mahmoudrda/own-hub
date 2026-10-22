@@ -32,9 +32,21 @@ abstract class ExerciseClipPlayer {
   Future<void> dispose();
 }
 
+/// What the full-screen view asks of a player beyond the page's loop. Kept
+/// apart so a player that cannot do these still serves the page; the
+/// full-screen view offers a control only when the player has it.
+abstract interface class ExerciseClipControls {
+  /// Back to the first frame, playing.
+  Future<void> restart();
+
+  /// 1.0 is the clip's own pace.
+  Future<void> setSpeed(double speed);
+}
+
 typedef ExerciseClipPlayerFactory = ExerciseClipPlayer Function();
 
-class VideoPlayerClipPlayer implements ExerciseClipPlayer {
+class VideoPlayerClipPlayer
+    implements ExerciseClipPlayer, ExerciseClipControls {
   VideoPlayerController? _controller;
 
   @override
@@ -65,6 +77,21 @@ class VideoPlayerClipPlayer implements ExerciseClipPlayer {
   Future<void> pause() async {
     try {
       await _controller?.pause();
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> restart() async {
+    try {
+      await _controller?.seekTo(Duration.zero);
+      await _controller?.play();
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> setSpeed(double speed) async {
+    try {
+      await _controller?.setPlaybackSpeed(speed);
     } catch (_) {}
   }
 

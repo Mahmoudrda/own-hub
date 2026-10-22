@@ -80,11 +80,12 @@ void main() {
           'paintedLines=${painted.length}  taps=${taps.length}',
         );
         // The one dish a woman who named an allergen may be offered is a recipe
-        // a person has signed whose contents do not hold it. The prototype rows
-        // are unchecked and are never among them.
+        // whose allergens are known (a person's signature or Own Hub's
+        // automated check) and whose contents do not hold it. The prototype
+        // rows are unchecked and are never among them.
         final safeTitles = {
           for (final r in book.recipes)
-            if (r.allergensReviewed && !r.allergensFinal.contains(tag.wireName))
+            if (r.allergensKnown && !r.allergensFinal.contains(tag.wireName))
               r.titleEn,
         };
         final offered = dishes

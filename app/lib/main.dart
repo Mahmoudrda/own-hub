@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'app_state/analytics_consent.dart';
 import 'app_state/analytics_session.dart';
 import 'app_state/posthog_analytics.dart';
+import 'app_state/profile_photo_state.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
 import 'app_state/first_run_moments.dart';
@@ -116,6 +117,8 @@ Future<void> main() async {
   await TipAnchors.instance.load();
   // Whether the first-launch breath and the plan tick have been shown.
   await FirstRunMoments.instance.load();
+  // Her profile photo, if she set one. Kept on this phone only.
+  await ProfilePhotoState.instance.load();
   // The starting programmes, bundled. A file that cannot be read leaves the
   // placeholder catalogue, and Train is what it was.
   try {

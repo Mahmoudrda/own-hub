@@ -44,6 +44,15 @@
 /// So the clock ends itself, but it only ever navigates *from the top*: a tick
 /// that reaches zero behind another screen stops and says nothing. The tap path
 /// is untouched, because a tap can only come from the screen she is looking at.
+///
+/// # Her rest, her length
+///
+/// Fifteen seconds less, fifteen more and skip sit under the ready button. The
+/// new total is handed to [RestingView.onTotalChanged] so the next rest after
+/// this move starts there. The ring and the deadline given to
+/// [RestingView.onBackgrounded] both come from the clock those buttons change,
+/// so the alert at the end of a rest she shortened or stretched is for the
+/// time she chose.
 library;
 
 import 'dart:async';
@@ -60,7 +69,12 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/clock_label.dart';
+import '../domain/live_best.dart';
+import '../domain/rest_adjust.dart';
 import '../domain/weight_label.dart';
+import 'end_workout_sheet.dart';
+import 'live_best_chip.dart';
+import 'rest_adjust_row.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 
@@ -70,7 +84,7 @@ class RestingView extends StatefulWidget {
     this.onClose,
     this.onPause,
     this.onReady,
-    this.onAddThirtySeconds,
+    this.onTotalChanged,
     this.onUndo,
     this.onBackgrounded,
     this.onAlertCancel,
@@ -84,7 +98,16 @@ class RestingView extends StatefulWidget {
     this.moveNumber,
     this.moveCount,
     this.sets,
+    this.end,
+    this.liveBest,
   });
+
+  /// A personal best the set she just saved set, drawn as a small chip under
+  /// the saved bar. Null draws nothing.
+  final LiveBest? liveBest;
+
+  /// The way to end the workout from here. Null draws no control.
+  final SessionEnd? end;
 
   /// Sets of today's session behind her, for the bar under the title.
   final ({int done, int total})? sets;
@@ -105,9 +128,10 @@ class RestingView extends StatefulWidget {
   /// has to mean something.
   final VoidCallback? onReady;
 
-  /// Told that she asked for longer. The extra thirty seconds are applied here
-  /// regardless — this is a notification, not a permission.
-  final VoidCallback? onAddThirtySeconds;
+  /// Told the new total whenever she makes the rest shorter or longer, so it
+  /// can be kept as this move's rest. The change is applied here regardless:
+  /// this is a notification, not a permission.
+  final ValueChanged<Duration>? onTotalChanged;
 
   /// Runs only when the undo actually landed inside the window.
   final VoidCallback? onUndo;
@@ -298,19 +322,30 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
     widget.onReady?.call();
   }
 
-  void _addThirtySeconds() {
-    // The ring reads remaining against total, so total grows with it.
-    // Otherwise asking for longer would drive the fraction past full and the
-    // ring would appear to run backwards.
+  /// Moves the rest by [delta], held between the floor and the ceiling.
+  ///
+  /// The ring reads remaining against total, so both move together; otherwise
+  /// the fraction would run past full and the ring would appear to go
+  /// backwards. A shorter rest never ends the rest here: the control is off
+  /// when it would, and the clock itself ends it.
+  void _adjust(Duration delta) {
+    final total = _total;
+    final next = clampRest(total + delta);
+    final change = next - total;
+    if (change == Duration.zero) return;
+    final left = _remaining + change;
     _clock.value = (
-      remaining: _remaining + const Duration(seconds: 30),
-      total: _total + const Duration(seconds: 30),
+      remaining: left < const Duration(seconds: 1)
+          ? const Duration(seconds: 1)
+          : left,
+      total: next,
     );
-    // She may have asked for longer after it already ran out.
+    // She may have asked for longer after it already ran out. A rest she
+    // paused stays paused.
     _ended = false;
     widget.onAlertCancel?.call();
     if (widget.autoStart && !_paused && _tick == null) _start();
-    widget.onAddThirtySeconds?.call();
+    widget.onTotalChanged?.call(next);
   }
 
   @override
@@ -323,6 +358,7 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
       // inside the non-scrolling scaffold, whose IntrinsicHeight cannot hold a
       // 210px ring plus the up-next card plus the footer on a short viewport —
       // it overflows, and an overflow here hides the rest timer she is watching.
+      footerScrollsWhenLarge: true,
       appBar: TrainTopBar(
         title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
         onClose: widget.onClose,
@@ -338,6 +374,7 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
             tooltip: _paused ? l10n.resume : l10n.pause,
             icon: Icon(_paused ? Icons.play_arrow : Icons.pause),
           ),
+          if (widget.end case final end?) SessionEndButton(end: end),
         ],
       ),
       footer: [
@@ -345,19 +382,13 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
           l10n.imReadyNextSet,
           onPressed: widget.onReady == null ? null : _ready,
         ),
-        // Small and secondary: the tooltip is its label for a screen reader.
-        // Bound to the handler, not to the callback. The router passes no
-        // onAddThirtySeconds, so binding to it left it disabled, which is
-        // exactly why "Add 30 seconds" added nothing.
-        Center(
-          child: IconButton(
-            key: const ValueKey('r09-add-30'),
-            onPressed: _addThirtySeconds,
-            tooltip: l10n.add30Seconds,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.more_time),
-          ),
+        // Bound to the handlers here, not to optional callbacks: the router
+        // passes none, and a control bound to one stayed disabled.
+        RestAdjustRow(
+          clock: _clock,
+          onShorter: () => _adjust(-kRestStep),
+          onLonger: () => _adjust(kRestStep),
+          onSkip: widget.onReady == null ? null : _ready,
         ),
       ],
       children: [
@@ -376,6 +407,16 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
           undoLabel: l10n.undo,
           onUndo: widget.onUndo,
         ),
+        if (widget.liveBest case final best?) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: LiveBestChip(
+              key: const ValueKey('r09-new-best'),
+              best: best,
+            ),
+          ),
+        ],
         const SizedBox(height: 24),
         Center(
           // The only part of the screen that changes each second.

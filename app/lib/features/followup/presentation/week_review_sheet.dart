@@ -289,5 +289,6 @@ class _WeekReviewBodyState extends State<WeekReviewBody> {
     TrainingGoal.feelBetter => l10n.feelGoodAndMove,
     TrainingGoal.loseSteadily => l10n.loseSteadily,
     TrainingGoal.backIntoIt => l10n.getBackIntoIt,
+    TrainingGoal.buildMuscle => l10n.buildMuscle,
   };
 }

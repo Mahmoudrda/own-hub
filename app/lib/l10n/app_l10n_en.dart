@@ -11789,4 +11789,642 @@ class AppL10nEn extends AppL10n {
   @override
   String get yourPlanStaysAsItIsSee =>
       'Your plan stays as it is. See you next week.';
+
+  @override
+  String get profilePhoto => 'Profile photo';
+
+  @override
+  String get yourPhotoStaysOnThisPhoneOnly =>
+      'Your photo stays on this phone. Only you see it.';
+
+  @override
+  String get addAPhoto => 'Add a photo';
+
+  @override
+  String get removePhoto => 'Remove photo';
+
+  @override
+  String get chooseFromYourPhotos => 'Choose from your photos';
+
+  @override
+  String get fitYourPhoto => 'Fit your photo';
+
+  @override
+  String get dragToMoveItPinchOrUse =>
+      'Drag to move it. Pinch or use the buttons to zoom.';
+
+  @override
+  String get zoomIn => 'Zoom in';
+
+  @override
+  String get zoomOut => 'Zoom out';
+
+  @override
+  String get yourPhotoIsSet => 'Your photo is set.';
+
+  @override
+  String get yourPhotoWasRemoved => 'Your photo was removed.';
+
+  @override
+  String get ownHubCouldNotOpenTheCamera =>
+      'Own Hub could not open the camera. You can allow it in your phone settings, or choose a photo instead.';
+
+  @override
+  String get thatPhotoCouldNotBeUsedPlease =>
+      'That photo could not be used. Please try another one.';
+
+  @override
+  String get anOwnHubEventIsComingUp =>
+      'An Own Hub event is coming up. Seats are limited.';
+
+  @override
+  String get aNewOwnHubEventIsOpen =>
+      'A new Own Hub event is open for booking. Have a look.';
+
+  @override
+  String get yourSeatIsWaiting => 'Your seat is waiting.';
+
+  @override
+  String get yourOwnHubEventIsAlmostHere =>
+      'Your Own Hub event is almost here. See you there.';
+
+  @override
+  String get eventReminders => 'Event reminders';
+
+  @override
+  String get aNoteBeforeEventsYouCanJoin =>
+      'A note before events you can join, and before the seat you booked.';
+
+  @override
+  String get endWorkout => 'End workout';
+
+  @override
+  String get endThisWorkout => 'End this workout?';
+
+  @override
+  String get finishAndSave => 'Finish and save';
+
+  @override
+  String setsSavedSoFarCount(String count) {
+    return 'Sets saved so far: $count';
+  }
+
+  @override
+  String get discardThisWorkout => 'Discard this workout';
+
+  @override
+  String get keepGoing => 'Keep going';
+
+  @override
+  String get nothingIsLoggedYetSoThisWorkout =>
+      'Nothing is logged yet, so this workout is not counted. Leave it, or keep going.';
+
+  @override
+  String get workoutDiscardedItIsNotCounted =>
+      'Workout discarded. It is not counted.';
+
+  @override
+  String get fullScreen => 'Full screen';
+
+  @override
+  String get restart => 'Restart';
+
+  @override
+  String get halfSpeed => 'Half speed';
+
+  @override
+  String get normalSpeed => 'Normal speed';
+
+  @override
+  String get closeVideo => 'Close video';
+
+  @override
+  String countPluralOne1MoveOtherCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count moves',
+      one: '1 move',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String secondsSRest(String seconds) {
+    return '$seconds s rest';
+  }
+
+  @override
+  String minutesPluralOneAbout1MinOther(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: 'About $minutes min',
+      one: 'About 1 min',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1MoreSetOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more sets',
+      one: '1 more set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1SetLessOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets less',
+      one: '1 set less',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1MoreMoveOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more moves',
+      one: '1 more move',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String countPluralOne1MoveLessOther(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count moves less',
+      one: '1 move less',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String secondsSMoreRest(String seconds) {
+    return '$seconds s more rest';
+  }
+
+  @override
+  String secondsSLessRest(String seconds) {
+    return '$seconds s less rest';
+  }
+
+  @override
+  String minutesPluralOne1MinLongerOther(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes min longer',
+      one: '1 min longer',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String minutesPluralOne1MinShorterOther(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes min shorter',
+      one: '1 min shorter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String comparedWithYourLevelChanges(String changes) {
+    return 'Compared with your level: $changes';
+  }
+
+  @override
+  String get thisIsYourLevel => 'This is your level';
+
+  @override
+  String ofTargetG(String target) {
+    return 'of $target g';
+  }
+
+  @override
+  String nMinShortDay(String n) {
+    return '$n min · short day';
+  }
+
+  @override
+  String get whatCantYouEat => 'What can\'t you eat?';
+
+  @override
+  String get checkedByOwnHub => 'Checked by Own Hub';
+
+  @override
+  String get buildMuscle => 'Build muscle';
+
+  @override
+  String get heavierLiftsBuiltUpALittleEach =>
+      'Heavier lifts, built up a little each week. Best with a gym or dumbbells.';
+
+  @override
+  String get eachSessionStartsWithTheBigLifts =>
+      'Each session starts with the big lifts, then the smaller ones. Add a rep, or a little weight, once every set is done.';
+
+  @override
+  String get gym => 'Gym';
+
+  @override
+  String get whereYouTrain => 'Where you train';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get changeTheseAndYourPlanChangesWith =>
+      'Change these and your plan changes with them.';
+
+  @override
+  String yourPlanWillBePlan(String plan) {
+    return 'Your plan will be $plan.';
+  }
+
+  @override
+  String get samePlanAsNow => 'Same plan as now.';
+
+  @override
+  String get buildMuscleNeedsAGymOrDumbbells =>
+      'Build muscle needs a gym or dumbbells. For now you get strength training with your body weight.';
+
+  @override
+  String get insights => 'Insights';
+
+  @override
+  String get sweets => 'Sweets';
+
+  @override
+  String get safeForMe => 'Safe for me';
+
+  @override
+  String get showAllEgyptianDishes => 'Show all Egyptian dishes';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String addingToMeal(String meal) {
+    return 'Adding to $meal';
+  }
+
+  @override
+  String get shareYourWorkout => 'Share your workout';
+
+  @override
+  String get square => 'Square';
+
+  @override
+  String get linen => 'Linen';
+
+  @override
+  String get petrol => 'Petrol';
+
+  @override
+  String get transparent => 'Transparent';
+
+  @override
+  String get caloriesEst => 'Calories (est.)';
+
+  @override
+  String get weightLifted => 'Weight lifted';
+
+  @override
+  String get movesAndSets => 'Moves and sets';
+
+  @override
+  String get myName => 'My name';
+
+  @override
+  String get customiseTheCard => 'Customise the card';
+
+  @override
+  String get format => 'Format';
+
+  @override
+  String get background => 'Background';
+
+  @override
+  String get showOnTheCard => 'Show on the card';
+
+  @override
+  String get caloriesAreARoughEstimateFromYour =>
+      'Calories are a rough estimate from your time and your weight, not medical advice.';
+
+  @override
+  String get thisIsThePictureYouWillShare =>
+      'This is the picture you will share. Nothing leaves your phone unless you tap Share.';
+
+  @override
+  String dayWorkout(String day) {
+    return '$day workout';
+  }
+
+  @override
+  String get previewOfYourWorkoutCard => 'Preview of your workout card';
+
+  @override
+  String get editWorkout => 'Edit workout';
+
+  @override
+  String get swapRemoveReorderOrAddMoves =>
+      'Swap, remove, reorder or add moves.';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get setsAndReps => 'Sets and reps';
+
+  @override
+  String get dragToReorder => 'Drag to reorder';
+
+  @override
+  String get updateMySavedWorkout => 'Update my saved workout?';
+
+  @override
+  String get updateMyPlan => 'Update my plan?';
+
+  @override
+  String get yourChangesWillReplaceTheSavedVersion =>
+      'Your changes will replace the saved version.';
+
+  @override
+  String get thisDayInYourPlanWillChange =>
+      'This day in your plan will change. The original split stays available.';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get justThisTime => 'Just this time';
+
+  @override
+  String get updatedInYourPlan => 'Updated in your plan';
+
+  @override
+  String get useThisMove => 'Use this move';
+
+  @override
+  String get buildMyOwnPlan => 'Build my own plan';
+
+  @override
+  String get startWithABlankPlanOrChange =>
+      'Start with a blank plan, or change one of the three splits to suit you.';
+
+  @override
+  String get startFromScratch => 'Start from scratch';
+
+  @override
+  String get editOneOfTheThreeSplits => 'Edit one of the three splits';
+
+  @override
+  String get customizeThisPlan => 'Customize this plan';
+
+  @override
+  String get myPlan => 'My plan';
+
+  @override
+  String get editMyPlan => 'Edit my plan';
+
+  @override
+  String get changePlan => 'Change plan';
+
+  @override
+  String get theseAreYourTrainingDaysOpenA =>
+      'These are your training days. Open a day to change its moves.';
+
+  @override
+  String get noDaysYetAddYourFirstDay => 'No days yet. Add your first day.';
+
+  @override
+  String get removeDay => 'Remove day';
+
+  @override
+  String get replace => 'Replace';
+
+  @override
+  String get replaceThisDay => 'Replace this day';
+
+  @override
+  String get putThisDayBackAsItWas =>
+      'Put this day back as it was in the original split';
+
+  @override
+  String get orUseTheMovesOfAnotherDay => 'Or use the moves of another day';
+
+  @override
+  String get blankDay => 'Blank day';
+
+  @override
+  String copyOfName(String name) {
+    return 'Copy of $name';
+  }
+
+  @override
+  String get addADayToMyPlan => 'Add a day to my plan';
+
+  @override
+  String get addToMyPlan => 'Add to my plan';
+
+  @override
+  String get addedToYourPlan => 'Added to your plan';
+
+  @override
+  String get backToTheOriginalSplit => 'Back to the original split';
+
+  @override
+  String get goBackToTheOriginalSplit => 'Go back to the original split?';
+
+  @override
+  String get yourChangesToThePlanWillBe =>
+      'Your changes to the plan will be removed. Your saved workouts stay.';
+
+  @override
+  String get goBackToTheOriginal => 'Go back to the original';
+
+  @override
+  String get startFromABlankPlan => 'Start from a blank plan?';
+
+  @override
+  String get thisRemovesEveryDayFromYourPlan =>
+      'This removes every day from your plan. You can still go back to the original split.';
+
+  @override
+  String get clearMyPlan => 'Clear my plan';
+
+  @override
+  String dayNumber(String number) {
+    return 'Day $number';
+  }
+
+  @override
+  String get n15SLess => '15 s less';
+
+  @override
+  String get n15SMore => '15 s more';
+
+  @override
+  String get shortenTheRestBy15Seconds => 'Shorten the rest by 15 seconds';
+
+  @override
+  String get add15SecondsToTheRest => 'Add 15 seconds to the rest';
+
+  @override
+  String get warmUpSet => 'Warm-up set';
+
+  @override
+  String get notCountedInYourSetsOrRecords =>
+      'Not counted in your sets or records';
+
+  @override
+  String get warmUp => 'Warm-up';
+
+  @override
+  String doneWarmUpFigure(String figure) {
+    return 'Done · warm-up $figure';
+  }
+
+  @override
+  String warmUpSavedFigure(String figure) {
+    return 'Warm-up saved · $figure';
+  }
+
+  @override
+  String warmUpWithAboutWeightFirstAround(String weight) {
+    return 'Warm up with about $weight first, around half your working weight.';
+  }
+
+  @override
+  String get newBest => 'New best';
+
+  @override
+  String heaviestWeightYetWeight(String weight) {
+    return 'Heaviest weight yet: $weight';
+  }
+
+  @override
+  String mostRepsAtWeightReps(String weight, String reps) {
+    return 'Most reps at $weight: $reps';
+  }
+
+  @override
+  String mostRepsYetReps(String reps) {
+    return 'Most reps yet: $reps';
+  }
+
+  @override
+  String longestHoldYetTime(String time) {
+    return 'Longest hold yet: $time';
+  }
+
+  @override
+  String get aHarderVersionOfThisMove => 'A harder version of this move';
+
+  @override
+  String get foodLast7Days => 'Food, last 7 days';
+
+  @override
+  String get logAMealAndYourProteinAnd =>
+      'Log a meal and your protein and calories show here, next to your target.';
+
+  @override
+  String youLoggedFoodOnLoggedOf7(String logged) {
+    return 'You logged food on $logged of 7 days';
+  }
+
+  @override
+  String get proteinAverageOfTheDaysYouLogged =>
+      'Protein, average of the days you logged';
+
+  @override
+  String get caloriesAverageOfTheDaysYouLogged =>
+      'Calories, average of the days you logged';
+
+  @override
+  String get trainOnceAndYourBodyMapRecords =>
+      'Train once and your body map, records and weekly sets fill in here.';
+
+  @override
+  String get yourBodyMapAndSets => 'Your body map and sets';
+
+  @override
+  String get opensYourPrivateMeasurements => 'Opens your private measurements';
+
+  @override
+  String nDaySplit(String n) {
+    return '$n-day split';
+  }
+
+  @override
+  String nDays(String n) {
+    return '$n days';
+  }
+
+  @override
+  String get recommendedForYourDays => 'Recommended for your days';
+
+  @override
+  String get choose => 'Choose';
+
+  @override
+  String get customize => 'Customize';
+
+  @override
+  String get startFromScratchOrEditOneOf =>
+      'Start from scratch or edit one of the three.';
+
+  @override
+  String get replaceYourPlanWithThisSplit =>
+      'Replace your plan with this split?';
+
+  @override
+  String get yourPlanIsSwappedForACopy =>
+      'Your plan is swapped for a copy of this split. You can change that copy as you like.';
+
+  @override
+  String get thisDayUsesGymMachinesSwapA =>
+      'This day uses gym machines. Swap a move for one you can do at home.';
+
+  @override
+  String get yourPhotoIsKeptOnThisPhone =>
+      'Your photo is kept on this phone and never uploaded by Own Hub. Only you see it.';
+
+  @override
+  String secondsSLess(String seconds) {
+    return '$seconds s less';
+  }
+
+  @override
+  String secondsSMore(String seconds) {
+    return '$seconds s more';
+  }
+
+  @override
+  String shortenTheRestBySecondsSeconds(String seconds) {
+    return 'Shorten the rest by $seconds seconds';
+  }
+
+  @override
+  String addSecondsSecondsToTheRest(String seconds) {
+    return 'Add $seconds seconds to the rest';
+  }
+
+  @override
+  String foodLastDaysDays(String days) {
+    return 'Food, last $days days';
+  }
 }

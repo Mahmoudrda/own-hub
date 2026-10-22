@@ -29,6 +29,7 @@ import '../../../ui/app_sheet.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/train_repository.dart';
+import 'end_workout_sheet.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 import 'exercise_labels.dart';
@@ -51,7 +52,11 @@ class MoveLoggedView extends StatefulWidget {
     this.sets,
     this.editableSets,
     this.onEditSet,
+    this.end,
   });
+
+  /// The way to end the workout from here. Null draws no control.
+  final SessionEnd? end;
 
   /// The sets she logged for the move at an index, read once anything still
   /// in its undo window has been written. Null leaves the rows untappable.
@@ -230,6 +235,7 @@ class _MoveLoggedViewState extends State<MoveLoggedView> {
               tooltip: l10n.pause,
               icon: const Icon(Icons.pause),
             ),
+          if (widget.end case final end?) SessionEndButton(end: end),
         ],
       ),
       footer: [

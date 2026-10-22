@@ -311,7 +311,14 @@ abstract final class FollowUpPlan {
     return WeekSuggestion(
       days: newDays,
       minutes: newMinutes,
-      goal: wanted == goal ? null : wanted,
+      // Building muscle is a way of getting stronger, so "strength" is not a
+      // change of goal for her.
+      goal:
+          wanted == goal ||
+              (goal == TrainingGoal.buildMuscle &&
+                  wanted == TrainingGoal.stronger)
+          ? null
+          : wanted,
     );
   }
 

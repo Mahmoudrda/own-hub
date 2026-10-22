@@ -21,6 +21,8 @@ import '../../eat/domain/meal_images.dart';
 import '../../eat/domain/meal_repository.dart' show MealSlot;
 import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
 import '../../eat/presentation/eat_sample_library.dart' show eatSampleLibrary;
+import '../../train/domain/tier_facts.dart';
+import '../../train/presentation/tier_tabs.dart' show TierFactsBlock;
 import '../domain/today_day.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -318,9 +320,14 @@ class WorkoutCard extends StatelessWidget {
   final bool evening;
 
   @override
-  Widget build(BuildContext context) => HandSwap(
-    child: KeyedSubtree(key: ValueKey((done, evening)), child: _body(context)),
-  );
+  Widget build(BuildContext context) {
+    final body = KeyedSubtree(
+      key: ValueKey((done, evening)),
+      child: _body(context),
+    );
+    // Reduce Motion: the card is replaced, with no size ease to run.
+    return handMotionOff(context) ? body : HandSwap(child: body);
+  }
 
   Widget _body(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -939,10 +946,16 @@ class TodayHero extends StatelessWidget {
     this.onRecall,
     this.evening = false,
     this.done = false,
+    this.tierFacts,
   });
 
   final String? title;
   final int? minutes;
+
+  /// What the viewed tier's session holds, and how it differs from her own
+  /// level. When set it stands in for the plain minutes: the facts already say
+  /// about how long the session takes.
+  final TierFacts? tierFacts;
   final int? week;
   final int? totalWeeks;
 
@@ -955,9 +968,14 @@ class TodayHero extends StatelessWidget {
   final bool done;
 
   @override
-  Widget build(BuildContext context) => HandSwap(
-    child: KeyedSubtree(key: ValueKey((done, evening)), child: _body(context)),
-  );
+  Widget build(BuildContext context) {
+    final body = KeyedSubtree(
+      key: ValueKey((done, evening)),
+      child: _body(context),
+    );
+    // Reduce Motion: the card is replaced, with no size ease to run.
+    return handMotionOff(context) ? body : HandSwap(child: body);
+  }
 
   Widget _poster({required Color color, required Widget child}) => Container(
     height: 128,
@@ -1032,7 +1050,7 @@ class TodayHero extends StatelessWidget {
     final facts = [
       if (week != null && totalWeeks != null)
         l10n.weekWeekOfTotal(countLabel(week!), countLabel(totalWeeks!)),
-      if (minutes != null) l10n.nMin(countLabel(minutes!)),
+      if (minutes != null && tierFacts == null) l10n.nMin(countLabel(minutes!)),
     ];
 
     return AppCard(
@@ -1051,6 +1069,7 @@ class TodayHero extends StatelessWidget {
             facts.join(' · '),
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
+        if (tierFacts != null) TierFactsBlock(facts: tierFacts!),
         primary,
         ?secondary,
       ],
@@ -1138,26 +1157,48 @@ class HomeEatCard extends StatelessWidget {
       (l10n.fat, totals.fatSoFar, targets?.fatG),
     ];
     // A figure no logged food carries is a dash, not a zero.
-    String grams((String, int?, int?) m) {
-      final eaten = m.$2 == null ? '–' : countLabel(m.$2!);
-      return m.$3 == null
-          ? l10n.gramsG_1usqy(eaten)
-          : l10n.sofarOfTargetG(eaten, countLabel(m.$3!));
+    String eaten((String, int?, int?) m) =>
+        l10n.gramsG_1usqy(m.$2 == null ? '–' : countLabel(m.$2!));
+    String? target((String, int?, int?) m) =>
+        m.$3 == null ? null : l10n.ofTargetG(countLabel(m.$3!));
+
+    // The value on top, "of 120 g" under it, the name last. Each column keeps
+    // its own width and wraps instead of shrinking, so no figure is squeezed.
+    Widget macro((String, int?, int?) m) {
+      final of = target(m);
+      return MergeSemantics(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Column(
+            key: ValueKey('today-eat-macro-${triad.indexOf(m)}'),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                eaten(m),
+                style: AppText.titleM,
+                textAlign: TextAlign.center,
+              ),
+              if (of != null)
+                Text(
+                  of,
+                  style: AppText.bodyM.copyWith(
+                    fontSize: 13,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              const SizedBox(height: 4),
+              Text(m.$1, style: AppText.bodyM, textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      );
     }
 
-    Widget macro((String, int?, int?) m) => Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(grams(m), style: AppText.titleM),
-        ),
-        Text(
-          m.$1,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-          textAlign: TextAlign.center,
-        ),
-      ],
+    Widget divider() => Container(
+      width: 1,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      color: AppColors.outline,
     );
 
     final macros = stacked
@@ -1168,13 +1209,29 @@ class HomeEatCard extends StatelessWidget {
               for (final m in triad)
                 AppSplitRow(
                   start: Text(m.$1, style: AppText.bodyM),
-                  end: Text(grams(m), style: AppText.titleS),
+                  end: Text(
+                    target(m) == null
+                        ? eaten(m)
+                        : l10n.sofarOfTargetG(
+                            m.$2 == null ? '–' : countLabel(m.$2!),
+                            countLabel(m.$3!),
+                          ),
+                    style: AppText.titleS,
+                  ),
                 ),
             ],
           )
-        : Row(
+        : IntrinsicHeight(
             key: const ValueKey('today-eat-macros'),
-            children: [for (final m in triad) Expanded(child: macro(m))],
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < triad.length; i++) ...[
+                  if (i > 0) divider(),
+                  Expanded(child: Center(child: macro(triad[i]))),
+                ],
+              ],
+            ),
           );
 
     return AppCard(
@@ -1184,17 +1241,8 @@ class HomeEatCard extends StatelessWidget {
           head
         else
           HandPressable(onTap: onTap, builder: (_, _) => head),
-        if (stacked) ...[
-          Center(child: ring),
-          macros,
-        ] else
-          Row(
-            children: [
-              ring,
-              const SizedBox(width: 12),
-              Expanded(child: macros),
-            ],
-          ),
+        Center(child: ring),
+        macros,
         if (onLogFood != null || onScanMeal != null)
           Row(
             children: [

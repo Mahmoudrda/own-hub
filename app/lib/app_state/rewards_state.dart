@@ -384,6 +384,40 @@ class RewardsState {
     return true;
   }
 
+  /// Takes back the personal bests a discarded workout set before she put it
+  /// away: the bests and their count, the points they paid, and any milestone
+  /// they earned that her counts no longer reach. Today's cap is not given
+  /// back, as in [uncreditSession]. The session itself was never credited.
+  void uncreditPersonalBests({
+    required String sessionId,
+    required ProgressStore progress,
+    required SessionBestsBridge bests,
+    InMemoryTrainRepository? train,
+    DateTime? now,
+  }) {
+    final on = now ?? AppClock.now();
+    final suffix = ':$sessionId';
+    var paid = 0;
+    for (final id in [
+      for (final id in _awardIds)
+        if (id.startsWith('best:') && id.endsWith(suffix)) id,
+    ]) {
+      _awardIds.remove(id);
+      paid += _granted.remove(id) ?? 0;
+    }
+    bests.forget(
+      sessionId,
+      flushes: train?.flushes ?? const [],
+      sessionById: train?.sessionById,
+    );
+    progress.rewards = progress.rewards.copyWith(
+      bestsCount: bests.ledger.bestsCount,
+    );
+    _setPoints(progress, progress.rewards.points - paid);
+    _revokeMilestones('session:$sessionId', progress: progress, on: on);
+    AppChanges.bump();
+  }
+
   /// A closed week's bar on Progress, one session lower. Its verdict stays.
   static void _lowerClosedBar(ProgressStore progress, WeekKey week) {
     final bars = progress.goal.recent8;

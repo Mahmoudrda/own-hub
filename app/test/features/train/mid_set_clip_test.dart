@@ -129,4 +129,56 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     expect(FakeClipPlayer.made.last.disposed, isTrue);
   });
+
+  testWidgets('a set screen covered by the next one lets its player go', (
+    tester,
+  ) async {
+    final media = FakeExerciseMedia();
+    await tester.pumpWidget(
+      _host(
+        MidSetView(
+          move: _move('glute_bridge', 'Glute bridge'),
+          clip: library.byId('glute_bridge'),
+          media: media,
+          players: FakeClipPlayer.make,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+
+    // The same move's set screen is pushed again, as each set does, and then
+    // a rest on top of that.
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => MidSetView(
+          move: _move('glute_bridge', 'Glute bridge'),
+          clip: library.byId('glute_bridge'),
+          media: media,
+          players: FakeClipPlayer.make,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(FakeClipPlayer.made, hasLength(2));
+    expect(FakeClipPlayer.made.first.disposed, isTrue);
+    expect(FakeClipPlayer.made.last.disposed, isFalse);
+
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => const Scaffold(body: Text('resting')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(FakeClipPlayer.made.last.disposed, isTrue);
+    expect(
+      FakeClipPlayer.made.where((p) => !p.disposed),
+      isEmpty,
+      reason: 'no set screen under the rest keeps a clip looping',
+    );
+
+    navigator.pop();
+    await tester.pumpAndSettle();
+    expect(FakeClipPlayer.made.where((p) => !p.disposed), hasLength(1));
+  });
 }

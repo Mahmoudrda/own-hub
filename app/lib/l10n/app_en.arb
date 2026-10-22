@@ -5740,5 +5740,486 @@
   "okayWeek": "Okay week",
   "hardWeek": "Hard week",
   "goToTrain": "Go to Train",
-  "yourPlanStaysAsItIsSee": "Your plan stays as it is. See you next week."
+  "yourPlanStaysAsItIsSee": "Your plan stays as it is. See you next week.",
+  "profilePhoto": "Profile photo",
+  "yourPhotoStaysOnThisPhoneOnly": "Your photo stays on this phone. Only you see it.",
+  "addAPhoto": "Add a photo",
+  "removePhoto": "Remove photo",
+  "chooseFromYourPhotos": "Choose from your photos",
+  "fitYourPhoto": "Fit your photo",
+  "dragToMoveItPinchOrUse": "Drag to move it. Pinch or use the buttons to zoom.",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "yourPhotoIsSet": "Your photo is set.",
+  "yourPhotoWasRemoved": "Your photo was removed.",
+  "ownHubCouldNotOpenTheCamera": "Own Hub could not open the camera. You can allow it in your phone settings, or choose a photo instead.",
+  "thatPhotoCouldNotBeUsedPlease": "That photo could not be used. Please try another one.",
+  "anOwnHubEventIsComingUp": "An Own Hub event is coming up. Seats are limited.",
+  "aNewOwnHubEventIsOpen": "A new Own Hub event is open for booking. Have a look.",
+  "yourSeatIsWaiting": "Your seat is waiting.",
+  "yourOwnHubEventIsAlmostHere": "Your Own Hub event is almost here. See you there.",
+  "eventReminders": "Event reminders",
+  "aNoteBeforeEventsYouCanJoin": "A note before events you can join, and before the seat you booked.",
+  "endWorkout": "End workout",
+  "endThisWorkout": "End this workout?",
+  "finishAndSave": "Finish and save",
+  "setsSavedSoFarCount": "Sets saved so far: {count}",
+  "@setsSavedSoFarCount": {
+    "description": "The end-workout sheet: how many sets she has logged in this workout.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "discardThisWorkout": "Discard this workout",
+  "keepGoing": "Keep going",
+  "nothingIsLoggedYetSoThisWorkout": "Nothing is logged yet, so this workout is not counted. Leave it, or keep going.",
+  "workoutDiscardedItIsNotCounted": "Workout discarded. It is not counted.",
+  "fullScreen": "Full screen",
+  "restart": "Restart",
+  "halfSpeed": "Half speed",
+  "normalSpeed": "Normal speed",
+  "closeVideo": "Close video",
+  "countPluralOne1MoveOtherCount": "{count, plural, one{1 move} other{{count} moves}}",
+  "@countPluralOne1MoveOtherCount": {
+    "description": "Home and Train: how many moves the viewed level's session holds. Plural because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "secondsSRest": "{seconds} s rest",
+  "@secondsSRest": {
+    "description": "Home and Train: the rest between sets of the viewed level's session.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "70"
+      }
+    }
+  },
+  "minutesPluralOneAbout1MinOther": "{minutes, plural, one{About 1 min} other{About {minutes} min}}",
+  "@minutesPluralOneAbout1MinOther": {
+    "description": "Home and Train: about how long the viewed level's session takes, rounded to 5 minutes. Plural for Arabic.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "40"
+      }
+    }
+  },
+  "countPluralOne1MoreSetOther": "{count, plural, one{1 more set} other{{count} more sets}}",
+  "@countPluralOne1MoreSetOther": {
+    "description": "Home and Train: the viewed level has this many more sets per move than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "countPluralOne1SetLessOther": "{count, plural, one{1 set less} other{{count} sets less}}",
+  "@countPluralOne1SetLessOther": {
+    "description": "Home and Train: the viewed level has this many fewer sets per move than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "countPluralOne1MoreMoveOther": "{count, plural, one{1 more move} other{{count} more moves}}",
+  "@countPluralOne1MoreMoveOther": {
+    "description": "Home and Train: the viewed level has this many more moves than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "countPluralOne1MoveLessOther": "{count, plural, one{1 move less} other{{count} moves less}}",
+  "@countPluralOne1MoveLessOther": {
+    "description": "Home and Train: the viewed level has this many fewer moves than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "secondsSMoreRest": "{seconds} s more rest",
+  "@secondsSMoreRest": {
+    "description": "Home and Train: the viewed level rests this many seconds longer than her own level.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "secondsSLessRest": "{seconds} s less rest",
+  "@secondsSLessRest": {
+    "description": "Home and Train: the viewed level rests this many seconds less than her own level.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "minutesPluralOne1MinLongerOther": "{minutes, plural, one{1 min longer} other{{minutes} min longer}}",
+  "@minutesPluralOne1MinLongerOther": {
+    "description": "Home and Train: the viewed level's session is this much longer than her own level's.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "minutesPluralOne1MinShorterOther": "{minutes, plural, one{1 min shorter} other{{minutes} min shorter}}",
+  "@minutesPluralOne1MinShorterOther": {
+    "description": "Home and Train: the viewed level's session is this much shorter than her own level's.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "comparedWithYourLevelChanges": "Compared with your level: {changes}",
+  "@comparedWithYourLevelChanges": {
+    "description": "Home and Train: under the facts of the level she is looking at, what is different from the level she set. The changes are a short list joined with a middle dot.",
+    "placeholders": {
+      "changes": {
+        "type": "String",
+        "example": "1 more set · 20 s less rest"
+      }
+    }
+  },
+  "thisIsYourLevel": "This is your level",
+  "ofTargetG": "of {target} g",
+  "@ofTargetG": {
+    "description": "Home macros: the target under a macro's eaten grams, for example 'of 120 g'.",
+    "placeholders": {
+      "target": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "nMinShortDay": "{n} min · short day",
+  "@nMinShortDay": {
+    "description": "O03: the 15 minute preset, named as a short day.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "whatCantYouEat": "What can't you eat?",
+  "checkedByOwnHub": "Checked by Own Hub",
+  "buildMuscle": "Build muscle",
+  "heavierLiftsBuiltUpALittleEach": "Heavier lifts, built up a little each week. Best with a gym or dumbbells.",
+  "eachSessionStartsWithTheBigLifts": "Each session starts with the big lifts, then the smaller ones. Add a rep, or a little weight, once every set is done.",
+  "gym": "Gym",
+  "whereYouTrain": "Where you train",
+  "apply": "Apply",
+  "changeTheseAndYourPlanChangesWith": "Change these and your plan changes with them.",
+  "yourPlanWillBePlan": "Your plan will be {plan}.",
+  "@yourPlanWillBePlan": {
+    "description": "Preview in the quick training sheet. plan is the plan name, where she trains and her level.",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "Build muscle · At the gym · Intermediate"
+      }
+    }
+  },
+  "samePlanAsNow": "Same plan as now.",
+  "buildMuscleNeedsAGymOrDumbbells": "Build muscle needs a gym or dumbbells. For now you get strength training with your body weight.",
+  "insights": "Insights",
+  "sweets": "Sweets",
+  "safeForMe": "Safe for me",
+  "showAllEgyptianDishes": "Show all Egyptian dishes",
+  "clear": "Clear",
+  "addingToMeal": "Adding to {meal}",
+  "@addingToMeal": {
+    "description": "Shown under the search bar after she taps Log on a meal row, so she knows which meal the next food goes to.",
+    "placeholders": {
+      "meal": {
+        "type": "String",
+        "example": "Lunch"
+      }
+    }
+  },
+  "shareYourWorkout": "Share your workout",
+  "square": "Square",
+  "linen": "Linen",
+  "petrol": "Petrol",
+  "transparent": "Transparent",
+  "caloriesEst": "Calories (est.)",
+  "weightLifted": "Weight lifted",
+  "movesAndSets": "Moves and sets",
+  "myName": "My name",
+  "customiseTheCard": "Customise the card",
+  "format": "Format",
+  "background": "Background",
+  "showOnTheCard": "Show on the card",
+  "caloriesAreARoughEstimateFromYour": "Calories are a rough estimate from your time and your weight, not medical advice.",
+  "thisIsThePictureYouWillShare": "This is the picture you will share. Nothing leaves your phone unless you tap Share.",
+  "dayWorkout": "{day} workout",
+  "@dayWorkout": {
+    "description": "Default title of the share card when the workout has no name; the day is the weekday she trained.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Tuesday"
+      }
+    }
+  },
+  "previewOfYourWorkoutCard": "Preview of your workout card",
+  "editWorkout": "Edit workout",
+  "swapRemoveReorderOrAddMoves": "Swap, remove, reorder or add moves.",
+  "reset": "Reset",
+  "setsAndReps": "Sets and reps",
+  "dragToReorder": "Drag to reorder",
+  "updateMySavedWorkout": "Update my saved workout?",
+  "updateMyPlan": "Update my plan?",
+  "yourChangesWillReplaceTheSavedVersion": "Your changes will replace the saved version.",
+  "thisDayInYourPlanWillChange": "This day in your plan will change. The original split stays available.",
+  "update": "Update",
+  "justThisTime": "Just this time",
+  "updatedInYourPlan": "Updated in your plan",
+  "useThisMove": "Use this move",
+  "buildMyOwnPlan": "Build my own plan",
+  "startWithABlankPlanOrChange": "Start with a blank plan, or change one of the three splits to suit you.",
+  "startFromScratch": "Start from scratch",
+  "editOneOfTheThreeSplits": "Edit one of the three splits",
+  "customizeThisPlan": "Customize this plan",
+  "myPlan": "My plan",
+  "editMyPlan": "Edit my plan",
+  "changePlan": "Change plan",
+  "theseAreYourTrainingDaysOpenA": "These are your training days. Open a day to change its moves.",
+  "noDaysYetAddYourFirstDay": "No days yet. Add your first day.",
+  "removeDay": "Remove day",
+  "replace": "Replace",
+  "replaceThisDay": "Replace this day",
+  "putThisDayBackAsItWas": "Put this day back as it was in the original split",
+  "orUseTheMovesOfAnotherDay": "Or use the moves of another day",
+  "blankDay": "Blank day",
+  "copyOfName": "Copy of {name}",
+  "@copyOfName": {
+    "description": "Option that adds a copy of one of her own days to her plan.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Upper"
+      }
+    }
+  },
+  "addADayToMyPlan": "Add a day to my plan",
+  "addToMyPlan": "Add to my plan",
+  "addedToYourPlan": "Added to your plan",
+  "backToTheOriginalSplit": "Back to the original split",
+  "goBackToTheOriginalSplit": "Go back to the original split?",
+  "yourChangesToThePlanWillBe": "Your changes to the plan will be removed. Your saved workouts stay.",
+  "goBackToTheOriginal": "Go back to the original",
+  "startFromABlankPlan": "Start from a blank plan?",
+  "thisRemovesEveryDayFromYourPlan": "This removes every day from your plan. You can still go back to the original split.",
+  "clearMyPlan": "Clear my plan",
+  "dayNumber": "Day {number}",
+  "@dayNumber": {
+    "description": "A day's number in her plan.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "n15SLess": "15 s less",
+  "n15SMore": "15 s more",
+  "shortenTheRestBy15Seconds": "Shorten the rest by 15 seconds",
+  "add15SecondsToTheRest": "Add 15 seconds to the rest",
+  "warmUpSet": "Warm-up set",
+  "notCountedInYourSetsOrRecords": "Not counted in your sets or records",
+  "warmUp": "Warm-up",
+  "doneWarmUpFigure": "Done · warm-up {figure}",
+  "@doneWarmUpFigure": {
+    "description": "R07 button while the warm-up switch is on; names the set it saves.",
+    "placeholders": {
+      "figure": {
+        "type": "String",
+        "example": "6 kg × 10"
+      }
+    }
+  },
+  "warmUpSavedFigure": "Warm-up saved · {figure}",
+  "@warmUpSavedFigure": {
+    "description": "R09 bar after a warm-up set is saved.",
+    "placeholders": {
+      "figure": {
+        "type": "String",
+        "example": "6 kg × 10"
+      }
+    }
+  },
+  "warmUpWithAboutWeightFirstAround": "Warm up with about {weight} first, around half your working weight.",
+  "@warmUpWithAboutWeightFirstAround": {
+    "description": "Quiet suggestion on R07 before the first set of a loaded move.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "6 kg"
+      }
+    }
+  },
+  "newBest": "New best",
+  "heaviestWeightYetWeight": "Heaviest weight yet: {weight}",
+  "@heaviestWeightYetWeight": {
+    "description": "What improved, on the New best chip.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "14 kg"
+      }
+    }
+  },
+  "mostRepsAtWeightReps": "Most reps at {weight}: {reps}",
+  "@mostRepsAtWeightReps": {
+    "description": "What improved, on the New best chip.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "12 kg"
+      },
+      "reps": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "mostRepsYetReps": "Most reps yet: {reps}",
+  "@mostRepsYetReps": {
+    "description": "What improved on a bodyweight move.",
+    "placeholders": {
+      "reps": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "longestHoldYetTime": "Longest hold yet: {time}",
+  "@longestHoldYetTime": {
+    "description": "What improved on a timed hold.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "45 seconds"
+      }
+    }
+  },
+  "aHarderVersionOfThisMove": "A harder version of this move",
+  "foodLast7Days": "Food, last 7 days",
+  "logAMealAndYourProteinAnd": "Log a meal and your protein and calories show here, next to your target.",
+  "youLoggedFoodOnLoggedOf7": "You logged food on {logged} of 7 days",
+  "@youLoggedFoodOnLoggedOf7": {
+    "description": "Under the 7-day food chart: how many of the last 7 days have a meal logged.",
+    "placeholders": {
+      "logged": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "proteinAverageOfTheDaysYouLogged": "Protein, average of the days you logged",
+  "caloriesAverageOfTheDaysYouLogged": "Calories, average of the days you logged",
+  "trainOnceAndYourBodyMapRecords": "Train once and your body map, records and weekly sets fill in here.",
+  "yourBodyMapAndSets": "Your body map and sets",
+  "opensYourPrivateMeasurements": "Opens your private measurements",
+  "nDaySplit": "{n}-day split",
+  "@nDaySplit": {
+    "description": "Name of a coach split: the number of training days a week, 3, 4 or 5.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "nDays": "{n} days",
+  "@nDays": {
+    "description": "A number of training days a week, 3, 4 or 5.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "recommendedForYourDays": "Recommended for your days",
+  "choose": "Choose",
+  "customize": "Customize",
+  "startFromScratchOrEditOneOf": "Start from scratch or edit one of the three.",
+  "replaceYourPlanWithThisSplit": "Replace your plan with this split?",
+  "yourPlanIsSwappedForACopy": "Your plan is swapped for a copy of this split. You can change that copy as you like.",
+  "thisDayUsesGymMachinesSwapA": "This day uses gym machines. Swap a move for one you can do at home.",
+  "yourPhotoIsKeptOnThisPhone": "Your photo is kept on this phone and never uploaded by Own Hub. Only you see it.",
+  "secondsSLess": "{seconds} s less",
+  "@secondsSLess": {
+    "description": "R09's shorter-rest button. seconds is the rest step in Western digits, e.g. 15.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "secondsSMore": "{seconds} s more",
+  "@secondsSMore": {
+    "description": "R09's longer-rest button. seconds is the rest step in Western digits, e.g. 15.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "shortenTheRestBySecondsSeconds": "Shorten the rest by {seconds} seconds",
+  "@shortenTheRestBySecondsSeconds": {
+    "description": "Spoken label of R09's shorter-rest button. seconds is the rest step in Western digits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "addSecondsSecondsToTheRest": "Add {seconds} seconds to the rest",
+  "@addSecondsSecondsToTheRest": {
+    "description": "Spoken label of R09's longer-rest button. seconds is the rest step in Western digits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "foodLastDaysDays": "Food, last {days} days",
+  "@foodLastDaysDays": {
+    "description": "The heading of Insights' food chart. days is the number of days it covers, in Western digits.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  }
 }

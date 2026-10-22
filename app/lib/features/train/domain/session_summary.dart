@@ -21,6 +21,7 @@ import 'package:meta/meta.dart';
 import '../../../domain/rewards/credit_outcome.dart';
 import '../../../domain/rewards/personal_best_detector.dart';
 import '../../../domain/rewards/training_streak.dart';
+import '../../../domain/training/energy_estimate.dart';
 import 'own_best_challenge.dart';
 import 'train_repository.dart';
 
@@ -40,7 +41,50 @@ class SessionSummary {
     this.trainingStreak,
     this.moveNames = const <String, String>{},
     this.bestPoints = 0,
+    this.durationSec = 0,
+    this.volumeKg = 0,
+    this.totalReps = 0,
+    this.repSets = 0,
+    this.weightedSets = 0,
   });
+
+  /// How long the session took, in seconds as measured.
+  final int durationSec;
+
+  /// Weight lifted: the sum of kg x reps over the sets she logged with both.
+  /// A bodyweight set or a hold adds nothing, so a session of those is 0 and
+  /// the share card shows reps instead.
+  final double volumeKg;
+
+  /// Reps over the logged sets that had reps.
+  final int totalReps;
+
+  /// Logged sets that had reps.
+  final int repSets;
+
+  /// Logged sets that counted toward [volumeKg].
+  final int weightedSets;
+
+  /// Whole kilograms lifted, for display.
+  int get volumeWholeKg => volumeKg.round();
+
+  /// The pattern of the session, from how dense its sets were.
+  EffortKind get effort => classifyEffort(
+    durationSec: durationSec,
+    sets: sets,
+    repSets: repSets,
+    totalReps: totalReps,
+  );
+
+  /// Estimated kilocalories (MET x body weight x hours). Zero with no time or
+  /// no logged set. Always shown as an estimate.
+  int estimatedKcal({double? bodyWeightKg}) => sets <= 0
+      ? 0
+      : estimateKcal(
+          durationSec: durationSec,
+          kind: effort,
+          bodyWeightKg: bodyWeightKg,
+        );
 
   /// Points the ledger paid for this session's bests as they were found
   /// mid-session. Part of what R10 says she earned.
@@ -109,12 +153,27 @@ SessionSummary summarise({
 }) {
   final movesLogged = <String>{};
   var sets = 0;
+  var volumeKg = 0.0;
+  var totalReps = 0;
+  var repSets = 0;
+  var weightedSets = 0;
   for (final flush in flushes) {
     if (flush.sessionId != sessionId) continue;
     for (final set in flush.sets) {
       if (!set.isLogged) continue;
       sets += 1;
       movesLogged.add(flush.exerciseId);
+      final outcome = set.outcome;
+      final reps = outcome?.reps;
+      if (reps != null && reps > 0) {
+        repSets += 1;
+        totalReps += reps;
+        final kg = outcome?.weightKg;
+        if (kg != null && kg > 0) {
+          weightedSets += 1;
+          volumeKg += kg * reps;
+        }
+      }
     }
   }
 
@@ -154,5 +213,10 @@ SessionSummary summarise({
     trainingStreak: trainingStreak,
     moveNames: Map<String, String>.unmodifiable(moveNames),
     bestPoints: bestPoints,
+    durationSec: durationSec < 0 ? 0 : durationSec,
+    volumeKg: volumeKg,
+    totalReps: totalReps,
+    repSets: repSets,
+    weightedSets: weightedSets,
   );
 }

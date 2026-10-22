@@ -5740,5 +5740,486 @@
   "okayWeek": "أسبوع عادي",
   "hardWeek": "أسبوع صعب",
   "goToTrain": "روحي للتمرين",
-  "yourPlanStaysAsItIsSee": "خطتك زي ما هي. نشوفك الأسبوع الجاي."
+  "yourPlanStaysAsItIsSee": "خطتك زي ما هي. نشوفك الأسبوع الجاي.",
+  "profilePhoto": "صورة البروفايل",
+  "yourPhotoStaysOnThisPhoneOnly": "صورتك بتفضل على موبايلك. إنتي بس اللي بتشوفيها.",
+  "addAPhoto": "ضيفي صورة",
+  "removePhoto": "شيلي الصورة",
+  "chooseFromYourPhotos": "اختاري من صورك",
+  "fitYourPhoto": "ظبّطي الصورة",
+  "dragToMoveItPinchOrUse": "اسحبي الصورة عشان تحرّكيها. قرّبيها بإصبعين أو بالزراير.",
+  "zoomIn": "قرّبي",
+  "zoomOut": "بعّدي",
+  "yourPhotoIsSet": "الصورة اتحطت.",
+  "yourPhotoWasRemoved": "الصورة اتشالت.",
+  "ownHubCouldNotOpenTheCamera": "Own Hub مقدرش يفتح الكاميرا. تقدري تسمحي بيها من إعدادات موبايلك، أو اختاري صورة من صورك.",
+  "thatPhotoCouldNotBeUsedPlease": "الصورة دي ماينفعش تتستخدم. جرّبي صورة تانية.",
+  "anOwnHubEventIsComingUp": "فيه فعالية من Own Hub قريب. الأماكن محدودة.",
+  "aNewOwnHubEventIsOpen": "فعالية جديدة من Own Hub مفتوحة للحجز. بصّي عليها.",
+  "yourSeatIsWaiting": "مكانك مستنيكي.",
+  "yourOwnHubEventIsAlmostHere": "فعاليتك من Own Hub قربت. هنشوفك هناك.",
+  "eventReminders": "تذكير بالفعاليات",
+  "aNoteBeforeEventsYouCanJoin": "تنبيه قبل الفعاليات اللي تقدري تحضريها، وقبل مكانك اللي حجزتيه.",
+  "endWorkout": "إنهاء التمرين",
+  "endThisWorkout": "عايزة تنهي التمرين؟",
+  "finishAndSave": "خلّصي واحفظي",
+  "setsSavedSoFarCount": "المجموعات اللي اتحفظت لحد دلوقتي: {count}",
+  "@setsSavedSoFarCount": {
+    "description": "The end-workout sheet: how many sets she has logged in this workout.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "5"
+      }
+    }
+  },
+  "discardThisWorkout": "ألغي التمرين ده",
+  "keepGoing": "كمّلي",
+  "nothingIsLoggedYetSoThisWorkout": "لسه ما سجلتيش أي مجموعة، فالتمرين ده مش هيتحسب. اخرجي منه، أو كمّلي.",
+  "workoutDiscardedItIsNotCounted": "اتلغى التمرين، ومش هيتحسب.",
+  "fullScreen": "ملء الشاشة",
+  "restart": "من الأول",
+  "halfSpeed": "نص السرعة",
+  "normalSpeed": "السرعة العادية",
+  "closeVideo": "اقفلي الفيديو",
+  "countPluralOne1MoveOtherCount": "{count, plural, one{حركة واحدة} two{حركتين} few{{count} حركات} many{{count} حركة} other{{count} حركة}}",
+  "@countPluralOne1MoveOtherCount": {
+    "description": "Home and Train: how many moves the viewed level's session holds. Plural because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "secondsSRest": "راحة {seconds} ثانية",
+  "@secondsSRest": {
+    "description": "Home and Train: the rest between sets of the viewed level's session.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "70"
+      }
+    }
+  },
+  "minutesPluralOneAbout1MinOther": "{minutes, plural, one{حوالي دقيقة} two{حوالي دقيقتين} few{حوالي {minutes} دقايق} many{حوالي {minutes} دقيقة} other{حوالي {minutes} دقيقة}}",
+  "@minutesPluralOneAbout1MinOther": {
+    "description": "Home and Train: about how long the viewed level's session takes, rounded to 5 minutes. Plural for Arabic.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "40"
+      }
+    }
+  },
+  "countPluralOne1MoreSetOther": "{count, plural, one{مجموعة زيادة} two{مجموعتين زيادة} few{{count} مجموعات زيادة} many{{count} مجموعة زيادة} other{{count} مجموعة زيادة}}",
+  "@countPluralOne1MoreSetOther": {
+    "description": "Home and Train: the viewed level has this many more sets per move than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "countPluralOne1SetLessOther": "{count, plural, one{مجموعة أقل} two{مجموعتين أقل} few{{count} مجموعات أقل} many{{count} مجموعة أقل} other{{count} مجموعة أقل}}",
+  "@countPluralOne1SetLessOther": {
+    "description": "Home and Train: the viewed level has this many fewer sets per move than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "countPluralOne1MoreMoveOther": "{count, plural, one{حركة زيادة} two{حركتين زيادة} few{{count} حركات زيادة} many{{count} حركة زيادة} other{{count} حركة زيادة}}",
+  "@countPluralOne1MoreMoveOther": {
+    "description": "Home and Train: the viewed level has this many more moves than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "countPluralOne1MoveLessOther": "{count, plural, one{حركة أقل} two{حركتين أقل} few{{count} حركات أقل} many{{count} حركة أقل} other{{count} حركة أقل}}",
+  "@countPluralOne1MoveLessOther": {
+    "description": "Home and Train: the viewed level has this many fewer moves than her own level.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "secondsSMoreRest": "راحة أطول بـ{seconds} ثانية",
+  "@secondsSMoreRest": {
+    "description": "Home and Train: the viewed level rests this many seconds longer than her own level.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "secondsSLessRest": "راحة أقصر بـ{seconds} ثانية",
+  "@secondsSLessRest": {
+    "description": "Home and Train: the viewed level rests this many seconds less than her own level.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "20"
+      }
+    }
+  },
+  "minutesPluralOne1MinLongerOther": "{minutes, plural, one{أطول بدقيقة} two{أطول بدقيقتين} few{أطول بـ{minutes} دقايق} many{أطول بـ{minutes} دقيقة} other{أطول بـ{minutes} دقيقة}}",
+  "@minutesPluralOne1MinLongerOther": {
+    "description": "Home and Train: the viewed level's session is this much longer than her own level's.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "minutesPluralOne1MinShorterOther": "{minutes, plural, one{أقصر بدقيقة} two{أقصر بدقيقتين} few{أقصر بـ{minutes} دقايق} many{أقصر بـ{minutes} دقيقة} other{أقصر بـ{minutes} دقيقة}}",
+  "@minutesPluralOne1MinShorterOther": {
+    "description": "Home and Train: the viewed level's session is this much shorter than her own level's.",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "comparedWithYourLevelChanges": "مقارنة بمستواك: {changes}",
+  "@comparedWithYourLevelChanges": {
+    "description": "Home and Train: under the facts of the level she is looking at, what is different from the level she set. The changes are a short list joined with a middle dot.",
+    "placeholders": {
+      "changes": {
+        "type": "String",
+        "example": "1 more set · 20 s less rest"
+      }
+    }
+  },
+  "thisIsYourLevel": "ده مستواك",
+  "ofTargetG": "من {target} جم",
+  "@ofTargetG": {
+    "description": "Home macros: the target under a macro's eaten grams, for example 'of 120 g'.",
+    "placeholders": {
+      "target": {
+        "type": "String",
+        "example": "120"
+      }
+    }
+  },
+  "nMinShortDay": "{n} دقيقة · يوم خفيف",
+  "@nMinShortDay": {
+    "description": "O03: the 15 minute preset, named as a short day.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "whatCantYouEat": "إيه اللي ماينفعش تاكليه؟",
+  "checkedByOwnHub": "اتراجعت من Own Hub",
+  "buildMuscle": "ابني عضلاتك",
+  "heavierLiftsBuiltUpALittleEach": "رفع أتقل بتزوّديه شوية كل أسبوع. أحسن مع جيم أو دمبل.",
+  "eachSessionStartsWithTheBigLifts": "كل تمرينة بتبدأ بالتمارين الكبيرة وبعدين الصغيرة. لما تخلّصي كل المجموعات، زوّدي عدّة أو وزن بسيط.",
+  "gym": "الجيم",
+  "whereYouTrain": "بتتمرّني فين",
+  "apply": "طبّقي",
+  "changeTheseAndYourPlanChangesWith": "غيّري أي حاجة وخطتك هتتغيّر معاها.",
+  "yourPlanWillBePlan": "خطتك هتبقى {plan}.",
+  "@yourPlanWillBePlan": {
+    "description": "Preview in the quick training sheet. plan is the plan name, where she trains and her level.",
+    "placeholders": {
+      "plan": {
+        "type": "String",
+        "example": "Build muscle · At the gym · Intermediate"
+      }
+    }
+  },
+  "samePlanAsNow": "نفس خطتك الحالية.",
+  "buildMuscleNeedsAGymOrDumbbells": "ابني عضلاتك محتاجة جيم أو دمبل. دلوقتي هتاخدي تمارين قوة بوزن جسمك.",
+  "insights": "إحصائياتك",
+  "sweets": "حلويات",
+  "safeForMe": "آمنة ليّا",
+  "showAllEgyptianDishes": "اعرضي كل الأكلات المصرية",
+  "clear": "امسحي",
+  "addingToMeal": "بتسجّلي على {meal}",
+  "@addingToMeal": {
+    "description": "Shown under the search bar after she taps Log on a meal row, so she knows which meal the next food goes to.",
+    "placeholders": {
+      "meal": {
+        "type": "String",
+        "example": "Lunch"
+      }
+    }
+  },
+  "shareYourWorkout": "شاركي تمرينك",
+  "square": "مربع",
+  "linen": "كتان",
+  "petrol": "بترولي",
+  "transparent": "شفاف",
+  "caloriesEst": "السعرات (تقديري)",
+  "weightLifted": "الوزن اللي رفعتيه",
+  "movesAndSets": "التمارين والمجموعات",
+  "myName": "اسمي",
+  "customiseTheCard": "عدّلي الكارت",
+  "format": "الشكل",
+  "background": "الخلفية",
+  "showOnTheCard": "اللي يظهر على الكارت",
+  "caloriesAreARoughEstimateFromYour": "السعرات تقدير تقريبي من وقتك ووزنك، مش نصيحة طبية.",
+  "thisIsThePictureYouWillShare": "دي الصورة اللي هتشاركيها. مفيش حاجة بتسيب موبايلك غير لما تدوسي شارك.",
+  "dayWorkout": "تمرين {day}",
+  "@dayWorkout": {
+    "description": "Default title of the share card when the workout has no name; the day is the weekday she trained.",
+    "placeholders": {
+      "day": {
+        "type": "String",
+        "example": "Tuesday"
+      }
+    }
+  },
+  "previewOfYourWorkoutCard": "معاينة كارت تمرينك",
+  "editWorkout": "عدّلي التمرين",
+  "swapRemoveReorderOrAddMoves": "بدّلي أو شيلي أو رتّبي أو ضيفي تمارين.",
+  "reset": "رجّعيه زي الأول",
+  "setsAndReps": "المجموعات والعدّات",
+  "dragToReorder": "اسحبي عشان تغيّري الترتيب",
+  "updateMySavedWorkout": "تحبي تحدّثي تمرينك المحفوظ؟",
+  "updateMyPlan": "تحبي تحدّثي خطتك؟",
+  "yourChangesWillReplaceTheSavedVersion": "تغييراتك هتحل محل النسخة المحفوظة.",
+  "thisDayInYourPlanWillChange": "اليوم ده في خطتك هيتغيّر. والخطة الأصلية هتفضل موجودة.",
+  "update": "حدّثي",
+  "justThisTime": "المرة دي بس",
+  "updatedInYourPlan": "اتحدّث في خطتك",
+  "useThisMove": "استخدمي التمرين ده",
+  "buildMyOwnPlan": "ابني خطتي بنفسي",
+  "startWithABlankPlanOrChange": "ابدئي بخطة فاضية، أو عدّلي واحدة من التلات خطط على مزاجك.",
+  "startFromScratch": "ابدئي من الصفر",
+  "editOneOfTheThreeSplits": "عدّلي واحدة من التلات خطط",
+  "customizeThisPlan": "عدّلي الخطة دي",
+  "myPlan": "خطتي",
+  "editMyPlan": "عدّلي خطتي",
+  "changePlan": "غيّري الخطة",
+  "theseAreYourTrainingDaysOpenA": "دي أيام تمرينك. افتحي اليوم عشان تغيّري تمارينه.",
+  "noDaysYetAddYourFirstDay": "لسه مفيش أيام. ضيفي أول يوم.",
+  "removeDay": "شيلي اليوم",
+  "replace": "استبدلي",
+  "replaceThisDay": "استبدلي اليوم ده",
+  "putThisDayBackAsItWas": "رجّعي اليوم ده زي ما كان في الخطة الأصلية",
+  "orUseTheMovesOfAnotherDay": "أو استخدمي تمارين يوم تاني",
+  "blankDay": "يوم فاضي",
+  "copyOfName": "نسخة من {name}",
+  "@copyOfName": {
+    "description": "Option that adds a copy of one of her own days to her plan.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Upper"
+      }
+    }
+  },
+  "addADayToMyPlan": "ضيفي يوم لخطتك",
+  "addToMyPlan": "ضيفي لخطتي",
+  "addedToYourPlan": "اتضاف لخطتك",
+  "backToTheOriginalSplit": "ارجعي للخطة الأصلية",
+  "goBackToTheOriginalSplit": "ترجعي للخطة الأصلية؟",
+  "yourChangesToThePlanWillBe": "تعديلاتك على الخطة هتتمسح. وتمارينك المحفوظة هتفضل زي ما هي.",
+  "goBackToTheOriginal": "أيوه، ارجعي للأصل",
+  "startFromABlankPlan": "تبدئي بخطة فاضية؟",
+  "thisRemovesEveryDayFromYourPlan": "ده هيمسح كل الأيام من خطتك. وتقدري ترجعي للخطة الأصلية بعد كده.",
+  "clearMyPlan": "امسحي خطتي",
+  "dayNumber": "يوم {number}",
+  "@dayNumber": {
+    "description": "A day's number in her plan.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "n15SLess": "أقل 15 ث",
+  "n15SMore": "أكتر 15 ث",
+  "shortenTheRestBy15Seconds": "قلّلي الراحة 15 ثانية",
+  "add15SecondsToTheRest": "زوّدي الراحة 15 ثانية",
+  "warmUpSet": "سيت إحماء",
+  "notCountedInYourSetsOrRecords": "مش بتتحسب في سيتاتك ولا في أرقامك القياسية",
+  "warmUp": "إحماء",
+  "doneWarmUpFigure": "تمّ · إحماء {figure}",
+  "@doneWarmUpFigure": {
+    "description": "R07 button while the warm-up switch is on; names the set it saves.",
+    "placeholders": {
+      "figure": {
+        "type": "String",
+        "example": "6 kg × 10"
+      }
+    }
+  },
+  "warmUpSavedFigure": "اتحفظ الإحماء · {figure}",
+  "@warmUpSavedFigure": {
+    "description": "R09 bar after a warm-up set is saved.",
+    "placeholders": {
+      "figure": {
+        "type": "String",
+        "example": "6 kg × 10"
+      }
+    }
+  },
+  "warmUpWithAboutWeightFirstAround": "سخّني بحوالي {weight} الأول، يعني نص وزنك تقريبًا.",
+  "@warmUpWithAboutWeightFirstAround": {
+    "description": "Quiet suggestion on R07 before the first set of a loaded move.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "6 kg"
+      }
+    }
+  },
+  "newBest": "رقم قياسي جديد",
+  "heaviestWeightYetWeight": "أتقل وزن لحد دلوقتي: {weight}",
+  "@heaviestWeightYetWeight": {
+    "description": "What improved, on the New best chip.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "14 kg"
+      }
+    }
+  },
+  "mostRepsAtWeightReps": "أكتر عدّات بـ{weight}: {reps}",
+  "@mostRepsAtWeightReps": {
+    "description": "What improved, on the New best chip.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "12 kg"
+      },
+      "reps": {
+        "type": "String",
+        "example": "11"
+      }
+    }
+  },
+  "mostRepsYetReps": "أكتر عدّات لحد دلوقتي: {reps}",
+  "@mostRepsYetReps": {
+    "description": "What improved on a bodyweight move.",
+    "placeholders": {
+      "reps": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "longestHoldYetTime": "أطول ثبات لحد دلوقتي: {time}",
+  "@longestHoldYetTime": {
+    "description": "What improved on a timed hold.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "45 seconds"
+      }
+    }
+  },
+  "aHarderVersionOfThisMove": "نسخة أصعب من التمرين ده",
+  "foodLast7Days": "الأكل في آخر 7 أيام",
+  "logAMealAndYourProteinAnd": "سجّلي وجبة وهتلاقي هنا البروتين والسعرات جنب هدفك.",
+  "youLoggedFoodOnLoggedOf7": "سجّلتي أكل في {logged} من 7 أيام",
+  "@youLoggedFoodOnLoggedOf7": {
+    "description": "Under the 7-day food chart: how many of the last 7 days have a meal logged.",
+    "placeholders": {
+      "logged": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "proteinAverageOfTheDaysYouLogged": "متوسط البروتين في الأيام اللي سجّلتي فيها",
+  "caloriesAverageOfTheDaysYouLogged": "متوسط السعرات في الأيام اللي سجّلتي فيها",
+  "trainOnceAndYourBodyMapRecords": "اتمرّني مرة واحدة وخريطة جسمك وأرقامك ومجموعات الأسبوع هتظهر هنا.",
+  "yourBodyMapAndSets": "خريطة جسمك والمجموعات",
+  "opensYourPrivateMeasurements": "بتفتح مقاساتك الخاصة",
+  "nDaySplit": "سبليت {n} أيام",
+  "@nDaySplit": {
+    "description": "Name of a coach split: the number of training days a week, 3, 4 or 5.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "nDays": "{n} أيام",
+  "@nDays": {
+    "description": "A number of training days a week, 3, 4 or 5.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "recommendedForYourDays": "الأنسب لأيامك",
+  "choose": "اختاري",
+  "customize": "عدّلي",
+  "startFromScratchOrEditOneOf": "ابدئي من الصفر أو عدّلي واحدة من التلاتة.",
+  "replaceYourPlanWithThisSplit": "تبدّلي خطتك بالتقسيم ده؟",
+  "yourPlanIsSwappedForACopy": "خطتك هتتبدل بنسخة من التقسيم ده، وتقدري تعدّلي عليها زي ما تحبي.",
+  "thisDayUsesGymMachinesSwapA": "اليوم ده فيه حركات على أجهزة الجيم. بدّلي أي حركة بحركة تقدري تعمليها في البيت.",
+  "yourPhotoIsKeptOnThisPhone": "صورتك محفوظة على موبايلك و Own Hub مبترفعهاش أبدًا. إنتي بس اللي بتشوفيها.",
+  "secondsSLess": "أقل {seconds} ث",
+  "@secondsSLess": {
+    "description": "R09's shorter-rest button. seconds is the rest step in Western digits, e.g. 15.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "secondsSMore": "أكتر {seconds} ث",
+  "@secondsSMore": {
+    "description": "R09's longer-rest button. seconds is the rest step in Western digits, e.g. 15.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "shortenTheRestBySecondsSeconds": "قلّلي الراحة {seconds} ثانية",
+  "@shortenTheRestBySecondsSeconds": {
+    "description": "Spoken label of R09's shorter-rest button. seconds is the rest step in Western digits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "addSecondsSecondsToTheRest": "زوّدي الراحة {seconds} ثانية",
+  "@addSecondsSecondsToTheRest": {
+    "description": "Spoken label of R09's longer-rest button. seconds is the rest step in Western digits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "15"
+      }
+    }
+  },
+  "foodLastDaysDays": "الأكل في آخر {days} أيام",
+  "@foodLastDaysDays": {
+    "description": "The heading of Insights' food chart. days is the number of days it covers, in Western digits.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  }
 }

@@ -31,7 +31,10 @@ enum TrainingGoal {
   stronger('stronger'),
   feelBetter('feel_better'),
   loseSteadily('lose_steadily'),
-  backIntoIt('back_into_it');
+  backIntoIt('back_into_it'),
+  // Added after launch. An older snapshot or profile never holds it, and a
+  // value no build knows reads back as the default goal.
+  buildMuscle('build_muscle');
 
   const TrainingGoal(this.wireName);
 
@@ -51,13 +54,9 @@ enum TrainingLevel {
 
   final String wireName;
 
-  /// What O03 preselects from her days and minutes: Advanced from an hour a
-  /// session or five days a week, otherwise Beginner. It is only a suggestion;
-  /// she can pick any level.
-  static TrainingLevel suggestedFor({
-    required int days,
-    required int minutes,
-  }) => minutes >= 60 || days >= 5 ? advanced : beginner;
+  /// The level a woman who has not chosen one starts on. Her days and minutes
+  /// never raise it: the tier of her plan is only ever the level she picked.
+  static const TrainingLevel defaultLevel = beginner;
 
   static TrainingLevel? fromWire(Object? wire) =>
       values.where((v) => v.wireName == wire).firstOrNull;
@@ -128,7 +127,7 @@ class Intake {
     this.place = TrainingPlace.home,
     this.equipment = const {Equipment.none},
     this.days = 3,
-    this.minutes = 15,
+    this.minutes = defaultMinutes,
     this.lifeStage = LifeStage.none,
     this.level = TrainingLevel.beginner,
     this.weekdays = const {},
@@ -171,8 +170,8 @@ class Intake {
   /// O04.
   final LifeStage lifeStage;
 
-  /// O03. Which tier of the programme opens first. It follows
-  /// [TrainingLevel.suggestedFor] until she picks one.
+  /// O03. Which tier of the programme opens first: the level she picked,
+  /// [TrainingLevel.defaultLevel] until she does.
   final TrainingLevel level;
 
   /// O03 "Custom schedule". The weekdays she trains, as [DateTime.weekday]
@@ -190,9 +189,18 @@ class Intake {
   /// Whether [d] is a weekly goal the rewards system accepts.
   static bool daysOk(int d) => d >= 1 && d <= 7;
 
-  /// The session lengths she may choose with one tap. The last, 75, reads
-  /// "75+".
-  static const List<int> allowedMinutes = [15, 20, 30, 45, 60, 75];
+  /// The session length a new setup starts on. A saved intake keeps its own.
+  static const int defaultMinutes = 45;
+
+  /// The one preset shorter than a gym session: a day with little time.
+  static const int shortDayMinutes = 15;
+
+  /// The longest preset; it reads "75+".
+  static const int longestPresetMinutes = 75;
+
+  /// The session lengths she may choose with one tap, in the order O03 draws
+  /// them: 30 to 75, then the short day.
+  static const List<int> allowedMinutes = [30, 45, 60, 75, shortDayMinutes];
 
   static const int minCustomMinutes = 10;
   static const int maxCustomMinutes = 180;

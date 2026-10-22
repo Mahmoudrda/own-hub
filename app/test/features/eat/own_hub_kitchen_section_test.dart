@@ -12,6 +12,7 @@ import 'package:own_hub/features/eat/domain/recipe.dart';
 import 'package:own_hub/features/eat/presentation/recipes_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/hand/hand.dart' show BookCard;
 
 Widget _host(Widget child, Locale locale) => MaterialApp(
   locale: locale,
@@ -88,4 +89,85 @@ void main() {
       },
     );
   }
+
+  testWidgets(
+    'before she has answered, all eleven are shown with what is in them',
+    (tester) async {
+      tester.view.physicalSize = const Size(1170, 36000);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        _host(
+          RecipesView(book: book, asked: false, onSelectTab: (_) {}),
+          const Locale('en'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      for (final recipe in book.recipes.where((r) => r.isOwnHub)) {
+        expect(
+          find.text(recipe.titleEn),
+          findsOneWidget,
+          reason: recipe.recipeId,
+        );
+      }
+      expect(find.text('Checked by Own Hub'), findsNWidgets(11));
+      expect(find.text("What can't you eat?"), findsOneWidget);
+      // Rahma's name goes on nothing she did not review: no Own Hub card
+      // carries it, and neither does the label the data layer gives them.
+      for (final recipe in book.recipes.where((r) => r.isOwnHub)) {
+        expect(recipe.verifiedLabel, isNot(contains('Rahma')));
+        final card = find.ancestor(
+          of: find.text(recipe.titleEn),
+          matching: find.byType(BookCard),
+        );
+        expect(card, findsOneWidget, reason: recipe.recipeId);
+        expect(
+          find.descendant(of: card, matching: find.textContaining('Rahma')),
+          findsNothing,
+          reason: recipe.recipeId,
+        );
+      }
+    },
+  );
+
+  testWidgets('a woman allergic to tree nuts sees the nut-free ones only', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1170, 36000);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      _host(
+        RecipesView(
+          book: book,
+          asked: true,
+          constraints: const DietaryConstraints(
+            allergies: {'tree_nuts'},
+            dietary: <String>{},
+          ),
+          onSelectTab: (_) {},
+        ),
+        const Locale('en'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final ours = book.recipes.where((r) => r.isOwnHub);
+    for (final recipe in ours) {
+      final holdsNuts = recipe.allergensFinal.contains('tree_nuts');
+      expect(
+        find.text(recipe.titleEn),
+        holdsNuts ? findsNothing : findsOneWidget,
+        reason: recipe.recipeId,
+      );
+    }
+    expect(
+      ours.where((r) => r.allergensFinal.contains('tree_nuts')),
+      hasLength(2),
+    );
+    expect(find.text('From the Own Hub kitchen'), findsWidgets);
+  });
 }

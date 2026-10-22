@@ -393,4 +393,53 @@ const Map<String, ExerciseMuscles> bundledExerciseMuscles = {
     primary: [Muscle.glutes],
     secondary: [Muscle.hamstrings, Muscle.quads],
   ),
+  'cable_rope_triceps_pushdown': ExerciseMuscles(primary: [Muscle.triceps]),
+  'seated_dumbbell_biceps_curl': ExerciseMuscles(
+    primary: [Muscle.biceps],
+    secondary: [Muscle.forearms],
+  ),
+  'pec_deck_fly': ExerciseMuscles(
+    primary: [Muscle.chest],
+    secondary: [Muscle.frontDelts],
+  ),
+  'reverse_pec_deck': ExerciseMuscles(
+    primary: [Muscle.rearDelts],
+    secondary: [Muscle.upperBack],
+  ),
+  'ez_bar_curl': ExerciseMuscles(
+    primary: [Muscle.biceps],
+    secondary: [Muscle.forearms],
+  ),
+  'barbell_deadlift': ExerciseMuscles(
+    primary: [Muscle.glutes, Muscle.hamstrings],
+    secondary: [
+      Muscle.quads,
+      Muscle.lowerBack,
+      Muscle.upperBack,
+      Muscle.forearms,
+    ],
+  ),
+  'dumbbell_bulgarian_split_squat': ExerciseMuscles(
+    primary: [Muscle.glutes, Muscle.quads],
+    secondary: [Muscle.adductors, Muscle.hamstrings],
+  ),
+  'ez_bar_skull_crusher': ExerciseMuscles(primary: [Muscle.triceps]),
+  'seated_dumbbell_front_raise': ExerciseMuscles(
+    primary: [Muscle.frontDelts],
+    secondary: [Muscle.sideDelts],
+  ),
+  'overhead_triceps_stretch': ExerciseMuscles(
+    primary: [Muscle.triceps],
+    secondary: [Muscle.lats],
+    stretch: true,
+  ),
+  'heel_elevated_goblet_squat': ExerciseMuscles(
+    primary: [Muscle.quads],
+    secondary: [Muscle.glutes, Muscle.core],
+  ),
+  'dumbbell_calf_raise': ExerciseMuscles(primary: [Muscle.calves]),
+  'kettlebell_glute_bridge': ExerciseMuscles(
+    primary: [Muscle.glutes],
+    secondary: [Muscle.hamstrings],
+  ),
 };

@@ -125,6 +125,12 @@ dependencies:
   path_provider: ^2.1.6
   animations: ^3.0.0
   sensors_plus: ^7.1.1
+  # Her profile photo (lib/app_state/profile_photo_state.dart). The system
+  # pickers only: the photo library opens in the out-of-process picker on iOS
+  # and the system photo picker on Android, so no library permission is asked
+  # for, and the camera uses the permission the app already has. The picture
+  # is redrawn and kept on the phone; it is never uploaded.
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:

@@ -901,6 +901,13 @@ void main() {
       },
     );
 
+    test('Build muscle travels in her profile by its wire name', () async {
+      await AppRouter.intakeRepository.merge(goal: TrainingGoal.buildMuscle);
+      final root = CloudDocuments.capture().firstWhere((d) => d.isRoot);
+      final profile = root.data['profile']! as Map<String, Object?>;
+      expect(profile['goal'], 'build_muscle');
+    });
+
     // N12. The allergens she chose to eat anyway are allergy data. With the
     // backup off the copy says allergies stay on the phone, so meal items go
     // up without them.
@@ -1012,6 +1019,56 @@ void main() {
         );
       },
     );
+
+    test(
+      'a cloud profile with Build muscle comes back as Build muscle',
+      () async {
+        AppRouter.intakeRepository.reset();
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: '',
+              id: '',
+              data: <String, Object?>{
+                'profile': <String, Object?>{
+                  'goal': 'build_muscle',
+                  'lifeStage': 'none',
+                  'setupDone': true,
+                },
+              },
+            ),
+          );
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+
+        expect(
+          AppRouter.intakeRepository.read().goal,
+          TrainingGoal.buildMuscle,
+        );
+      },
+    );
+
+    test('a cloud goal no build knows reads as the default goal', () async {
+      AppRouter.intakeRepository.reset();
+      final cloud = _FakeCloud()
+        ..stored.add(
+          const CloudDoc(
+            collection: '',
+            id: '',
+            data: <String, Object?>{
+              'profile': <String, Object?>{
+                'goal': 'bulk_up_fast',
+                'lifeStage': 'none',
+                'setupDone': true,
+              },
+            },
+          ),
+        );
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(AppRouter.intakeRepository.read().goal, Intake.defaults.goal);
+    });
 
     test(
       'a health document from the cloud is not folded into the phone',

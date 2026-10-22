@@ -7,12 +7,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/account/domain/notifications.dart';
 import 'package:own_hub/features/account/presentation/account_view_models.dart';
 import 'package:own_hub/features/account/presentation/notifications_view.dart';
+import 'package:own_hub/features/train/domain/notification_plan.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_empty_state.dart';
+import 'package:own_hub/ui/app_toggle.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -224,6 +228,98 @@ void main() {
         ),
         findsNothing,
       );
+    });
+  });
+
+  group('the event reminders switch', () {
+    final savedFlags = AppRouter.featureFlags;
+    setUp(() {
+      AppRouter.featureFlags = savedFlags.with_({Feature.events: true});
+    });
+    tearDown(() => AppRouter.featureFlags = savedFlags);
+
+    Future<void> show(
+      WidgetTester tester, {
+      NotificationPrefs? prefs,
+      ValueChanged<NotificationPrefs>? onChanged,
+      Locale locale = const Locale('en'),
+      double textScale = 1.0,
+    }) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          NotificationsView(
+            onOpenReminders: () {},
+            prefs: prefs,
+            onPrefsChanged: onChanged,
+          ),
+          locale: locale,
+          textScale: textScale,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sits with the other switches, on by default', (tester) async {
+      await show(tester, prefs: const NotificationPrefs());
+      final row = find.byKey(const ValueKey('a01-events'));
+      await tester.scrollUntilVisible(row, 200);
+      expect(row, findsOneWidget);
+      expect(find.text('Event reminders'), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.byType(AppToggle)),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<AppToggle>(
+              find.descendant(of: row, matching: find.byType(AppToggle)),
+            )
+            .value,
+        isTrue,
+      );
+    });
+
+    testWidgets('tapping it turns only events off', (tester) async {
+      NotificationPrefs? saved;
+      await show(
+        tester,
+        prefs: const NotificationPrefs(nudges: false),
+        onChanged: (prefs) => saved = prefs,
+      );
+      final row = find.byKey(const ValueKey('a01-events'));
+      await tester.scrollUntilVisible(row, 200);
+      await tester.tap(row);
+      await tester.pump();
+      expect(saved, const NotificationPrefs(nudges: false, events: false));
+    });
+
+    testWidgets('is not shown while events are off', (tester) async {
+      AppRouter.featureFlags = savedFlags.with_({Feature.events: false});
+      await show(tester, prefs: const NotificationPrefs());
+      expect(find.byKey(const ValueKey('a01-nudges')), findsOneWidget);
+      expect(find.byKey(const ValueKey('a01-events')), findsNothing);
+    });
+
+    testWidgets('is not shown until the phone has agreed', (tester) async {
+      await show(tester);
+      expect(find.byKey(const ValueKey('a01-events')), findsNothing);
+    });
+
+    testWidgets('reads right to left in Arabic at the largest text', (
+      tester,
+    ) async {
+      await show(
+        tester,
+        prefs: const NotificationPrefs(),
+        locale: const Locale('ar'),
+        textScale: 2.0,
+      );
+      final row = find.byKey(const ValueKey('a01-events'));
+      await tester.scrollUntilVisible(row, 200);
+      expect(find.text('تذكير بالفعاليات'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
     });
   });
 

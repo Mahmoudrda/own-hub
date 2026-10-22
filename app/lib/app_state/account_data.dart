@@ -65,13 +65,17 @@ import 'crash_consent.dart';
 import 'first_run_moments.dart';
 import 'kitten_setting.dart';
 import 'custom_workout_state.dart';
+import 'my_plan_state.dart';
+import 'rest_timer_prefs.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'events_state.dart';
 import 'meal_scan_state.dart';
 import 'firebase_boot.dart';
 import 'home_widget_sync.dart';
 import 'install_id.dart';
 import 'pledge.dart';
+import 'profile_photo_state.dart';
 import 'coach_invite_state.dart';
 import 'rewards_state.dart';
 import 'role_state.dart';
@@ -139,6 +143,9 @@ class ThisPhoneWipe implements LocalWipe {
     await AppRouter.authRepository.signOut();
     unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
     ReminderState.instance.reset();
+    // The events and seats read for her, so the next woman on this run is not
+    // reminded about someone else's bookings.
+    EventsState.instance.erase();
     unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
     // The Home Screen and Lock Screen widgets go back to "Open Own Hub to
     // start". Not awaited, on the same terms as the snapshot erase below.
@@ -221,6 +228,10 @@ class ThisPhoneWipe implements LocalWipe {
     // Whether the kitten moves, back to the default.
     unawaited(KittenSetting.instance.erase());
 
+    // Her profile photo. Gone from the screens at once and its file deleted,
+    // on a change of account too: it is hers, not the next woman's.
+    unawaited(ProfilePhotoState.instance.erase().catchError((Object _) {}));
+
     // The legal acceptance waiting to reach the server, if any. It belongs to
     // the account being deleted. On a change of account it is the one the
     // woman signing in gave at C06, and erasing it would race C07's reconcile
@@ -265,6 +276,10 @@ class ThisPhoneWipe implements LocalWipe {
     // Her own workouts, the ones she deleted and today's edits. The server
     // copies are the `splits` rows of the deletion manifest.
     CustomWorkoutState.instance.reset();
+    // Her own plan, kept on this phone only.
+    MyPlanState.instance.reset();
+    // The rest she set for each move, kept on this phone only.
+    RestTimerPrefs.instance.reset();
     // The exercise library: its cached catalogue, the clips kept on the phone
     // and the move she last opened. None of it is hers, and all of it goes.
     for (final key in kExerciseLibraryCacheKeys) {
@@ -341,6 +356,8 @@ class ThisPhoneWipe implements LocalWipe {
     // Her training reminders: the days she chose, and the ones the phone
     // has scheduled.
     ReminderState.instance.reset();
+    // The events and seats read for her, and the notes worked out from them.
+    EventsState.instance.erase();
     unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
     FirstGymGuideState.instance.reset();
     unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
@@ -553,6 +570,9 @@ bool get nothingOfHersRemains {
       AppRouter.reportService.reports().isEmpty &&
       AppRouter.dietaryRepository.read() == DietaryProfile.unasked &&
       RewardsState.instance.awardIds.isEmpty &&
+      !ProfilePhotoState.instance.hasPhoto &&
       !TrainingStreakState.instance.touched &&
-      !FollowUpState.instance.touched;
+      !FollowUpState.instance.touched &&
+      !MyPlanState.instance.hasPlan &&
+      !RestTimerPrefs.instance.touched;
 }

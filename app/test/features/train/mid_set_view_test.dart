@@ -122,6 +122,54 @@ void main() {
       expect(find.textContaining('added'), findsNothing);
     });
 
+    testWidgets('her last result stays in view beside the load advice', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const MidSetView(
+            progressionLine: 'Stay at 12 kg until every set is done.',
+            lastLogged: SetOutcome(weightKg: 20, reps: 12),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Stay at 12 kg until every set is done.'),
+        findsOneWidget,
+      );
+      expect(find.text('Last time: 20 kg × 12.'), findsOneWidget);
+    });
+
+    testWidgets('and is not said twice when the advice already says it', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const MidSetView(
+            progressionLine: 'Last time you did 20 kg × 12. Stay there.',
+            lastLogged: SetOutcome(weightKg: 20, reps: 12),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('r07-last-time')), findsNothing);
+    });
+
+    testWidgets('with no history there is no last-time line at all', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(const MidSetView(progressionLine: 'Start light.')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('r07-last-time')), findsNothing);
+      expect(find.textContaining('Last time'), findsNothing);
+    });
+
     testWidgets('a bodyweight move is never announced as zero kilos', (
       tester,
     ) async {

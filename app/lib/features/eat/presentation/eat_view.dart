@@ -135,7 +135,23 @@ class EatView extends StatefulWidget {
     this.onSelectTab,
     this.targets,
     this.requireAccount,
+    this.embedded = false,
+    this.slot,
+    this.onLogInto,
   });
+
+  /// Drawn inside the Eat hub: only the page's own content, with no scaffold,
+  /// bottom bar, search box, quick strip or links to other Eat screens. The hub
+  /// owns those, and this keeps every logging path (undo, the five seconds,
+  /// slots) exactly as the full page has it.
+  final bool embedded;
+
+  /// The meal the hub is logging into, when she has picked one there.
+  final MealSlot? slot;
+
+  /// A Log pill on a meal row. Given, it is called instead of opening E02, so
+  /// the hub can aim its own search at that meal.
+  final ValueChanged<MealSlot>? onLogInto;
 
   /// What she can and cannot eat.
   ///
@@ -499,6 +515,20 @@ class _EatViewState extends State<EatView> {
           proteinTargetG: targets.proteinG,
         );
 
+    final content = switch ((view.isDayOne, _repo.dataState)) {
+      (true, DataState.unknown) => _stillLooking(l10n),
+      (true, _) => _dayOne(context, l10n, view),
+      (false, _) => _today(context, l10n, view),
+    };
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: kStackGap,
+        children: content,
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       bottomNavigationBar: AppNavBar(
@@ -523,11 +553,7 @@ class _EatViewState extends State<EatView> {
         // sentence about a woman who has never logged a meal, and it is a lie
         // to one whose meals are still being pulled down. See
         // `lib/data/pending_answers.dart`.
-        children: switch ((view.isDayOne, _repo.dataState)) {
-          (true, DataState.unknown) => _stillLooking(l10n),
-          (true, _) => _dayOne(context, l10n, view),
-          (false, _) => _today(context, l10n, view),
-        },
+        children: content,
       ),
     );
   }
@@ -578,8 +604,9 @@ class _EatViewState extends State<EatView> {
     EatDayView view, {
     LogHandle? justLogged,
   }) {
-    final slot = _slotChoice ?? view.activeSlot;
-    final shelf = _category;
+    final slot = widget.slot ?? _slotChoice ?? view.activeSlot;
+    final embedded = widget.embedded;
+    final shelf = embedded ? null : _category;
     final picks = shelf == null
         ? slotPicks(
             prefs: _prefs,
@@ -670,7 +697,7 @@ class _EatViewState extends State<EatView> {
             onAdd: () => _log([pick], slot),
           ),
     ];
-    final quickAdd = cards.isEmpty
+    final quickAdd = embedded || cards.isEmpty
         ? null
         : Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -718,7 +745,8 @@ class _EatViewState extends State<EatView> {
                 }
               : null,
         ),
-      _header(l10n, slot, view, justLogged: justLogged),
+      if (!embedded || _headerBadge(l10n, view, justLogged) != null)
+        _header(l10n, slot, view, justLogged: justLogged),
       EatHero(
         totals: view.totals,
         targets: _targets,
@@ -741,18 +769,20 @@ class _EatViewState extends State<EatView> {
           subtitle: l10n.onePhotoForCaloriesAndProtein,
           onPressed: widget.onSnap,
         ),
-      _box(l10n),
-      FoodCategoryChips(
-        key: const ValueKey('eat-categories'),
-        selected: _category,
-        onChanged: (category) => setState(() => _category = category),
-      ),
+      if (!embedded) ...[
+        _box(l10n),
+        FoodCategoryChips(
+          key: const ValueKey('eat-categories'),
+          selected: _category,
+          onChanged: (category) => setState(() => _category = category),
+        ),
+      ],
       // Rendered only for a woman who actually has a coach: null for everyone
       // in the MVP.
       if (widget.plannedMeal != null) ..._plannedBlock(l10n),
       if (quickAdd != null)
         quickAdd
-      else if (shelf == null && _screenedToNothing(view.starters))
+      else if (!embedded && shelf == null && _screenedToNothing(view.starters))
         _guardNote(l10n),
       if (widget.yesterdaysLunch != null)
         MealRow(
@@ -766,7 +796,7 @@ class _EatViewState extends State<EatView> {
               : null,
           onLog: () => _log(widget.yesterdaysLunch!.entries, slot),
         ),
-      if (view.isDayOne && AppRouter.screenIsOn('E07'))
+      if (!embedded && view.isDayOne && AppRouter.screenIsOn('E07'))
         AppListItem(
           key: const ValueKey('eat-day-one-week-plan'),
           leading: const Icon(
@@ -783,7 +813,7 @@ class _EatViewState extends State<EatView> {
           ),
           onTap: () => openScreen(context, 'E07', widget.onOpenWeekPlan),
         ),
-      if (AppRouter.screenIsOn('E05')) _recipesRow(l10n),
+      if (!embedded && AppRouter.screenIsOn('E05')) _recipesRow(l10n),
       if (view.isDayOne)
         Text(
           l10n.noCountdownNoRedNumbersProteinIs,
@@ -791,7 +821,8 @@ class _EatViewState extends State<EatView> {
         ),
       // The last row never rests against the tab bar: the nav bar's height and
       // the bottom safe area are left clear under it.
-      SizedBox(height: 60 + MediaQuery.viewPaddingOf(context).bottom),
+      if (!embedded)
+        SizedBox(height: 60 + MediaQuery.viewPaddingOf(context).bottom),
     ]);
   }
 
@@ -843,9 +874,37 @@ class _EatViewState extends State<EatView> {
       changeLabel: l10n.change,
       onTap: () => _chooseSlot(slot),
     );
-    // The pill appears only for something true now: the points a log pays, or
-    // Ramadan mode while it is on.
-    final badge = justLogged != null && _pointsShown > 0
+    final badge = _headerBadge(l10n, view, justLogged);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (!widget.embedded)
+          AppSplitRow(
+            // The screen's one illustration sits beside the title, small, and is
+            // Flexible so text scale 2.0 or Arabic shrinks it before it overflows.
+            start: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(child: Text(l10n.today, style: EditorialType.section)),
+                const SizedBox(width: 10),
+                const Flexible(child: ScreenArtInline(size: 40)),
+              ],
+            ),
+            end: pill,
+          ),
+        if (badge != null) ...[
+          const SizedBox(height: 6),
+          Align(alignment: AlignmentDirectional.centerStart, child: badge),
+        ],
+      ],
+    );
+  }
+
+  /// The pill beside the title appears only for something true now: the points
+  /// a log pays, or Ramadan mode while it is on.
+  Widget? _headerBadge(AppL10n l10n, EatDayView view, LogHandle? justLogged) {
+    return justLogged != null && _pointsShown > 0
         ? AppPill(
             l10n.pointsPoints(countLabel(_pointsShown)),
             background: AppColors.tertiaryContainer,
@@ -864,29 +923,6 @@ class _EatViewState extends State<EatView> {
             foreground: AppColors.onSurfaceVariant,
           )
         : null;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AppSplitRow(
-          // The screen's one illustration sits beside the title, small, and is
-          // Flexible so text scale 2.0 or Arabic shrinks it before it overflows.
-          start: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(child: Text(l10n.today, style: EditorialType.section)),
-              const SizedBox(width: 10),
-              const Flexible(child: ScreenArtInline(size: 40)),
-            ],
-          ),
-          end: pill,
-        ),
-        if (badge != null) ...[
-          const SizedBox(height: 6),
-          Align(alignment: AlignmentDirectional.centerStart, child: badge),
-        ],
-      ],
-    );
   }
 
   Future<void> _chooseSlot(MealSlot current) async {
@@ -987,7 +1023,7 @@ class _EatViewState extends State<EatView> {
   /// No spinner: this screen never had one, and a sentence is the honest way to
   /// say "we do not know yet" without implying she should sit and wait.
   List<Widget> _stillLooking(AppL10n l10n) => [
-    _masthead(l10n),
+    if (!widget.embedded) _masthead(l10n),
     Text(
       l10n.lookingForWhatYouHaveAdded,
       style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
@@ -1085,6 +1121,11 @@ class _EatViewState extends State<EatView> {
   /// Opens the logging flow on [slot]. Screens are opened by name, which
   /// carries no argument, so the choice rides on the shared session.
   void _logInto(MealSlot slot) {
+    final into = widget.onLogInto;
+    if (into != null) {
+      into(slot);
+      return;
+    }
     widget.session?.presetLogSlot(slot);
     openScreen(context, 'E02', widget.onType);
   }

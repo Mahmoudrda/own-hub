@@ -55,6 +55,7 @@ class PlannedMove {
     this.needsEquipment = false,
     this.floorOnly = false,
     this.videoAssetId,
+    this.restSeconds,
   });
 
   final String exerciseId;
@@ -81,6 +82,10 @@ class PlannedMove {
   /// Identifies the demo loop in the video library. Null until the 124 titles
   /// are produced, which is every move today.
   final String? videoAssetId;
+
+  /// The rest the plan gives after this move, in seconds. Null when the plan
+  /// names none; R09 then rests her the standard minute.
+  final int? restSeconds;
 }
 
 /// One day of the plan: the assignment R03 renders.

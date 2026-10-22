@@ -30,7 +30,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_list_item.dart';
@@ -197,6 +199,18 @@ class NotificationsView extends StatelessWidget {
             value: prefs!.tips,
             onChanged: (on) => onPrefsChanged?.call(prefs!.copyWith(tips: on)),
           ),
+          // Off cancels the event notes still to come. Only while events
+          // are on: with them off there is nothing for this to switch.
+          if (AppRouter.featureFlags.isOn(Feature.events))
+            _switchRow(
+              key: 'a01-events',
+              icon: Icons.event_outlined,
+              title: l10n.eventReminders,
+              subtitle: l10n.aNoteBeforeEventsYouCanJoin,
+              value: prefs!.events,
+              onChanged: (on) =>
+                  onPrefsChanged?.call(prefs!.copyWith(events: on)),
+            ),
         ],
         if (followUpsOn != null && onFollowUpsChanged != null)
           _switchRow(

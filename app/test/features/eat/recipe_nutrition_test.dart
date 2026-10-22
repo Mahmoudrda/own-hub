@@ -280,6 +280,9 @@ void main() {
     );
 
     test('the tags that rest on an allergen set need a signature', () {
+      // Stricter than the guard on purpose: the automated check is enough to
+      // show a recipe to a woman with an allergy, but a tag that says "nut
+      // free" or "vegan" is written only for a dish a person has signed.
       for (final recipe in _book.recipes) {
         if (recipe.allergensReviewed) continue;
         expect(
@@ -291,19 +294,20 @@ void main() {
               contains('vegan'),
             ),
           ),
-          reason: '${recipe.recipeId} is unchecked, not nut free',
+          reason: '${recipe.recipeId} is unsigned, not nut free',
         );
       }
     });
   });
 
   group('who has signed what', () {
-    test('every published recipe carries a reviewer and a cook', () {
+    test('every signed recipe carries a reviewer and a cook', () {
       final published = _book.recipes
-          .where((r) => r.status == RecipeStatus.published)
+          .where((r) => r.allergensReviewed)
           .toList();
       expect(published, hasLength(39));
       for (final recipe in published) {
+        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
         expect(
           recipe.allergenReviewedBy,
           'rahma_mohsen',
@@ -336,13 +340,22 @@ void main() {
       );
     });
 
-    test('a recipe is published exactly when the sign-off lists it', () {
+    test('a recipe is signed exactly when the sign-off lists it', () {
       for (final recipe in _book.recipes) {
         expect(
-          recipe.status == RecipeStatus.published,
+          recipe.allergensReviewed,
           _signoff.containsKey(recipe.recipeId),
           reason: recipe.recipeId,
         );
+        // Signed or not, every recipe is published, and the ones nobody signed
+        // are published on the automated check and nothing else.
+        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
+        expect(recipe.allergensKnown, isTrue, reason: recipe.recipeId);
+        if (!recipe.allergensReviewed) {
+          expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+          expect(recipe.cookedBy, isNull, reason: recipe.recipeId);
+          expect(recipe.allergenReviewedBy, isNull, reason: recipe.recipeId);
+        }
       }
     });
 
@@ -351,12 +364,9 @@ void main() {
       expect(ours, hasLength(11));
       for (final recipe in ours) {
         final signed = _signoff.containsKey(recipe.recipeId);
-        expect(
-          recipe.status,
-          signed ? RecipeStatus.published : RecipeStatus.review,
-          reason: recipe.recipeId,
-        );
+        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
         expect(recipe.allergensReviewed, signed, reason: recipe.recipeId);
+        expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
         expect(recipe.source, RecipeSource.authored);
         expect(recipe.authoredBy, 'ownhub_kitchen');
         expect(recipe.sourcePage, isNull);
@@ -368,7 +378,8 @@ void main() {
           reason: recipe.recipeId,
         );
         if (!signed) {
-          expect(recipe.reviewNotes.first, contains('has not cooked it'));
+          expect(recipe.reviewNotes.first, contains('automated check'));
+          expect(recipe.reviewNotes.first, contains('no person has cooked'));
         }
       }
     });
@@ -419,12 +430,17 @@ void main() {
         ),
         isEmpty,
       );
-      // Only the one that was listed moved.
+      // Only the one that was listed is signed; the other ten stay published
+      // on the automated check.
       expect(
         book.recipes
-            .where((r) => r.isOwnHub && r.status == RecipeStatus.published)
+            .where((r) => r.isOwnHub && r.allergensReviewed)
             .map((r) => r.recipeId),
         ['ownhub_shish_tawook_bowl'],
+      );
+      expect(
+        book.recipes.where((r) => r.isOwnHub && r.autoChecked),
+        hasLength(11),
       );
     });
 
@@ -478,38 +494,41 @@ void main() {
       expect(find.text('No nuts'), findsOneWidget);
     });
 
-    testWidgets('a signed recipe is no longer marked "Not checked yet"', (
-      tester,
-    ) async {
-      _phone(tester);
-      await tester.pumpWidget(
-        _host(
-          RecipesView(
-            recipes: const [],
-            book: RecipeBook(
-              schemaVersion: _book.schemaVersion,
-              contentVersion: _book.contentVersion,
-              sections: _book.sections,
-              recipes: [
-                _book.byId('rahma_shakshoka')!,
-                _book.byId('ownhub_egg_spinach_wrap')!,
-              ],
-              assemblies: const [],
-              letterAr: '',
+    testWidgets(
+      'a signed or auto-checked recipe is not marked "Not checked yet"',
+      (tester) async {
+        _phone(tester);
+        await tester.pumpWidget(
+          _host(
+            RecipesView(
+              recipes: const [],
+              book: RecipeBook(
+                schemaVersion: _book.schemaVersion,
+                contentVersion: _book.contentVersion,
+                sections: _book.sections,
+                recipes: [
+                  _book.byId('rahma_shakshoka')!,
+                  _book.byId('ownhub_egg_spinach_wrap')!,
+                ],
+                assemblies: const [],
+                letterAr: '',
+              ),
+              asked: true,
+              constraints: DietaryConstraints.none,
+              onSelectTab: (_) {},
             ),
-            asked: true,
-            constraints: DietaryConstraints.none,
-            onSelectTab: (_) {},
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Shakshoka is signed; Own Hub's wrap is not. One card carries the mark.
-      expect(find.text('Not checked yet'), findsOneWidget);
-      // The section heading and the card's own badge.
-      expect(find.text('From the Own Hub kitchen'), findsNWidgets(2));
-    });
+        // Shakshoka is signed and Own Hub's wrap passed the automated check, so
+        // neither is "not checked"; the wrap says who checked it.
+        expect(find.text('Not checked yet'), findsNothing);
+        expect(find.text('Checked by Own Hub'), findsOneWidget);
+        // The section heading and the card's own badge.
+        expect(find.text('From the Own Hub kitchen'), findsNWidgets(2));
+      },
+    );
   });
 
   group('E06 for a recipe of Own Hub\'s kitchen', () {
@@ -533,14 +552,13 @@ void main() {
         ),
         findsOneWidget,
       );
-      // Unsigned, and said in the app's voice.
-      expect(
-        find.text(
-          'Nobody has signed off what is in this dish. Read the '
-          'label on each product yourself.',
-        ),
-        findsOneWidget,
-      );
+      // Checked by the automated pass: the allergens show, nobody is said to
+      // have signed nothing off.
+      expect(find.textContaining('Nobody has signed off'), findsNothing);
+      expect(find.text('Checked by Own Hub'), findsOneWidget);
+      for (final allergen in ['Eggs', 'Gluten', 'Milk and dairy', 'Soy']) {
+        expect(find.text(allergen), findsOneWidget, reason: allergen);
+      }
     });
 
     testWidgets('reads in Egyptian Arabic when the app is in Arabic', (
@@ -585,12 +603,17 @@ void main() {
     );
     final shown = guard.screenRecipes(_book.recipes);
     expect(shown, isNotEmpty);
-    // Everything shown is signed and holds no tree nut; Own Hub's eleven are
-    // unsigned and are all gone.
+    // Everything shown has known allergens and holds no tree nut. Own Hub's
+    // eleven are checked by the script, so the ones without nuts stay and the
+    // two with almonds are gone.
     for (final recipe in shown) {
-      expect(recipe.allergensReviewed, isTrue, reason: recipe.recipeId);
+      expect(recipe.allergensKnown, isTrue, reason: recipe.recipeId);
       expect(recipe.allergensFinal, isNot(contains('tree_nuts')));
     }
-    expect(shown.any((r) => r.isOwnHub), isFalse);
+    expect(
+      shown.where((r) => r.isOwnHub).map((r) => r.recipeId),
+      isNot(contains('ownhub_yoghurt_strawberry_chia_parfait')),
+    );
+    expect(shown.where((r) => r.isOwnHub), isNotEmpty);
   });
 }

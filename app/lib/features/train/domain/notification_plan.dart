@@ -24,6 +24,12 @@
 ///   nudge. None lands on a day she chose to train (a reminder that quiet
 ///   hours moved to the next day claims that day), except "Trained today?",
 ///   which is that day's own evening question.
+/// - **Event reminders are not casual.** A note before an Own Hub event is
+///   tied to a date the host set, has its own switch, and is bounded on its
+///   own: at most [kEventNotesPerDay] a day and [kEventMaxPlanned] events at
+///   a time. They are kept out of the casual budget on purpose, so an event
+///   neither uses up the week's nudges nor is silenced by them. They still
+///   honour quiet hours.
 /// - **Local.** Nothing is sent to a server and no health data is in any
 ///   text.
 library;
@@ -53,6 +59,40 @@ enum PlanKind {
   /// A friendly nudge. [PlannedNotification.variant] is
   /// [nudgeVariantCode]: which context and which of its texts.
   nudge,
+
+  /// A note before an Own Hub event. [PlannedNotification.variant] is
+  /// [eventVariantCode]: whether she has a seat and which of its texts.
+  eventReminder,
+}
+
+/// Where in the run-up to an event a reminder falls.
+enum EventReminderStep {
+  /// Three days before, at 10:00. Only for an event she has not booked.
+  threeDays,
+
+  /// The day before, at 18:00. Only for an event she has not booked.
+  oneDay,
+
+  /// Three hours before the start, booked or not.
+  threeHours,
+
+  /// The morning of the event, at 09:00. Only for a booked seat.
+  morningOf,
+}
+
+/// How many different texts an event reminder has for each of the two cases,
+/// no seat and a booked seat.
+const int kEventVariants = 2;
+
+/// The code an event reminder carries in [PlannedNotification.variant]: the
+/// block for a booked seat or not, then which text in it.
+int eventVariantCode({required bool booked, required int variant}) =>
+    (booked ? kEventVariants : 0) + variant.abs() % kEventVariants;
+
+/// The case and text an [eventVariantCode] stands for.
+({bool booked, int variant}) eventFromCode(int code) {
+  final safe = code.abs() % (2 * kEventVariants);
+  return (booked: safe >= kEventVariants, variant: safe % kEventVariants);
 }
 
 /// When in the day a friendly nudge is about, and so what it says.
@@ -121,6 +161,7 @@ class NotificationPrefs {
     this.restAlert = true,
     this.tips = true,
     this.nudges = true,
+    this.events = true,
   });
 
   /// "Remind me to add a session I did".
@@ -139,18 +180,24 @@ class NotificationPrefs {
   /// cancels the ones still to come.
   final bool nudges;
 
+  /// "Event reminders": a few notes before an Own Hub event, and one or two
+  /// for a seat she booked. Turning it off cancels the ones still to come.
+  final bool events;
+
   NotificationPrefs copyWith({
     bool? logNudge,
     bool? checkIns,
     bool? restAlert,
     bool? tips,
     bool? nudges,
+    bool? events,
   }) => NotificationPrefs(
     logNudge: logNudge ?? this.logNudge,
     checkIns: checkIns ?? this.checkIns,
     restAlert: restAlert ?? this.restAlert,
     tips: tips ?? this.tips,
     nudges: nudges ?? this.nudges,
+    events: events ?? this.events,
   );
 
   @override
@@ -160,10 +207,12 @@ class NotificationPrefs {
       other.checkIns == checkIns &&
       other.restAlert == restAlert &&
       other.tips == tips &&
-      other.nudges == nudges;
+      other.nudges == nudges &&
+      other.events == events;
 
   @override
-  int get hashCode => Object.hash(logNudge, checkIns, restAlert, tips, nudges);
+  int get hashCode =>
+      Object.hash(logNudge, checkIns, restAlert, tips, nudges, events);
 }
 
 /// One notification to schedule.
@@ -233,6 +282,27 @@ const int kTipCount = 7;
 /// The id of the getting started tip at [index], 7151 to 7157.
 int tipNotificationId(int index) => 7151 + index;
 
+/// The most events whose reminders are planned at once, the soonest ones.
+const int kEventMaxPlanned = 6;
+
+/// Ids per event: one for each [EventReminderStep].
+const int kEventStepsPerEvent = 4;
+
+/// The first of the event reminder ids, 7171. The block runs to 7194.
+const int kEventFirstId = 7171;
+
+/// The most event notes on one calendar day, across all events.
+const int kEventNotesPerDay = 2;
+
+/// The id of [step] for the event in [slot] (0 to [kEventMaxPlanned] - 1).
+///
+/// The slot is the event's place among the soonest events at the moment the
+/// plan is built, by start time and then id, so the id is fixed by "which
+/// event, which step" and a rebuild gives the same event the same ids while
+/// the list stands. Nothing else uses 7171 to 7194.
+int eventNotificationId(int slot, EventReminderStep step) =>
+    kEventFirstId + slot * kEventStepsPerEvent + step.index;
+
 /// Every id the plan may use, so replacing it removes what no longer applies.
 /// The rest alert is not in it: it has its own lifetime.
 final List<int> kPlannedIds = <int>[
@@ -244,6 +314,12 @@ final List<int> kPlannedIds = <int>[
   for (var index = 0; index < kTipCount; index++) tipNotificationId(index),
   for (var weekday = DateTime.monday; weekday <= DateTime.sunday; weekday++)
     nudgeNotificationId(weekday),
+  for (
+    var id = kEventFirstId;
+    id < kEventFirstId + kEventMaxPlanned * kEventStepsPerEvent;
+    id++
+  )
+    id,
 ];
 
 /// Quiet from 22:00 up to, not including, 08:00.
@@ -338,6 +414,10 @@ abstract final class NotificationPlan {
   /// [shownTips] are the days tips already came due, so they count towards
   /// the caps with the check-ins and nudges that came and went meanwhile.
   ///
+  /// [events] are the event reminders already worked out by
+  /// `EventReminderPlan`. They are added as they are while
+  /// [NotificationPrefs.events] is on and take no part in the casual caps.
+  ///
   /// All casual notes share the caps in the library comment, counting those
   /// that came and went since she last opened the app or trained, so a long
   /// absence plans none.
@@ -352,6 +432,7 @@ abstract final class NotificationPlan {
     DateTime? tipsEnd,
     List<DateTime> shownTips = const <DateTime>[],
     List<PlannedNotification>? tipsLeftOut,
+    List<PlannedNotification> events = const <PlannedNotification>[],
   }) {
     if (!permitted) return const <PlannedNotification>[];
     final plan = <PlannedNotification>[];
@@ -521,6 +602,9 @@ abstract final class NotificationPlan {
     // her next open.
     accepted.sort((a, b) => a.at.compareTo(b.at));
     plan.addAll(accepted.take(allowance < 0 ? 0 : allowance));
+    if (prefs.events) {
+      plan.addAll(events.where((e) => e.kind == PlanKind.eventReminder));
+    }
     return plan;
   }
 

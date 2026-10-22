@@ -60,7 +60,7 @@ void main() {
       //
       // A repository nobody has answered into: she was never asked where she
       // trains, so the line names no place (R1-P10, R1-P22).
-      expect(find.text('3 days a week · 15 min a session'), findsOneWidget);
+      expect(find.text('3 days a week · 45 min a session'), findsOneWidget);
       expect(find.textContaining('At home'), findsNothing);
     });
 
@@ -74,7 +74,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.text('3 days a week · 15 min a session · At home'),
+        find.text('3 days a week · 45 min a session · At home'),
         findsOneWidget,
       );
       expect(find.text('8 weeks · quiet · no equipment'), findsOneWidget);
@@ -108,7 +108,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('في البيت'), findsNothing);
       expect(
-        find.text('3 أيام في الأسبوع · 15 دقيقة في التمرين'),
+        find.text('3 أيام في الأسبوع · 45 دقيقة في التمرين'),
         findsOneWidget,
       );
     });

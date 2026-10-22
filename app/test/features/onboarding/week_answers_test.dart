@@ -3,6 +3,7 @@
 // the "About you" numbers that never leave the phone.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +15,9 @@ import 'package:own_hub/domain/rewards/weekly_goal_service.dart';
 import 'package:own_hub/features/onboarding/domain/body_data.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/domain/intake_repository.dart';
+import 'package:own_hub/features/onboarding/domain/starting_program.dart';
 import 'package:own_hub/features/onboarding/presentation/life_stage_view.dart';
+import 'package:own_hub/features/train/domain/viewed_tier.dart';
 import 'package:own_hub/features/onboarding/presentation/schedule_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -47,6 +50,13 @@ Future<void> _roundTrip() async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() {
+    StartingProgrammes.adopt(
+      File('assets/content/starting_programmes.json').readAsStringSync(),
+    );
+  });
+  tearDownAll(StartingProgrammes.reset);
+
   setUp(() async {
     SharedPreferences.setMockInitialValues(const <String, Object>{});
     await const ThisPhoneWipe().clearPersistence();
@@ -63,20 +73,32 @@ void main() {
       await tester.pumpWidget(_host(ScheduleView(repository: repository)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('6'));
+      // Six days is a custom schedule now; the chips are the three splits.
+      await tester.tap(find.text('5'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('60 min'));
       await tester.pumpAndSettle();
-      // An hour a session suggests Advanced; she keeps it.
-      expect(_selected(tester, 'Advanced'), isTrue);
+      // Five days and an hour a session do not raise the level: a woman who
+      // has not picked one stays on Beginner.
+      expect(_selected(tester, 'Beginner'), isTrue);
+      expect(_selected(tester, 'Advanced'), isFalse);
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
       final intake = repository.read();
-      expect(intake.days, 6);
+      expect(intake.days, 5);
       expect(intake.minutes, 60);
       expect(intake.minutesCustom, isFalse);
-      expect(intake.level, TrainingLevel.advanced);
+      expect(intake.level, TrainingLevel.beginner);
+      // So the plan is the beginner tier of the five-day split.
+      expect(
+        rankStartingPrograms(
+          intake,
+          null,
+          tier: ViewedTier.of(intake),
+        ).first.programId,
+        'split_5day',
+      );
     });
 
     test(
@@ -285,25 +307,23 @@ void main() {
       expect(old.weekdays, isEmpty);
       expect(
         old.level,
-        TrainingLevel.advanced,
-        reason: 'five days suggests it',
+        TrainingLevel.beginner,
+        reason: 'days and minutes never raise the level',
       );
       expect(old.minutesCustom, isFalse);
     });
 
-    test('the level follows the answers until she picks one', () {
-      expect(
-        TrainingLevel.suggestedFor(days: 4, minutes: 45),
-        TrainingLevel.beginner,
-      );
-      expect(
-        TrainingLevel.suggestedFor(days: 5, minutes: 20),
-        TrainingLevel.advanced,
-      );
-      expect(
-        TrainingLevel.suggestedFor(days: 2, minutes: 60),
-        TrainingLevel.advanced,
-      );
+    test('days and minutes never raise the level, only her pick does', () {
+      expect(TrainingLevel.defaultLevel, TrainingLevel.beginner);
+      for (final days in [2, 4, 5, 7]) {
+        for (final minutes in [20, 45, 60, 90]) {
+          expect(
+            Intake(days: days, minutes: minutes).level,
+            TrainingLevel.beginner,
+            reason: '$days days, $minutes minutes',
+          );
+        }
+      }
     });
   });
 

@@ -75,7 +75,14 @@ class ProgramView extends StatelessWidget {
     this.sessionsDone,
     this.sessionsTarget,
     this.tierTabs,
+    this.onCustomizePlan,
+    this.hasMyPlan = false,
   });
+
+  /// "Customize this plan": copies the plan into hers and opens the editor.
+  /// With a plan of her own it reads "Edit my plan". Null draws no button.
+  final VoidCallback? onCustomizePlan;
+  final bool hasMyPlan;
 
   /// The Beginner / Intermediate / Advanced tabs, under the promise.
   final Widget? tierTabs;
@@ -270,6 +277,16 @@ class ProgramView extends StatelessWidget {
                   : null,
               onTap: day.onTap ?? () => onOpenDay?.call(day),
             ),
+        if (hasProgram && onCustomizePlan != null)
+          AppButton(
+            hasMyPlan ? l10n.editMyPlan : l10n.customizeThisPlan,
+            key: const ValueKey('r02-customize-plan'),
+            icon: Icons.tune,
+            variant: AppButtonVariant.outlined,
+            height: 52,
+            fontSize: 16,
+            onPressed: onCustomizePlan,
+          ),
         // "Change program" with no programme to change is an instruction she
         // cannot follow. The same door, named for what is behind it: the
         // library, which is where a programme would be chosen.

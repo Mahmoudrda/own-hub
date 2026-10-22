@@ -42,7 +42,8 @@ const _healthArabic = <String>[
 void main() {
   for (final code in ['en', 'ar']) {
     group('notification copy in $code', () {
-      final text = AppRouter.reminderText(lookupAppL10n(Locale(code)));
+      final l10n = lookupAppL10n(Locale(code));
+      final text = AppRouter.reminderText(l10n).withEventCopy(l10n);
       final health = code == 'en' ? _healthEnglish : _healthArabic;
 
       test('the title is Own Hub', () {
@@ -59,6 +60,29 @@ void main() {
         expect(text.tipBodies.toSet(), hasLength(kTipCount));
         expect(text.tipChannelName, isNotEmpty);
         expect(text.tipChannelDescription, isNotEmpty);
+      });
+
+      test('the router carries the event words without a second call', () {
+        expect(
+          AppRouter.reminderText(l10n).eventBodies,
+          hasLength(kEventVariants),
+        );
+      });
+
+      test('there are two texts for each kind of event note, each its own', () {
+        expect(text.eventBodies, hasLength(kEventVariants));
+        expect(text.bookedEventBodies, hasLength(kEventVariants));
+        expect(text.eventBodies.toSet(), hasLength(kEventVariants));
+        expect(text.bookedEventBodies.toSet(), hasLength(kEventVariants));
+        expect(
+          text.eventBodies.toSet().intersection(text.bookedEventBodies.toSet()),
+          isEmpty,
+        );
+        expect(text.eventChannelName, isNotEmpty);
+        expect(text.eventChannelDescription, isNotEmpty);
+        for (final body in [...text.eventBodies, ...text.bookedEventBodies]) {
+          expect(text.allBodies, contains(body));
+        }
       });
 
       test('what the lock screen shows has no number', () {
@@ -102,6 +126,8 @@ void main() {
           text.restChannelDescription,
           text.tipChannelName,
           text.tipChannelDescription,
+          text.eventChannelName,
+          text.eventChannelDescription,
         ]) {
           final lower = body.toLowerCase();
           for (final word in health) {
@@ -121,6 +147,8 @@ void main() {
           text.restChannelDescription,
           text.tipChannelName,
           text.tipChannelDescription,
+          text.eventChannelName,
+          text.eventChannelDescription,
         ]) {
           expect(body, isNot(contains('—')), reason: body);
         }
@@ -139,6 +167,31 @@ void main() {
       expect(ar.tipBodies[i], isNot(en.tipBodies[i]));
     }
     expect(ar.tipChannelName, matches(arabic));
+  });
+
+  test('the event notes are written in Arabic, not carried over', () {
+    final en = lookupAppL10n(const Locale('en'));
+    final ar = lookupAppL10n(const Locale('ar'));
+    final english = AppRouter.reminderText(en).withEventCopy(en);
+    final arabic = AppRouter.reminderText(ar).withEventCopy(ar);
+    final script = RegExp(r'[\u0600-\u06FF]');
+    final all = [
+      ...arabic.eventBodies,
+      ...arabic.bookedEventBodies,
+      arabic.eventChannelName,
+      arabic.eventChannelDescription,
+    ];
+    for (final body in all) {
+      expect(body, matches(script), reason: body);
+    }
+    expect(arabic.eventBodies, isNot(english.eventBodies));
+    expect(arabic.bookedEventBodies, isNot(english.bookedEventBodies));
+    expect(arabic.bookedEventBodies.first, 'مكانك مستنيكي.');
+    expect(english.bookedEventBodies.first, 'Your seat is waiting.');
+    expect(
+      english.eventBodies.first,
+      'An Own Hub event is coming up. Seats are limited.',
+    );
   });
 
   test('Arabic is the colloquial Egyptian the rest of the app speaks', () {

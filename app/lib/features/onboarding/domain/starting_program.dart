@@ -1,14 +1,15 @@
 /// The programme O05 offers her, and the catalogue it is chosen from.
 ///
-/// # The programmes are drafted, not yet signed off
+/// # Three splits, nine programmes
 ///
-/// `assets/content/starting_programmes.json` holds nine programmes: three plans
-/// by goal, each in a home, a home-with-dumbbells and a gym variant (D47). They
-/// are written in the shape the owner's console publishes
-/// (`AuthoredProgramme`), held to the same `workoutProblems`, and every move is
-/// a catalogue or seed exercise carrying that exercise's own tags. The file
-/// says `review: drafted ..., pending Rahma's sign-off`, and nothing here
-/// pretends otherwise.
+/// `assets/content/starting_programmes.json` holds the coach's three splits (3,
+/// 4 and 5 days a week), each in a beginner, an intermediate and an advanced
+/// tier: nine programmes in all. The tiers of a split hold the same moves in
+/// the same order and differ in sets, reps, rest and the load note. They are
+/// written in the shape the owner's console publishes (`AuthoredProgramme`),
+/// held to the same `workoutProblems`, and every move is a catalogue exercise
+/// carrying that exercise's own tags. The file says `review: drafted ...,
+/// pending Rahma's sign-off`, and nothing here pretends otherwise.
 ///
 /// [StartingProgrammes.adopt] reads the file once at start. Until it has, the
 /// catalogue is the single placeholder below, which is what a build with no
@@ -91,9 +92,8 @@ class StartingProgram {
   /// Where it can be done. Empty means anywhere.
   final Set<TrainingPlace> places;
 
-  /// Its days a week and its minutes follow her answers (a session is trimmed
-  /// to her minutes, and she trains the first of its sessions that many days),
-  /// so neither is a reason to prefer or refuse it.
+  /// Whether its days a week follow her answers instead of being its own. The
+  /// splits write their own days, so they are ranked by them.
   final bool adapts;
 
   /// How much it asks of where she trains: a programme for the gym outranks one
@@ -143,6 +143,65 @@ String programmeFamily(String programId) {
   return programId;
 }
 
+/// The days a week the coach's splits are written for.
+const List<int> kSplitDays = [3, 4, 5];
+
+/// The split whose days a week come closest to [days]: five or more get the
+/// five day split, four the four day one, anything less the three day one.
+int splitDaysFor(int days) => days >= 5
+    ? 5
+    : days == 4
+    ? 4
+    : 3;
+
+/// The family id of the [days] day split: `split_3day`, `split_4day` or
+/// `split_5day`.
+String splitFamily(int days) => 'split_${days}day';
+
+/// Whether [familyOrId] is one of the three splits, at any tier.
+bool isCoachSplit(String familyOrId) =>
+    kSplitDays.any((d) => programmeFamily(familyOrId) == splitFamily(d));
+
+/// The days a week of the split that [familyOrId] names, or null when it is not
+/// one of the three.
+int? splitDaysOf(String familyOrId) {
+  for (final d in kSplitDays) {
+    if (programmeFamily(familyOrId) == splitFamily(d)) return d;
+  }
+  return null;
+}
+
+/// The tier a programme id names: its suffix, or beginner when it has none.
+TrainingLevel programmeTier(String programId) {
+  for (final tier in const [
+    TrainingLevel.intermediate,
+    TrainingLevel.advanced,
+  ]) {
+    if (programId.endsWith('_${tier.wireName}')) return tier;
+  }
+  return TrainingLevel.beginner;
+}
+
+/// What a programme or plan family she followed before the splits becomes: a
+/// split id is kept, anything else maps to the split nearest her [days] a week,
+/// at the tier its id names (beginner when it names none).
+///
+/// Pure, so the router and the snapshot reader can both use it. The old
+/// programmes were chosen by goal and place and carried no days of their own,
+/// so her days a week is what decides.
+String migratedProgrammeId(String programId, {required int days}) {
+  if (isCoachSplit(programId)) return programId;
+  final family = splitFamily(splitDaysFor(days));
+  final tier = programmeTier(programId);
+  return tier == TrainingLevel.beginner ? family : '${family}_${tier.wireName}';
+}
+
+/// The family of [migratedProgrammeId]: the split itself, whatever tier it is.
+String migratedProgrammeFamily(String family, {required int days}) =>
+    isCoachSplit(family)
+    ? programmeFamily(family)
+    : splitFamily(splitDaysFor(days));
+
 /// The programmes in the bundled file, and the content behind each.
 ///
 /// Held in one place so O05 (the card), R02 (the week) and R03 (today's
@@ -167,6 +226,19 @@ abstract final class StartingProgrammes {
       if (p.programId == programId) return p;
     }
     return null;
+  }
+
+  /// The names of the programme's days in the order she trains them, joined by a
+  /// middle dot: "Upper · Lower · Lower II". Only the sessions written for a
+  /// woman with no life stage count, so the gentle ones are not listed. Empty
+  /// when no programme is loaded under [programId].
+  static String dayNames(String programId, String languageCode) {
+    final programme = StartingProgrammes.programme(programId);
+    if (programme == null) return '';
+    return [
+      for (final s in programme.sessions)
+        if (suits(s, LifeStage.none)) s.title(languageCode),
+    ].join(' · ');
   }
 
   /// A line on what the programme asks of her, in [languageCode].
@@ -194,8 +266,8 @@ abstract final class StartingProgrammes {
         StartingProgram(
           programId: id,
           weeks: (meta['weeks'] as num?)?.toInt() ?? 8,
-          daysPerWeek: 3,
-          sessionLength: 15,
+          daysPerWeek: (meta['daysPerWeek'] as num?)?.toInt() ?? 3,
+          sessionLength: _typicalMinutes(library, id),
           quiet: meta['quiet'] != false,
           equipment: _wires(
             meta['equipment'],
@@ -208,7 +280,7 @@ abstract final class StartingProgrammes {
             TrainingPlace.values,
             (e) => e.wireName,
           ),
-          adapts: true,
+          adapts: false,
           rank: (meta['rank'] as num?)?.toInt() ?? 0,
           tier: TrainingLevel.fromWire(meta['tier']) ?? TrainingLevel.beginner,
           family: programmeFamily(id),
@@ -236,6 +308,22 @@ abstract final class StartingProgrammes {
     _summaries.clear();
     _review = '';
   }
+}
+
+/// The minutes of an ordinary day of [programId], to the nearest five: the
+/// average of its sessions written for a woman with no life stage.
+int _typicalMinutes(WorkoutLibrary library, String programId) {
+  for (final p in library.programmes) {
+    if (p.programId != programId) continue;
+    final minutes = [
+      for (final s in p.sessions)
+        if (suits(s, LifeStage.none)) s.minutes,
+    ];
+    if (minutes.isEmpty) break;
+    final mean = minutes.reduce((a, b) => a + b) / minutes.length;
+    return (mean / 5).round() * 5;
+  }
+  return 15;
 }
 
 Set<T> _wires<T>(Object? wires, List<T> values, String Function(T) wireOf) => {
@@ -280,12 +368,12 @@ Set<Equipment> _kitFor(Intake intake) => {
 /// nothing fits; an empty catalogue and an unsatisfiable one are both a content
 /// failure to the caller, never a woman handed training she cannot do.
 ///
-/// Her [tier] comes first (her own level unless the caller names another), so
-/// a catalogue with only one tier still answers. Among what fits, her goal
-/// comes next, then how much the programme asks of
-/// where she trains (the gym's over the dumbbells' over the floor's), then how
-/// close its week is to hers (programmes that adapt to her days and minutes
-/// have nothing to be close to).
+/// Her days a week come first: the split with her days (any other number maps
+/// to the nearest of 3, 4 and 5), then her [tier] (her own level unless the
+/// caller names another), so a catalogue with only one tier still answers. Her
+/// goal does not choose a plan; it only drives her food targets. Among what is
+/// left, how much the programme asks of where she trains breaks the tie, then
+/// quiet at home.
 StartingProgram? selectStartingProgram(
   Intake intake, {
   List<StartingProgram>? catalogue,
@@ -296,7 +384,8 @@ StartingProgram? selectStartingProgram(
 }
 
 /// The programmes O05 and R02 offer: the best fit of each plan, at most
-/// [count], so the same plan at another tier is never a second card.
+/// [count], so the same plan at another tier is never a second card. Best fit
+/// first; the screens draw them in the order of their days.
 List<StartingProgram> topStartingPrograms(
   Intake intake, {
   List<StartingProgram>? catalogue,
@@ -320,6 +409,7 @@ List<StartingProgram> rankStartingPrograms(
   final wanted = tier ?? intake.level;
   final programmes = catalogue ?? kStartingProgramCatalogue;
   final have = _kitFor(intake);
+  final days = intake.days.clamp(kSplitDays.first, kSplitDays.last);
 
   final keyed = <({StartingProgram programme, List<int> key})>[];
   for (final programme in programmes) {
@@ -330,13 +420,9 @@ List<StartingProgram> rankStartingPrograms(
     }
     // Compared left to right; a bigger number wins at the first difference.
     final key = [
+      -(programme.daysPerWeek - days).abs(),
       programme.tier == wanted ? 1 : 0,
-      programme.goals.isEmpty || programme.goals.contains(intake.goal) ? 1 : 0,
       programme.rank,
-      programme.adapts
-          ? 0
-          : -((programme.daysPerWeek - intake.days).abs() * 2 +
-                (programme.sessionLength - intake.minutes).abs() ~/ 5),
       // At home quiet matters; a gym programme need not be.
       intake.place == TrainingPlace.home && programme.quiet ? 1 : 0,
     ];

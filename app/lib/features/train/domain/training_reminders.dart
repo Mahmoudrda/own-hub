@@ -159,6 +159,12 @@ class ReminderState {
   DateTime? lastActiveAt;
   DateTime? lastSessionAt;
 
+  /// The event notes last put on the phone. Kept so that a launch with no
+  /// network, where the events cannot be read, leaves them as they were
+  /// instead of cancelling them. Only ids, times and which text; never an
+  /// event's name, and never sent anywhere.
+  List<PlannedNotification> eventPlan = const <PlannedNotification>[];
+
   /// The getting started tips: when she landed, which are still to come and
   /// when, and which are done. Kept on the phone, never sent anywhere.
   TipSeries tips = const TipSeries();
@@ -198,6 +204,7 @@ class ReminderState {
     schedule = null;
     permissionGranted = false;
     prefs = const NotificationPrefs();
+    eventPlan = const <PlannedNotification>[];
     lastActiveAt = null;
     lastSessionAt = null;
     tips = const TipSeries();

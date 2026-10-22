@@ -5,14 +5,19 @@
 /// paid for something. One primary button — start now — and the alternatives are
 /// real choices rather than a dead end.
 ///
-/// # The programme content does not exist yet
+/// # Three splits and her own
 ///
-/// The card describes a programme nobody has authored (G2 §9 Q8). See
-/// `../domain/starting_program.dart`: the catalogue is modelled as data with a
-/// `TODO(owner)`, holds one entry, and contains no invented exercises, sets or
-/// loads. This screen renders the copy the dictionary already has for that one
-/// programme and renders **no card at all** for a programme it has no copy for,
-/// rather than inventing a name for it.
+/// The coach's 3, 4 and 5 day splits are the only plans (see
+/// `../domain/starting_program.dart`). They are drawn in the order of their
+/// days, the one that suits her days is tagged, each has Choose and Customize,
+/// and a fourth card, Build my own workout, starts from nothing. The screen
+/// renders **no card at all** for a programme it has no copy for, rather than
+/// inventing a name for it.
+///
+/// Choosing a split other than the suggested one also sets her days a week to
+/// its days, because the split is what she will train; a custom schedule of
+/// other weekdays is let go only when the count differs. Going on with the
+/// suggested one leaves her answers as she gave them.
 ///
 /// # Before sign-up
 ///
@@ -81,6 +86,7 @@ class StartingProgramView extends StatefulWidget {
     this.showSteps = false,
     this.onChoose,
     this.onBuildOwn,
+    this.onCustomizeSplit,
     this.promiseFirst = false,
   });
 
@@ -93,8 +99,12 @@ class StartingProgramView extends StatefulWidget {
   final ValueChanged<StartingProgram>? onChoose;
 
   /// "Build my own workout": on to building one instead of following a
-  /// programme. Null draws no link.
+  /// programme. Null draws no card.
   final VoidCallback? onBuildOwn;
+
+  /// Customize on a split's card, with the id of the split at her level: on to
+  /// editing it. Null draws no Customize button.
+  final ValueChanged<String>? onCustomizeSplit;
 
   /// The end of the short "Your week", before she has an account.
   final bool beforeSignup;
@@ -150,15 +160,21 @@ class _StartingProgramViewState extends State<StartingProgramView> {
   StartingProgram? _picked;
 
   /// Records the programme she is going with, then does what the button does.
-  void _go(StartingProgram? chosen, VoidCallback? then) {
-    if (chosen != null) widget.onChoose?.call(chosen);
+  void _go(StartingProgram? chosen, VoidCallback? then, {bool align = false}) {
+    if (chosen != null) {
+      if (align || _picked != null) alignDaysToSplit(widget.repository, chosen);
+      widget.onChoose?.call(chosen);
+    }
     then?.call();
   }
 
   /// The primary button: the tick she draws to promise herself the plan, once,
   /// then on.
   void _goPromised(StartingProgram? chosen, VoidCallback? then) {
-    if (chosen != null) widget.onChoose?.call(chosen);
+    if (chosen != null) {
+      if (_picked != null) alignDaysToSplit(widget.repository, chosen);
+      widget.onChoose?.call(chosen);
+    }
     if (!widget.promiseFirst || !FirstRunMoments.instance.tickDue) {
       then?.call();
       return;
@@ -189,7 +205,14 @@ class _StartingProgramViewState extends State<StartingProgramView> {
     final catalogue = view.catalogue ?? kStartingProgramCatalogue;
     final programs = [
       for (final program in topStartingPrograms(intake, catalogue: catalogue))
-        if (programCopyFor(l10n, program.programId, intake) != null) program,
+        if (programCopyFor(
+              l10n,
+              program.programId,
+              intake,
+              programme: program,
+            ) !=
+            null)
+          program,
     ];
     final selected = programs.contains(_picked)
         ? _picked!
@@ -296,20 +319,15 @@ class _StartingProgramViewState extends State<StartingProgramView> {
               selected: selected,
               placeAnswered: view.repository.placeAnswered,
               onSelect: (program) => setState(() => _picked = program),
-            ),
-          ),
-        if (selected != null &&
-            view.onBuildOwn != null &&
-            view.onSaveMyWeek == null)
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: AppButton(
-              l10n.buildMyOwnWorkout,
-              key: const ValueKey('o05-build-own'),
-              variant: AppButtonVariant.text,
-              height: 48,
-              fontSize: 15,
-              onPressed: view.onBuildOwn,
+              onCustomize:
+                  view.onCustomizeSplit == null || view.onSaveMyWeek != null
+                  ? null
+                  : (program) => _go(
+                      program,
+                      () => view.onCustomizeSplit!(program.programId),
+                      align: true,
+                    ),
+              onBuildOwn: view.onSaveMyWeek == null ? view.onBuildOwn : null,
             ),
           ),
         // What happens next, before she taps: one check, then day one.

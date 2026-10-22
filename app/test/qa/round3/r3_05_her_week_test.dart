@@ -21,15 +21,14 @@ import '../round1/round1_harness.dart';
 void main() {
   useShippingApp();
 
-  for (final days in <int>[2, 4]) {
+  for (final days in <int>[3, 4]) {
     testWidgets('she chose $days: what every week line says', (t) async {
       phone(t);
       final s = t.ensureSemantics();
 
       await open(t, appDestinations['O03']!.name, locale: const Locale('en'));
-      // The first preset reads 1-2 and sets a goal of 2.
-      final chip = days == 2 ? '1-2' : '$days';
-      await t.tapAt(t.getRect(find.text(chip).first).center);
+      // The presets are the three splits: 3, 4 and 5 days.
+      await t.tapAt(t.getRect(find.text('$days').first).center);
       await settle(t);
       await tapControl(t, RegExp('Continue'));
       OnboardingState.instance.finish();

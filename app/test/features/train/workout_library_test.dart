@@ -423,6 +423,7 @@ void main() {
         day.moves.last.prescriptionLabel,
         '3 × 30 seconds · Rest 45 seconds',
       );
+      expect(day.moves.first.restSeconds, 45, reason: 'R09 rests by the plan');
       expect(day.moves.first.sets, hasLength(3));
       expect(day.moves.first.sets.first.reps, 12);
       expect(day.moves.first.cues.first, 'Stop if your back hurts.');

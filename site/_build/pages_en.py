@@ -386,8 +386,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 """ + h3("c-check", "3.3 Checking that you are a woman aged 18 or over") + """
         <p>This happens once, when you join, and only after you have read a
         separate screen and agreed to it. The camera does not start until our
-        server has recorded that agreement. The camera is the only way to take
-        the photographs: the app cannot upload a picture that is already on
+        server has recorded that agreement. For this check the camera is the
+        only way to take the photographs: the app cannot upload a picture that is already on
         your phone.</p>
         <ul>
           <li><b>Photographs of the front and back of your ID card.</b> Sent
@@ -468,6 +468,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         pregnancy or postpartum stage, weight, measurements or allergies, and
         nothing is sent anywhere. Signing out or deleting your account clears
         it.</p>
+        <p>Your profile photo stays on your phone. Own Hub never uploads it.
+        Only you see it. Delete everything removes it from this phone; if you
+        back up your whole phone, a copy made earlier stays in that
+        backup.</p>
+        <p>The workout card you can share is made on your phone from your
+        session, its calories are an estimate, and nothing is sent unless you
+        tap Share and choose where it goes; there is no account and no
+        tracking involved.</p>
         <ul>
           <li><b>Basis:</b> performing our agreement with you.</li>
         </ul>
@@ -619,6 +627,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           check-ins after some days away are all scheduled by the app on your
           phone. They are never sent from our servers, and we do not receive
           anything about them.</li>
+          <li><b>Event reminders.</b> When Own Hub events are open to you, the
+          app reads the list of events and, for the next few, whether you
+          booked a seat. It then schedules a few notes on your phone: three
+          days, one day and three hours before an event you have not booked,
+          and the morning of and three hours before an event you have booked.
+          The notes do not name the event. They are scheduled on your phone,
+          never sent from our servers, and we receive nothing about them. You
+          can turn them off with Event reminders in Notifications. Quiet hours
+          apply.</li>
           <li><b>The one thing we store for push.</b> A device token, which lets
           us tell you when your account check is done. We use it for nothing
           else. It is deleted when you delete your account.</li>
@@ -975,9 +992,13 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           your health information.</li>
           <li>No sale of your data.</li>
           <li>No training of AI on your data.</li>
-          <li>No access to your contacts, location, photo library, microphone,
-          text messages, or Apple Health or Health Connect. The app itself
-          never uses your microphone, and there is no video review.</li>
+          <li>No access to your contacts, location, microphone, text messages,
+          or Apple Health or Health Connect. The app itself never uses your
+          microphone, and there is no video review.</li>
+          <li>No access to your photo library. If you pick your profile photo
+          from your photos, your phone&rsquo;s own picker hands Own Hub only
+          the one picture you choose, and that picture stays on your
+          phone.</li>
           <li>Nothing that guesses your sex, age or anything else about you from
           your face.</li>
         </ul>
@@ -1011,7 +1032,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           deletion period for the dish, and that a count of the dishes you
           shared is replaced the next time you share or scan on a new UTC day.
           Section 3.6 now also says that how you feel after a session and your
-          week review answers stay on your phone only.</li>
+          week review answers stay on your phone only. Also that day, to
+          explain what already happens on your phone: section 3.11 now
+          describes event reminders, which are scheduled on your phone and
+          never sent from our servers; section 3.5 now says that your profile
+          photo stays on your phone and is never uploaded, and that the workout
+          card you can share is made on your phone and sent nowhere unless you
+          tap Share; and section 10 now says how the photo picker works. None
+          of this collects anything new, so you are not asked to accept
+          again.</li>
           <li><b>17 October 2026, meal photos:</b> section 3.12. An optional
           feature with its own agreement, asked in the app before the first
           meal photo. Nothing changes for you unless you use it.</li>

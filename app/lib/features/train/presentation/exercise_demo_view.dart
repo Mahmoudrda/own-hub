@@ -21,6 +21,7 @@ import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/language_switch.dart' show AppChrome;
 import '../data/exercise_media_store.dart';
 import '../domain/exercise_library.dart';
 import 'exercise_clip_frame.dart';
@@ -71,6 +72,7 @@ class _ExerciseDemoViewState extends State<ExerciseDemoView> {
         appBar: TrainTopBar(
           onClose: widget.onClose,
           closeIcon: Icons.arrow_back,
+          actions: const [AppChrome(routedOnly: true)],
         ),
         children: [
           AppEmptyState(
@@ -104,7 +106,11 @@ class _ExerciseDemoViewState extends State<ExerciseDemoView> {
       // The clip is the picture on this page; header art above it would be a
       // second one.
       showArt: false,
-      appBar: TrainTopBar(onClose: widget.onClose, closeIcon: Icons.arrow_back),
+      appBar: TrainTopBar(
+        onClose: widget.onClose,
+        closeIcon: Icons.arrow_back,
+        actions: const [AppChrome(routedOnly: true)],
+      ),
       children: [
         ExerciseClipFrame(
           clipKey: const ValueKey('r15-clip'),

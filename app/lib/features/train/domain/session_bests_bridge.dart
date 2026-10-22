@@ -85,7 +85,10 @@ class SessionBestsBridge {
       if (flush.sessionId == sessionId) continue;
       if (!changed.contains(flush.exerciseId)) continue;
       final session = sessionById(flush.sessionId);
-      if (session == null) continue;
+      // A workout she discarded is not hers to have a best from.
+      if (session == null || session.endedReason == EndedReason.abandoned) {
+        continue;
+      }
       final found = ledger.detector.detect(
         source: measuredSourceOf(session.source),
         sessionId: session.id,

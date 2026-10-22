@@ -10,8 +10,9 @@
 /// behind them**, and which person is on the row: [Recipe.authoredBy]. A book
 /// card is Rahma's, in her Egyptian colloquial, with her name. An authored one
 /// may be Own Hub's kitchen's ([kOwnHubKitchen]): written in the app's neutral
-/// voice, in English and Egyptian Arabic, never drawn as hers. Every one of them
-/// is cooked and allergen-checked by a person before it publishes.
+/// voice, in English and Egyptian Arabic, never drawn as hers. A book card
+/// publishes once Rahma has signed it. One of Own Hub's kitchen publishes on the
+/// automated check ([RecipeVerification]) and carries no person's name.
 ///
 /// [RecipeSource.assembly] is **not a recipe and is not presented as one**: a
 /// named combination of verified `foods` rows with stated portions and no
@@ -396,6 +397,59 @@ const Map<String, String> kRecipeDishPicture = {
   'ownhub_light_mahshi_peppers': 'mahshi_peppers',
 };
 
+/// The record Own Hub's automated check leaves on a recipe it has verified.
+///
+/// This is a script's statement, never a person's: it says the ingredients all
+/// resolve in the food pack, the allergens were derived from the foods and a
+/// keyword scan, the figures were recomputed from the grams and the method has
+/// steps. It carries no name, and a recipe that has only this still has a null
+/// [Recipe.allergenReviewedBy] and [Recipe.cookedBy].
+@immutable
+class RecipeVerification {
+  const RecipeVerification({
+    required this.method,
+    required this.checkedAt,
+    required this.allergensDerived,
+    this.macroDeltaPct,
+  });
+
+  factory RecipeVerification.fromJson(Map<String, Object?> json) =>
+      RecipeVerification(
+        method: json['method'] as String? ?? '',
+        checkedAt: DateTime.tryParse(json['checkedAt'] as String? ?? ''),
+        macroDeltaPct: (json['macroDeltaPct'] as num?)?.toDouble(),
+        allergensDerived: _tags(json['allergensDerived']),
+      );
+
+  /// The only method this build trusts. A record by any other method is kept
+  /// but counts for nothing.
+  static const String autoCheckMethod = 'ownhub-auto-check-v1';
+
+  final String method;
+  final DateTime? checkedAt;
+
+  /// The largest gap, in percent, between the stated figures and the ones
+  /// recomputed from the ingredients.
+  final double? macroDeltaPct;
+
+  /// What the check derived: the foods' allergens plus the keyword scan.
+  final Set<String> allergensDerived;
+
+  bool get isAutoCheck => method == autoCheckMethod;
+}
+
+/// Who stands behind what is said about a recipe's allergens.
+enum RecipeCheck {
+  /// A person signed it: `allergenReviewedBy` is set.
+  signed,
+
+  /// Only Own Hub's automated check. No person has looked at the dish.
+  autoChecked,
+
+  /// Nothing. Unknown, and therefore unsafe for a woman with an allergy.
+  unchecked,
+}
+
 @immutable
 class Recipe {
   const Recipe({
@@ -442,6 +496,7 @@ class Recipe {
     this.cookedAt,
     this.markKey,
     this.photoPath,
+    this.verification,
     this.reviewNotes = const [],
   });
 
@@ -504,6 +559,12 @@ class Recipe {
         .cast<String, Object?>()
         .map((k, v) => MapEntry(k, v as String? ?? '')),
     reviewNotes: ((json['reviewNotes'] as List?) ?? const []).cast<String>(),
+    verification: switch (json['verification']) {
+      final Map<dynamic, dynamic> v => RecipeVerification.fromJson(
+        v.cast<String, Object?>(),
+      ),
+      _ => null,
+    },
   );
 
   final String recipeId;
@@ -597,15 +658,16 @@ class Recipe {
   final int? sourcePage;
   final String authoredBy;
 
-  /// Must be non-null and different from [authoredBy] to publish. Two people,
-  /// enforced in `firestore.rules` rather than in Dart, so a bug here cannot
-  /// bypass it.
+  /// A person's signature on the allergens. Null on a recipe only the automated
+  /// check has verified; it is never filled in for one. When set it must differ
+  /// from [authoredBy]. Two people, enforced in `firestore.rules` as well as in
+  /// Dart, so a bug here cannot bypass it.
   final String? allergenReviewedBy;
   final DateTime? allergenReviewedAt;
 
-  /// Who actually cooked it. Non-null or an authored recipe does not publish:
-  /// times, temperatures, quantities and doneness all come out of a real
-  /// kitchen or they are guesses wearing a recipe's clothes.
+  /// Who actually cooked it. Null until a person has: times, temperatures,
+  /// quantities and doneness come out of a real kitchen, and the automated
+  /// check does not stand in for that.
   final String? cookedBy;
   final DateTime? cookedAt;
 
@@ -621,6 +683,9 @@ class Recipe {
   /// ingredientRef, or her quantity phrase, to the brand she names.
   final Map<String, String> brandHints;
 
+  /// What Own Hub's automated check recorded, or null. Never a person's name.
+  final RecipeVerification? verification;
+
   /// What a reviewer should know before signing: which amounts are ours, what
   /// the figures leave out. English, for the dashboard; never drawn to a woman.
   final List<String> reviewNotes;
@@ -632,11 +697,52 @@ class Recipe {
 
   /// True when a person has signed what is in this dish.
   ///
-  /// Read by `AllergyGuard`: an unsigned recipe is never returned to a woman
-  /// who has declared an allergy, and carries a visible note for everyone else.
-  /// It is never silently presented as fine.
+  /// This is about people only. Whether the allergen list may be relied on at
+  /// all is [allergensKnown], which also counts the automated check.
   bool get allergensReviewed =>
       allergenReviewedBy != null && allergenReviewedBy!.isNotEmpty;
+
+  /// True when Own Hub's automated check verified this recipe and its record
+  /// holds up: the right method, a date, and nothing derived that the recorded
+  /// allergens leave out. A record that disagrees with the recipe it sits on
+  /// counts for nothing, and so does any record on a recipe Own Hub did not
+  /// write: Rahma's book cards need her signature, never a script's.
+  bool get autoChecked {
+    final v = verification;
+    return source == RecipeSource.authored &&
+        v != null &&
+        v.isAutoCheck &&
+        v.checkedAt != null &&
+        allergensFinal.containsAll(v.allergensDerived);
+  }
+
+  /// Whether the allergens of this dish are known: a person signed them, or
+  /// the automated check verified them.
+  ///
+  /// Read by `AllergyGuard`: a recipe whose allergens are not known is never
+  /// returned to a woman who has declared an allergy, because unknown is unsafe,
+  /// never safe by default. For everyone else it stays in the list and carries
+  /// a visible note.
+  bool get allergensKnown => allergensReviewed || autoChecked;
+
+  /// Who stands behind its allergen list. A person's signature wins.
+  RecipeCheck get check => allergensReviewed
+      ? RecipeCheck.signed
+      : autoChecked
+      ? RecipeCheck.autoChecked
+      : RecipeCheck.unchecked;
+
+  /// The words that say whose check this is, or null when nobody's.
+  ///
+  /// A book card that a person signed reads "From Rahma's book". Rahma's name
+  /// goes only on her own cards. A recipe that only the automated check has
+  /// verified reads "Checked by Own Hub", never anything with a person's name.
+  String? get verifiedLabel => switch (check) {
+    RecipeCheck.signed =>
+      source == RecipeSource.book ? "From Rahma's book" : null,
+    RecipeCheck.autoChecked => 'Checked by Own Hub',
+    RecipeCheck.unchecked => null,
+  };
 
   /// Everything the woman actually cooks from, in the order the card prints it.
   ///

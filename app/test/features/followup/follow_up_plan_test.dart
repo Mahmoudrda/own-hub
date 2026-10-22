@@ -327,6 +327,25 @@ void main() {
       expect(found.isEmpty, isTrue);
     });
 
+    test('building muscle already is getting stronger', () {
+      expect(
+        suggest(PlanFit.aboutRight, goal: TrainingGoal.buildMuscle).goal,
+        isNull,
+      );
+      expect(
+        suggest(
+          PlanFit.aboutRight,
+          goal: TrainingGoal.buildMuscle,
+          focus: WeekFocus.feelGood,
+        ).goal,
+        TrainingGoal.feelBetter,
+      );
+      expect(
+        suggest(PlanFit.aboutRight, focus: WeekFocus.strength).goal,
+        isNull,
+      );
+    });
+
     test('the goal only comes back when it differs from hers', () {
       expect(suggest(PlanFit.aboutRight).goal, isNull);
       expect(

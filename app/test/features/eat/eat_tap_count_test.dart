@@ -1,5 +1,6 @@
 // Logging food is quick: a plate she has eaten before takes one tap, a new food
-// takes three (the search box, the food, Add). Counted through the real app.
+// takes two (the food, Add: the search box is already on the page). Counted
+// through the real app.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -94,13 +95,7 @@ void main() {
 
     await _open(tester, 'E01');
     _taps = 0;
-    await _tap(
-      tester,
-      find.descendant(
-        of: find.byKey(const ValueKey('eat-quick-add')),
-        matching: find.byTooltip('Add Koshari bowl'),
-      ),
-    );
+    await _tap(tester, find.byTooltip('Add Koshari bowl').first);
 
     expect(_taps, 1);
     expect(find.byType(AppUndoBar), findsOneWidget);
@@ -109,9 +104,7 @@ void main() {
     expect(_written.length, 3);
   });
 
-  testWidgets('a new food takes three taps: search, the food, Add', (
-    tester,
-  ) async {
+  testWidgets('a new food takes two taps: the food, Add', (tester) async {
     phone(tester);
     // The bundled dishes are read from the asset bundle, which needs real time.
     await tester.runAsync(EgyptianFoodPack.ensureLoaded);
@@ -119,13 +112,12 @@ void main() {
     await tester.pumpAndSettle();
     await _open(tester, 'E01');
 
-    await _tap(tester, find.byKey(const ValueKey('eat-search-pill')));
     await tester.enterText(find.byType(TextField).first, 'taameya');
     await tester.pumpAndSettle();
     await _tap(tester, find.byKey(const ValueKey('result-taameya')));
     await _tap(tester, find.byKey(const ValueKey('portion-add')));
 
-    expect(_taps, 3);
+    expect(_taps, 2);
     expect(find.byType(AppUndoBar), findsOneWidget);
     await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle();

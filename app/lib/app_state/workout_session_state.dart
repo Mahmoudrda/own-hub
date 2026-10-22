@@ -32,10 +32,14 @@ import '../domain/rewards/personal_best_detector.dart';
 import '../domain/training/prescribed_set.dart';
 import '../features/progress/domain/progress_repository.dart';
 import '../features/today/domain/today_repository.dart';
+import '../features/train/domain/live_best.dart';
 import '../features/train/domain/own_best_challenge.dart';
+import '../features/train/domain/rest_adjust.dart';
+import '../features/train/domain/rest_policy.dart';
 import '../features/train/domain/session_summary.dart';
 import '../features/train/domain/train_repository.dart';
 import 'app_changes.dart';
+import 'rest_timer_prefs.dart';
 import 'rewards_state.dart';
 import 'training_streak_state.dart';
 
@@ -58,7 +62,26 @@ class WorkoutSessionState {
   /// her back on the set she took back. The bus took the write back; this
   /// takes the position back, which nothing did — she undid a set and was
   /// asked for the next one anyway.
-  final List<({int move, int set, int logged})> _history = [];
+  ///
+  /// [warmUp] names the move when the entry was a warm-up set, so taking it
+  /// back also takes the warm-up off the move.
+  final List<({int move, int set, int logged, String? warmUp})> _history = [];
+
+  /// Warm-up sets she has saved this session, by move. They are kept apart from
+  /// the sets that are flushed, so nothing that reads her flushed sets (bests,
+  /// the summary, volume, "last time") ever sees one. Session only: a session
+  /// restored after the app closed starts with none.
+  final Map<String, List<SetOutcome>> _warmUps = <String, List<SetOutcome>>{};
+
+  /// The move the rest on R09 is after, and how long it starts at. Fixed when
+  /// the set is saved, because by the time R09 draws, [currentMove] may
+  /// already be the next move. Never changed while she rests, so the clock is
+  /// not reset by a redraw.
+  String? _restMoveId;
+  Duration _restDuration = kRestDuration;
+
+  /// The personal best the last saved set set, once it was written.
+  LiveBest? _liveBest;
 
   LogCommandBus _bus = LogCommandBus();
   int _screens = 0;
@@ -134,6 +157,36 @@ class WorkoutSessionState {
 
   int get loggedSetCount => _loggedSets;
 
+  /// The move the current rest follows. Null with no live session.
+  String? get restMoveId => _restMoveId;
+
+  /// Where the current rest starts: the total she last set for the move, or
+  /// the standard rest.
+  Duration get restDuration => _restDuration;
+
+  /// Keeps [total] as the rest for the move she is resting after. Does not
+  /// change [restDuration], which is where this rest started.
+  void rememberRest(Duration total) {
+    final id = _restMoveId;
+    if (id == null) return;
+    RestTimerPrefs.instance.setFor(id, total);
+  }
+
+  /// The warm-up sets saved for [exerciseId] this session, oldest first.
+  List<SetOutcome> warmUpsFor(String? exerciseId) => exerciseId == null
+      ? const <SetOutcome>[]
+      : List<SetOutcome>.unmodifiable(
+          _warmUps[exerciseId] ?? const <SetOutcome>[],
+        );
+
+  /// The improvement the last saved set made, or null. Set when the set is
+  /// written, so it is never shown for one that was taken back, and only while
+  /// she is resting after that same move.
+  LiveBest? get liveBest =>
+      _liveBest != null && _liveBest!.exerciseId == _restMoveId
+      ? _liveBest
+      : null;
+
   /// Sets of today's session behind her: every set of the moves she has
   /// finished, plus this move's sets before the current one.
   int get setsDone {
@@ -167,6 +220,10 @@ class WorkoutSessionState {
 
   TrainSession? _lastFinished;
   SessionSummary? _lastSummary;
+  String? _lastFinishedTitle;
+
+  /// The name of the workout just finished, for R10's share card.
+  String? get lastFinishedTitle => _lastFinishedTitle;
 
   /// What the session [finish] last put away really was, for R10. Null until
   /// its credit has landed — R10 redraws when it does.
@@ -201,6 +258,10 @@ class WorkoutSessionState {
     _swaps.clear();
     _lastSwap = null;
     _history.clear();
+    _warmUps.clear();
+    _restMoveId = null;
+    _restDuration = kRestDuration;
+    _liveBest = null;
     _challengeAtStart = challenge;
     repository.startSession(day).then((session) {
       _session = session;
@@ -252,6 +313,7 @@ class WorkoutSessionState {
     final move = currentMove;
     if (move == null) return;
     _remember();
+    _startRest(move);
     _loggedSets++;
     if (_setIndex + 1 < move.sets.length) {
       _setIndex++;
@@ -261,11 +323,24 @@ class WorkoutSessionState {
     AppChanges.bump();
   }
 
+  /// A warm-up set saved for the current move. It is shown with the move but
+  /// is not a working set: she stays on the same set, nothing is counted, and
+  /// the rest after it is the move's own.
+  void warmUpLogged(SetOutcome outcome) {
+    final move = currentMove;
+    if (move == null) return;
+    _remember(warmUp: move.exerciseId);
+    _startRest(move);
+    (_warmUps[move.exerciseId] ??= <SetOutcome>[]).add(outcome);
+    AppChanges.bump();
+  }
+
   /// Every remaining set of this move at once — R13's "I did all 3 sets".
   void moveLogged() {
     final move = currentMove;
     if (move == null) return;
     _remember();
+    _startRest(move);
     _loggedSets += move.sets.length - _setIndex;
     _advanceMove();
     AppChanges.bump();
@@ -276,8 +351,35 @@ class WorkoutSessionState {
     _setIndex = 0;
   }
 
-  void _remember() =>
-      _history.add((move: _moveIndex, set: _setIndex, logged: _loggedSets));
+  void _remember({String? warmUp}) => _history.add((
+    move: _moveIndex,
+    set: _setIndex,
+    logged: _loggedSets,
+    warmUp: warmUp,
+  ));
+
+  /// A set was saved on [move]: the rest that follows is that move's.
+  void _startRest(PlannedMove move) {
+    _restMoveId = move.exerciseId;
+    _restDuration =
+        RestTimerPrefs.instance.forMove(move.exerciseId) ??
+        (move.restSeconds == null
+            ? kRestDuration
+            : clampRest(Duration(seconds: move.restSeconds!)));
+    _liveBest = null;
+  }
+
+  /// A set was written and beat a personal best she already had. [written] is
+  /// what the ledger raised for [sessionId]; first marks on a move never
+  /// logged before are not improvements and are ignored. Only the live
+  /// session's own sets are noted.
+  void noteLiveBests(String sessionId, Iterable<PersonalBest> written) {
+    if (_session?.id != sessionId) return;
+    final found = firstLiveBest(written);
+    if (found == null) return;
+    _liveBest = found;
+    AppChanges.bump();
+  }
 
   /// Puts her back where she was before the last log. Called only after the
   /// bus has actually taken that log back, so the position and the write move
@@ -288,6 +390,13 @@ class WorkoutSessionState {
     _moveIndex = last.move;
     _setIndex = last.set;
     _loggedSets = last.logged;
+    final warmUp = last.warmUp;
+    if (warmUp != null) {
+      final saved = _warmUps[warmUp];
+      if (saved != null && saved.isNotEmpty) saved.removeLast();
+      if (saved != null && saved.isEmpty) _warmUps.remove(warmUp);
+    }
+    _liveBest = null;
     AppChanges.bump();
     return true;
   }
@@ -330,6 +439,7 @@ class WorkoutSessionState {
       prescriptionLabel: move.prescriptionLabel,
       quiet: move.quiet,
       floorOnly: move.floorOnly,
+      restSeconds: move.restSeconds,
       sets: [
         for (final set in move.sets)
           PrescribedSet(
@@ -420,6 +530,12 @@ class WorkoutSessionState {
   Future<SessionSummary?>? _finishing;
   String? _finishingId;
 
+  String? _discardingId;
+
+  /// True while [sessionId] is being closed as discarded: whatever its last
+  /// flush finds is not hers to keep, so nothing is recorded or paid for it.
+  bool isDiscarding(String sessionId) => _discardingId == sessionId;
+
   Future<SessionSummary?> _finish(
     TrainSession session, {
     required TrainRepository repository,
@@ -429,6 +545,7 @@ class WorkoutSessionState {
     ChallengeProgress? Function()? challengeNow,
   }) async {
     _lastFinished = session;
+    _lastFinishedTitle = _day?.title;
     _lastSummary = null;
     final seconds = _startedAt == null
         ? 0
@@ -441,16 +558,21 @@ class WorkoutSessionState {
       for (final swapped in _swaps.values) swapped.exerciseId: swapped.name,
     };
 
-    // A session with no set logged is closed as abandoned and counts nowhere:
-    // not in her week, her points or her streak.
-    final nothingLogged = _loggedSets == 0;
-    await _bus.flushAll();
+    // A session with no set logged, or one she chose to discard, is closed as
+    // abandoned and counts nowhere: not in her week, her points or her streak.
+    final uncounted = _loggedSets == 0 || reason == EndedReason.abandoned;
+    if (reason == EndedReason.abandoned) _discardingId = session.id;
+    try {
+      await _bus.flushAll();
+    } finally {
+      _discardingId = null;
+    }
     await repository.finishSession(
       sessionId: session.id,
       durationSec: seconds,
-      reason: nothingLogged ? EndedReason.abandoned : reason,
+      reason: uncounted ? EndedReason.abandoned : reason,
     );
-    final credit = nothingLogged
+    final credit = uncounted
         ? const CreditOutcome()
         : RewardsState.instance.creditSession(
             sessionId: session.id,
@@ -484,6 +606,8 @@ class WorkoutSessionState {
     _setIndex = 0;
     _startedAt = null;
     _history.clear();
+    _warmUps.clear();
+    _liveBest = null;
     _challengeAtStart = null;
     _lastSummary = summary;
     AppChanges.bump();
@@ -539,6 +663,8 @@ class WorkoutSessionState {
       ..clear()
       ..addAll(swaps);
     _history.clear();
+    _warmUps.clear();
+    _liveBest = null;
     AppChanges.bump();
   }
 
@@ -547,6 +673,7 @@ class WorkoutSessionState {
     _day = null;
     _session = null;
     _lastFinished = null;
+    _lastFinishedTitle = null;
     _lastSummary = null;
     _history.clear();
     _bests.clear();
@@ -562,5 +689,9 @@ class WorkoutSessionState {
     _openedMove = null;
     _swaps.clear();
     _lastSwap = null;
+    _warmUps.clear();
+    _restMoveId = null;
+    _restDuration = kRestDuration;
+    _liveBest = null;
   }
 }

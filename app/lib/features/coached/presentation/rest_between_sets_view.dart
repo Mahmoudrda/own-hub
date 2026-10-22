@@ -238,12 +238,14 @@ class _RestBetweenSetsViewState extends State<RestBetweenSetsView> {
                     ],
                   ),
                 ),
-                AppButton(
-                  l10n.skipTimer,
-                  variant: AppButtonVariant.text,
-                  height: 40,
-                  fontSize: 14,
-                  onPressed: widget.onSkipTimer,
+                Flexible(
+                  child: AppButton(
+                    l10n.skipTimer,
+                    variant: AppButtonVariant.text,
+                    height: 40,
+                    fontSize: 14,
+                    onPressed: widget.onSkipTimer,
+                  ),
                 ),
               ],
             ),

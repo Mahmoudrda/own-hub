@@ -48,15 +48,21 @@ import '../../../ui/hand/hand.dart';
 import '../data/exercise_media_store.dart';
 import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
+import '../domain/warm_up.dart';
 import '../domain/weight_label.dart';
+import 'end_workout_sheet.dart';
 import 'exercise_clip_frame.dart';
 import 'exercise_clip_player.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
+import 'warm_up_toggle.dart';
 import 'workout_day_view.dart' show localisedMove;
 import 'session_notice.dart';
 import '../../../ui/screen_art_strip.dart';
 import 'exercise_labels.dart';
+
+/// A warm-up set was saved: the log (for Undo on R09) and the set it holds.
+typedef WarmUpLogged = void Function(LogHandle handle, SetOutcome outcome);
 
 class MidSetView extends StatefulWidget {
   const MidSetView({
@@ -82,7 +88,23 @@ class MidSetView extends StatefulWidget {
     this.clip,
     this.media,
     this.players,
+    this.end,
+    this.warmUps = const <SetOutcome>[],
+    this.onWarmUpLogged,
   });
+
+  /// The warm-up sets already saved for this move in this session. They are
+  /// shown above the working sets, and a suggestion to warm up is made only
+  /// while there are none.
+  final List<SetOutcome> warmUps;
+
+  /// A warm-up set was saved. Null hides the warm-up switch, so a warm-up can
+  /// never fall through to [onSetLogged], which would count it as a working
+  /// set.
+  final WarmUpLogged? onWarmUpLogged;
+
+  /// The way to end the workout from here. Null draws no control.
+  final SessionEnd? end;
 
   /// The library's row for [move], when it holds one: its clip plays at the
   /// top of the page. Null keeps the page as it was.
@@ -166,6 +188,9 @@ class _MidSetViewState extends State<MidSetView> {
   /// Whether the move's cues are open under its clip.
   bool _cuesOpen = false;
 
+  /// Whether the next set is a warm-up. Off whenever this screen opens.
+  bool _warmUp = false;
+
   /// The moves whose clip would not play. Their page keeps no player at all.
   final Set<String> _unplayable = <String>{};
 
@@ -185,6 +210,7 @@ class _MidSetViewState extends State<MidSetView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.move?.exerciseId != widget.move?.exerciseId) {
       _cuesOpen = false;
+      _warmUp = false;
     }
   }
 
@@ -278,11 +304,49 @@ class _MidSetViewState extends State<MidSetView> {
     return index + 1;
   }
 
+  /// The warm-up set the button names while the switch is on. Both the label
+  /// and the log read it from here, so the button never names one set and
+  /// saves another.
+  SetOutcome _warmUpOutcome(PrescribedSet prescribed) =>
+      warmUpOutcomeFor(prescribed, lastKg: widget.lastLogged?.weightKg);
+
+  /// Saves the warm-up set. It goes through the bus like any other log, but
+  /// commits nothing to the repository: a warm-up is not a working set, so it
+  /// never reaches the sets that bests, volume and the summary are read from.
+  void _logWarmUp(PlannedMove move) {
+    final l10n = AppL10n.of(context);
+    final prescribed = _prescribedOf(move);
+    final logged = widget.onWarmUpLogged;
+    if (prescribed == null || logged == null) return;
+
+    final outcome = _warmUpOutcome(prescribed);
+    final handle = _bus.submit(
+      UndoableLog(
+        describe: l10n.warmUpSavedFigure(_figure(l10n, outcome)),
+        commit: () async {},
+      ),
+    );
+    unawaited(AppHaptics.play(HapticMoment.setLogged));
+    setState(() => _warmUp = false);
+    logged(handle, outcome);
+  }
+
+  static String _figure(AppL10n l10n, SetOutcome outcome) => setFigure(
+    l10n,
+    weightKg: outcome.weightKg,
+    reps: outcome.reps,
+    holdSeconds: outcome.holdSeconds,
+  );
+
   void _logOneSet(PlannedMove move) {
     final l10n = AppL10n.of(context);
     final prescribed = _prescribedOf(move);
     // The button that calls this is disabled in the same case. Belt and braces.
     if (prescribed == null) return;
+    if (_warmUp && widget.onWarmUpLogged != null) {
+      _logWarmUp(move);
+      return;
+    }
 
     final handle = _bus.submit(
       UndoableLog(
@@ -320,19 +384,35 @@ class _MidSetViewState extends State<MidSetView> {
   /// path by which this line can state a session that did not happen.
   Widget? _progressionNote(AppL10n l10n, PrescribedSet? prescribed) {
     final line = widget.progressionLine;
-    if (line != null) return AppSageNote(line);
     final last = widget.lastLogged;
+    final was = last == null
+        ? ''
+        : setFigure(
+            l10n,
+            weightKg: last.weightKg,
+            reps: last.reps,
+            holdSeconds: last.holdSeconds,
+          );
+    if (line != null) {
+      // The advice may already say what she did; when it does not, her last
+      // result is stated beside it, so it is always in view.
+      if (was.isEmpty || line.contains(was)) return AppSageNote(line);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppSageNote(line),
+          const SizedBox(height: 8),
+          Text(
+            l10n.lastTimeLast(was),
+            key: const ValueKey('r07-last-time'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        ],
+      );
+    }
     // No history, nothing to say: an empty note is not worth a line mid-set.
-    if (last == null) return null;
-
-    final was = setFigure(
-      l10n,
-      weightKg: last.weightKg,
-      reps: last.reps,
-      holdSeconds: last.holdSeconds,
-    );
-    // A logged set with nothing in it to state. Nothing is claimed about it.
-    if (was.isEmpty) return null;
+    // A logged set with nothing in it to state is not claimed about either.
+    if (last == null || was.isEmpty) return null;
 
     final lastKg = last.weightKg;
     final nowKg = prescribed?.weightKg;
@@ -373,6 +453,8 @@ class _MidSetViewState extends State<MidSetView> {
     // In the language on screen now, not the one the session started in.
     final move = localisedMove(l10n, widget.move ?? _defaultMove(l10n));
     final prescribed = _prescribedOf(move);
+    final canWarmUp = widget.onWarmUpLogged != null && prescribed != null;
+    final warmingUp = canWarmUp && _warmUp;
 
     final hasClip = widget.clip != null && widget.media != null;
     return AppScaffold(
@@ -396,6 +478,7 @@ class _MidSetViewState extends State<MidSetView> {
               tooltip: l10n.pause,
               icon: const Icon(Icons.pause),
             ),
+          if (widget.end case final end?) SessionEndButton(end: end),
         ],
       ),
       footer: [
@@ -414,6 +497,8 @@ class _MidSetViewState extends State<MidSetView> {
           // the first bodyweight move of the first session.
           prescribed == null
               ? l10n.done_54ca1
+              : warmingUp
+              ? _warmUpDoneLabel(l10n, _warmUpOutcome(prescribed))
               : setDoneLabel(
                   l10n,
                   weightKg: prescribed.weightKg,
@@ -544,6 +629,13 @@ class _MidSetViewState extends State<MidSetView> {
             ?_progressionNote(l10n, prescribed),
           ],
         ),
+        if (canWarmUp) ...[
+          WarmUpToggle(
+            value: _warmUp,
+            onChanged: (on) => setState(() => _warmUp = on),
+          ),
+          if (!_warmUp) ?_warmUpHint(l10n, move, prescribed),
+        ],
         // The set she is on, and the rest one tap away.
         _ThisMoveHeading(
           label: l10n.thisMove,
@@ -555,6 +647,9 @@ class _MidSetViewState extends State<MidSetView> {
         // These were three fixed rows, each valued `n12Kg10`, so a two-set
         // move grew a third set that did not exist and every row read
         // "12 kg x 10" however little that had to do with her plan.
+        // Warm-ups she has saved, above the working sets and apart from them.
+        for (final warm in widget.warmUps)
+          SetRow(label: l10n.warmUp, value: _figure(l10n, warm), done: true),
         for (var i = 0; i < move.sets.length; i++)
           if (_allSets || i == _setNumberOf(move) - 1)
             SetRow(
@@ -567,6 +662,31 @@ class _MidSetViewState extends State<MidSetView> {
               current: i == _setNumberOf(move) - 1,
             ),
       ],
+    );
+  }
+
+  static String _warmUpDoneLabel(AppL10n l10n, SetOutcome outcome) {
+    final figure = _figure(l10n, outcome);
+    return figure.isEmpty ? l10n.done_54ca1 : l10n.doneWarmUpFigure(figure);
+  }
+
+  /// A quiet line before the first set of a loaded move that she has not
+  /// warmed up for. Once only: it goes with her first warm-up, and it is not
+  /// made again on the later sets.
+  Widget? _warmUpHint(AppL10n l10n, PlannedMove move, PrescribedSet? set) {
+    if (set == null || widget.warmUps.isNotEmpty) return null;
+    if (_setNumberOf(move) != 1) return null;
+    final working = set.weightKg;
+    if (working == null || working <= 0) return null;
+    final kg = _warmUpOutcome(set).weightKg;
+    if (kg == null) return null;
+    return Padding(
+      key: const ValueKey('r07-warm-up-hint'),
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        l10n.warmUpWithAboutWeightFirstAround('${weightLabel(kg)} ${l10n.kg}'),
+        style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+      ),
     );
   }
 

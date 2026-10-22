@@ -32,7 +32,8 @@ class CustomWorkoutBuilderView extends StatefulWidget {
     super.key,
     required this.onPickMoves,
     required this.onSave,
-    required this.onStartNow,
+    this.onStartNow,
+    this.forPlan = false,
     this.initialName = '',
     this.initialMoves = const <PlannedMove>[],
     this.editing = false,
@@ -48,7 +49,10 @@ class CustomWorkoutBuilderView extends StatefulWidget {
   /// the "saved" note is then not shown.
   final bool? Function(String name, List<PlannedMove> moves) onSave;
 
-  final void Function(String name, List<PlannedMove> moves) onStartNow;
+  final void Function(String name, List<PlannedMove> moves)? onStartNow;
+
+  /// Adding a day to her plan: no Start now, and Save reads "Add to my plan".
+  final bool forPlan;
 
   final String initialName;
   final List<PlannedMove> initialMoves;
@@ -214,24 +218,31 @@ class _CustomWorkoutBuilderViewState extends State<CustomWorkoutBuilderView> {
       },
       child: AppScaffold(
         appBar: AppTopBar(
-          title: widget.editing ? l10n.editYourWorkout : l10n.buildYourWorkout,
+          title: widget.forPlan
+              ? l10n.addADayToMyPlan
+              : widget.editing
+              ? l10n.editYourWorkout
+              : l10n.buildYourWorkout,
           onBack: () => unawaited(_back()),
         ),
         footer: [
+          if (widget.onStartNow != null && !widget.forPlan)
+            AppButton(
+              l10n.startNow,
+              key: const ValueKey('build-start'),
+              icon: Icons.play_arrow,
+              onPressed: empty
+                  ? null
+                  : () => widget.onStartNow!(_name.text, [..._moves]),
+            ),
           AppButton(
-            l10n.startNow,
-            key: const ValueKey('build-start'),
-            icon: Icons.play_arrow,
-            onPressed: empty
-                ? null
-                : () => widget.onStartNow(_name.text, [..._moves]),
-          ),
-          AppButton(
-            l10n.save,
+            widget.forPlan ? l10n.addToMyPlan : l10n.save,
             key: const ValueKey('build-save'),
-            variant: AppButtonVariant.outlined,
-            height: 48,
-            fontSize: 15,
+            variant: widget.forPlan
+                ? AppButtonVariant.filled
+                : AppButtonVariant.outlined,
+            height: widget.forPlan ? 56 : 48,
+            fontSize: widget.forPlan ? 17 : 15,
             onPressed: empty
                 ? null
                 : () {
@@ -240,7 +251,12 @@ class _CustomWorkoutBuilderViewState extends State<CustomWorkoutBuilderView> {
                     // Refused (the cap): the caller has said so and she stays
                     // here. "Saved" is for a save that happened.
                     if (kept == false) return;
-                    showHonestNoticeOn(messenger, l10n.savedToYourWorkouts);
+                    showHonestNoticeOn(
+                      messenger,
+                      widget.forPlan
+                          ? l10n.addedToYourPlan
+                          : l10n.savedToYourWorkouts,
+                    );
                   },
           ),
         ],

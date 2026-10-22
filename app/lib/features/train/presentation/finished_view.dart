@@ -4,10 +4,13 @@
 /// Confetti lives here and nowhere else in the product, because a celebration
 /// that happens everywhere stops being one.
 ///
-/// What she earned is named in the order she cares about: that it counted, how
-/// close the week is, and what she beat. Sharing is a quiet text link rather than
-/// a second button — offering a post at the peak moment is a second decision on a
-/// screen that should have none.
+/// The page is a composition she can screenshot: the day done at the top, then
+/// the picture of her workout (minutes, estimated calories, weight lifted, the
+/// moves) with its Share button under it and the switches for what is on it,
+/// then what she earned in the order she cares about: that it counted, how
+/// close the week is, and what she beat. The share is of an image she
+/// chooses; nothing is posted from here. The group-post link stays a quiet text
+/// link, and only where Community is on.
 ///
 /// The points, the total and the personal best are all read from the rewards
 /// group. This screen renders them and computes none of them: a widget that did
@@ -43,6 +46,7 @@ import '../../../domain/rewards/personal_best_detector.dart';
 import '../../../domain/rewards/stated_figure.dart';
 import '../../../domain/rewards/training_streak.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../onboarding/domain/body_data.dart';
 // `weekdayLabel` is Home's, and the two screens must name the day the same
 // way or a woman sees Thursday on one and Tuesday on the next.
 import '../../today/presentation/today_cards.dart';
@@ -60,6 +64,7 @@ import '../domain/own_best_challenge.dart';
 import '../domain/session_summary.dart';
 import '../domain/train_repository.dart';
 import 'finish_reveal.dart';
+import 'session_share_card.dart';
 import 'set_labels.dart';
 
 // The reveal's order: the day, the effort, the week filling, its figure
@@ -83,7 +88,25 @@ class FinishedView extends StatelessWidget {
     this.summary,
     this.cheer = false,
     this.awaitingSummary = false,
+    this.workoutName,
+    this.bodyWeightKg,
+    this.displayName,
+    this.onShareImage,
   });
+
+  /// The workout's name for the share card. Null names the day instead.
+  final String? workoutName;
+
+  /// Her body weight for the calorie estimate. Null reads the weight she set
+  /// in her body data, and the estimate assumes 65 kg when she has not.
+  final double? bodyWeightKg;
+
+  /// Her first name, offered as a switch on the share card that is off until
+  /// she turns it on. Null offers no switch.
+  final String? displayName;
+
+  /// Hands the share card's PNG to the share sheet. Null uses the phone's own.
+  final WorkoutSharer? onShareImage;
 
   /// The session has finished and its credit has not landed yet. Only the
   /// day-done stage is drawn until it does, so the page never shows a week
@@ -300,6 +323,30 @@ class FinishedView extends StatelessWidget {
                 ),
                 key: const ValueKey('r10-effort'),
                 style: AppText.titleM.copyWith(color: AppColors.onSurface),
+              ),
+            ),
+          // The picture of her workout, to screenshot or share: card first,
+          // then the Share button and what is on it.
+          if (summary != null && summary.isLive && summary.sets > 0)
+            RevealStage(
+              index: 1,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: SessionSharePanel(
+                  data: ShareCardData.from(
+                    summary: summary,
+                    title:
+                        workoutName ??
+                        l10n.dayWorkout(
+                          weekdayLabel(l10n, finishedOn ?? AppClock.now()),
+                        ),
+                    date: finishedOn ?? AppClock.now(),
+                    bodyWeightKg:
+                        bodyWeightKg ?? BodyDataStore.instance.read().weightKg,
+                    name: displayName,
+                  ),
+                  onShare: onShareImage ?? AppRouter.shareProgressCard,
+                ),
               ),
             ),
           // Stage 2 — the week leads, a circle per session, the one she just did

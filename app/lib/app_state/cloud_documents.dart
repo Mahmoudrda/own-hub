@@ -366,11 +366,7 @@ int _foldUser(List<CloudDoc> docs) {
     // Old profiles carry none of these three: the level then follows her
     // answers, and she has no chosen weekdays.
     level:
-        TrainingLevel.fromWire(profile['level']) ??
-        TrainingLevel.suggestedFor(
-          days: Intake.daysOk(days) ? days : defaults.days,
-          minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
-        ),
+        TrainingLevel.fromWire(profile['level']) ?? TrainingLevel.defaultLevel,
     weekdays: Intake.cleanWeekdays([
       for (final d in _list(profile['weekdays']) ?? const <Object?>[])
         if (d is int) d,

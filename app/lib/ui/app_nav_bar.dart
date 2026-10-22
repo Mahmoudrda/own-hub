@@ -1,6 +1,6 @@
 /// The bottom navigation, matching `navBar()` in `6-v2/src/kit.mjs`.
 ///
-/// Four destinations for a woman, four for a coach. This is the product's
+/// Five destinations for a woman, four for a coach. This is the product's
 /// primary navigation and the thing the "everything is two taps away" goal is
 /// measured from, so the tab list lives here once rather than being repeated on
 /// each of the screens that shows it.
@@ -35,6 +35,7 @@ class NavDestination {
     required this.icon,
     required this.activeIcon,
     required this.label,
+    this.emphasis = false,
   });
 
   final String screenId;
@@ -43,9 +44,17 @@ class NavDestination {
 
   /// Resolved per locale — the tab labels are translated like everything else.
   final String Function(AppL10n) label;
+
+  /// A quiet always-on mark behind the icon, for the tab that does the most
+  /// work (Eat: logging a meal lives there). The tab is still a tab: it takes
+  /// the same marker, filled icon and pen line as the others when it is active.
+  final bool emphasis;
 }
 
-/// Her tabs: Home, Train, Community, Eat.
+/// Her tabs: Home, Train, Eat, Community, Insights.
+///
+/// Eat is one tab: logging a meal, finding a recipe and the week's dinners are
+/// segments inside it, so the bar has no floating button.
 ///
 /// **Coaching is deliberately absent, and was deliberately not deleted.** It was
 /// the fifth tab and it pointed at `H01` — `F53 — Find a coach`, which is a
@@ -67,16 +76,23 @@ const List<NavDestination> traineeTabs = [
     label: _trainLabel,
   ),
   NavDestination(
+    screenId: 'E01',
+    icon: Icons.restaurant_outlined,
+    activeIcon: Icons.restaurant,
+    label: _eatLabel,
+    emphasis: true,
+  ),
+  NavDestination(
     screenId: 'M01',
     icon: Icons.groups_outlined,
     activeIcon: Icons.groups,
     label: _communityLabel,
   ),
   NavDestination(
-    screenId: 'E01',
-    icon: Icons.restaurant_outlined,
-    activeIcon: Icons.restaurant,
-    label: _eatLabel,
+    screenId: 'P01',
+    icon: Icons.insights_outlined,
+    activeIcon: Icons.insights,
+    label: _insightsLabel,
   ),
 ];
 
@@ -121,6 +137,7 @@ String _homeLabel(AppL10n l) => l.home;
 String _trainLabel(AppL10n l) => l.train;
 String _communityLabel(AppL10n l) => l.community;
 String _eatLabel(AppL10n l) => l.eat;
+String _insightsLabel(AppL10n l) => l.insights;
 String _eventsLabel(AppL10n l) => l.events;
 String _todayLabel(AppL10n l) => l.today;
 String _clientsLabel(AppL10n l) => l.clients;
@@ -132,10 +149,10 @@ String _earningsLabel(AppL10n l) => l.earnings;
 /// The filter is not a detail. A tab whose feature is dark renders, takes a
 /// quarter of the bar, and lands on the "not in this build" panel: a door
 /// drawn on a wall. The first release ships without the community, so this is
-/// the difference between four tabs and three.
+/// the difference between a full bar and one with a dead tab.
 ///
 /// While the community is dark, its slot goes to Events when Events is on, so
-/// a member's bar stays at four and the owner's events have a door of their
+/// a member's bar keeps its length and the owner's events have a door of their
 /// own. With the community on, the community keeps the slot.
 List<NavDestination> tabsFor(AppRole role) {
   final all = role == AppRole.coach ? coachTabs : traineeTabs;
@@ -158,7 +175,6 @@ class AppNavBar extends StatelessWidget {
     required this.activeScreenId,
     this.destinations,
     this.onSelect,
-    this.onLogFood,
   });
 
   /// The screen currently shown. A tab is active when it owns this screen.
@@ -173,25 +189,11 @@ class AppNavBar extends StatelessWidget {
 
   final ValueChanged<String>? onSelect;
 
-  /// What the centre "Log food" button does. Null opens E02, the food search,
-  /// whenever the bar is live (it has an [onSelect]); in a gallery or test
-  /// with neither, the button is drawn and does nothing.
-  final VoidCallback? onLogFood;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final role = RoleScope.rolesOf(context).active;
     final tabs = destinations ?? tabsFor(role);
-    // The raised button belongs to the trainee bar. It is not a tab:
-    // `traineeTabs` stays at four.
-    final showLogFood = destinations == null
-        ? role != AppRole.coach
-        : identical(destinations, traineeTabs);
-    final logFood =
-        onLogFood ??
-        (onSelect == null ? null : () => AppRouter.openFoodSearch(context));
-    final middle = tabs.length ~/ 2;
 
     Widget tabAt(NavDestination tab) => Expanded(
       child: _Tab(
@@ -222,82 +224,7 @@ class AppNavBar extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(4, 5, 4, 0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    for (var i = 0; i < tabs.length; i++) ...[
-                      if (showLogFood && i == middle)
-                        _LogFoodButton(label: l10n.logFood, onTap: logFood),
-                      tabAt(tabs[i]),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// The raised pink "+" in the middle of the bar. 56 across, with its name
-/// under it like a tab's, and a petrol outline because pink alone is not a
-/// graphic.
-class _LogFoodButton extends StatelessWidget {
-  const _LogFoodButton({required this.label, this.onTap});
-
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      onTap: onTap,
-      excludeSemantics: true,
-      child: Tooltip(
-        message: label,
-        excludeFromSemantics: true,
-        child: SizedBox(
-          width: 76,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HandPressable(
-                key: const ValueKey('nav-log-food'),
-                onTap: onTap,
-                scale: 0.94,
-                borderRadius: BorderRadius.circular(28),
-                builder: (context, _) => Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.onPrimaryContainer,
-                      width: 1.5,
-                    ),
-                    boxShadow: AppShadow.raised,
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    size: 30,
-                    color: AppColors.onPrimaryContainer,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.nav.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.onPrimaryContainer,
-                  ),
+                  children: [for (final tab in tabs) tabAt(tab)],
                 ),
               ),
             ],
@@ -361,6 +288,24 @@ class _Tab extends StatelessWidget {
                           seed: tab.screenId.hashCode,
                           cover: 0.82,
                           textDirection: Directionality.of(context),
+                        ),
+                        child: Center(child: iconWidget),
+                      )
+                    : tab.emphasis
+                    // Eat wears a small pink chip with a petrol edge when it
+                    // is not the page she is on: it is where food is logged,
+                    // and pink alone is not a graphic.
+                    ? DecoratedBox(
+                        key: const ValueKey('nav-tab-emphasis'),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.onPrimaryContainer.withValues(
+                              alpha: 0.55,
+                            ),
+                            width: 1.2,
+                          ),
                         ),
                         child: Center(child: iconWidget),
                       )

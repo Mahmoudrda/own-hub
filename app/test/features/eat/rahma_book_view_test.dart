@@ -387,19 +387,87 @@ void main() {
   });
 
   group('E05 — the book', () {
-    testWidgets('nothing of hers is shown until she has been asked', (
+    testWidgets('before she has been asked the book is open, question on top', (
       tester,
     ) async {
-      // The ordering the whole feature turns on.
+      // Hiding the book from a woman nobody has asked helps no one, so it is
+      // shown whole, each card says what is in it, and the way to answer is the
+      // first thing on the screen.
       _phone(tester);
+      var opened = 0;
       await tester.pumpWidget(
-        _host(RecipesView(book: _book(), asked: false, onSelectTab: (_) {})),
+        _host(
+          RecipesView(
+            book: _book(reviewedBy: 'qa_reviewer'),
+            asked: false,
+            onAnswerAllergies: () => opened++,
+            onSelectTab: (_) {},
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       expect(find.text("Rahma's recipes"), findsOneWidget);
-      expect(find.text('Is there anything you cannot eat?'), findsOneWidget);
-      expect(find.text('Kebda Meal'), findsNothing);
+      expect(find.text("What can't you eat?"), findsOneWidget);
+      expect(find.text('Kebda Meal'), findsOneWidget);
+      expect(
+        find.text('Contains: Milk and dairy, Sesame'),
+        findsOneWidget,
+        reason: 'allergen information is on the card',
+      );
+      // The question sits above the book.
+      expect(
+        tester.getTopLeft(find.text("What can't you eat?")).dy,
+        lessThan(tester.getTopLeft(find.text("Rahma's recipes")).dy),
+      );
+      // Nothing is hidden, so no "hidden" row.
+      expect(find.textContaining('is hidden because'), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('e05-allergy-prompt')));
+      await tester.pump();
+      expect(opened, 1);
+    });
+
+    testWidgets('unasked, in Arabic at 2.0 text, reads without overflowing', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          RecipesView(
+            book: _book(reviewedBy: 'qa_reviewer'),
+            asked: false,
+            onSelectTab: (_) {},
+          ),
+          locale: const Locale('ar'),
+          textScale: 2.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('إيه اللي ماينفعش تاكليه؟'), findsOneWidget);
+      // The dictionary's Arabic comma, not a Latin one.
+      expect(find.textContaining('، '), findsWidgets);
+      expect(find.textContaining('اللبن ومنتجاته, '), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('once she has answered, the question is gone', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          RecipesView(
+            book: _book(reviewedBy: 'qa_reviewer'),
+            asked: true,
+            constraints: DietaryConstraints.none,
+            onSelectTab: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text("What can't you eat?"), findsNothing);
+      expect(find.textContaining('Contains:'), findsNothing);
     });
 
     testWidgets('once she has answered, her cards are drawn', (tester) async {
