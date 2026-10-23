@@ -33,6 +33,7 @@ Updated 23 October 2026. Only steps you do yourself are listed; everything the c
   - Search Results: `search-en-3840x2560.png`, `search-ar-3840x2560.png`.
 - [ ] **Screenshots** if a slot is still empty: the size folder that matches the slot in `~/ownhub/.claude/handoff-store-pass/screenshots-upload/` (`1206x2622` for "iPhone with Dynamic Island (medium display)", or `1179x2556`, `1290x2796`, `1284x2778`), 9 files per language, in name order.
 - [ ] If Apple asks about the reviewer account: the test number must be in the `store-reviewer-phones` secret and in Firebase "Phone numbers for testing" with its code.
+- [ ] Review notes: the notifications sentence was corrected on 23 Oct (`docs/release/review-notes.md`: reminders are scheduled on the phone; the server sends only the check result and generic coaching alerts). If App Store Connect still lets you edit the notes, paste the new box; if not, use it for the next version.
 - Note: the store description cannot change while 1.0 is in review. The corrected wording for the next version is in `docs/release/launch-pack/store-listing-copy.md`.
 
 ### 3. Deploy the corrected website (after the 23 Oct legal text fixes are finished)
@@ -109,6 +110,7 @@ cd ~/ownhub/app && firebase crashlytics:symbols:upload --app=1:681714989950:ios:
 - [ ] 5. Retention periods (proposed: chat 12 months after the coaching ends; intake 30 days after; rejected applications 6 months; reports and blocks 2 years; unused pre-approved numbers 90 days).
 - [ ] 6. Paid coaching store model: packages built around live one-to-one calls (outside payment allowed) or in-app purchase and Play Billing.
 - [ ] 7. When to form the company and move the store accounts.
+- [ ] 8. Who may approve new members: women reviewers only, or administrators too (today the code lets an administrator approve; the privacy policy now says so).
 
 ## Phase two (release 2)
 
