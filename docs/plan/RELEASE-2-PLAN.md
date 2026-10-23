@@ -151,7 +151,17 @@ Leakage happens when a client and coach meet once and then pay outside to skip t
 6. Time savers: templates (exist), weekly check-in forms sent automatically, a welcome message, an adherence view on the desk that flags clients whose check-ins got shorter or stopped (Coachway's signals), AI drafts later.
 7. Session booking with a late-cancel and no-show rule that protects her income (Mindbody and ClassPass patterns, [Mindbody](https://www.mindbodyonline.com/en-gb/business/scheduling), [ClassPass](https://help.classpass.com/hc/en-us/articles/207942743)).
 
-**Pricing (owner decision 2):** keep one all-in price for the client (never show "+15%"); choose between (a) client pays coach price plus a smaller service fee and the coach pays a falling commission, or (b) the coach pays a falling commission and the client sees the coach's own price (the Egyptian provider-pays pattern). Do not raise the take above about 15% ([Gurley](https://abovethecrowd.com/2013/04/18/a-rake-too-far-optimal-platformpricing-strategy/)).
+**Pricing (DECIDED 23 Oct 2026, DECISIONS D63, supersedes the price bullet of D61): the coach pays.** Members see and pay the coach's own price; Own Hub keeps 15% of it from the payout for a client who found the coach in the app, and 8% for a client the coach invited with her code. This is the Egyptian provider-pays pattern (Vezeeta, Shezlong) and matches coach terms section 6. Consequence: the client has no saving from paying outside; the coach has up to 15%, so the coach-side value list above is the priority, and the 8% rate makes running her own clients here worth it.
+
+Build it (pricing display now, the rest with payments):
+1. **Now, in release 2 (coaches set prices today):** the package editor says "Members see EGP {price × 1.15}" (`features/private_coaching/presentation/coach/package_edit_view.dart` ~359 via `domain/pricing.dart` ~11 `finalPrice`), which contradicts the live coach terms. Show "Members pay EGP {price}" and "You receive EGP {price minus 15%}, or EGP {price minus 8%} for clients you invite". Same in the coach space and package preview (`coach/coach_space_view.dart`). New strings through `add_strings.py`.
+2. **Server (with payments):** in `functions/coaching/common.py` make `final_price(p)` return `p`; add `COMMISSION_PCT = {"marketplace": 15, "invite": 8}`, `commission(price, source) = (price * pct + 50) // 100` and `coach_amount(price, source) = price - commission(price, source)`; update `coach_share_after_refund` (~268) and `coach_share_of_kept` (~276) to work on the coach amount; `functions/coaching/packages.py` ~124 returns `youReceiveEgp` (15%) and `youReceiveInviteEgp` (8%). Update `contracts/coaching_price_vectors.json` (client price = coach price; commission and coach amount for both sources, including rounding edges at 200 and 30,000) and keep the Dart mirror in step (`domain/pricing.dart`, its tests read the same vectors).
+3. **Source of the client, fixed once:** record `source` ("marketplace" or "invite") and `commissionPct` on the relationship when it is first created (`functions/coaching/subscriptions.py` request path for marketplace; `functions/coaching/invites.py` `accept` for invite) and copy them onto each subscription; renewals with the same coach reuse the relationship's values. `invites.accept` must not change the source of an existing relationship (a pair that met through Find a coach stays at 15%). Ledger lines store `coachAmountEgp` from `coach_amount`.
+4. **Dashboard:** payouts and refunds show price, Own Hub's share and the coach amount per line (`admin-web/coaching.js`, `logic.js` and tests).
+5. **Coach terms** (`site/_build/pages_en.py` and `pages_ar.py`, coach-terms section 6) before payments open: add that Own Hub keeps 15% (8% for clients she invites) from each payment and when payouts happen; bump the coach terms version so coaches accept it again (`functions/identity/config.py` and the consent record pattern), then rebuild the site.
+6. **Tests:** price vectors (pytest and Dart), the source-fixing rule (an invite after a marketplace request keeps 15%), refund shares with both rates, the package editor text, dashboard payout lines.
+
+Do not raise Own Hub's share above about 15% ([Gurley](https://abovethecrowd.com/2013/04/18/a-rake-too-far-optimal-platformpricing-strategy/)); revisit with 3 months of renewal and leakage data (section 3.7).
 
 **Product friction that is fair:**
 - Move the chat contact screen before the message is saved: send through a callable that screens then writes, instead of a direct Firestore write screened afterwards by the trigger (today a live listener can see the original text briefly: `functions/coaching/chat.py`).
@@ -190,7 +200,7 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 ## 4. Owner decisions needed before building
 
 1. ~~Guest first workout before sign-up (3.2 A)~~ Decided 23 Oct 2026: first workout only (D62).
-2. Fee design for payments (3.6 Pricing): option (a) or (b), and the falling commission steps.
+2. ~~Fee design for payments (3.6 Pricing)~~ Decided 23 Oct 2026: the coach pays, 15% for clients found in the app, 8% for clients she invites (D63).
 3. Conversion fee and 12-month non-circumvention in coach terms: yes or no (lawyer).
 4. Rahma: will she record or approve end-of-workout lines (3.4)?
 
@@ -210,6 +220,6 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 3. One clear next step: 3.1 A, B, C, D, then E, F.
 4. Fewer steps: 3.2 A (decided, D62), B, C, D.
 5. Live workout polish 3.3 and rewards 3.4.
-6. Coaching screens 3.5 (rest).
-7. Payments-phase retention 3.6, after owner decisions 2 and 3 and the licensed payment provider.
+6. Coaching screens 3.5 (rest), plus the package editor price text from 3.6 Pricing step 1 (decided, D63).
+7. Payments-phase retention 3.6 and the fee steps 2 to 6 of 3.6 Pricing (D63), after owner decision 3 and the licensed payment provider.
 8. Carried-over items 3.8 as capacity allows.
