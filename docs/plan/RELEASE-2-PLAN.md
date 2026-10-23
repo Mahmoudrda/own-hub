@@ -130,7 +130,7 @@ Rules (each checkable): never mention a missed day; the kitten's mood never reac
 Leakage happens when a client and coach meet once and then pay outside to skip the fee; it is worst for repeat 1:1 relationships like coaching ([Rework](https://resources.rework.com/libraries/marketplace-growth/marketplace-disintermediation), [Reforge](https://www.reforge.com/blog/what-is-a-marketplace)). On Lalamove a new commission roughly doubled off-platform deals and customers kept about half the saving ([Xie and Zhu](https://questromworld.bu.edu/platformstrategy/wp-content/uploads/sites/49/2023/06/PlatStrat2023_paper_27.pdf)); some leakage is the stable outcome ([Hagiu and Wright 2024](https://pubsonline.informs.org/doi/10.1287/mnsc.2023.4757)). Measure before policing. Egyptian platforms charge the provider, not the client: Vezeeta shows the doctor's own fee ([App Store](https://apps.apple.com/us/app/-/id1010281314)), Shezlong keeps 30% from therapists ([TechPoint](https://techpoint.africa/2021/03/09/egyptian-mental-healthtech-startup-shezlong/)).
 
 **What the client gets that WhatsApp cannot give (build before payments open unless marked later):**
-1. Own Hub Guarantee: full refund within 14 days of start (required anyway by Consumer Protection Law 181/2018 Art. 40/41, refund within 7 days by the same payment method, [Andersen text](https://eg.andersen.com/wp-content/uploads/2025/07/Law-No.-181-of-2018.pdf)) and a pro-rata refund if the coach no-shows or leaves; the coach's share is released only after 14 days (already in the server design: `functions/coaching/subscriptions.py`). Precedents: TaskRabbit Happiness Pledge, Rover Guarantee, Airbnb AirCover apply only to on-platform payments ([TaskRabbit](https://support.taskrabbit.com/hc/articles/30621785849613), [Rover](https://www.rover.com/rover-protect), [Airbnb](https://www.airbnb.com/help/article/209/paying-and-communicating-through-airbnb)).
+1. Her protection when she pays in the app: her legal right to withdraw within 14 days, plus Own Hub's extra protections (coach misses a session or leaves, free coach switch). The exact rules are in 3.10; never market the legal right itself as a guarantee. Precedents: TaskRabbit Happiness Pledge, Rover Guarantee, Airbnb AirCover apply only to on-platform payments ([TaskRabbit](https://support.taskrabbit.com/hc/articles/30621785849613), [Rover](https://www.rover.com/rover-protect), [Airbnb](https://www.airbnb.com/help/article/209/paying-and-communicating-through-airbnb)).
 2. Installments for 3-month packages (valU, Sympl 3 months interest-free, Souhoola, Aman, Contact) through Paymob or Fawry; Paymob pays the merchant upfront ([Paymob BNPL](https://developers.paymob.com/paymob-docs/payments-and-features/payment-methods/bnpls-egy-ksa-uae), [Sympl](https://ibsintelligence.com/ibsi-news/valu-and-sympl-partner-to-provide-short-term-bnpl-plans-for-customers)). Needs the licensed provider, not manual InstaPay.
 3. Verified reviews only from paid in-app coaching (Vezeeta, Airbnb model, [Egyptian Streets](https://egyptianstreets.com/2018/12/12/how-vezeeta-is-redefining-the-relationship-between-patients-and-doctors/)).
 4. Weekly check-ins her coach answers (form plus optional progress photo, private), the top retention driver in online coaching; Coachway's 5,666-client data shows 94% active at month 1, 82% at 3, 65% at 6, and quitting is preceded by shorter, then missed check-ins ([Coachway](https://coachway.io/articles/online-fitness-coaching-statistics/), [signals](https://coachway.io/articles/why-online-coaching-clients-quit/)).
@@ -205,12 +205,71 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
   - `app/android/play-data-safety.txt`: merge the PostHog note into the data types; add the meal photo under Photos (ephemeral, App functionality); note that coach chat means "users can interact" for the content rating; drop the line about an exact-alarm declaration (`SCHEDULE_EXACT_ALARM` needs none, [policy](https://support.google.com/googleplay/android-developer/answer/9888170)).
   - `app/tool/build_release.sh` with `app_state/firebase_boot.dart`: the hand-out APK is signed with the upload key, so Play Integrity reports it as unrecognised and App Check will refuse it once enforcement is on; drop the hand-out APK or relax App Check's recognised-version requirement.
 
+### 3.9 Legal compliance (from the 23 Oct 2026 legal research and code audit; not legal advice, counsel confirms)
+
+**A. Owner actions with dates (not code):**
+1. **Before 31 October 2026: file on the Personal Data Protection Center (PDPC) portal** (log in through Digital Egypt with the national ID): a controller licence, a sensitive-data licence (health data; the selfie-to-ID face match is likely biometric processing even though nothing is stored) and a cross-border transfer licence or permit (Google Cloud and Vertex AI in Frankfurt, PostHog in the United States, Crashlytics). The grace period of Law 151/2020 and Decree 816/2025 ends on 31 October 2026 ([Baker McKenzie](https://www.bakermckenzie.com/en/insight/publications/2026/10/egypt-personal-data-protection-law-update); some sources say 1 November, [CMS](https://cms.law/en/are/legal-updates/egypt-s-pdpl-executive-regulations-issued-one-year-compliance-countdown-begins)); the Center has 90 working days to decide, so filing on time is what matters. Penalties for sensitive data or transfers without a licence include prison and EGP 500k to 5m ([translation](https://youssrysaleh.com/en/egypts-personal-data-protection-law-pdpl-english-translation/)).
+2. **Form a company before paid coaching** (commercial registration, tax card, business bank account), then move the Apple developer account and open the Google Play account as an organisation (Apple 5.1.1(ix): apps with sensitive data or health services should be submitted by a legal entity, [Apple](https://developer.apple.com/app-store/review/guidelines/); Google health apps and D-U-N-S, [Google](https://support.google.com/googleplay/android-developer/answer/10788890?hl=en)). A company must appoint and register a data protection officer (Law 151 Art. 8).
+3. Sign data processing terms with Google Cloud and PostHog; keep a record of processing (PDPC templates); write a breach runbook (PDPC within 72 hours, members within 3 working days, Art. 7) and name who is on call.
+4. Ask counsel the open questions: the payment structure under Central Bank rules (Own Hub as seller with a 15% share kept from the coach's payout may still look like collecting for others; payment facilitators must pay out within 3 working days, [IBA](https://www.ibanet.org/article/6FC3317B-4F9C-4DFC-BDF1-80CF98B68B21)); when the 14-day withdrawal starts for services and whether a refund can be reduced for sessions used (Art. 41 removes the right only after full use); withholding tax on coach payouts (3% or 5%); VAT threshold on gross turnover; the D64 rule and set-off against payouts; Media Regulator Decree 26/2020; women-only exposure under Penal Code Art. 161 bis; where pregnancy, postpartum and allergy topics become medical advice (Law 415/1954).
+
+**B. Fixed on the site and in the store documents on 23 Oct 2026 (no app build):** the false "permit shown in section 1" line; notifications sent from the server for coaching; PostHog (US) in the provider list, transfers and retention; the coaching exception to "health data stays on your phone"; the other verification routes (a woman reviewer, the pre-approved list) and softer "checked by ID" wording; video links for live sessions; the chat filter scope; current retention truths; guest mode; the stale tour mention; coach terms section 6 (today's price includes Own Hub's fee, coaching is free, new terms before payments); coach duties (confidentiality, deleting notes, portfolio licence, independent professional, no medical advice); member conduct rules and a coaching section in the Terms; the store privacy answers (a member's first name to her coach, PostHog, the meal photo). The consent version numbers were not changed, to match the build in review: bump them with the next build (C9).
+
+**C. Code changes for release 2 (each with a test):**
+1. **Separate, explicit, logged consents** (Law 151 Art. 12 and 14, Apple 5.1.2(i) for sending data to AI): health data backup, ID and selfie verification (biometric), each transfer abroad that needs one, usage statistics, and the meal photo to Vertex AI. Each is an unticked choice, versioned, timestamped and recorded on the server with the app version, and can be withdrawn in Profile. Today analytics and crash consent are kept only on the phone (`app_state/analytics_consent.dart` ~34) and the meal-photo consent cannot be withdrawn.
+2. **Coaching consents per request:** `coaching-share` and `transfer-abroad` are written once per user as a side effect of the request with version 1 hard-coded (`functions/coaching/subscriptions.py` ~231-234, ~315-316; `common.py` ~308-312). Send the consent explicitly with each request, record it per coach with its version, the text hash and the app version; reword the transfer tick from an acknowledgement into consent in both languages (the Arabic adds "safely": remove it).
+3. **18+ on every approval route:** reviewer approval and the pre-approved list skip the age check (`functions/identity/approvals.py` ~1-10). Require the reviewer to confirm she saw proof of age 18+ (recorded with the approval), or require the ID-based age on first coaching or event use.
+4. **Before and after photos:** only the coach's tick is stored (`functions/coaching/media.py` ~63-71, ~100, ~161-162). Require evidence of the pictured client's written consent (an upload to a reviewer-only folder, or in-app consent when the client is a member) before approval.
+5. **Retention jobs** for the periods the owner decides (decision 5): chat after coaching ends, the intake, rejected applications, reports and blocks, pre-approved phone numbers. Add them to the deletion manifest trio and the privacy policy's table in the same change.
+6. **Keep financial records:** account deletion removes `coachPrivate/{uid}` including the ledger and payouts (`functions/account/deletion.py` ~446). Pseudonymise and keep ledger, payout, refund and receipt records for the period counsel and the accountant set; state it in the policy.
+7. **Report evidence at the moment of the report:** a report stores a pointer and the message is read live (`functions/coaching/moderation.py` ~75-90, ~134), and deleting the relationship removes it. Copy the reported content into the report (reviewer-only) when it is made; needed for D64 and for safety.
+8. **Rules before the first message and on portfolios:** show the chat rules (and the member conduct rules) once before her first message, with a tick recorded; add Block to the coach portfolio menu (report exists).
+9. **Next build:** bump the privacy and terms versions in `functions/identity/config.py` and `features/signup/domain/legal_acceptance.dart` together so members see the legal update sheet for the 23 Oct clarifications.
+10. **Claims and badges:** "Checked by Own Hub" on automatically checked recipes becomes "Checked automatically" until the human allergen sign-off (`features/eat/presentation/rahma_recipe_view.dart` ~293-296, `recipes_view.dart` ~1300); the coach pill "Verified coach" becomes "Reviewed by Own Hub" (`coach_portfolio_view.dart` ~348-355); meal estimates say "estimated by AI".
+11. **Guest first workout (D62):** show the short "not medical advice, stop if anything hurts, check with a doctor if pregnant or recovering" notice before the guest's first workout (she has not accepted the Terms yet).
+12. **Coach notes about clients:** clear them automatically when the coaching ends and exclude them from iOS backups (`app_state/coach_client_notes.dart`).
+13. **Data subject requests within 6 working days** (Art. 32): an in-app "Request a copy of my data" that creates a request the dashboard tracks against the deadline; the export tool exists (`functions/tools/export_user.py`).
+14. **Releases and licences:** written releases from Rahma (name, image, the welcome video, her recipe book) and from the exercise-clip performer, kept by the owner; a full Hairline MIT notice linked from the credit.
+
+**D. Before payments open (with the licensed provider):**
+- **Store payment model (decision 6):** Apple 3.1.3(d) allows outside payment only for real-time one-to-one services and treated asynchronous chat as a digital service needing in-app purchase ([forum](https://developer.apple.com/forums/thread/730033)); Google exempts one-to-one services only if they are live and not available for replay ([Google](https://support.google.com/googleplay/android-developer/answer/10281818?hl=en)). Either build every paid package around live one-to-one calls (plans and chat as part of the live service) or charge through in-app purchase and Play Billing.
+- **Consumer law at checkout** (Law 181/2018 Art. 37, 38, 40): show the seller's name, address, commercial registration and tax card, the coach's professional status, the total price including taxes, and the withdrawal terms before she confirms; send a written confirmation she can keep; refunds within 7 days by the same payment method; Arabic receipts and terms; an invoice with the tax registration number (Art. 10), through the tax authority's e-receipt system if Own Hub is listed.
+- **Coach contract:** no control of hours, methods or exclusivity (Labour Law 14/2025 tests); never set, cap or require parity of coach prices (Competition Authority decisions, [Baker McKenzie](https://insightplus.bakermckenzie.com/bm/antitrust-competition_1/egypt-the-competition-authority-issues-its-first-retail-price-maintenance-and-most-favoured-nation-clauses-infringement-decisions-under-the-egyptian-competition-law)); express agreement to set-off; log every acceptance with the terms version, a hash of the text, user, time and IP (Law 15/2004).
+- **Women-only reason in writing:** the privacy and safety reason in the app, the store review notes and the policy (Apple 3.2.2(v) forbids arbitrary restriction).
+
+### 3.10 Guarantees that make both sides stay (in the terms, honoured by code)
+
+Rule: a protection is promised only if the code enforces it and the terms state it; legal rights are shown as her rights by law, and only the extras are called Own Hub's protection. Both lists apply only to coaching paid in the app, and the app says so in one plain line ("Paying a coach outside Own Hub has none of these protections").
+
+**Client: "Your rights" and "Own Hub protection"**
+1. Her right by law: she may cancel within 14 days; the refund goes back the way she paid within 7 days (Law 181/2018 Art. 40). How sessions already used are counted follows counsel's answer (A4).
+2. Coach misses a confirmed live session without 24 hours' notice: the session is given back, or refunded if she prefers.
+3. Coach leaves, is suspended or stops replying for 3 working days in a row: the unused part is refunded, or moved to another coach at no cost.
+4. Free coach switch once in the first 14 days: the remaining balance moves to the new coach.
+5. Reviewed coaches: every coach's identity is checked and her certificates are reviewed by an Own Hub woman reviewer (worded exactly so; no "certified" claim).
+6. Privacy: her phone number is never shown to a coach; staff read a chat only after a report.
+7. A problem is answered by a person within 5 working days.
+- Build: refund and transfer paths in `functions/coaching/subscriptions.py` and the ledger; a staff action in the dashboard Refunds tab for 2 to 4; the coach-silence signal from chat timestamps (3.7); the "Your rights" and "Own Hub protection" panels on the package page and in My coach; the client terms section in both languages; tests for each rule.
+
+**Coach: "Own Hub protection for coaches"**
+1. Paid on a fixed day: coaching that has passed the 14-day window is paid out every week on the same day, with the amount and the date visible in her earnings screen (subject to the payment structure counsel approves).
+2. Paid for what she delivered: if a client cancels, she keeps her share for the live sessions already held.
+3. Client no-show: a confirmed session the client misses without 24 hours' notice counts as held.
+4. Fair disputes: before any refund or breach decision about her, she sees the claim and can answer; decisions within 5 working days, with the reason.
+5. Fair reviews: only clients who paid in the app can review her; she can reply once; reviews that break the rules are removed.
+6. Safety: every client is a verified woman; she can block and report; Own Hub handles harassment reports.
+7. Her own clients cost less: 8% instead of 15% for clients she invites (D63).
+- Build: payout schedule in `functions/coaching/payouts.py`; the no-show rule in `functions/coaching/sessions.py`; the dispute step before refunds and D64 decisions in the dashboard; verified reviews (new, after payments); the coach terms section in both languages; tests for each rule.
+
 ## 4. Owner decisions needed before building
 
 1. ~~Guest first workout before sign-up (3.2 A)~~ Decided 23 Oct 2026: first workout only (D62).
 2. ~~Fee design for payments (3.6 Pricing)~~ Decided 23 Oct 2026: the coach pays, 15% for clients found in the app, 8% for clients she invites (D63).
 3. ~~Conversion fee and 12-month non-circumvention in coach terms~~ Decided 23 Oct 2026: 12-month rule for app clients, no paid way out, a 3-month-share penalty on a confirmed breach, then suspension (D64); counsel confirms.
 4. Rahma: will she record or approve end-of-workout lines (3.4)?
+5. Retention periods (3.9 C5): proposed for counsel: chat deleted 12 months after the coaching ends unless a report is open; the intake deleted 30 days after the coaching ends; rejected applications 6 months after the decision; reports and blocks 2 years; pre-approved phone numbers 90 days if unused.
+6. Store payment model for paid coaching (3.9 D): live one-to-one centred packages with outside payment, or in-app purchase and Play Billing.
+7. Company formation and moving the store accounts (3.9 A2): when.
 
 ## 5. Verification for the whole release
 
@@ -223,11 +282,13 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 
 ## 6. Order of work
 
-1. Safety: 3.5 Accept shows health flags.
+0. Owner: file with the PDPC before 31 October 2026 (3.9 A1).
+1. Safety: 3.5 Accept shows health flags; compliance code 3.9 C1 to C4, C7, C8 (consents, 18+, photo consent, report evidence, chat rules).
 2. Measurement events (3.7), so the effect of each change can be seen.
 3. One clear next step: 3.1 A, B, C, D, then E, F.
 4. Fewer steps: 3.2 A (decided, D62), B, C, D.
 5. Live workout polish 3.3 and rewards 3.4.
 6. Coaching screens 3.5 (rest), plus the package editor price text from 3.6 Pricing step 1 (decided, D63).
 7. Payments-phase retention 3.6, the fee steps 2 to 6 of 3.6 Pricing (D63) and the rule steps 1 to 6 (D64), after counsel's review and the licensed payment provider.
-8. Carried-over items 3.8 as capacity allows.
+8. Compliance code 3.9 C5, C6, C9 to C14 with the next build; guarantees 3.10 with payments.
+9. Carried-over items 3.8 as capacity allows.
