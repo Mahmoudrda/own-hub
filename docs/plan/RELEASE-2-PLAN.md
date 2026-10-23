@@ -77,9 +77,14 @@ Safety gap found: on the coach desk K07, "Accept" on a request card skips her fl
 
 ### 3.2 Fewer steps to value (priority 1)
 
-**A. Owner decision 1: a first workout before sign-up.** Evidence: Duolingo +20% DAU from later sign-up. Today a guest sees her plan after onboarding (6-7 screens, no account) but cannot start a workout (R ~3004). Proposal: let a guest do day 1 on the phone (sessions are local today), then ask her to sign up at R10 ("Keep this workout: create your account") with the progress carried over by `SnapshotOwner`. Women-only verification still gates everything social or server-backed (coaching, events, community, meal scan, cloud backup). If the owner says no, skip A.
-- Files: R (guest gate ~3004), `app_state/guest_session.dart`, `features/train/presentation/finished_view.dart`, `app_state/snapshot_owner.dart`.
-- Acceptance: journey test: guest finishes day 1, signs up, the finished session is on her account; a guest still cannot open H01, events booking, meal scan or chat.
+**A. A guest finishes her first workout before signing up (DECIDED 23 Oct 2026: first workout only, DECISIONS D62, amends D54).** Evidence: Duolingo +20% DAU from later sign-up; Apple guideline 5.1.1(v) asks apps to let people use features that need no account without one. Today a guest sees her plan after onboarding (6-7 screens, no account) but cannot start a workout: R03's `onStart` calls `GuestSession.require(context, const PendingAction.startWorkout())` (R ~3004; `app_state/guest_session.dart` lists R03 as view only).
+- Change:
+  - In R03's `onStart` (and Home's Start once 3.1 B routes it straight to R07), skip `GuestSession.require` when she is browsing as a guest AND no finished session exists on the phone (count completed sessions in the train repository; abandoned ones do not count). Otherwise keep the existing `require` call, so from the second workout she is asked to sign in and the pending start replays after verification.
+  - R10 for a guest: one card "Keep this workout" with one primary action that opens sign-up (`GuestSession.instance.intent = AuthIntent.signUp`, then C06) and a text "Later". Hide sharing actions that need an account. New strings through `add_strings.py` (English and Egyptian Arabic).
+  - On her first verified sign-in, the guest session must stay hers: confirm `app_state/snapshot_owner.dart` adopts a guest phone's data on the first sign-in instead of wiping it, and that the finished session then counts in her week, history and bests and syncs under the existing verified-only cloud rule. Fix it if it wipes.
+  - Rewards and points for the guest session follow the same path once she is verified; nothing is credited to the server before verification.
+- Files: R (R03 builder ~3004, T01 Start), `app_state/guest_session.dart`, `features/train/presentation/finished_view.dart`, `app_state/snapshot_owner.dart`, `features/train/domain/train_repository.dart` (completed-session count), strings.
+- Acceptance (tests written to fail first): a guest starts and finishes one workout with no sign-in screen; her second Start opens the sign-in requirement with a pending `startWorkout`; an abandoned first workout does not use up the guest workout; after sign-up and verification the finished session is in her week and history; R10 shows "Keep this workout" only to a guest; a guest still cannot open H01, book an event, scan a meal, open chat, or write to the cloud (existing guest gate tests stay green).
 
 **B. Ask "client or coach" only of coaches.** C08 shows to everyone because `coachApp` is on (`domain/flags/feature_flags.dart` ~490, R ~1598). Move the choice to Profile "Become a coach" (already there) and to coach invite links; members never see C08.
 - Acceptance: sign-up journey for a member has no C08; a coach invite code still lands on the coach path.
@@ -184,7 +189,7 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 
 ## 4. Owner decisions needed before building
 
-1. Guest first workout before sign-up (3.2 A): yes or no.
+1. ~~Guest first workout before sign-up (3.2 A)~~ Decided 23 Oct 2026: first workout only (D62).
 2. Fee design for payments (3.6 Pricing): option (a) or (b), and the falling commission steps.
 3. Conversion fee and 12-month non-circumvention in coach terms: yes or no (lawyer).
 4. Rahma: will she record or approve end-of-workout lines (3.4)?
@@ -203,7 +208,7 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 1. Safety: 3.5 Accept shows health flags.
 2. Measurement events (3.7), so the effect of each change can be seen.
 3. One clear next step: 3.1 A, B, C, D, then E, F.
-4. Fewer steps: 3.2 B, C, D; 3.2 A after owner decision 1.
+4. Fewer steps: 3.2 A (decided, D62), B, C, D.
 5. Live workout polish 3.3 and rewards 3.4.
 6. Coaching screens 3.5 (rest).
 7. Payments-phase retention 3.6, after owner decisions 2 and 3 and the licensed payment provider.
