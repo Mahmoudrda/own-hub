@@ -168,7 +168,15 @@ Do not raise Own Hub's share above about 15% ([Gurley](https://abovethecrowd.com
 - Detect spelled-out numbers in Arabic and English ("zero one zero", "صفر واحد") in `features/private_coaching/domain/chat_screen.dart` and its server twin.
 - Keep contact details blocked for the whole coaching (safety in a women-only app), not only before the first payment.
 
-**Rules (light, with a lawyer):** coach terms: no taking a client met on Own Hub off the app for 12 months, with an honest paid exit (Upwork's conversion fee pattern, [Upwork](https://support.upwork.com/hc/en-us/articles/17995710125715--The-Upwork-Conversion-Fee)) instead of a ban; proportionate damages only (Civil Code Art. 224); keep timestamped acceptance logs (e-signature Law 15/2004). Never forbid coaches charging less elsewhere (Competition Authority action against price parity, [Mondaq](https://webiis10.mondaq.com/antitrust-eu-competition/1603712/the-egyptian-competition-authority-eca-takes-actions-against-mfns-and-hub-and-spokes-arrangements)). The report reason `off_platform_payment` exists; add a staff warning then suspension ladder in the dashboard Reports tab.
+**Rules (DECIDED 23 Oct 2026, DECISIONS D64; counsel confirms before payments open):** while she coaches a client she met through Own Hub (source "marketplace") and for 12 months after their last coaching here ends, a coach may not coach or take payment from that client outside Own Hub; no paid way out. Invite-code clients are never restricted, clients are never penalised, and coaches may charge any price elsewhere (Competition Authority action against price parity, [Mondaq](https://webiis10.mondaq.com/antitrust-eu-competition/1603712/the-egyptian-competition-authority-eca-takes-actions-against-mfns-and-hub-and-spokes-arrangements)). A confirmed breach: first a warning plus a penalty of 3 months of Own Hub's share (15% of the client's monthly price x 3) taken from her next payouts, then suspension, then removal. Proportionate by design (Civil Code Art. 224); acceptance recorded with a timestamp (Law 15/2004). Precedents for platform rules and penalties: [Fiverr](https://help.fiverr.com/hc/en-us/articles/38728907371665-Community-Standards-Off-platform-policy), [Turo](https://help.turo.com/en_us/gray-market-transaction-policy-or-hosts-SJOUUNlN5.md), [Upwork](https://support.upwork.com/hc/en-us/articles/360048105134-Why-Can-t-I-Get-Paid-Directly-).
+
+Build it (with payments, together with the D63 steps):
+1. **Coach terms** (`site/_build/pages_en.py` and `pages_ar.py`, coach terms): a section "Clients you meet on Own Hub" with the rule, the 12 months, who is not covered, the penalty and the steps, in plain English and Egyptian Arabic; ship it in the same coach terms version bump as D63 step 5 so coaches accept both at once (existing consent record pattern); rebuild the site.
+2. **Server:** a staff callable `confirm_circumvention` (admin or finance, through `_require_finance`, with `adminAccessLog`) taking a relationship id, the evidence report id and a required written reason. It refuses unless the relationship's source is "marketplace" and the breach date is within the window (during the coaching or within 12 months after its last end); computes the penalty server-side as `3 * commission(monthly_equivalent(package_price, duration_days), "marketplace")` using the D63 helpers; writes a debit line on the coach's ledger; increments `coachPrivate/{uid}.breaches`; on the second confirmed breach calls the existing suspend path (`suspend_coach`); sends the coach a push with generic lock-screen text. Payout sums (`functions/coaching/payouts.py`) subtract open debits and carry any remainder to the next payout. Add the reasons and callable to both contract copies and `tests/test_entrypoints.py`.
+3. **Coach's view:** the earnings screen shows a debit line with the date and "Terms breach: client moved off Own Hub", and her warning; no client details beyond the client tag.
+4. **Dashboard** (`admin-web/`): on a Reports item with reason `off_platform_payment`, a "Confirm breach" action that first shows the coach's answer field status, the computed penalty and the breach count, requires a reason, then calls the callable; a per-coach breach history.
+5. **Fair process:** before confirming, staff send the coach the report summary and wait for her answer (a "warn" message channel, already listed as a backlog need); the decision and her answer are kept with the access log.
+6. **Tests:** penalty amounts (vectors, rounding at 200 and 30,000, 28/56/84-day packages), refused for invite-source and out-of-window relationships, reason required, payout offset and carry-over, second breach suspends, access log written, dashboard action and text.
 
 **What backfires:** bans and threats, punishing honest coaches, removing messaging, a fee that is too high, strong trust signals without protection ([Gu and Zhu 2021](https://pubsonline.informs.org/doi/10.1287/mnsc.2020.3583), [Sharetribe](https://www.sharetribe.com/academy/how-to-discourage-people-from-going-around-your-payment-system/)).
 
@@ -201,7 +209,7 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 
 1. ~~Guest first workout before sign-up (3.2 A)~~ Decided 23 Oct 2026: first workout only (D62).
 2. ~~Fee design for payments (3.6 Pricing)~~ Decided 23 Oct 2026: the coach pays, 15% for clients found in the app, 8% for clients she invites (D63).
-3. Conversion fee and 12-month non-circumvention in coach terms: yes or no (lawyer).
+3. ~~Conversion fee and 12-month non-circumvention in coach terms~~ Decided 23 Oct 2026: 12-month rule for app clients, no paid way out, a 3-month-share penalty on a confirmed breach, then suspension (D64); counsel confirms.
 4. Rahma: will she record or approve end-of-workout lines (3.4)?
 
 ## 5. Verification for the whole release
@@ -221,5 +229,5 @@ Only with her analytics consent, never health, cycle, food or chat content (priv
 4. Fewer steps: 3.2 A (decided, D62), B, C, D.
 5. Live workout polish 3.3 and rewards 3.4.
 6. Coaching screens 3.5 (rest), plus the package editor price text from 3.6 Pricing step 1 (decided, D63).
-7. Payments-phase retention 3.6 and the fee steps 2 to 6 of 3.6 Pricing (D63), after owner decision 3 and the licensed payment provider.
+7. Payments-phase retention 3.6, the fee steps 2 to 6 of 3.6 Pricing (D63) and the rule steps 1 to 6 (D64), after counsel's review and the licensed payment provider.
 8. Carried-over items 3.8 as capacity allows.
