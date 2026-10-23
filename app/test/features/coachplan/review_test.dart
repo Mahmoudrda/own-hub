@@ -83,13 +83,15 @@ void main() {
       expect(
         week.daysNotLogged,
         7,
-        reason: 'nothing is known, so nothing is claimed — zeroes read as '
+        reason:
+            'nothing is known, so nothing is claimed — zeroes read as '
             'failure on the one screen where her week is described back to her',
       );
     });
 
     test('nothing on this screen scores her', () {
-      final source = coachPlanSources()['domain/review/review_feedback_service.dart']!;
+      final source =
+          coachPlanSources()['domain/review/review_feedback_service.dart']!;
       for (final banned in <String>{
         ...kForbiddenResultFields,
         'adherence',
@@ -102,20 +104,23 @@ void main() {
         expect(
           source.contains(banned),
           isFalse,
-          reason: 'W09 renders counts from her own logs, never a verdict on '
+          reason:
+              'W09 renders counts from her own logs, never a verdict on '
               'them — found "$banned"',
         );
       }
     });
 
     test('the service reads nothing: it holds a gateway and no repository', () {
-      final source = coachPlanSources()['domain/review/review_feedback_service.dart']!;
+      final source =
+          coachPlanSources()['domain/review/review_feedback_service.dart']!;
       expect(source.contains('Repository'), isFalse);
       expect(source.contains('PlanDraft '), isFalse);
       expect(
         source.contains('ReviewGateway'),
         isTrue,
-        reason: 'W09 costs one read for the review and zero for the rollup, '
+        reason:
+            'W09 costs one read for the review and zero for the rollup, '
             'which W02 already loaded',
       );
     });
@@ -139,9 +144,7 @@ void main() {
       final published = gateway.requests.single.payload.toString();
       final writesBefore = draftRepo.writes;
 
-      final outcome = await ReviewFeedbackService(
-        InMemoryReviewGateway(),
-      ).save(
+      final outcome = await ReviewFeedbackService(InMemoryReviewGateway()).save(
         const ReviewFeedback(
           reviewId: 'r_1',
           text: 'Lovely week. Keep the same weights.',
@@ -154,29 +157,34 @@ void main() {
       expect(draftRepo.writes, writesBefore);
     });
 
-    test('offline it queues through G11, and still publishes nothing', () async {
-      final gateway = _RecordingGateway();
-      final outcome = await ReviewFeedbackService(
-        InMemoryReviewGateway(),
-      ).save(
-        const ReviewFeedback(reviewId: 'r_1', text: 'Saved with no signal'),
-        online: false,
-      );
+    test(
+      'offline it queues through G11, and still publishes nothing',
+      () async {
+        final gateway = _RecordingGateway();
+        final outcome = await ReviewFeedbackService(InMemoryReviewGateway())
+            .save(
+              const ReviewFeedback(
+                reviewId: 'r_1',
+                text: 'Saved with no signal',
+              ),
+              online: false,
+            );
 
-      expect(outcome.queued, isTrue);
-      expect(
-        outcome.planStatus,
-        PlanDraftStatus.draft,
-        reason: 'queued is a badge, not a failure — and not a publish either',
-      );
-      expect(gateway.requests, isEmpty);
-    });
+        expect(outcome.queued, isTrue);
+        expect(
+          outcome.planStatus,
+          PlanDraftStatus.draft,
+          reason: 'queued is a badge, not a failure — and not a publish either',
+        );
+        expect(gateway.requests, isEmpty);
+      },
+    );
 
     test('a review is answered with words or a voice note, never neither', () {
       expect(
-        () => ReviewFeedbackService(
-          InMemoryReviewGateway(),
-        ).save(const ReviewFeedback(reviewId: 'r_1', text: '   ')),
+        () =>
+            ReviewFeedbackService(InMemoryReviewGateway())
+                .save(const ReviewFeedback(reviewId: 'r_1', text: '   ')),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -184,11 +192,13 @@ void main() {
 
   group('P0-REVIEW-03 — a reply is not a plan update', () {
     test('the gateway returns nothing a card could be built from', () {
-      final source = coachPlanSources()['domain/review/review_feedback_service.dart']!;
+      final source =
+          coachPlanSources()['domain/review/review_feedback_service.dart']!;
       expect(
         RegExp(r'Future<void>\s+saveCoachResponse').hasMatch(source),
         isTrue,
-        reason: 'no version, no assignment id, no "applied" flag — a reply '
+        reason:
+            'no version, no assignment id, no "applied" flag — a reply '
             'with no publish behind it can produce no card',
       );
       for (final banned in <String>{'version', 'assignmentId', 'applied'}) {
@@ -196,24 +206,32 @@ void main() {
       }
     });
 
-    test('the card comes from the publish receipt, which names a real version', () async {
-      final gateway = _RecordingGateway();
-      final outcome = await CoachPlanPublisher(
-        gateway: gateway,
-        queue: InMemoryPublishIntentQueue(),
-      ).publish(
-        draft: _draft(),
-        context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
-      );
+    test(
+      'the card comes from the publish receipt, which names a real version',
+      () async {
+        final gateway = _RecordingGateway();
+        final outcome =
+            await CoachPlanPublisher(
+              gateway: gateway,
+              queue: InMemoryPublishIntentQueue(),
+            ).publish(
+              draft: _draft(),
+              context: PublishContext(
+                lifeStage: LifeStage.over1y,
+                today: _today,
+              ),
+            );
 
-      expect(outcome.receipt!.version, 'v1');
-      expect(
-        gateway.requests.single.effectiveFrom,
-        '2026-09-19',
-        reason: 'the revision the card points at starts today, never in her '
-            'finished week',
-      );
-    });
+        expect(outcome.receipt!.version, 'v1');
+        expect(
+          gateway.requests.single.effectiveFrom,
+          '2026-09-19',
+          reason:
+              'the revision the card points at starts today, never in her '
+              'finished week',
+        );
+      },
+    );
   });
 
   group('W09 offers two actions, and performs one of them', () {
@@ -242,8 +260,9 @@ void main() {
       // On either of these controls it would put the defect back on the screen
       // with two buttons instead of one.
       expect(
-        coachPlanSourcesVerbatim()['presentation/review_view.dart']!
-            .contains('l10n.saveFeedbackAndPublishChanges'),
+        coachPlanSourcesVerbatim()['presentation/review_view.dart']!.contains(
+          'l10n.saveFeedbackAndPublishChanges',
+        ),
         isFalse,
         reason: 'the split is the label; the combined string is the defect',
       );
@@ -256,12 +275,14 @@ void main() {
     });
 
     test('and W09 could not publish even if its label said so', () {
-      final source = coachPlanSources()['domain/review/review_feedback_service.dart']!;
+      final source =
+          coachPlanSources()['domain/review/review_feedback_service.dart']!;
       for (final banned in kForbiddenPublishReferences) {
         expect(
           source.contains(banned),
           isFalse,
-          reason: 'the split is the label; this is the reason the label is '
+          reason:
+              'the split is the label; this is the reason the label is '
               'true — found "$banned"',
         );
       }
@@ -292,7 +313,8 @@ void main() {
       expect(
         offenders,
         isEmpty,
-        reason: "W09's is G11's review gateway, which returns void; nothing "
+        reason:
+            "W09's is G11's review gateway, which returns void; nothing "
             'else in this feature talks to a server at all',
       );
     });

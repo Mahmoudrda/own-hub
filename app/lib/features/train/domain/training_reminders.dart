@@ -14,6 +14,9 @@ library;
 
 import 'package:meta/meta.dart';
 
+import 'getting_started_tips.dart';
+import 'notification_plan.dart';
+
 /// When she asked to be reminded. [weekdays] use [DateTime.monday] (1) to
 /// [DateTime.sunday] (7).
 @immutable
@@ -38,8 +41,10 @@ class TrainingReminders {
   final int minute;
 
   /// The days, Saturday first, the way the week runs in Egypt.
-  List<int> get orderedWeekdays =>
-      [for (final day in egyptianWeekOrder) if (weekdays.contains(day)) day];
+  List<int> get orderedWeekdays => [
+    for (final day in egyptianWeekOrder)
+      if (weekdays.contains(day)) day,
+  ];
 
   TrainingReminders copyWith({Set<int>? weekdays, int? hour, int? minute}) =>
       TrainingReminders(
@@ -79,7 +84,8 @@ class TrainingReminders {
       other.weekdays.containsAll(weekdays);
 
   @override
-  int get hashCode => Object.hash(hour, minute, Object.hashAllUnordered(weekdays));
+  int get hashCode =>
+      Object.hash(hour, minute, Object.hashAllUnordered(weekdays));
 }
 
 /// Saturday to Friday.
@@ -140,12 +146,73 @@ class ReminderState {
   /// Her reminders, or null when they are off.
   TrainingReminders? schedule;
 
+  /// The phone agreed to show notifications, when she saved her reminders.
+  /// Kept so the other switches on `A01` can be on by default from then.
+  bool permissionGranted = false;
+
+  /// The extra switches on `A01`.
+  NotificationPrefs prefs = const NotificationPrefs();
+
+  /// When she last opened the app and when she last logged a session. They
+  /// only start the away count for the gentle check-ins and are never sent
+  /// anywhere.
+  DateTime? lastActiveAt;
+  DateTime? lastSessionAt;
+
+  /// The event notes last put on the phone. Kept so that a launch with no
+  /// network, where the events cannot be read, leaves them as they were
+  /// instead of cancelling them. Only ids, times and which text; never an
+  /// event's name, and never sent anywhere.
+  List<PlannedNotification> eventPlan = const <PlannedNotification>[];
+
+  /// The getting started tips: when she landed, which are still to come and
+  /// when, and which are done. Kept on the phone, never sent anywhere.
+  TipSeries tips = const TipSeries();
+
+  /// Small markers for what settles a tip that nothing else records: a screen
+  /// id she opened (`R15`, `E05`, `P06`, `R02`) or [kPhotoMealMark].
+  Set<String> tipMarks = <String>{};
+
+  /// "Want a few tips and your workout reminders?" is owed, from `C13`. Shown
+  /// there or on the first Home after it, once.
+  bool tipsOfferDue = false;
+
+  /// It has been shown, whatever she answered.
+  bool tipsOffered = false;
+
   /// `R10` shows the offer once, and not to a woman who already set them.
   bool get offerDue => !offered && schedule == null;
+
+  /// Whether the phone has agreed to show them. A woman who saved reminders
+  /// before this was kept has `schedule` and no flag: saving needed it.
+  bool get permitted => permissionGranted || schedule != null;
+
+  /// She opened the app. Returns true when that is news worth keeping: the
+  /// away count runs in days, so a second open the same day changes nothing.
+  bool noteActive(DateTime now) {
+    final before = lastActiveAt;
+    lastActiveAt = now;
+    return before == null ||
+        before.year != now.year ||
+        before.month != now.month ||
+        before.day != now.day;
+  }
 
   /// Account deletion and sign-out.
   void reset() {
     offered = false;
     schedule = null;
+    permissionGranted = false;
+    prefs = const NotificationPrefs();
+    eventPlan = const <PlannedNotification>[];
+    lastActiveAt = null;
+    lastSessionAt = null;
+    tips = const TipSeries();
+    tipMarks = <String>{};
+    tipsOfferDue = false;
+    tipsOffered = false;
   }
 }
+
+/// The marker for a meal she photographed and saved.
+const String kPhotoMealMark = 'photoMeal';

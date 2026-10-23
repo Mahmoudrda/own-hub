@@ -16,64 +16,89 @@ The structured view is therefore an **index into her card**, not a replacement
 for it. Tab B on E06 shows the card unsplit, which is the other half of the same
 promise.
 
-## What ships as `review`, and why none of it ships as `published`
+## What ships as `published`, and what stays in `review`
 
-All thirty-nine are `status: review`. Three gates in the model are open and none
-of them can be closed by a program:
+`recipe_signoff.json` lists the recipes a person has cooked and checked the
+allergens of, with who and when. A listed recipe is `published` and carries
+`allergenReviewedBy` and `cookedBy`; an unlisted one stays `review`, is marked
+on screen as unchecked, and is **hidden entirely from any woman who has declared
+an allergy** (`AllergyGuard`'s fail-closed behaviour). Writing a name into that
+file for a recipe nobody checked would be forging a signature on an allergen
+check, which is the single worst fabrication available in this feature, so the
+file is edited by a person and never by this script.
 
-  * `allergenReviewedBy` must be a person, and must not be the person who
-    authored the row. Two names, both real. Writing "qa" in that field would be
-    forging a signature on an allergen check, which is the single worst
-    fabrication available in this feature.
-  * `ingredients[].foodId` must point into `foods`, and `foods` has no row with
-    a verified `allergens[]` or per-100 g macros yet. So every `foodId` here is
-    null, which blocks publication by design.
-  * `cookedBy` is null on all thirty-nine. The book is evidence that Rahma
-    *wrote* them, which is what `authoredBy` records. It is not a cooking log.
+Every recipe is then put through `verify_recipes.py` (ingredients, allergens,
+figures, method, diet tags). An Own Hub recipe (`source: authored`) nobody signed
+that passes ships `published` with a `verification` record
+(`ownhub-auto-check-v1`) and still has no `allergenReviewedBy` or `cookedBy`: the
+record says a script checked it, never that a person did. One that fails stays
+`review` and is printed with the reason. A book card nobody signed stays
+`review` whatever the check says: Rahma's cards need a person.
 
-A `review` recipe is visible, is marked on screen as unsigned, and is **hidden
-entirely from any woman who has declared an allergy** - `AllergyGuard`'s
-fail-closed behaviour, extended from "allergens unknown" to "allergens unsigned".
-That is the honest shape: the library is readable, and nobody is told a dish was
-checked when it was not.
+`authoredBy` is `ownhub_kitchen` on every row. The words of the thirty-nine are
+Rahma's (`source: book`, `sourcePage`), and the structured record the app
+ships is Own Hub's: the split into steps, the ingredient rows linked to the
+food pack, the weights, the figures. The two-person rule (`firestore.rules`,
+`recipe_validation.dart`) needs a reviewer who is not the author, and Rahma is
+the reviewer.
 
-## Macros are withheld, not estimated
+## Macros are summed from the food pack
 
-`macroBasis: withheld` on all thirty-nine, and `kcal`, `proteinG`, `carbsG` and
-`fatG` are null. Summing them needs a verified `foods` row and a gram figure per
-ingredient; six recipes state grams and the rest state household measures. A
-computed-looking number over an uncomputed base is a fabricated figure driving a
-woman's eating, which `stated_figure.dart` already refuses to do elsewhere.
+Every ingredient row carries a `foodId` into `foods_eg.json` and a weight
+(`recipe_links.py`). A recipe's figures are the sum of those rows over the
+pack's per-100 g values, divided by `serves`. Optional rows, serving
+suggestions and the second of two alternative methods are not counted. Where
+the book gives no amount the weight is ours, marked `estimated` on the row and
+said in the recipe's `reviewNotes`, so the figure is never read as hers.
+`egpPerServing` stays null: there is no price source.
 
-## Allergens are derived from her own words
+## Allergens are the union of two readers
 
-`allergensDerived` is whatever `allergen_tripwire.py` reads out of `bodyAr` plus
-every slice taken from it. That is a statement about her text, reproducible by
-re-running this script, and it is the only allergen claim in the file that is not
-a human's. `allergensExtra` is empty on every recipe: extending the set is a
-person's job and no person has done it. `allergensRemoved` carries a written
-reason per tag, and the tripwire refuses to pass a recipe whose text fires a tag
-that is in neither set.
+`allergensDerived` is whatever `allergen_tripwire.py` reads out of the card's
+Arabic. `allergensExtra` is every tag the linked foods carry that the words do
+not say (freekeh is wheat and nobody writes "wheat"). `allergensRemoved` is
+empty on every recipe: removing a tag is a person's job and needs a written
+reason.
+
+## The eleven recipes of Own Hub's kitchen
+
+`ownhub_recipes.py` holds recipes written by Own Hub, not by Rahma
+(`source: authored`). They carry English and Egyptian Arabic and are never drawn
+as hers. They ship `published` on the automated check alone and are signed by
+nobody until the sign-off file lists them.
 """
 
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from allergen_tripwire import scan  # noqa: E402
+from ownhub_recipes import RECIPES as OWNHUB  # noqa: E402
+from recipe_links import LAHMA_ROWS, LINKS  # noqa: E402
+import verify_recipes  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CARDS = os.path.join(HERE, "rahma_book_cards.json")
-OUT = os.path.join(HERE, "..", "assets", "content", "rahma_recipes.json")
+# The two paths the build reads and writes can be pointed elsewhere, so a test
+# can try a sign-off without touching the real one.
+OUT = os.environ.get("OWNHUB_RECIPES_OUT") or os.path.join(
+    HERE, "..", "assets", "content", "rahma_recipes.json"
+)
+PACK = os.path.join(HERE, "..", "assets", "content", "foods_eg.json")
+SIGNOFF = os.environ.get("OWNHUB_RECIPE_SIGNOFF") or os.path.join(
+    HERE, "recipe_signoff.json"
+)
+TITLES_AR = os.path.join(HERE, "rahma_titles_ar.json")
 
 SCHEMA_VERSION = 1
 CONTENT_VERSION = 1
 
-# Who wrote the structured view. `authoredBy` is a claim about provenance, and
-# this one is supported by the book's own cover ("By : Rahma Mohsen") and its PDF
-# author metadata. `allergenReviewedBy` is a different claim and is left null.
-AUTHORED_BY = "rahma_mohsen"
+# Who wrote the structured record. The book's words are Rahma's (`source:
+# book`); the steps, the linked ingredient rows and the figures are Own Hub's.
+# See the module note on the two-person rule.
+AUTHORED_BY = "ownhub_kitchen"
 
 # `_` is the recipe table. One entry per card, in printing order.
 #
@@ -166,7 +191,7 @@ _ = [
     ),
     dict(
         id="rahma_club_sandwich", section=2, page=7, mark="sandwich",
-        active=5, total=5, closing=6,
+        skip_lines=[2], active=5, total=5, closing=6,
         ing=["قطعتين Turkey", "15 جرام جبنه موتزاريلا", "رشة زعتر",
              "شريحة فلفل احمر", "شريحتين خس", "طماطم وخيار"],
         grams={"15 جرام جبنه موتزاريلا": 15},
@@ -275,7 +300,7 @@ _ = [
     ),
     dict(
         id="rahma_hwawshi", section=3, page=14, mark="flatbread",
-        splits=[1, 3], active=10, total=30, ingredients_basis="few",
+        skip_lines=[0], splits=[1, 3], active=10, total=30, ingredients_basis="few",
         ing=["لحمة مفرومة قليلة الدهن + بصل +\nفلفل + بقدونس + بهارات لحمه",
              "عيش بلدي ريتش بيك"],
         brands={"عيش بلدي ريتش بيك": "ريتش بيك"},
@@ -295,7 +320,7 @@ _ = [
     ),
     dict(
         id="rahma_chicken_ranch_salad", section=3, page=15, mark="salad_bowl",
-        active=20, total=20,
+        skip_lines=[4, 5], active=20, total=20,
         ing=["قطعتين بانيه", "خس واي خضار بنحبه", "بطاطس مكعبات",
              "رشة زيت زيتون", "وبهارات البطاطس", "واحدة توست محمص بني",
              "زبادي وتوم مفروم وملح وفلفل وبقدونس"],
@@ -561,14 +586,132 @@ def _is_marker_line(line):
     return len(head) > 1 and head[0] in _MARKERS and head[1:].isdigit()
 
 
-def _step_bounds(lines, splits, closing, blocked=frozenset()):
-    """Where each step starts and stops.
+# Words that only link one of her quantity phrases to the next ("on it", "or",
+# "with"). A line with nothing in it but her phrases and these is still an
+# ingredient line, and a step with nothing else left in it has no method.
+CONNECTOR_WORDS = frozenset({
+    "على", "عليها", "عليهم", "عليه", "او", "أو", "مع", "من", "في", "ب",
+})
+
+
+def _words(text, connectors=True):
+    """The words of [text] that are not a bare "and" or, when [connectors], a
+    connector."""
+    out = []
+    for token in re.split(r"[\W_]+", text):
+        token = token.lstrip("و") if len(token) > 1 else token
+        if token and token != "و" and not token.isdigit() and not (
+            connectors and token in CONNECTOR_WORDS
+        ):
+            out.append(token)
+    return out
+
+
+def method_words(text, ingredients):
+    """What is left of a step once every ingredient phrase is taken out."""
+    phrases = []
+    for row in ingredients:
+        phrases.append(row["qtyTextAr"])
+        phrases.extend(x.strip() for x in row["qtyTextAr"].split("\n"))
+    for phrase in sorted({p for p in phrases if p}, key=len, reverse=True):
+        text = text.replace(phrase, " ")
+    return _words(text)
+
+
+def _ingredient_lines(body, ingredients):
+    """Indices of the lines that are nothing but her quantity phrases.
+
+    A card that lists what goes in, line by line, ahead of (or between) its
+    method printed those lines with her own `-1`, `-2` markers, and they were
+    taken for steps: step 1 of `Lazy Cake` was ingredient 1 word for word. A line
+    belongs to the ingredient block when every character of it is inside one of
+    her quantity phrases, or is a joiner between two of them, or a marker.
+
+    A phrase that runs across her line break counts only when **every** line it
+    touches is such a line. `كيس` ending a sentence and `stevia` opening the next
+    line is one phrase, but the first line also carries a verb, so neither line
+    is an ingredient line and the sentence stays whole.
+
+    A lead-in that only introduces such a block (`المكونات:`, `تتقدم مع:`) goes
+    with it: it would otherwise be a step with nothing under it. A lead-in
+    that carries one of her own step numbers is her step, and stays.
+    """
+    lines = body.split("\n")
+    starts = []
+    at = 0
+    for line in lines:
+        starts.append(at)
+        at += len(line) + 1
+    covered = [False] * len(body)
+    spans = []
+    cursor = 0
+    for text in ingredients:
+        i = body.find(text, cursor)
+        if i < 0:
+            i = body.find(text)
+        assert i >= 0, f"{text!r} is not in bodyAr"
+        spans.append((i, i + len(text)))
+        for k in range(i, i + len(text)):
+            covered[k] = True
+        cursor = i + len(text)
+
+    def touches(index, a, c):
+        lo = starts[index]
+        return a < lo + len(lines[index]) and c > lo
+
+    full = set()
+    for n, line in enumerate(lines):
+        lo = starts[n]
+        mine = [covered[k] for k in range(lo, lo + len(line))]
+        if not any(mine):
+            # A stray bracket or full stop her line break left on a line of its
+            # own holds no method, and is dropped with the block around it.
+            if line.strip() and not any(ch.isalnum() for ch in line):
+                full.add(n)
+            continue
+        # A connector counts as nothing only between two of her phrases
+        # ("yoghurt on it garlic"). One that opens or closes the line belongs to
+        # a sentence that goes on past it, and keeps the line in its step.
+        first = mine.index(True)
+        last = len(mine) - 1 - mine[::-1].index(True)
+        rest = [
+            " " if c or body[lo + k].isdigit() else body[lo + k]
+            for k, c in enumerate(mine)
+        ]
+        edge = "".join(rest[:first] + [" "] + rest[last + 1:])
+        inner = "".join(rest[first:last + 1])
+        if not _words(edge, connectors=False) and not _words(inner):
+            full.add(n)
+    spoiled = set()
+    for a, c in spans:
+        hit = [n for n in range(len(lines)) if touches(n, a, c)]
+        if any(n not in full for n in hit):
+            spoiled.update(hit)
+    block = full - spoiled
+    for n in sorted(block):
+        before = n - 1
+        if before >= 0 and before not in block:
+            if lines[before].strip().endswith(":") and not _is_marker_line(
+                lines[before]
+            ):
+                block.add(before)
+    return block
+
+
+def _step_bounds(lines, splits, closing, blocked=frozenset(),
+                 dropped=frozenset(), timers=None):
+    """Where each step starts and stops, as (original number, start, stop).
 
     A step begins at one of her own numbered markers, or at a split point a
     human chose for a card she ran on without numbering. It stops at the next
     start, at a line that belongs to a component or a variant, or at her
     sign-off. Line 0 is always a start, because her first line is always the
     beginning of something even when she did not number it.
+
+    [dropped] are the ingredient-block lines. They are cut out of a step, never
+    kept in it, so a run of them between two sentences leaves each sentence as
+    its own step. The original number is kept for the timers, which were read
+    off her sentences before any line was dropped.
     """
     end = closing if closing is not None else len(lines)
     starts = set(splits or []) | {0}
@@ -577,6 +720,7 @@ def _step_bounds(lines, splits, closing, blocked=frozenset()):
             starts.add(i)
     bounds = []
     i = 0
+    n = 0
     while i < end:
         if i in blocked:
             i += 1
@@ -584,21 +728,68 @@ def _step_bounds(lines, splits, closing, blocked=frozenset()):
         stop = i + 1
         while stop < end and stop not in blocked and stop not in starts:
             stop += 1
-        bounds.append((i, stop))
+        n += 1
+        run = None
+        for k in range(i, stop):
+            if k in dropped:
+                if run is not None:
+                    bounds.append((n, run, k))
+                    run = None
+            elif run is None:
+                run = k
+        if run is not None:
+            bounds.append((n, run, stop))
+        assert n not in (timers or {}) or any(b[0] == n for b in bounds), (
+            f"step {n} carries a timer and was nothing but ingredient lines"
+        )
         i = stop
     return bounds
 
 
+_MARKER_PREFIX = r"^([-.]\d+\s+)?"
+_METHOD_HEADING = re.compile(_MARKER_PREFIX + r"الطريقة\s*:\s*")
+_SERVED_WITH = re.compile(_MARKER_PREFIX + r"(تتقدم|يتقدم|تقدم)\s+مع\s*:")
+
+
+_LEADING_STEP_MARKER = re.compile(r"^(?:[-.]\d+|\d+-)\s+")
+
+
+def _clean_step(text):
+    """Her step without a "الطريقة:" heading, without the step number she
+    typed in front of it (the app numbers the steps itself), and with the line
+    breaks the printed page wrapped at joined into one line. Nothing else is
+    touched."""
+    text = _METHOD_HEADING.sub(lambda m: m.group(1) or "", text, count=1)
+    text = re.sub(r"\s*\n\s*", " ", text).strip()
+    return _LEADING_STEP_MARKER.sub("", text, count=1)
+
+
+def _is_served_with(text, refs_for):
+    """A "served with" line: it names the side the ingredient list already
+    carries, so as a step it would only say the same thing twice."""
+    m = _SERVED_WITH.match(text)
+    if not m:
+        return False
+    return not text[m.end():].strip() or bool(refs_for(text))
+
+
 def _steps(lines, bounds, timers, body, refs_for):
     out = []
-    for n, (start, stop) in enumerate(bounds, start=1):
+    seen = set()
+    for n, start, stop in bounds:
         text = "\n".join(lines[start:stop]).strip()
         if not text:
             continue
         t = (timers or {}).get(n, {})
+        if t:
+            assert n not in seen, f"two pieces of step {n} would both take its timer"
+        seen.add(n)
         assert text in body, f"step {n} is not a slice of bodyAr: {text!r}"
+        if _is_served_with(text, refs_for):
+            continue
+        text = _clean_step(text)
         out.append({
-            "index": n,
+            "index": len(out) + 1,
             "textAr": text,
             "minutes": t.get("min"),
             "tempC": t.get("temp"),
@@ -612,11 +803,317 @@ def _steps(lines, bounds, timers, body, refs_for):
     return out
 
 
+def _norm_line(line):
+    """A line without her step marker or her closing full stop."""
+    line = line.strip()
+    parts = line.split(" ", 1)
+    if _is_marker_line(line) and len(parts) > 1:
+        line = parts[1]
+    return line.strip().rstrip(".").strip()
+
+
+def _assert_no_ingredient_lines(recipe_id, steps, ingredients):
+    """No step is, or holds, a line that is one of her ingredient lines.
+
+    Read from the output rather than from the cutting that produced it, so a
+    later edit to the cutting cannot quietly bring the duplicates back.
+    """
+    wanted = []
+    for row in ingredients:
+        wanted.append([_norm_line(x) for x in row["qtyTextAr"].split("\n")])
+    for step in steps:
+        assert method_words(step["textAr"], ingredients), (
+            f"{recipe_id} step {step['index']} is only ingredient phrases: "
+            f"{step['textAr']!r}"
+        )
+        got = [_norm_line(x) for x in step["textAr"].split("\n")]
+        for ing in wanted:
+            for at in range(len(got) - len(ing) + 1):
+                assert got[at:at + len(ing)] != ing, (
+                    f"{recipe_id} step {step['index']} holds the ingredient "
+                    f"line {ing!r}"
+                )
+
+
+def _load_pack():
+    pack = json.load(open(PACK, encoding="utf-8"))
+    return {f["id"]: f for f in pack["foods"]}
+
+
+def _load_titles_ar():
+    """The Egyptian Arabic titles and PS lines the shipped seed carries.
+
+    Kept in a file of their own, as they were shipped, so that rebuilding the
+    seed does not drop them: the card extractor reads the book, and the book
+    has no Arabic title for a card.
+    """
+    return json.load(open(TITLES_AR, encoding="utf-8"))
+
+
+def _load_signoff():
+    if not os.path.exists(SIGNOFF):
+        return {}
+    return json.load(open(SIGNOFF, encoding="utf-8"))["recipes"]
+
+
+# Foods that are meat, poultry, fish or shellfish, for the vegetarian tag. A
+# stock cube is not in the list: the cards that use one say which kind, and a
+# card with a meat in it is not vegetarian for any other reason.
+_FLESH = {
+    "chicken_breast_raw", "chicken_breast_grilled", "chicken_liver_raw",
+    "chicken_whole_raw", "chicken_wings_raw", "frakh_pane", "beef_mince_lean",
+    "beef_steak_raw", "steak_grilled", "shrimp_raw", "tilapia_raw",
+    "tuna_canned", "tuna_in_oil", "turkey_smoked",
+}
+_NOT_VEGAN = {"honey"}
+_OVEN_WORDS = re.compile(r"فرن|فراير|شوايه|الشوايه|\boven\b|air fryer", re.I)
+
+
+def _counted(row, ingredient):
+    """Whether a row goes into the figures. See `recipe_links.py`."""
+    return not (
+        ingredient["optional"] or ingredient["servingSideOnly"]
+        or row.get("skip")
+    )
+
+
+def _sum_macros(rows, ingredients, pack, serves):
+    total = dict(kcal=0.0, proteinG=0.0, carbsG=0.0, fatG=0.0)
+    for row, ingredient in zip(rows, ingredients):
+        if not _counted(row, ingredient):
+            continue
+        per = pack[row["food"]]["per100g"]
+        for key in total:
+            total[key] += per[key] * row["grams"] / 100.0
+    return {k: int(v / serves + 0.5) for k, v in total.items()}
+
+
+def _food_allergens(rows, pack):
+    out = set()
+    for row in rows:
+        out.update(pack[row["food"]]["allergens"])
+    return out
+
+
+def _diet(rows, ingredients, pack, allergens, macros, steps, body, minutes,
+          checked):
+    """The tags the filters and the index read.
+
+    The three that rest on an allergen set (`vegan`, `gluten_free`, `no_nuts`)
+    are given only to a recipe a person has signed: an unsigned recipe is not
+    "nut free", it is unchecked, and a tag saying otherwise would be the app
+    making the claim it refuses to make.
+    """
+    tags = set()
+    foods = {row["food"] for row in rows}
+    if macros["proteinG"] >= 20:
+        tags.add("high_protein")
+    if not foods & _FLESH:
+        tags.add("vegetarian")
+        if checked and not (allergens & {"eggs", "milk"}) and not (
+            foods & _NOT_VEGAN
+        ):
+            tags.add("vegan")
+    if checked and "gluten" not in allergens:
+        tags.add("gluten_free")
+    if checked and not allergens & {"tree_nuts", "peanuts"}:
+        tags.add("no_nuts")
+    if not any(s["tool"] in ("oven", "air_fryer") for s in steps) and not (
+        _OVEN_WORDS.search(body)
+    ):
+        tags.add("no_oven")
+    if minutes is not None and minutes < 20:
+        tags.add("under_20_min")
+    return sorted(tags)
+
+
+def _review_notes(meta_notes, rows, ingredients, serves, stated_serves):
+    notes = [
+        f"Serves {serves}"
+        + (": the card says so." if stated_serves else
+           ": our assumption, the book does not give a number of servings.")
+    ]
+    assumed = [
+        r["note"] for r, i in zip(rows, ingredients)
+        if r["basis"] == "estimated" and r["food"] != "spices_and_seasoning"
+        and r["note"]
+    ]
+    if assumed:
+        notes.append("Amounts that are ours, marked estimated on the row: "
+                     + "; ".join(assumed) + ".")
+    skipped = [
+        r["note"] for r, i in zip(rows, ingredients)
+        if not _counted(r, i) and r["note"]
+    ]
+    if skipped:
+        notes.append("Not counted in the figures: " + "; ".join(skipped) + ".")
+    notes.extend(meta_notes)
+    notes.append(
+        "Figures are one serving, summed from the food pack over the weights on "
+        "the rows."
+    )
+    return notes
+
+
+def _sign(recipe, signed):
+    entry = signed.get(recipe["recipeId"])
+    if entry is None:
+        return
+    assert entry["allergenReviewedBy"] != recipe["authoredBy"], (
+        f"{recipe['recipeId']}: the reviewer cannot be the author"
+    )
+    recipe["status"] = "published"
+    recipe["allergenReviewedBy"] = entry["allergenReviewedBy"]
+    recipe["allergenReviewedAt"] = entry["at"]
+    recipe["cookedBy"] = entry["cookedBy"]
+    recipe["cookedAt"] = entry["at"]
+
+
+def _ownhub_recipe(data, section, order_in_section, pack, signed):
+    """One of Own Hub's own recipes, in the shape of the book's."""
+    rid = data["id"]
+    rows = []
+    ingredients = []
+    for n, item in enumerate(data["ingredients"], start=1):
+        food, grams, qty_en, qty_ar = item[:4]
+        flags = item[4] if len(item) > 4 else {}
+        assert food in pack, f"{rid}: {food} is not a food"
+        basis = "estimated" if food == "spices_and_seasoning" else "stated"
+        rows.append(dict(food=food, grams=grams, basis=basis, note=qty_en,
+                         **flags))
+        ingredients.append({
+            "ingredientRef": f"{rid}_{n}",
+            "foodId": food,
+            "qtyTextAr": qty_ar,
+            "qtyTextEn": qty_en,
+            "grams": grams,
+            "gramsBasis": basis,
+            "gramsNote": None,
+            "optional": bool(flags.get("opt")),
+            "servingSideOnly": bool(flags.get("side")),
+            "brandHint": None,
+        })
+    steps = []
+    for n, st in enumerate(data["steps"], start=1):
+        steps.append({
+            "index": n,
+            "textAr": st["ar"],
+            "textEn": st["en"],
+            "minutes": st["minutes"],
+            "tempC": st["temp"],
+            "tool": st["tool"],
+            "usesRefs": [],
+            "isTimer": st["minutes"] is not None
+            and st["tool"] not in (None, "fridge", "freezer"),
+        })
+    body = "\n".join(st["textAr"] for st in steps)
+    _assert_no_ingredient_lines(rid, steps, ingredients)
+    for bad in ("\u2013", "\u2014"):
+        assert bad not in body and bad not in " ".join(
+            st["textEn"] for st in steps
+        ), f"{rid}: a dash"
+    serves = data["serves"]
+    macros = _sum_macros(rows, ingredients, pack, serves)
+    scanned = "\n".join([body] + [i["qtyTextAr"] for i in ingredients])
+    derived = sorted(scan(scanned).keys())
+    extra = sorted(_food_allergens(rows, pack) - set(derived))
+    final = sorted(set(derived) | set(extra))
+    minutes = data["active"] if data["active"] is not None else data["total"]
+    diet = _diet(rows, ingredients, pack, set(final), macros, steps, body,
+                 minutes, rid in signed)
+    entry = signed.get(rid)
+    if entry is None:
+        first = (
+            "Written by the Own Hub kitchen, not by Rahma. Checked by the "
+            "Own Hub automated check (ingredients, allergens, figures); no "
+            "person has cooked it or signed its allergens."
+        )
+    else:
+        first = (
+            "Written by the Own Hub kitchen, not by Rahma. Signed off "
+            f"{entry['at'][:10]}: cooked by {entry['cookedBy']}, allergens "
+            f"checked by {entry['allergenReviewedBy']}."
+        )
+    notes = [
+        first,
+        f"Serves {serves}: the card says so.",
+        "Figures are one serving, summed from the food pack over the weights on "
+        "the rows. Meat, fish and liver are raw weights.",
+    ]
+    return {
+        "recipeId": rid,
+        "source": "authored",
+        "sectionId": section["sectionId"],
+        "orderInSection": order_in_section[section["sectionId"]],
+        "status": "review",
+        "version": 1,
+        "titleEn": data["titleEn"],
+        "titleAr": data["titleAr"],
+        "titleSearch": [data["titleEn"].lower(), data["titleAr"], *data["search"]],
+        "bodyAr": body,
+        "closingAr": None,
+        "registerAr": "egyptian_colloquial",
+        "ingredients": ingredients,
+        "ingredientsBasis": "measures",
+        "steps": steps,
+        "variants": [],
+        "components": [],
+        "serves": serves,
+        "activeMinutes": data["active"],
+        "totalMinutes": data["total"],
+        "kcal": macros["kcal"],
+        "proteinG": macros["proteinG"],
+        "carbsG": macros["carbsG"],
+        "fatG": macros["fatG"],
+        "macroBasis": "computed",
+        "egpPerServing": None,
+        "egpPricedAt": None,
+        "allergensDerived": derived,
+        "allergensExtra": extra,
+        "allergensRemoved": {},
+        "allergensFinal": final,
+        "advisories": data.get("advisories", []),
+        "dietTags": diet,
+        "doneness": data["doneness"],
+        "sourcePage": None,
+        "authoredBy": AUTHORED_BY,
+        "allergenReviewedBy": None,
+        "allergenReviewedAt": None,
+        "cookedBy": None,
+        "cookedAt": None,
+        "markKey": data["mark"],
+        "tier": "free",
+        "brandHints": {},
+        "reviewNotes": notes,
+    }
+
+
+def _carry_checked_at(recipes):
+    """Lets `verify_recipes` keep the date of a record that did not change."""
+    if not os.path.exists(OUT):
+        return
+    try:
+        old = json.load(open(OUT, encoding="utf-8"))["recipes"]
+    except (ValueError, KeyError):
+        return
+    by_id = {r["recipeId"]: r.get("verification") for r in old}
+    for recipe in recipes:
+        if by_id.get(recipe["recipeId"]):
+            recipe["verification"] = by_id[recipe["recipeId"]]
+
+
 def build():
+    pack = _load_pack()
+    signed = _load_signoff()
+    titles_ar = _load_titles_ar()
     cards = json.load(open(CARDS, encoding="utf-8"))
     sections = cards["sections"]
     order_in_section = {}
     recipes = []
+
+    for meta in _:
+        if meta["id"] == "rahma_lahma_bel_basl":
+            meta["ing"] = LAHMA_ROWS + meta["ing"]
 
     for title, meta in zip(TITLES, _):
         body = cards["cards"][title]
@@ -627,29 +1124,41 @@ def build():
         )
 
         # ---------------------------------------------------- her ingredients
+        links = LINKS[meta["id"]]
+        rows = links["rows"]
+        assert len(rows) == len(meta["ing"]), (
+            f"{meta['id']}: {len(rows)} links for {len(meta['ing'])} rows"
+        )
         ingredients = []
-        for n, text in enumerate(meta["ing"], start=1):
+        for n, (text, row) in enumerate(zip(meta["ing"], rows), start=1):
             assert text in body, f"{meta['id']}: {text!r} is not in bodyAr"
+            assert row["food"] in pack, f"{meta['id']}: {row['food']} is not a food"
+            written = meta.get("grams", {}).get(text)
+            assert written is None or written == row["grams"], (
+                f"{meta['id']}: her {written} g is {row['grams']} g in the links"
+            )
             ingredients.append({
                 "ingredientRef": f"{meta['id']}_{n}",
-                # Null blocks publication, and it is null on every row here:
-                # `foods` has no verified entry to point at. See the module note.
-                "foodId": None,
+                "foodId": row["food"],
                 "qtyTextAr": text,
-                "grams": meta.get("grams", {}).get(text),
-                "gramsBasis": "stated" if text in meta.get("grams", {})
-                else "unknown",
-                "gramsNote": None,
-                "optional": text in meta.get("optional", []),
-                "servingSideOnly": text in meta.get("sides", []),
+                "grams": row["grams"],
+                "gramsBasis": row["basis"],
+                "gramsNote": row["note"] or None,
+                "optional": text in meta.get("optional", []) or bool(row.get("opt")),
+                "servingSideOnly": text in meta.get("sides", [])
+                or bool(row.get("side")),
                 "brandHint": meta.get("brands", {}).get(text),
             })
+            if row.get("skip"):
+                # The second of two methods: on the card, not in the figures.
+                ingredients[-1]["inFigures"] = False
 
         def refs_for(step_text, rows=ingredients):
             return [r["ingredientRef"] for r in rows
                     if r["qtyTextAr"] in step_text]
 
         # ------------------------------------------------- components, variants
+        dropped = frozenset(_ingredient_lines(body, meta["ing"]))
         components = []
         for comp_id, head, last, comp_splits in meta.get("comp", []):
             outside = frozenset(range(len(lines))) - frozenset(
@@ -661,19 +1170,27 @@ def build():
                 "ingredients": [],
                 "steps": _steps(
                     lines,
-                    _step_bounds(lines, comp_splits, None, outside),
+                    _step_bounds(lines, comp_splits, None, outside, dropped),
                     {}, body, refs_for,
                 ),
             })
         variants = []
         for var_id, first, last in meta.get("variants", []):
+            # A variant is one method she wrote across several lines, so a line
+            # of it that is only a quantity phrase is her sentence running on.
+            # What must not happen is a variant that is nothing else.
+            assert set(range(first, last + 1)) - dropped, (
+                f"{meta['id']}: a variant is only ingredient lines"
+            )
             variants.append({
                 "variantId": var_id,
                 # Her own line introducing the two methods is the label the book
                 # prints; there is no separate heading per method.
                 "labelAr": lines[first],
                 "ingredients": [],
-                "steps": _steps(lines, [(first, last + 1)], {}, body, refs_for),
+                "steps": _steps(
+                    lines, [(1, first, last + 1)], {}, body, refs_for
+                ),
             })
 
         # -------------------------------------------------------- her sentences
@@ -683,11 +1200,21 @@ def build():
                    for i in range(head, last + 1)}
         blocked |= {i for _v, first, last in meta.get("variants", [])
                     for i in range(first, last + 1)}
+        # Lines that are no part of a method: the dish's title, or a brand name
+        # her line break left on a line of its own.
+        blocked |= set(meta.get("skip_lines", []))
         steps = _steps(
             lines,
-            _step_bounds(lines, meta.get("splits"), closing, blocked),
+            _step_bounds(
+                lines, meta.get("splits"), closing, blocked, dropped,
+                meta.get("timers"),
+            ),
             meta.get("timers"), body, refs_for,
         )
+        every_step = steps + [
+            s for c in components + variants for s in c["steps"]
+        ]
+        _assert_no_ingredient_lines(meta["id"], every_step, ingredients)
 
         # ------------------------------------------------------------ allergens
         scanned = "\n".join(
@@ -695,8 +1222,17 @@ def build():
         )
         derived = sorted(scan(scanned).keys())
         removed = meta.get("removed", {})
-        extra = meta.get("extra", [])
+        extra = sorted(_food_allergens(rows, pack) - set(derived))
         final = sorted((set(derived) | set(extra)) - set(removed))
+
+        # ---------------------------------------------------------- the figures
+        serves = links["serves"]
+        macros = _sum_macros(rows, ingredients, pack, serves)
+        minutes = meta.get("active")
+        if minutes is None:
+            minutes = meta.get("total")
+        diet = _diet(rows, ingredients, pack, set(final), macros, steps, body,
+                     minutes, meta["id"] in signed)
 
         recipes.append({
             "recipeId": meta["id"],
@@ -706,11 +1242,9 @@ def build():
             "status": "review",
             "version": 1,
             "titleEn": title,
-            # Null until Rahma writes it. An MSA title over a colloquial body is
-            # exactly the register mixing the voice boundary exists to prevent,
-            # so the Arabic build shows her English title in an LTR span, which
-            # is what she herself did.
-            "titleAr": None,
+            # The Egyptian Arabic title the shipped seed carries, from
+            # `rahma_titles_ar.json`. The book prints none.
+            "titleAr": titles_ar["titles"][meta["id"]],
             "titleSearch": [title.lower()] + EXTRA_SEARCH.get(meta["id"], []),
             "bodyAr": body,
             "closingAr": lines[closing] if closing is not None else None,
@@ -722,14 +1256,14 @@ def build():
             "steps": steps,
             "variants": variants,
             "components": components,
-            "serves": None,
+            "serves": serves,
             "activeMinutes": meta.get("active"),
             "totalMinutes": meta.get("total"),
-            "kcal": None,
-            "proteinG": None,
-            "carbsG": None,
-            "fatG": None,
-            "macroBasis": "withheld",
+            "kcal": macros["kcal"],
+            "proteinG": macros["proteinG"],
+            "carbsG": macros["carbsG"],
+            "fatG": macros["fatG"],
+            "macroBasis": "computed",
             "egpPerServing": None,
             "egpPricedAt": None,
             "allergensDerived": derived,
@@ -737,7 +1271,7 @@ def build():
             "allergensRemoved": removed,
             "allergensFinal": final,
             "advisories": meta.get("advisories", []),
-            "dietTags": meta.get("diet", []),
+            "dietTags": diet,
             "doneness": meta.get("doneness"),
             "sourcePage": meta["page"],
             "authoredBy": AUTHORED_BY,
@@ -748,7 +1282,35 @@ def build():
             "markKey": meta["mark"],
             "tier": "free",
             "brandHints": meta.get("brands", {}),
+            "reviewNotes": _review_notes(
+                links.get("notes", []), rows, ingredients, serves, False
+            ),
         })
+        _sign(recipes[-1], signed)
+
+    for data in OWNHUB:
+        section = next(x for x in sections if x["sectionId"] == data["section"])
+        order_in_section[section["sectionId"]] += 1
+        recipes.append(
+            _ownhub_recipe(data, section, order_in_section, pack, signed)
+        )
+        _sign(recipes[-1], signed)
+
+    unknown = set(signed) - {r["recipeId"] for r in recipes}
+    assert not unknown, f"the sign-off names recipes that do not exist: {unknown}"
+
+    # The automated check runs on every rebuild, so the records it writes are
+    # never lost and a recipe whose data drifts goes back to review. Dates are
+    # kept from the last run when nothing about a record changed.
+    _carry_checked_at(recipes)
+    results = verify_recipes.apply_all(recipes, pack)
+    held = [r.recipe_id for r, rec in zip(results, recipes)
+            if not r.ok and not rec.get("allergenReviewedBy")]
+    print(f"auto-check: {sum(1 for r in results if r.ok)} verified, "
+          f"{len(held)} held in review")
+    for res in results:
+        if not res.ok:
+            print(f"  {res.recipe_id}: {'; '.join(res.problems)}")
 
     payload = {
         "schemaVersion": SCHEMA_VERSION,
@@ -757,9 +1319,9 @@ def build():
             {
                 "sectionId": s["sectionId"],
                 "titleEn": s["titleEn"],
-                "titleAr": None,
+                "titleAr": titles_ar["sectionTitles"][s["sectionId"]],
                 "psLineEn": s["psLineEn"],
-                "psLineAr": None,
+                "psLineAr": titles_ar["psLines"][s["sectionId"]],
                 "order": s["order"],
                 "markKey": mark,
             }

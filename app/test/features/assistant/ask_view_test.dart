@@ -313,7 +313,8 @@ void main() {
       expect(
         RegExp(r'\d').hasMatch(l10n.youHaveUsedTodaysQuestionsThereWill),
         isFalse,
-        reason: 'a cap sentence that states its own number goes stale the day '
+        reason:
+            'a cap sentence that states its own number goes stale the day '
             'Remote Config tightens it',
       );
       // Still not a server error, and still not a spinner.

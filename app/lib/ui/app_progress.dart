@@ -14,6 +14,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
+import 'hand/draw_on.dart' show handMotionOff;
+import 'hand/motion.dart';
 import 'hand/hand_seed_name.dart';
 import 'hand/hand_geometry.dart' show wobblyLine;
 import 'hand/hand_painters.dart' show paintInk, paintPencil;
@@ -49,16 +51,23 @@ class AppProgressBar extends StatelessWidget implements HandSeedName {
     return SizedBox(
       height: height + 4,
       width: double.infinity,
-      child: CustomPaint(
-        painter: _BarPainter(
-          fraction: fraction.toDouble(),
-          thickness: height,
-          colour: colour,
-          track: trackColour == AppColors.outlineVariant
-              ? AppColors.outline
-              : trackColour,
-          // Directional, so in Arabic the bar fills from the right.
-          textDirection: Directionality.of(context),
+      // Fills from nothing when it arrives and eases to each new value after,
+      // so a bar that moves is seen to move. Still under reduced motion.
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: fraction.toDouble()),
+        duration: handMotionOff(context) ? Duration.zero : HandTiming.progress,
+        curve: HandTiming.standard,
+        builder: (context, shown, _) => CustomPaint(
+          painter: _BarPainter(
+            fraction: shown,
+            thickness: height,
+            colour: colour,
+            track: trackColour == AppColors.outlineVariant
+                ? AppColors.outline
+                : trackColour,
+            // Directional, so in Arabic the bar fills from the right.
+            textDirection: Directionality.of(context),
+          ),
         ),
       ),
     );

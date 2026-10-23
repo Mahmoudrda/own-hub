@@ -194,6 +194,15 @@ class LocalPersistence {
   Object? lastFailure;
 
   Timer? _pending;
+
+  /// The document most recently written, and where. A change that leaves the
+  /// encoded document as it was (a bump for a screen redraw, a reward re-read)
+  /// writes nothing: on a low-end phone a write is the biggest single cost of
+  /// every tap, and her history is megabytes at two years.
+  ///
+  /// Compared without `savedAt`, which is the clock and differs every time.
+  String? _lastWritten;
+  SnapshotStorage? _lastWrittenTo;
   bool _running = false;
   _FlushOnPause? _observer;
 
@@ -285,6 +294,7 @@ class LocalPersistence {
     _erasures++;
     _pending?.cancel();
     _pending = null;
+    _lastWritten = null;
     try {
       await storage.erase();
     } catch (error) {
@@ -299,6 +309,8 @@ class LocalPersistence {
     storage = const PreferencesSnapshotStorage();
     restoredSections = 0;
     lastFailure = null;
+    _lastWritten = null;
+    _lastWrittenTo = null;
   }
 
   void _changed() {
@@ -314,18 +326,31 @@ class LocalPersistence {
     // write belongs to. See [erase].
     final erasuresWhenStarted = _erasures;
     String snapshot;
+    String body;
     try {
-      snapshot = jsonEncode(AppSnapshot.capture());
+      final captured = AppSnapshot.capture();
+      final savedAt = captured.remove('savedAt');
+      body = jsonEncode(captured);
+      // Put back at the front without a second encode of her whole history.
+      snapshot = '{"savedAt":${jsonEncode(savedAt)},${body.substring(1)}';
     } catch (error) {
       // Something in a store did not encode. Better to keep the last good
       // document than to replace it with nothing.
       lastFailure = error;
       return;
     }
+    final target = storage;
+    if (body == _lastWritten && identical(target, _lastWrittenTo)) return;
+    // Claimed before the await: a second flush in the same turn (paused, then
+    // detached) compares against this write, not against the one before it.
+    // A failed write gives the claim back, and an erase clears it.
+    _lastWritten = body;
+    _lastWrittenTo = target;
     try {
-      await storage.write(snapshot);
+      await target.write(snapshot);
     } catch (error) {
       lastFailure = error;
+      _lastWritten = null;
       return;
     }
     // A deletion landed while the platform was holding this write. The
@@ -335,6 +360,7 @@ class LocalPersistence {
     // write, and a write that starts after the erase sees an unchanged counter
     // and is left alone — she is using the app again, and that is her data.
     if (_erasures != erasuresWhenStarted) {
+      _lastWritten = null;
       try {
         await storage.erase();
       } catch (error) {

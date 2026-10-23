@@ -237,8 +237,8 @@ describe("reading another woman's plans by forging a relationship id", () => {
   });
 });
 
-describe('the coaching path the fix must NOT have closed', () => {
-  test('a real coach reads her real client\'s plans', async (t) => {
+describe('a coach on an active relationship reads none of her client\'s tree', () => {
+  test('the wide read is gone: only the plans she shared are hers to read', async (t) => {
     const coach = await verifiedCoach(uid.coach);
     const results = [];
     for (const [label, path] of [
@@ -249,17 +249,7 @@ describe('the coaching path the fix must NOT have closed', () => {
     results.push(await observe('plans/{client}/published (list)',
       getDocs(collection(coach, `plans/${VICTIM}/published`))));
     for (const r of results) t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
-    for (const r of results) {
-      assert.equal(r.outcome, 'ALLOWED',
-        `the coach can no longer read ${r.label} — the fix broke the feature`);
-    }
-  });
-
-  test('she reads the content, not an empty shell', async (t) => {
-    const coach = await verifiedCoach(uid.coach);
-    const snap = await getDoc(doc(coach, `plans/${VICTIM}/published/current`));
-    t.diagnostic(`  note=${JSON.stringify(snap.data()?.note)}`);
-    assert.equal(snap.data().note, 'private training plan');
+    for (const r of results) assert.equal(r.outcome, 'DENIED', r.label);
   });
 
   test('a woman with no coach claim cannot, even under the same edge', async (t) => {
@@ -278,16 +268,16 @@ describe('the coaching path the fix must NOT have closed', () => {
     await assertSucceeds(getDocs(collection(her, `plans/${VICTIM}/published`)));
   });
 
-  test('a legitimate relationship can still be opened by the client', async (t) => {
-    // The canonical id, a real coach page, the `verified` claim, and none of
-    // the three server-written fields. This is the shape the fix permits.
+  test('no client opens a relationship any more, not even the canonical shape', async (t) => {
+    // The edge is written by the coaching service when a subscription starts.
+    // The canonical id, a real coach page and the verified claim buy nothing.
     const her = await verified(uid.her);
-    await assertSucceeds(
+    await assertFails(
       setDoc(doc(her, `relationships/${uid.coach}__${uid.her}`), {
         coachUid: uid.coach, clientUid: uid.her,
       }),
     );
-    t.diagnostic('  ALLOWED  canonical relId, real coach page, verified client');
+    t.diagnostic('  DENIED   canonical relId, real coach page, verified client');
   });
 });
 
@@ -334,64 +324,20 @@ describe('what the relationships create rule now constrains', () => {
   });
 });
 
-describe('assessments: what a coach account can inject', () => {
-  // An assessment is a coach's written record of a woman's body, her injuries
-  // and her clearance to train. Create carried no field constraints at all,
-  // so it could be attributed to another coach, written about a woman who
-  // never hired her, or written by a coach who had not passed the gate.
-  test('create is now bound to the coach, the client and their relationship', async (t) => {
-    const coach = await verifiedCoach(uid.coach);
-    const probes = [
-      // The happy path: her own uid, her own client, under the relationship
-      // seeded above. This one MUST still work.
-      ['own assessment for a real client', 'ALLOWED',
-        { coachUid: uid.coach, clientUid: VICTIM, answers: {} }],
-      ['assessment attributed to ANOTHER coach', 'DENIED',
-        { coachUid: uid.coach2, clientUid: VICTIM, answers: {} }],
-      ['assessment for a woman who never hired her', 'DENIED',
-        { coachUid: uid.coach, clientUid: uid.other, answers: {} }],
-      ['assessment with no coachUid at all', 'DENIED',
-        { clientUid: VICTIM, answers: {} }],
-    ];
-    let n = 0;
-    for (const [label, expected, payload] of probes) {
-      const r = await observe(label,
-        setDoc(doc(coach, `assessments/a_${n++}`), payload));
-      t.diagnostic(`  ${r.outcome.padEnd(8)} ${label}`);
-      assert.equal(r.outcome, expected, label);
-    }
-    const unverifiedCoachDb =
-      await (await import('./harness.js')).unverifiedCoach(uid.coach2);
-    const r = await observe('an UNVERIFIED coach creates an assessment',
-      setDoc(doc(unverifiedCoachDb, 'assessments/a_unverified'),
-        { coachUid: uid.coach2, clientUid: VICTIM }));
-    t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
-    assert.equal(r.outcome, 'DENIED');
-  });
-
-  test('P0-ASMT-05: a recorded answer cannot be rewritten, only superseded', async (t) => {
-    const coach = await verifiedCoach(uid.coach);
-    const r1 = await observe('rewrite the answers',
-      updateDoc(doc(coach, 'assessments/a_0'), { answers: { clearance: 'fine' } }));
-    const r2 = await observe('flip the status to superseded',
-      updateDoc(doc(coach, 'assessments/a_0'), { status: 'superseded' }));
-    const r3 = await observe('invent a status',
-      updateDoc(doc(coach, 'assessments/a_0'), { status: 'deleted' }));
-    const r4 = await observe('delete it',
-      deleteDoc(doc(coach, 'assessments/a_0')));
-    for (const r of [r1, r2, r3, r4]) t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
-    assert.equal(r1.outcome, 'DENIED');
-    assert.equal(r2.outcome, 'ALLOWED');
-    assert.equal(r3.outcome, 'DENIED');
-    assert.equal(r4.outcome, 'DENIED');
-  });
-
-  test('both named parties can still read it', async () => {
+describe('assessments: closed, nothing in the product uses the path', () => {
+  test('neither party can create, change, delete or read one', async () => {
+    await seed(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'assessments/a_0'), {
+        coachUid: uid.coach, clientUid: VICTIM, answers: {}, status: 'recorded',
+      });
+    });
     const coach = await verifiedCoach(uid.coach);
     const client = await verified(VICTIM);
-    const stranger = await verified(uid.other);
-    await assertSucceeds(getDoc(doc(coach, 'assessments/a_0')));
-    await assertSucceeds(getDoc(doc(client, 'assessments/a_0')));
-    await assertFails(getDoc(doc(stranger, 'assessments/a_0')));
+    await assertFails(setDoc(doc(coach, 'assessments/a_new'),
+      { coachUid: uid.coach, clientUid: VICTIM, answers: {} }));
+    await assertFails(updateDoc(doc(coach, 'assessments/a_0'), { status: 'superseded' }));
+    await assertFails(deleteDoc(doc(coach, 'assessments/a_0')));
+    await assertFails(getDoc(doc(coach, 'assessments/a_0')));
+    await assertFails(getDoc(doc(client, 'assessments/a_0')));
   });
 });

@@ -35,15 +35,21 @@ class LoggedFromMemoryView extends StatelessWidget {
   const LoggedFromMemoryView({
     super.key,
     this.onBackToToday,
+    this.onRemove,
     this.session,
     this.loggedOn,
     this.sessionsThisWeek = 2,
     this.sessionsPrescribed = 3,
     this.levelProgressPercent = 44,
+    this.pointsGranted,
     this.eligibility = const PersonalBestEligibility(),
   });
 
   final VoidCallback? onBackToToday;
+
+  /// Takes this session off her week, after a confirmation. Null draws nothing:
+  /// there is no credited session yet while its undo window is open.
+  final VoidCallback? onRemove;
 
   /// The session just recorded. Defaults to a recalled one, which is what this
   /// screen exists to report.
@@ -61,6 +67,11 @@ class LoggedFromMemoryView extends StatelessWidget {
   final int sessionsThisWeek;
   final int sessionsPrescribed;
   final double levelProgressPercent;
+
+  /// The points the ledger granted for this session. Null keeps the line this
+  /// screen was designed with, for a preview with no ledger behind it; zero —
+  /// a day already at its cap — says nothing rather than claim points.
+  final int? pointsGranted;
 
   // R12's three withdrawn lines, for the same reason R10's five went:
   // `n475Total` ("475 total"), `session20` ("Session 20") and
@@ -98,7 +109,17 @@ class LoggedFromMemoryView extends StatelessWidget {
     final mayShowPersonalBest = eligibility.isEligible(recorded);
 
     return AppScaffold(
-      footer: [AppButton(l10n.backToToday, onPressed: onBackToToday)],
+      footer: [
+        AppButton(l10n.backToToday, onPressed: onBackToToday),
+        if (onRemove != null)
+          AppButton(
+            l10n.removeThisSession,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onRemove,
+          ),
+      ],
       children: [
         const SizedBox(height: 6),
         Column(
@@ -135,21 +156,24 @@ class LoggedFromMemoryView extends StatelessWidget {
           variant: AppCardVariant.sage,
           gap: 10,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    // Fewer points than a live session, and the number comes
-                    // from the rewards group rather than from this widget.
-                    l10n.n15Points,
-                    style: AppText.display.copyWith(
-                      fontSize: 32,
-                      color: AppColors.tertiary,
+            if (pointsGranted != 0)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      // Fewer points than a live session, and the number comes
+                      // from the ledger rather than from this widget.
+                      pointsGranted == null
+                          ? l10n.n15Points
+                          : l10n.pointsPoints(countLabel(pointsGranted!)),
+                      style: AppText.display.copyWith(
+                        fontSize: 32,
+                        color: AppColors.tertiary,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             AppProgressBar(percent: levelProgressPercent),
           ],
         ),
@@ -183,6 +207,8 @@ class LoggedFromMemoryView extends StatelessWidget {
             AppWeekSegments(
               total: sessionsPrescribed,
               filled: sessionsThisWeek,
+              style: WeekStyle.marks,
+              popIndex: sessionsThisWeek > 0 ? sessionsThisWeek - 1 : null,
             ),
             const SizedBox(height: 10),
             // "One more session and this week counts" states the figure 1,
@@ -197,7 +223,9 @@ class LoggedFromMemoryView extends StatelessWidget {
                 case final String line)
               Text(
                 line,
-                style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
           ],
         ),

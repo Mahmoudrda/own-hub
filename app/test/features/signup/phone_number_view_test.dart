@@ -144,12 +144,11 @@ void main() {
       expect(find.text('Help improve Own Hub'), findsOneWidget);
       expect(
         find.textContaining(
-          'Never your health, your body, your name or your '
-          'number',
+          'Never your health details, name, number or messages',
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('outside Egypt'), findsOneWidget);
+      expect(find.textContaining('PostHog in the US'), findsOneWidget);
 
       await tester.enterText(find.byType(TextField), '1005550132');
       await tester.pumpAndSettle();
@@ -255,7 +254,8 @@ void main() {
 
         expect(sent, 0);
         expect(find.text(line), findsOneWidget);
-        expect(find.text('01005550132'), findsOneWidget);
+        // Shown the way it is sent: ten digits, no trunk zero, grouped.
+        expect(find.text('100 555 0132'), findsOneWidget);
         final announced = tester.widget<Semantics>(
           find
               .ancestor(
@@ -296,7 +296,7 @@ void main() {
 
     expect(find.text('رقم موبايلك إيه؟'), findsOneWidget);
     // A7: the neutral form, not a plural imperative to the team.
-    expect(find.text('الموافقة وإرسال الرمز'), findsOneWidget);
+    expect(find.text('موافقة وعايزة الكود'), findsOneWidget);
     expect(
       find.text("What's your number?"),
       findsNothing,

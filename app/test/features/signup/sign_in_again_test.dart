@@ -55,7 +55,10 @@ class _Requester implements ReviewRequester {
   final Object fail;
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async => throw fail;
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async => throw fail;
 }
 
 class _ConsentStore implements CaptureConsentStore {
@@ -78,6 +81,14 @@ class _HealthStore implements HealthConsentStore {
 
   @override
   Future<HealthConsentState?> current(String uid) async => null;
+}
+
+Future<void> _readConsentToEnd(WidgetTester tester) async {
+  await tester.drag(
+    find.byType(SingleChildScrollView).first,
+    const Offset(0, -5000),
+  );
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -126,6 +137,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await _readConsentToEnd(tester);
         await tester.tap(find.text('I agree, start the camera'));
         await tester.pumpAndSettle();
         final l10n = AppL10n.of(tester.element(find.byType(ConsentView)));
@@ -156,7 +168,9 @@ void main() {
         expect(signIn, 1);
       });
 
-      testWidgets('C14 "Ask a woman to contact me" says sign in again', (tester) async {
+      testWidgets('C14 "Ask a woman to contact me" says sign in again', (
+        tester,
+      ) async {
         _tall(tester);
         var signIn = 0;
         await tester.pumpWidget(

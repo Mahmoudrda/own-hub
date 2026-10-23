@@ -9,9 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final privacy = File('ios/Runner/PrivacyInfo.xcprivacy').readAsStringSync();
-  final manifest = File(
-    'android/app/src/main/AndroidManifest.xml',
-  ).readAsStringSync();
+  final manifest = File('android/app/src/main/AndroidManifest.xml')
+      .readAsStringSync();
 
   /// The `<dict>` that declares [type], so linkage can be read per entry.
   String entryFor(String type) {
@@ -26,6 +25,8 @@ void main() {
     // Privacy policy v3, section 7.1 of the compliance plan: linked to her
     // account, never tracking, App Functionality.
     for (final type in <String>[
+      'Name',
+      'EmailsorTextMessages',
       'PhoneNumber',
       'UserID',
       'DeviceID',
@@ -39,9 +40,7 @@ void main() {
         final entry = entryFor('NSPrivacyCollectedDataType$type');
         expect(
           entry,
-          matches(
-            RegExp(r'NSPrivacyCollectedDataTypeLinked</key>\s*<true/>'),
-          ),
+          matches(RegExp(r'NSPrivacyCollectedDataTypeLinked</key>\s*<true/>')),
           reason: 'linked to her account',
         );
         expect(
@@ -65,9 +64,7 @@ void main() {
       for (final type in <String>['CrashData', 'PerformanceData']) {
         expect(
           entryFor('NSPrivacyCollectedDataType$type'),
-          matches(
-            RegExp(r'NSPrivacyCollectedDataTypeLinked</key>\s*<false/>'),
-          ),
+          matches(RegExp(r'NSPrivacyCollectedDataTypeLinked</key>\s*<false/>')),
           reason: type,
         );
       }
@@ -87,7 +84,10 @@ void main() {
 
   group('the Android manifest strips what the plugins add', () {
     test('no microphone, no gallery', () {
-      expect(manifest, contains('xmlns:tools="http://schemas.android.com/tools"'));
+      expect(
+        manifest,
+        contains('xmlns:tools="http://schemas.android.com/tools"'),
+      );
       expect(
         manifest,
         contains(
@@ -136,16 +136,18 @@ void main() {
       final safety = File('android/play-data-safety.txt').readAsStringSync();
       expect(safety, contains('push token'));
       expect(privacy, contains('the push token'));
-      expect(privacy, contains('<string>NSPrivacyCollectedDataTypeDeviceID</string>'));
+      expect(
+        privacy,
+        contains('<string>NSPrivacyCollectedDataTypeDeviceID</string>'),
+      );
       final preflight = File('tool/release_preflight.sh').readAsStringSync();
       expect(preflight, contains('push is declared where it is used'));
     });
 
     test('the camera records no sound', () {
       expect(
-        File(
-          'lib/features/signup/data/camera_capture_service.dart',
-        ).readAsStringSync(),
+        File('lib/features/signup/data/camera_capture_service.dart')
+            .readAsStringSync(),
         contains('enableAudio: false'),
       );
     });
@@ -162,6 +164,8 @@ void main() {
   test('the Play Data safety answers exist and match the manifest', () {
     final answers = File('android/play-data-safety.txt').readAsStringSync();
     for (final phrase in <String>[
+      'coach applicants',
+      'Emails or text messages',
       'Phone number',
       'User IDs',
       'national ID number',

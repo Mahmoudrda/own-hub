@@ -84,6 +84,24 @@ describe('A. sign-up completes while unverified (no deadlock)', () => {
     );
   });
 
+  test('she can write the plan keys weekdays, level and minutesCustom, and no foreign key', async () => {
+    const db = await unverified(HER);
+    await assertSucceeds(
+      updateDoc(doc(db, `users/${HER}`), {
+        profile: {
+          goal: 'strength', weekdays: [1, 3, 5], level: 'beginner', minutesCustom: 40,
+        },
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(db, `users/${HER}`), {
+        profile: { goal: 'strength', weekdays: [1, 3, 5], verified: true },
+        updatedAt: serverTimestamp(),
+      }),
+    );
+  });
+
   test('she can READ the consent trail she gives before the camera opens', async () => {
     await seed(async (ctx) => {
       await setDoc(doc(ctx.firestore(), `users/${HER}/consents/c1`), {

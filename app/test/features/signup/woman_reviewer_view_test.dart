@@ -26,7 +26,10 @@ class _Requester implements ReviewRequester {
   final List<ReviewPath> asked = <ReviewPath>[];
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async {
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async {
     asked.add(path);
     final next = _answers.removeAt(0);
     if (next is ReviewRequestState) return next;
@@ -311,8 +314,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('تراجعها امرأة، ولا تُحفظ أي صورة'), findsOneWidget);
-    expect(find.text('اطلبي أن تتحقق منكِ امرأة'), findsOneWidget);
+    expect(find.text('بتراجعها ست، ومفيش صورة بتتحفظ'), findsOneWidget);
+    expect(find.text('اطلبي إن واحدة ست تتحقق مني'), findsOneWidget);
     expect(find.text('Checked by a woman, no photo kept'), findsNothing);
   });
 

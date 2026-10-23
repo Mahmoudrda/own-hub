@@ -93,6 +93,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -171,8 +172,15 @@ void main() {
       expect(find.text('Nothing added yet'), findsOneWidget);
       expect(find.textContaining('will sit here'), findsOneWidget);
 
-      // The single smallest action that starts each empty surface.
-      expect(find.text('Tell us one thing you eat'), findsOneWidget);
+      // The single smallest action that starts each empty surface. "Tell us
+      // one thing you eat" went (§15): it was a second door to the meal step
+      // the first-week row already asks for, one tab away.
+      expect(find.text('Tell us one thing you eat'), findsNothing);
+      // The optional rows fold behind one row when there are two or more.
+      if (find.text('More you can do').evaluate().isNotEmpty) {
+        await tester.tap(find.text('More you can do'));
+        await tester.pumpAndSettle();
+      }
       // The group has a name. Nothing in this app counts its members, so the
       // fixed "4,210 women in the beginners group" was a membership figure
       // frozen into the dictionary on her very first screen.
@@ -192,7 +200,7 @@ void main() {
       // this used to sit beside it saying three.
       expect(
         find.text(
-          'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.',
+          'Hit your goal and the week counts. If you miss a week, a rest week you\'ve earned covers it.',
         ),
         findsOneWidget,
       );
@@ -241,4 +249,32 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('day one has one Start and one way to log a meal', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(_dayOne()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Good morning'), findsOneWidget);
+    expect(find.text('Start day 1'), findsOneWidget);
+    expect(find.text('Log a meal'), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-week-strip')), findsOneWidget);
+  });
+
+  for (final locale in const [Locale('en'), Locale('ar')]) {
+    testWidgets(
+      'does not overflow at text scale 2.0 in ${locale.languageCode}',
+      (tester) async {
+        _phone(tester);
+        await tester.pumpWidget(
+          _host(_dayOne(), locale: locale, textScale: 2.0),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

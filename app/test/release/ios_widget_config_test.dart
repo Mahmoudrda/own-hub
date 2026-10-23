@@ -13,7 +13,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/home_widget_sync.dart';
 
-const String _group = 'group.com.ownhub.app';
+const String _group = 'group.com.ownhub.fitness';
 
 String _read(String path) => File(path).readAsStringSync();
 
@@ -88,11 +88,25 @@ void main() {
     );
   });
 
+  test('the app declares FileTimestamp C617.1 for the exercise clip cache', () {
+    // path_provider is in pubspec for one folder, the clip cache (D42), and
+    // Dart's file calls read file sizes and timestamps there.
+    expect(_read('pubspec.yaml'), contains('\n  path_provider:'));
+    expect(
+      RegExp(
+        r'NSPrivacyAccessedAPICategoryFileTimestamp</string>\s*'
+        r'<key>NSPrivacyAccessedAPITypeReasons</key>\s*<array>\s*'
+        r'<string>C617\.1</string>',
+      ).hasMatch(_read('ios/Runner/PrivacyInfo.xcprivacy')),
+      isTrue,
+    );
+  });
+
   test('the extension is in the project, embedded, at the app floor', () {
     final project = _read('ios/Runner.xcodeproj/project.pbxproj');
     expect(
       project,
-      contains('PRODUCT_BUNDLE_IDENTIFIER = com.ownhub.app.OwnHubWidgets;'),
+      contains('PRODUCT_BUNDLE_IDENTIFIER = com.ownhub.fitness.OwnHubWidgets;'),
     );
     expect(project, contains('"com.apple.product-type.app-extension"'));
     expect(

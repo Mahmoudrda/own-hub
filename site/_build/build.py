@@ -69,6 +69,7 @@ PATHS = {
     "index": ("/", "/ar/"),
     "privacy": ("/privacy", "/ar/privacy"),
     "terms": ("/terms", "/ar/terms"),
+    "coach-terms": ("/coach-terms", "/ar/coach-terms"),
     "support": ("/support", "/ar/support"),
     "delete-account": ("/delete-account", "/ar/delete-account"),
     "waitlist": ("/waitlist", "/ar/waitlist"),
@@ -91,6 +92,7 @@ FILES = {
     "index": ("index.html", "ar/index.html"),
     "privacy": ("privacy.html", "ar/privacy.html"),
     "terms": ("terms.html", "ar/terms.html"),
+    "coach-terms": ("coach-terms.html", "ar/coach-terms.html"),
     "support": ("support.html", "ar/support.html"),
     "delete-account": ("delete-account.html", "ar/delete-account.html"),
     "waitlist": ("waitlist.html", "ar/waitlist.html"),
@@ -137,45 +139,45 @@ CHROME = {
             "Google LLC."
         ),
         "ogLocale": "en_EG",
-        "ogImageAlt": "Own Hub. Your training, your food, your cycle. Women only.",
+        "ogImageAlt": "Own Hub. Your training, your food, your month. Women only.",
     },
     "ar": {
         "dir": "rtl",
-        "skip": "انتقلي إلى المحتوى الأساسي",
+        "skip": "روحي للمحتوى الأساسي",
         "brandName": "Own Hub",
         "brandHome": "Own Hub، الصفحة الأولى",
         "switch": "English",
-        "switchLabel": "التبديل إلى الإنجليزية",
-        "footerNav": "صفحات هذا الموقع",
+        "switchLabel": "غيّري للإنجليزي",
+        "footerNav": "صفحات الموقع ده",
         "nav": [
             ("/ar/", "الصفحة الأولى"),
-            ("/ar/waitlist", "قائمة الانتظار"),
+            ("/ar/waitlist", "قايمة الانتظار"),
             ("/ar/privacy", "الخصوصية"),
             ("/ar/terms", "الشروط"),
             ("/ar/support", "الدعم"),
             ("/ar/delete-account", "حذف بياناتك"),
         ],
         "footerNote": (
-            "هذا الموقع لا يضع أي ملفّ تعريف ارتباط، ولا يشغّل أي سكريبت، ولا "
-            "يحمّل شيئًا من أي جهة أخرى، ولا يحصي زيارة. والخط يُقدَّم من هذا "
-            "الموقع نفسه: <a href=\"/assets/fonts/OFL-Rubik.txt\">Rubik، بموجب "
-            "رخصة الخطوط المفتوحة SIL 1.1</a>."
+            "الموقع ده مبيحطش أي كوكيز، ومبيشغّلش أي سكريبت، ومبيحمّلش حاجة "
+            "من أي جهة تانية، ومبيحسبش الزيارات. والخط بيتقدّم من الموقع نفسه: "
+            "<a href=\"/assets/fonts/OFL-Rubik.txt\">Rubik، بموجب رخصة "
+            "الخطوط المفتوحة SIL 1.1</a>."
         ),
-        "footerPublisher": "ناشر Own Hub: {entity}، {address}.",
+        "footerPublisher": "الناشر لـ Own Hub: {entity}، {address}.",
         "todo": "بانتظار الاستكمال",
-        "getApp": "حمّلي التطبيق",
-        "download": "تنزيل Own Hub",
+        "getApp": "نزّلي التطبيق",
+        "download": "نزّلي Own Hub",
         "soon": "قريبًا",
         "soonAlt": "{name}، قريبًا",
         "appStoreAlt": "حمّليه من App Store",
-        "playAlt": "احصلي عليه من Google Play",
+        "playAlt": "حمّليه من Google Play",
         "trademarks": (
-            "Apple وشعار Apple علامتان تجاريتان لشركة Apple Inc.، مسجّلتان في "
-            "الولايات المتحدة وبلدان أخرى. وApp Store علامة خدمة لشركة Apple Inc. "
-            "وGoogle Play وشعار Google Play علامتان تجاريتان لشركة Google LLC."
+            "Apple وشعار Apple علامتين تجاريتين لشركة Apple Inc.، مسجّلتين في "
+            "الولايات المتحدة وبلاد تانية. وApp Store علامة خدمة لشركة Apple Inc. "
+            "وGoogle Play وشعار Google Play علامتين تجاريتين لشركة Google LLC."
         ),
         "ogLocale": "ar_EG",
-        "ogImageAlt": "Own Hub. تدريبكِ، وطعامكِ، ودورتكِ. للنساء فقط.",
+        "ogImageAlt": "Own Hub. تمرينك، وأكلك، وشهرك. للستات بس.",
     },
 }
 
@@ -606,7 +608,7 @@ def shell(cfg: "Config", *, page: str, lang: str, title: str, description: str,
   <title>{html.escape(title)}</title>
   <meta name="description" content="{html.escape(description)}">
   <meta name="color-scheme" content="light">
-  <meta name="theme-color" content="#FFF8F9">
+  <meta name="theme-color" content="#FCF8F2">
 {font_preloads(lang)}  <link rel="stylesheet" href="{css}">
   <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -752,8 +754,8 @@ def build_manifest() -> None:
         "start_url": "/",
         "scope": "/",
         "display": "browser",
-        "background_color": "#FFF8F9",
-        "theme_color": "#FFF8F9",
+        "background_color": "#FCF8F2",
+        "theme_color": "#FCF8F2",
         "icons": [
             {"src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
             {"src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},

@@ -54,6 +54,9 @@ abstract class IntakeRepository {
     int? days,
     int? minutes,
     LifeStage? lifeStage,
+    TrainingLevel? level,
+    Set<int>? weekdays,
+    bool? minutesCustom,
   });
 }
 
@@ -111,6 +114,9 @@ class InMemoryIntakeRepository implements IntakeRepository {
     int? days,
     int? minutes,
     LifeStage? lifeStage,
+    TrainingLevel? level,
+    Set<int>? weekdays,
+    bool? minutesCustom,
   }) async {
     writes.add({
       if (goal != null) 'goal',
@@ -119,6 +125,9 @@ class InMemoryIntakeRepository implements IntakeRepository {
       if (days != null) 'days',
       if (minutes != null) 'minutes',
       if (lifeStage != null) 'lifeStage',
+      if (level != null) 'level',
+      if (weekdays != null) 'weekdays',
+      if (minutesCustom != null) 'minutesCustom',
     });
 
     if (place != null) _placeAnswered = true;
@@ -129,6 +138,9 @@ class InMemoryIntakeRepository implements IntakeRepository {
       days: days,
       minutes: minutes,
       lifeStage: lifeStage,
+      level: level,
+      weekdays: weekdays == null ? null : Intake.cleanWeekdays(weekdays),
+      minutesCustom: minutesCustom,
     );
     return _intake;
   }

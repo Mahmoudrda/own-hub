@@ -18,7 +18,7 @@
 ///  * **sage** — restful: sage pencil hatching, and no line at all.
 ///  * **amber** — a caution: a precise outline and no tint.
 ///  * **error** — a genuine problem: kept precise, in its own tint.
-///  * **selected** — ringed in ink, the way she would mark her choice.
+///  * **selected** — soft pink, ringed in ink, the way she would mark her choice.
 ///
 /// Three corners are tight and one is loose, chosen per card, so no two cards
 /// on a screen share a silhouette.
@@ -97,7 +97,7 @@ enum AppCardVariant {
       borderWidth: 1,
     ),
     AppCardVariant.selected => (
-      background: AppColors.surfaceLowest,
+      background: AppColors.pinkSoft,
       border: AppColors.primary,
       borderWidth: 2,
     ),
@@ -142,9 +142,9 @@ handCardLook(AppCardVariant variant) {
       fill: null,
       frame: null,
       frameWidth: 1.1,
-      offsetOutline: AppColors.primary.withValues(alpha: 0.85),
+      offsetOutline: AppColors.pinkDeep.withValues(alpha: 0.85),
       level: HandLevel.crafted,
-      hatch: AppColors.primary,
+      hatch: AppColors.pinkDeep,
     ),
     AppCardVariant.sage => (
       fill: null,

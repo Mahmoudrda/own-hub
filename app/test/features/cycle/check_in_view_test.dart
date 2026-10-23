@@ -37,6 +37,13 @@ Widget _host(Widget child, {Locale locale = const Locale('en')}) {
   );
 }
 
+Future<void> openMore(WidgetTester tester) async {
+  final more = find.text('Cramps, appetite, sleep and more');
+  await tester.ensureVisible(more);
+  await tester.tap(more);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('P0-CYC-04 — nothing is carried over from yesterday', () {
     testWidgets('every chip starts unselected', (tester) async {
@@ -84,7 +91,8 @@ void main() {
       // fixture matching the prototype would pass for a constant too.
       await tester.tap(find.text('High'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Moderate'));
+      await openMore(tester);
+      await tester.tap(find.text('Moderate').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Less hungry'));
       await tester.pumpAndSettle();
@@ -111,7 +119,8 @@ void main() {
 
       expect(find.textContaining('Severe or unusual pain'), findsNothing);
 
-      await tester.tap(find.text('Severe'));
+      await openMore(tester);
+      await tester.tap(find.text('Severe').first);
       await tester.pumpAndSettle();
 
       expect(find.textContaining('Severe or unusual pain'), findsOneWidget);
@@ -123,7 +132,8 @@ void main() {
       await tester.pumpWidget(_host(CheckInView(onSaved: (_) => saves++)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Severe'));
+      await openMore(tester);
+      await tester.tap(find.text('Severe').first);
       await tester.pumpAndSettle();
 
       expect(
@@ -144,7 +154,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Severe'));
+      await openMore(tester);
+      await tester.tap(find.text('Severe').first);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Skip'));
       await tester.pumpAndSettle();
@@ -160,13 +171,6 @@ void main() {
     // was dead from the interface: the domain implemented it, and no woman
     // could trigger it. Every assertion below is about that path being real.
 
-    Future<void> openMore(WidgetTester tester) async {
-      final more = find.text('More to note: sleep, bloating, bleeding');
-      await tester.ensureVisible(more);
-      await tester.tap(more);
-      await tester.pumpAndSettle();
-    }
-
     Future<void> tapChip(WidgetTester tester, Finder chip) async {
       await tester.ensureVisible(chip);
       await tester.tap(chip);
@@ -180,18 +184,24 @@ void main() {
       await tester.pumpWidget(_host(const CheckInView()));
       await tester.pumpAndSettle();
 
-      // Three taps are still the sheet.
-      for (final hidden in ['Sleep', 'Bloating', 'Bleeding', 'Heavy']) {
+      // Energy and Save are the sheet.
+      for (final hidden in [
+        'Cramps',
+        'Appetite',
+        'Sleep',
+        'Bloating',
+        'Bleeding',
+        'Heavy',
+      ]) {
         expect(find.text(hidden), findsNothing);
       }
-      expect(
-        find.text('More to note: sleep, bloating, bleeding'),
-        findsOneWidget,
-      );
+      expect(find.text('Cramps, appetite, sleep and more'), findsOneWidget);
 
       await openMore(tester);
 
       for (final shown in [
+        'Cramps',
+        'Appetite',
         'Sleep',
         'Bloating',
         'Bleeding',

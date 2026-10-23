@@ -107,10 +107,10 @@ void main() {
     expect(find.text('front of the card'), findsOneWidget);
     expect(find.text('Hold it flat, all four corners inside'), findsOneWidget);
     expect(
-      find.textContaining('Nothing is uploaded until you tap send'),
+      find.textContaining('Nothing is uploaded until you send it'),
       findsOneWidget,
     );
-    expect(find.text('Take it myself'), findsOneWidget);
+    expect(find.text('Capture photo'), findsOneWidget);
   });
 
   testWidgets('until the camera is live, the shutter is disabled', (
@@ -133,7 +133,7 @@ void main() {
     final button = tester.widget<AppWhiteButton>(find.byType(AppWhiteButton));
     expect(button.onPressed, isNull);
 
-    await tester.tap(find.text('Take it myself'));
+    await tester.tap(find.text('Capture photo'));
     await tester.pumpAndSettle();
     expect(captured, 0, reason: 'nothing was photographed, so nothing is said');
   });
@@ -160,10 +160,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Take it myself'));
+    await tester.tap(find.text('Capture photo'));
     await tester.pumpAndSettle();
 
     expect(service.opened.single.captures, 1);
+    expect(captured, 0, reason: 'she checks the photo before it is used');
+
+    await tester.tap(find.text('Use this photo'));
+    await tester.pumpAndSettle();
     expect(captured, 1);
   });
 
@@ -190,7 +194,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('بطاقتك الشخصية'), findsOneWidget);
-    expect(find.text('هصوّرها بنفسي'), findsOneWidget);
+    expect(find.text('صوّري'), findsOneWidget);
     expect(find.text('Your ID card'), findsNothing);
   });
 

@@ -9,18 +9,24 @@
 // reachable on it.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 void _dumpConsents(WidgetTester t, String where) {
   for (final n in find.semantics.byPredicate((_) => true).evaluate()) {
     final d = n.getSemanticsData();
-    if (d.label.contains('easier workout') || d.label.contains('Workout suggestions')
-        || d.label.contains('workout suggestions') || d.label.contains('gentler')) {
-      print('$where  "${d.label}"  tap=${d.hasAction(SemanticsAction.tap)} toggled=${d.flagsCollection.isToggled} enabled=${d.flagsCollection.isEnabled}');
+    if (d.label.contains('easier workout') ||
+        d.label.contains('Workout suggestions') ||
+        d.label.contains('workout suggestions') ||
+        d.label.contains('gentler')) {
+      print(
+        '$where  "${d.label}"  tap=${d.hasAction(SemanticsAction.tap)} toggled=${d.flagsCollection.isToggled} enabled=${d.flagsCollection.isEnabled}',
+      );
     }
   }
 }
@@ -35,13 +41,15 @@ void main() {
     await tapLabel(t, 'Continue');
     print('symptom-only after Continue: top=${topScreen(t)}');
     print('PAINTED: ${paintedText(t).join(" | ")}');
-    print('TAPPABLE: ${tappables(t).map((e)=>e.label).join(" | ")}');
+    print('TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
     _dumpConsents(t, 'AFTER-SETUP');
     // go to settings
     nav(t).pushNamed(appDestinations['Y12']!.name);
     await settle(t);
     print('Y12 on symptom-only PAINTED: ${paintedText(t).join(" | ")}');
-    print('Y12 on symptom-only TAPPABLE: ${tappables(t).map((e)=>e.label).join(" | ")}');
+    print(
+      'Y12 on symptom-only TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}',
+    );
     _dumpConsents(t, 'Y12');
     nav(t).pushNamed(appDestinations['Y10']!.name);
     await settle(t);
@@ -58,7 +66,7 @@ void main() {
     await tapLabel(t, 'Continue');
     print('dates path after Continue: top=${topScreen(t)}');
     _dumpConsents(t, 'Y02');
-    print('Y02 TAPPABLE: ${tappables(t).map((e)=>e.label).join(" | ")}');
+    print('Y02 TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
     s.dispose();
   });
 }

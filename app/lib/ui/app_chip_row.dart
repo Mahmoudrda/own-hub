@@ -158,21 +158,50 @@ class AppChipRow extends StatelessWidget implements HandSeedName {
       onTap: onTap == null ? null : () => onTap!(i),
     );
 
-    if (!grow) {
-      return Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [for (var i = 0; i < items.length; i++) chipAt(i)],
-      );
-    }
+    Widget wrapped() => Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [for (var i = 0; i < items.length; i++) chipAt(i)],
+    );
 
-    return Row(
-      children: [
-        for (var i = 0; i < items.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          Expanded(child: chipAt(i)),
-        ],
-      ],
+    if (!grow) return wrapped();
+
+    // Equal-width chips only while every label fits on one line at the
+    // current text size. Otherwise the row wraps at each chip's natural width,
+    // so a word is never broken letter by letter.
+    return LayoutBuilder(
+      builder: (context, box) {
+        final scaler = MediaQuery.textScalerOf(context);
+        final direction = Directionality.of(context);
+        final style = AppText.label.copyWith(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        );
+        var widest = 0.0;
+        for (final label in items) {
+          final painter = TextPainter(
+            text: TextSpan(text: label, style: style),
+            textDirection: direction,
+            textScaler: scaler,
+            maxLines: 1,
+          )..layout();
+          if (painter.width > widest) widest = painter.width;
+          painter.dispose();
+        }
+        // 28 of chip padding, 4 of hand-drawn frame slack.
+        final needed = (widest + 32) * items.length + 8 * (items.length - 1);
+        if (needed <= box.maxWidth) {
+          return Row(
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(child: chipAt(i)),
+              ],
+            ],
+          );
+        }
+        return wrapped();
+      },
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/logging/log_command_bus.dart';
+import 'package:own_hub/features/train/domain/live_best.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/resting_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -98,6 +99,37 @@ void main() {
 
       await tester.pump(const Duration(seconds: 2));
       expect(find.text('0:02'), findsOneWidget);
+    });
+
+    testWidgets('a tick rebuilds the ring, not the rest of the screen', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const RestingView(
+            remaining: Duration(seconds: 5),
+            total: Duration(seconds: 60),
+            upNext: 'Goblet squat, set 3',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final rebuilt = <String>{};
+      final before = debugOnRebuildDirtyWidget;
+      debugOnRebuildDirtyWidget = (element, builtOnce) {
+        rebuilt.add(element.widget.runtimeType.toString());
+      };
+      addTearDown(() => debugOnRebuildDirtyWidget = before);
+
+      await tester.pump(const Duration(seconds: 1));
+      debugOnRebuildDirtyWidget = before;
+
+      expect(find.text('0:04'), findsOneWidget);
+      expect(rebuilt, contains('AppRingStat'));
+      expect(rebuilt, isNot(contains('RestingView')));
+      expect(rebuilt, isNot(contains('AppCard')));
+      expect(rebuilt, isNot(contains('AppScaffold')));
     });
 
     testWidgets('it ends itself, with no tap at all', (tester) async {
@@ -264,53 +296,256 @@ void main() {
     });
   });
 
-  group('add 30 seconds', () {
-    testWidgets('adds thirty seconds', (tester) async {
-      // It added nothing at all: the button bound to onAddThirtySeconds, which
-      // the router never passes, so it rendered permanently disabled.
+  group('fifteen seconds less or more', () {
+    testWidgets('more adds fifteen seconds to the clock and the total', (
+      tester,
+    ) async {
+      final totals = <Duration>[];
       await tester.pumpWidget(
         _host(
-          const RestingView(
-            remaining: Duration(seconds: 10),
-            total: Duration(seconds: 60),
+          RestingView(
+            remaining: const Duration(seconds: 10),
+            total: const Duration(seconds: 60),
             autoStart: false,
+            onTotalChanged: totals.add,
           ),
         ),
       );
       await tester.pumpAndSettle();
       expect(find.text('0:10'), findsOneWidget);
 
-      await tester.tap(find.text('Add 30 seconds'));
+      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
       await tester.pump();
 
-      expect(find.text('0:40'), findsOneWidget);
+      expect(find.text('0:25'), findsOneWidget);
+      expect(totals, [const Duration(seconds: 75)]);
     });
 
     testWidgets(
-      'works with no callback supplied, as the router supplies none',
+      'works with no callback supplied, as the router supplied none',
       (tester) async {
         await tester.pumpWidget(_host(const RestingView(autoStart: false)));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Add 30 seconds'));
+        await tester.tap(find.byKey(const ValueKey('r09-more-15')));
         await tester.pump();
 
-        expect(find.text('1:08'), findsOneWidget, reason: '0:38 plus thirty');
+        expect(find.text('0:53'), findsOneWidget, reason: '0:38 plus fifteen');
         expect(tester.takeException(), isNull);
       },
     );
 
-    testWidgets('still tells the caller she asked for longer', (tester) async {
-      var asked = 0;
+    testWidgets('less takes fifteen seconds off the clock and the total', (
+      tester,
+    ) async {
+      final totals = <Duration>[];
       await tester.pumpWidget(
-        _host(RestingView(autoStart: false, onAddThirtySeconds: () => asked++)),
+        _host(
+          RestingView(
+            remaining: const Duration(seconds: 40),
+            total: const Duration(seconds: 60),
+            autoStart: false,
+            onTotalChanged: totals.add,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Add 30 seconds'));
+      await tester.tap(find.byKey(const ValueKey('r09-less-15')));
       await tester.pump();
-      expect(asked, 1);
+
+      expect(find.text('0:25'), findsOneWidget);
+      expect(totals, [const Duration(seconds: 45)]);
     });
+
+    testWidgets('less is off when fifteen seconds or less are left', (
+      tester,
+    ) async {
+      var ready = 0;
+      final totals = <Duration>[];
+      await tester.pumpWidget(
+        _host(
+          RestingView(
+            remaining: const Duration(seconds: 15),
+            total: const Duration(seconds: 60),
+            autoStart: false,
+            onTotalChanged: totals.add,
+            onReady: () => ready++,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('r09-less-15')));
+      await tester.pump();
+
+      expect(find.text('0:15'), findsOneWidget);
+      expect(totals, isEmpty);
+      expect(ready, 0, reason: 'a tap on less never ends the rest');
+    });
+
+    testWidgets('the total never goes under fifteen seconds', (tester) async {
+      final totals = <Duration>[];
+      await tester.pumpWidget(
+        _host(
+          RestingView(
+            remaining: const Duration(seconds: 40),
+            total: const Duration(seconds: 30),
+            autoStart: false,
+            onTotalChanged: totals.add,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('r09-less-15')));
+      await tester.pump();
+      expect(totals, [const Duration(seconds: 15)]);
+
+      // At the floor, less is off.
+      await tester.tap(find.byKey(const ValueKey('r09-less-15')));
+      await tester.pump();
+      expect(totals, hasLength(1));
+      expect(find.text('0:25'), findsOneWidget);
+    });
+
+    testWidgets('more stops at the longest rest a workout may have', (
+      tester,
+    ) async {
+      final totals = <Duration>[];
+      await tester.pumpWidget(
+        _host(
+          RestingView(
+            remaining: const Duration(seconds: 590),
+            total: const Duration(seconds: 590),
+            autoStart: false,
+            onTotalChanged: totals.add,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
+      await tester.pump();
+      expect(totals, isEmpty, reason: '605 seconds is past the ceiling');
+      expect(find.text('9:50'), findsOneWidget);
+    });
+
+    testWidgets('a paused rest stays paused when she changes it', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const RestingView(
+            remaining: Duration(seconds: 40),
+            total: Duration(seconds: 60),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byTooltip('Pause'));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
+      await tester.pump();
+      expect(find.text('0:55'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('0:55'), findsOneWidget);
+    });
+
+    testWidgets('a running rest goes on counting from the new time', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const RestingView(
+            remaining: Duration(seconds: 40),
+            total: Duration(seconds: 60),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.text('0:53'), findsOneWidget);
+    });
+
+    testWidgets('skip ends the rest and moves on', (tester) async {
+      var ready = 0;
+      await tester.pumpWidget(
+        _host(RestingView(autoStart: false, onReady: () => ready++)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('r09-skip-rest')));
+      await tester.pump();
+      expect(ready, 1);
+    });
+
+    testWidgets('the alert is for the time she chose', (tester) async {
+      var wall = DateTime(2026, 10, 14, 10);
+      final told = <DateTime>[];
+      var cancelled = 0;
+      await tester.pumpWidget(
+        _host(
+          RestingView(
+            remaining: const Duration(seconds: 60),
+            total: const Duration(seconds: 60),
+            clock: () => wall,
+            onBackgrounded: told.add,
+            onAlertCancel: () => cancelled++,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
+      await tester.pump();
+      expect(cancelled, 1, reason: 'an alert for the old time is withdrawn');
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      expect(told, [wall.add(const Duration(seconds: 75))]);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('r09-less-15')));
+      await tester.pump();
+      told.clear();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      expect(told, [wall.add(const Duration(seconds: 60))]);
+    });
+
+    testWidgets(
+      'the controls are 48 points, spoken, and wrap at 2.0 in Arabic',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        await tester.pumpWidget(
+          _host(
+            const RestingView(autoStart: false),
+            locale: const Locale('ar'),
+            textScale: 2.0,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        for (final key in const [
+          'r09-less-15',
+          'r09-more-15',
+          'r09-skip-rest',
+        ]) {
+          final size = tester.getSize(find.byKey(ValueKey(key)));
+          expect(size.height, greaterThanOrEqualTo(48), reason: key);
+          expect(size.width, greaterThanOrEqualTo(48), reason: key);
+        }
+        expect(find.bySemanticsLabel('قلّلي الراحة 15 ثانية'), findsOneWidget);
+        expect(find.bySemanticsLabel('زوّدي الراحة 15 ثانية'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        semantics.dispose();
+      },
+    );
   });
 
   testWidgets('zero taps are required to get through it', (tester) async {
@@ -319,7 +554,7 @@ void main() {
 
     // Both controls are offered, neither is needed — the timer ends itself.
     expect(find.text("I'm ready, next set"), findsOneWidget);
-    expect(find.text('Add 30 seconds'), findsOneWidget);
+    expect(find.byKey(const ValueKey('r09-more-15')), findsOneWidget);
   });
 
   testWidgets('P0-LOG-02 — undo inside the window writes nothing at all', (
@@ -395,7 +630,7 @@ void main() {
 
     expect(find.text('اتحفظت المجموعة 2 · 12 كجم × 10'), findsOneWidget);
     expect(find.text('جاهزة، المجموعة اللي بعدها'), findsOneWidget);
-    expect(find.text('ضيفي 30 ثانية'), findsOneWidget);
+    expect(find.text('أكتر 15 ث'), findsOneWidget);
     expect(find.text("I'm ready, next set"), findsNothing);
   });
 
@@ -412,5 +647,205 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('rest by deadline, and the alert while she is away (F504)', () {
+    // The tester's fake time does not move DateTime.now, so the wall clock is
+    // handed in and moved by hand.
+    var wall = DateTime(2026, 10, 14, 10);
+    final told = <DateTime>[];
+    var cancelled = 0;
+    var ready = 0;
+
+    Future<void> open(
+      WidgetTester tester, {
+      Duration remaining = const Duration(seconds: 60),
+      bool autoStart = true,
+    }) async {
+      wall = DateTime(2026, 10, 14, 10);
+      told.clear();
+      cancelled = 0;
+      ready = 0;
+      await tester.pumpWidget(
+        _host(
+          RestingView(
+            remaining: remaining,
+            total: const Duration(seconds: 60),
+            autoStart: autoStart,
+            clock: () => wall,
+            onBackgrounded: told.add,
+            onAlertCancel: () => cancelled++,
+            onReady: () => ready++,
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    void state(WidgetTester tester, AppLifecycleState s) =>
+        tester.binding.handleAppLifecycleStateChanged(s);
+
+    testWidgets('going to the background says when the rest ends', (
+      tester,
+    ) async {
+      await open(tester);
+      await tester.pump(const Duration(seconds: 10));
+      state(tester, AppLifecycleState.paused);
+      expect(told, [wall.add(const Duration(seconds: 50))]);
+    });
+
+    testWidgets('coming back counts from the deadline, not from the ticks', (
+      tester,
+    ) async {
+      await open(tester);
+      await tester.pump(const Duration(seconds: 10));
+      state(tester, AppLifecycleState.paused);
+      // The phone slept: no ticks arrive, twenty seconds of the wall pass.
+      wall = wall.add(const Duration(seconds: 20));
+      state(tester, AppLifecycleState.resumed);
+      await tester.pump();
+      expect(find.text('0:30'), findsOneWidget);
+      expect(cancelled, 1);
+      expect(ready, 0);
+      // And it goes on counting.
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('0:29'), findsOneWidget);
+    });
+
+    testWidgets('a rest that ended while she was away ends itself', (
+      tester,
+    ) async {
+      await open(tester);
+      state(tester, AppLifecycleState.paused);
+      wall = wall.add(const Duration(seconds: 90));
+      state(tester, AppLifecycleState.resumed);
+      await tester.pump();
+      expect(find.text('0:00'), findsOneWidget);
+      expect(ready, 1);
+      expect(cancelled, 1);
+    });
+
+    testWidgets('hidden then paused tells it once', (tester) async {
+      await open(tester);
+      state(tester, AppLifecycleState.hidden);
+      state(tester, AppLifecycleState.paused);
+      expect(told, hasLength(1));
+    });
+
+    testWidgets('a rest she held is not announced', (tester) async {
+      await open(tester);
+      await tester.tap(find.byIcon(Icons.pause));
+      await tester.pump();
+      state(tester, AppLifecycleState.paused);
+      expect(told, isEmpty);
+    });
+
+    testWidgets('a rest she tapped past is not announced', (tester) async {
+      await open(tester);
+      await tester.tap(find.text("I'm ready, next set"));
+      await tester.pump();
+      expect(ready, 1);
+      expect(cancelled, 1);
+      state(tester, AppLifecycleState.paused);
+      expect(told, isEmpty);
+    });
+
+    testWidgets('asking for fifteen more cancels what was left', (
+      tester,
+    ) async {
+      await open(tester);
+      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
+      await tester.pump();
+      expect(cancelled, 1);
+      state(tester, AppLifecycleState.paused);
+      expect(told, [wall.add(const Duration(seconds: 75))]);
+    });
+
+    testWidgets('leaving the screen cancels it', (tester) async {
+      await open(tester);
+      state(tester, AppLifecycleState.paused);
+      await tester.pumpWidget(const SizedBox());
+      expect(cancelled, greaterThanOrEqualTo(1));
+    });
+
+    testWidgets('a rest with no clock running is not announced', (
+      tester,
+    ) async {
+      await open(tester, autoStart: false);
+      state(tester, AppLifecycleState.paused);
+      expect(told, isEmpty);
+    });
+  });
+  group('the new best chip', () {
+    testWidgets('is not drawn when she beat nothing', (tester) async {
+      await tester.pumpWidget(_host(const RestingView(autoStart: false)));
+      await tester.pumpAndSettle();
+      expect(find.text('New best'), findsNothing);
+    });
+
+    testWidgets('says what improved: a heavier weight', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          const RestingView(
+            autoStart: false,
+            liveBest: LiveBest(
+              exerciseId: 'goblet_squat',
+              kind: LiveBestKind.heavier,
+              loadKg: 22.5,
+              reps: 8,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('New best'), findsOneWidget);
+      expect(find.text('Heaviest weight yet: 22.5 kg'), findsOneWidget);
+    });
+
+    testWidgets('says what improved: more reps at that weight', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          const RestingView(
+            autoStart: false,
+            liveBest: LiveBest(
+              exerciseId: 'goblet_squat',
+              kind: LiveBestKind.moreReps,
+              loadKg: 20,
+              reps: 11,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Most reps at 20 kg: 11'), findsOneWidget);
+    });
+
+    testWidgets('reads in Arabic, speaks as one sentence, and fits at 2.0', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _host(
+          const RestingView(
+            autoStart: false,
+            liveBest: LiveBest(
+              exerciseId: 'glute_bridge',
+              kind: LiveBestKind.moreReps,
+              reps: 15,
+            ),
+          ),
+          locale: const Locale('ar'),
+          textScale: 2.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('رقم قياسي جديد'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('رقم قياسي جديد. أكتر عدّات لحد دلوقتي: 15'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    });
   });
 }

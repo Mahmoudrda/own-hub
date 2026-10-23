@@ -46,6 +46,15 @@ class _RefusingStore implements CaptureConsentStore {
   }
 }
 
+/// Reads to the end of the disclosure, which is what enables the agree button.
+Future<void> _readToEnd(WidgetTester tester) async {
+  await tester.drag(
+    find.byType(SingleChildScrollView).first,
+    const Offset(0, -5000),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('names the processors and the retention, in her language', (
     tester,
@@ -85,6 +94,50 @@ void main() {
     );
   });
 
+  for (final locale in [const Locale('en'), const Locale('ar')]) {
+    for (final scale in [1.0, 2.0]) {
+      testWidgets(
+        'agree stays inert until the disclosure is read (${locale.languageCode}, x$scale)',
+        (tester) async {
+          tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+          tester.view.devicePixelRatio = 3;
+          addTearDown(tester.view.reset);
+          final agreed = <String>[];
+          await tester.pumpWidget(
+            _host(
+              ConsentView(
+                uid: 'u1',
+                store: InMemoryCaptureConsentStore(),
+                onAgreed: () => agreed.add('camera'),
+              ),
+              locale: locale,
+              textScale: scale,
+            ),
+          );
+          await tester.pumpAndSettle();
+          final l10n = AppL10n.of(tester.element(find.byType(ConsentView)));
+          final agree = find.text(l10n.iAgreeStartTheCamera);
+          // Before reading to the end: said so, and inert.
+          if (scale == 1.0) {
+            expect(find.text(l10n.readToTheEndToAgree), findsOneWidget);
+            await tester.tap(agree, warnIfMissed: false);
+            await tester.pumpAndSettle();
+            expect(agreed, isEmpty);
+          }
+          await _readToEnd(tester);
+          // Every disclosure line is in the tree and the last one is on screen.
+          expect(find.text(l10n.yourPhotosGoToOurServerIn), findsOneWidget);
+          expect(find.text(l10n.readToTheEndToAgree), findsNothing);
+          await tester.ensureVisible(agree);
+          await tester.tap(agree);
+          await tester.pumpAndSettle();
+          expect(agreed, ['camera']);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   testWidgets('agreeing records the version before it opens anything', (
     tester,
   ) async {
@@ -106,6 +159,7 @@ void main() {
 
     expect(await store.current('u1'), isNull);
 
+    await _readToEnd(tester);
     await tester.tap(find.text('I agree, start the camera'));
     await tester.pumpAndSettle();
 
@@ -141,6 +195,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('consent-error')), findsNothing);
+    await _readToEnd(tester);
     await tester.tap(find.text('I agree, start the camera'));
     await tester.pumpAndSettle();
 
@@ -155,6 +210,7 @@ void main() {
       findsOneWidget,
     );
     // And she can try again rather than being stranded.
+    await _readToEnd(tester);
     await tester.tap(find.text('I agree, start the camera'));
     await tester.pumpAndSettle();
     expect(store.attempts, 2);
@@ -190,12 +246,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('قبل أن تفتح الكاميرا'), findsOneWidget);
-    expect(find.text('أوافق وأبدأ التصوير'), findsOneWidget);
+    expect(find.text('قبل ما الكاميرا تفتح'), findsOneWidget);
+    expect(find.text('موافقة، يلا نشغّل الكاميرا'), findsOneWidget);
     expect(find.text('Before the camera opens'), findsNothing);
     // Right to left, so the disclosure is laid out the way she reads it.
     expect(
-      Directionality.of(tester.element(find.text('أوافق وأبدأ التصوير'))),
+      Directionality.of(
+        tester.element(find.text('موافقة، يلا نشغّل الكاميرا')),
+      ),
       TextDirection.rtl,
     );
   });
@@ -227,10 +285,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('أوافق وأبدأ التصوير'));
+    await _readToEnd(tester);
+    await tester.tap(find.text('موافقة، يلا نشغّل الكاميرا'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('consent-error')), findsOneWidget);
-    expect(find.textContaining('تعذّر حفظ موافقتكِ'), findsOneWidget);
+    expect(find.textContaining('ماقدرناش نحفظ موافقتك'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -248,7 +307,7 @@ void main() {
   // check is explained and agreed to on one screen. The disclosure is the v1
   // text, every bullet visible, and agreeing still writes the record first.
   group('with the promise above it', () {
-    testWidgets('promise, all six disclosures, and three ways on', (
+    testWidgets('title, all six disclosures, and three ways on', (
       tester,
     ) async {
       var niqab = 0;
@@ -266,16 +325,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('3 of 3 · Quick check'), findsOneWidget);
-      expect(find.text('One check, then you are in'), findsOneWidget);
-      expect(find.textContaining('national ID card'), findsWidgets);
-      expect(find.textContaining('a couple of minutes'), findsOneWidget);
+      expect(find.text('One check, then you are in'), findsNothing);
+      expect(find.textContaining('a couple of minutes'), findsNothing);
       expect(find.text('Before the camera opens'), findsOneWidget);
       expect(find.textContaining('Google Cloud'), findsOneWidget);
-      expect(find.byType(VerificationBullet), findsNWidgets(3 + 6));
+      expect(find.byType(VerificationBullet), findsNWidgets(6));
       expect(
         kCaptureConsentVersion,
-        2,
-        reason: 'privacy policy v3 rewrote the disclosure',
+        3,
+        reason: 'v2 was privacy policy v3; v3 is the same wording in Egyptian Arabic',
       );
 
       final link = find.text('I wear niqab, check me another way');
@@ -285,7 +343,9 @@ void main() {
       expect(niqab, 1);
     });
 
-    testWidgets('agreeing still writes the record before the camera', (tester) async {
+    testWidgets('agreeing still writes the record before the camera', (
+      tester,
+    ) async {
       final store = InMemoryCaptureConsentStore();
       final order = <String>[];
       await tester.pumpWidget(
@@ -307,6 +367,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final agree = find.text('I agree, start the camera');
+      await _readToEnd(tester);
       await tester.ensureVisible(agree);
       await tester.tap(agree);
       await tester.pumpAndSettle();

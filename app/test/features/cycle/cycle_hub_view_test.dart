@@ -91,7 +91,16 @@ void main() {
         find.text('This needs more than a workout change'),
         findsOneWidget,
       );
-      expect(find.text('Find care near you'), findsOneWidget);
+      // What to do, said plainly, in place of two buttons that opened
+      // nothing ("we do not have that yet").
+      expect(
+        find.text(
+          'If the pain is severe or sudden, see a doctor today. In an '
+          'emergency call 123.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Find care near you'), findsNothing);
 
       // And nothing that could start, swap or suggest a session is.
       for (final forbidden in [
@@ -215,7 +224,16 @@ void main() {
         find.text('This needs more than a workout change'),
         findsOneWidget,
       );
-      expect(find.text('Find care near you'), findsOneWidget);
+      // What to do, said plainly, in place of two buttons that opened
+      // nothing ("we do not have that yet").
+      expect(
+        find.text(
+          'If the pain is severe or sudden, see a doctor today. In an '
+          'emergency call 123.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Find care near you'), findsNothing);
       expect(find.text('Rest today'), findsOneWidget);
 
       for (final forbidden in [

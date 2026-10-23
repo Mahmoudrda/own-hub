@@ -58,6 +58,15 @@ Callables, in the order a woman meets them:
     expire_stale_reviews      hourly  72-hour SLA -> RETRY_REQUIRED
     admin_dashboard           admin   counts only, for the owner's console
     admin_logs                admin   codes and times, a page at a time
+    record_meal_photo_consent free    E12, before her first meal photo
+    analyze_meal_photo        paid    E12/E13, one photo to foods, grams, macros
+    register_for_event        free    reserves her seat on a published event
+    cancel_event_registration free    gives that seat back
+    list_events_admin         admin   events with their seats, for the dashboard
+    save_event                admin   creates or edits an event
+    submit_community_food     free    offers a confirmed meal to every woman
+    list_community_foods      admin   candidates and the published foods
+    review_community_food     admin   approves or rejects one candidate
 
 Wire contract, agreed with the Flutter worker:
     `verify_identity` takes {front, back, frames, liveness:{sessionId}} and
@@ -73,6 +82,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import os
 import time
 import uuid
 from typing import Any, Optional
@@ -81,6 +91,7 @@ import firebase_admin
 from firebase_functions import firestore_fn, https_fn, options, scheduler_fn
 
 from identity import (
+    approvals,
     config,
     decisions,
     imagesize,
@@ -89,6 +100,7 @@ from identity import (
     logs,
     reasons,
     review,
+    scheduling,
     store,
     webhook,
 )
@@ -135,6 +147,25 @@ def _sign_in_provider(request: https_fn.CallableRequest) -> Optional[str]:
     return firebase.get("sign_in_provider")
 
 
+def _local_emulator() -> bool:
+    """True only inside the Firebase emulator suite on a developer machine.
+    The Python SDK cannot verify an App Check token there, so the gate below
+    steps aside. It needs the emulator flag and BOTH emulator hosts on this
+    machine's loopback: a deployed service pointed at a loopback database
+    could not work at all, so no production setting can satisfy it."""
+    env = os.environ
+
+    def loopback(name: str) -> bool:
+        host = env.get(name, "").rsplit(":", 1)[0].strip("[]")
+        return host in ("127.0.0.1", "localhost", "::1")
+
+    return (
+        env.get("FUNCTIONS_EMULATOR") == "true"
+        and loopback("FIRESTORE_EMULATOR_HOST")
+        and loopback("FIREBASE_AUTH_EMULATOR_HOST")
+    )
+
+
 def _require_auth(
     request: https_fn.CallableRequest,
     providers: Optional[tuple] = USER_PROVIDERS,
@@ -150,7 +181,7 @@ def _require_auth(
     `providers` defaults to phone only. None skips the provider check, which
     only delete_account uses: anyone with an account may erase it.
     """
-    if config.ENFORCE_APP_CHECK and request.app is None:
+    if config.ENFORCE_APP_CHECK and request.app is None and not _local_emulator():
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.APP_CHECK_MISSING
         )
@@ -334,7 +365,8 @@ def record_consent(request: https_fn.CallableRequest) -> dict:
     config.CONSENT_VERSION must be bumped whenever that text changes.
     """
     uid = _require_auth(request)
-    data = request.data if isinstance(request.data, dict) else {}
+    payload = _payload(request)
+    data = payload if isinstance(payload, dict) else {}
     version = data.get("consentVersion")
     if version != config.CONSENT_VERSION:
         # A client agreeing to a version we do not recognise has been shown
@@ -384,7 +416,7 @@ def record_legal_acceptance(request: https_fn.CallableRequest) -> dict:
     before the check.
     """
     uid = _require_auth(request)
-    data = request.data
+    data = _payload(request)
     if not isinstance(data, dict):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
@@ -432,7 +464,7 @@ def record_health_consent(request: https_fn.CallableRequest) -> dict:
     privacy control (Protected List 6).
     """
     uid = _require_auth(request)
-    data = request.data or {}
+    data = _payload(request) or {}
     if not isinstance(data, dict) or not isinstance(data.get("granted"), bool):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
@@ -545,7 +577,7 @@ def verify_identity(request: https_fn.CallableRequest) -> dict:
     """
     started = time.monotonic()
     uid = _require_auth(request)
-    data = request.data or {}
+    data = _payload(request) or {}
     if not isinstance(data, dict):
         # A callable body is whatever the client put in `data`. A list or a
         # string reaches here just as easily as an object and would turn every
@@ -890,7 +922,9 @@ def _require_admin(
     return uid
 
 
-def _require_woman_reviewer(request: https_fn.CallableRequest) -> str:
+def _require_woman_reviewer(
+    request: https_fn.CallableRequest, allow_admin: bool = False
+) -> str:
     """The claim that may decide a live review.
 
     A SEPARATE claim from `admin`, and the separation is the point. An admin
@@ -900,10 +934,26 @@ def _require_woman_reviewer(request: https_fn.CallableRequest) -> str:
     substitutes for.
 
     Minted out of band by staff. There is no self-service path, exactly like
-    `admin`.
+    `admin`. `allow_admin` is for the dashboard's approve and queue callables,
+    which an admin may also use.
     """
+    return _require_staff_claim(
+        request, ("womanReviewer", "admin") if allow_admin else ("womanReviewer",)
+    )
+
+
+def _require_finance(request: https_fn.CallableRequest) -> str:
+    """Staff who check payments and pay coaches: the `finance` claim, or an
+    admin. Minted out of band by tools/grant_finance.py, like `admin`."""
+    return _require_staff_claim(request, ("finance", "admin"))
+
+
+def _require_staff_claim(request: https_fn.CallableRequest, claims: tuple) -> str:
+    """A staff sign-in (a phone or a staff provider) holding any one of
+    `claims`; the caller's uid."""
     uid = _require_auth(request, STAFF_PROVIDERS)
-    if not (request.auth.token or {}).get("womanReviewer"):
+    token = request.auth.token or {}
+    if not any(token.get(claim) for claim in claims):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.UNAUTHENTICATED
         )
@@ -934,8 +984,39 @@ def _review_call(fn, *args, **kwargs):
         raise https_fn.HttpsError(_REVIEW_ERROR_CODES[error.kind], error.reason)
 
 
+# iOS sends every Dart int as {"@type": "...Int64Value", "value": "3"}, because a
+# long long may not fit a JavaScript number; Android and the web send a plain 3.
+# Callables read their request only through _payload, so every version, count
+# and timestamp reaches the same checks from both platforms.
+_WRAPPED_INT_TYPES = (
+    "type.googleapis.com/google.protobuf.Int64Value",
+    "type.googleapis.com/google.protobuf.UInt64Value",
+)
+
+
+def _unwrap(value):
+    if isinstance(value, dict):
+        if (
+            set(value) == {"@type", "value"}
+            and value["@type"] in _WRAPPED_INT_TYPES
+            and isinstance(value["value"], str)
+        ):
+            try:
+                return int(value["value"])
+            except ValueError:
+                return value
+        return {k: _unwrap(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_unwrap(v) for v in value]
+    return value
+
+
+def _payload(request: https_fn.CallableRequest):
+    return _unwrap(request.data)
+
+
 def _body(request: https_fn.CallableRequest) -> dict:
-    data = request.data or {}
+    data = _payload(request) or {}
     if not isinstance(data, dict):
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
@@ -954,12 +1035,25 @@ def request_review(request: https_fn.CallableRequest) -> dict:
     the call is the consent to be looked up and called (the app shows the
     wording before calling; wording PENDING COUNSEL). N3: the consent names
     that flag and covers it only. Returns {state: "pending"}, or
-    {state: "approved"} if she is already verified.
+    {state: "approved"} if she is already verified. A `knownReviewerId` only
+    marks the queue row with the reviewer she named; it never approves her.
     """
     started = time.monotonic()
     uid = _require_auth(request)
     data = _body(request)
+    # M13: a store review account on the owner's allow-list is approved here
+    # too, exactly as verify_identity approves it, so choosing the woman
+    # reviewer instead of the camera can never leave it waiting on a person.
+    if _is_store_reviewer(request, uid) and not approvals.revoked_since_approval(uid):
+        store.mint_claims(uid, True)
+        store.write_user_verification(uid)
+        store.FirestoreReviewStore().log_access(uid, "store-review", "reviewerBypass")
+        logs.warn("reviewer_bypass")
+        return {"state": review.STATE_APPROVED}
+    known = data.get("knownReviewerId")
     result = _review_call(review.request, store.FirestoreReviewStore(), uid, data.get("path"))
+    if known and result.state == review.STATE_PENDING:
+        approvals.note_known_reviewer(uid, known)
     logs.decision(
         "request_review",
         outcome=decisions.PENDING_REVIEW if result.state == review.STATE_PENDING else result.state,
@@ -1065,6 +1159,181 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
     return {"ok": True, "outcome": result.outcome}
 
 
+# ------------------------------------- reviewer dashboard: one-click approval
+
+
+@https_fn.on_call()
+def approve_user(request: https_fn.CallableRequest) -> dict:
+    """{uid, reason?: "approve" | "knownPerson"} -> {state: "approved"}.
+
+    One click. No ID number, no call, no note, no confirmation: the claim is
+    minted, her state set, any open flag closed, and the ledger records who and
+    how. A reviewer cannot approve herself.
+    """
+    started = time.monotonic()
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    reason = data.get("reason", "approve")
+    if reason not in approvals.APPROVE_REASONS:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    state = _review_call(approvals.approve, reviewer_uid, data.get("uid"), reason)
+    logs.decision("approve_user", outcome=state, state=state, latencyMs=_ms(started))
+    return {"state": state}
+
+
+@https_fn.on_call()
+def approve_users(request: https_fn.CallableRequest) -> dict:
+    """{uids: [...]} -> {approved: [...], failed: [...]}; one bad row never
+    stops the rest."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    result = _review_call(approvals.approve_many, reviewer_uid, data.get("uids"))
+    logs.decision("approve_users", outcome="approved", count=len(result["approved"]))
+    return result
+
+
+@https_fn.on_call()
+def revoke_user(request: https_fn.CallableRequest) -> dict:
+    """{uid} -> {state: "pending"}: the undo. Takes the verified claim back
+    (other claims kept) and reopens her case."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    state = _review_call(approvals.revoke, reviewer_uid, data.get("uid"))
+    logs.decision("revoke_user", outcome=state, state=state)
+    return {"state": state}
+
+
+@https_fn.on_call()
+def decline_user(request: https_fn.CallableRequest) -> dict:
+    """{uid, reason?: "notClear" | "notMatching" | "other"} -> {state: "rejected"}.
+
+    The decline half of the reviewer's decision, with the same guard and the
+    same audit trail as an approve: her open flag is closed as rejected, the
+    ledger records who, when and why, and the access log gets a line."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    state = _review_call(
+        approvals.decline, reviewer_uid, data.get("uid"), data.get("reason", "other")
+    )
+    logs.decision("decline_user", outcome=state, state=state)
+    return {"state": state}
+
+
+@https_fn.on_call()
+def list_review_queue(request: https_fn.CallableRequest) -> list:
+    """{status?: pending | scheduled | approved, query?} -> a list of rows. A phone
+    number appears only where she asked for the call, and each is logged."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    return _review_call(
+        approvals.list_queue, reviewer_uid, data.get("status"), data.get("query")
+    )
+
+
+@https_fn.on_call()
+def set_preapproved_phones(request: https_fn.CallableRequest) -> dict:
+    """{add?: "comma list", remove?: [...]} -> {phones: [...]}, E.164."""
+    reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    phones = _review_call(
+        approvals.set_preapproved, reviewer_uid, data.get("add"), data.get("remove")
+    )
+    return {"phones": phones}
+
+
+@https_fn.on_call()
+def list_preapproved_phones(request: https_fn.CallableRequest) -> dict:
+    """{} -> {phones: [...]}."""
+    _require_woman_reviewer(request, allow_admin=True)
+    return {"phones": approvals.list_preapproved()}
+
+
+@https_fn.on_call()
+def claim_fast_verification(request: https_fn.CallableRequest) -> dict:
+    """{} -> {state: "approved" | "none", via?}.
+
+    Right after a phone sign-in. Approves her when the phone in her verified
+    ID token is pre-approved, is in TEST_BYPASS_PHONES (environment, empty
+    means nobody) or is a store review account. The request body is never
+    read: only the token decides.
+    """
+    uid = _require_auth(request)
+    token = request.auth.token or {}
+    result = _review_call(
+        approvals.claim_fast,
+        uid,
+        token.get("phone_number"),
+        _is_store_reviewer(request, uid),
+    )
+    logs.decision(
+        "claim_fast_verification",
+        outcome=f"fast_{result['via']}" if "via" in result else "none",
+        state=result["state"],
+    )
+    return result
+
+
+@https_fn.on_call()
+def get_reviewer_settings(request: https_fn.CallableRequest) -> dict:
+    reviewer_uid = _require_woman_reviewer(request)
+    return scheduling.get_settings(reviewer_uid)
+
+
+@https_fn.on_call()
+def set_reviewer_settings(request: https_fn.CallableRequest) -> dict:
+    """{firstName, listed, availability: [{weekday 1-7, start
+    "HH:MM", end "HH:MM"}], slotMinutes} in Cairo time; weekday 1 = Monday."""
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(scheduling.set_settings, reviewer_uid, data)
+
+
+@https_fn.on_call()
+def list_reviewers(request: https_fn.CallableRequest) -> list:
+    """{} -> [{reviewerId, firstName}]: only reviewers who listed themselves."""
+    _require_auth(request)
+    return scheduling.list_reviewers()
+
+
+@https_fn.on_call()
+def list_review_slots(request: https_fn.CallableRequest) -> list:
+    """{days: 7} -> [{reviewerId, start}]: free slots, start in UTC."""
+    _require_auth(request)
+    data = _body(request)
+    return scheduling.list_slots(data.get("days"))
+
+
+@https_fn.on_call()
+def book_review_slot(request: https_fn.CallableRequest) -> dict:
+    """{reviewerId, start} -> {scheduledFor}. Needs her open review (so after
+    request_review); a second booking replaces the first."""
+    uid = _require_auth(request)
+    data = _body(request)
+    return _review_call(scheduling.book, uid, data.get("reviewerId"), data.get("start"))
+
+
+@https_fn.on_call()
+def list_schedule(request: https_fn.CallableRequest) -> list:
+    """{from, to} -> [{uid, start, displayName?, phone?}]: the
+    caller's own bookings. A phone only where she asked for the call."""
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(
+        scheduling.list_schedule, reviewer_uid, data.get("from"), data.get("to")
+    )
+
+
+@https_fn.on_call()
+def reschedule_review(request: https_fn.CallableRequest) -> dict:
+    """{uid, start} -> {scheduledFor}: move a woman to a time the reviewer
+    picks, whether or not it is in her availability."""
+    reviewer_uid = _require_woman_reviewer(request)
+    data = _body(request)
+    return _review_call(scheduling.reschedule, reviewer_uid, data.get("uid"), data.get("start"))
+
+
 @scheduler_fn.on_schedule(schedule="every 1 hours", region=config.REGION)
 def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     """A flagged case undecided past the SLA becomes RETRY_REQUIRED.
@@ -1082,7 +1351,9 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     count = review.expire(review_store, dt.datetime.now(dt.timezone.utc))
     logs.decision("expire_stale_reviews", outcome=decisions.RETRY_REQUIRED, count=count)
     # An approval whose verified claim could not be minted at decide time.
-    minted = review.retry_pending_mints(review_store)
+    minted = review.retry_pending_mints(
+        review_store, skip=approvals.revoked_since_approval
+    )
     if minted:
         logs.decision("expire_stale_reviews", outcome=decisions.APPROVED, count=minted)
 
@@ -1126,6 +1397,120 @@ def admin_dashboard(request: https_fn.CallableRequest) -> dict:
         dt.datetime.now(dt.timezone.utc),
         refresh=data.get("refresh") is True,
     )
+
+
+@https_fn.on_call()
+def list_exercises(request: https_fn.CallableRequest) -> dict:
+    """The member exercise library and the contract's vocabularies, for the
+    reviewer dashboard's Exercises tab. Admin only."""
+    _require_admin(request)
+    from console import exercise_editor
+
+    return exercise_editor.list_library(store.db())
+
+
+@https_fn.on_call()
+def save_exercise(request: https_fn.CallableRequest) -> dict:
+    """Adds or edits one exercise whose clips and poster the dashboard already
+    uploaded. `{ok, version}` or `{ok: false, problems}`. Admin only."""
+    _require_admin(request)
+    from console import exercise_editor
+    from firebase_admin import storage
+
+    return exercise_editor.save(
+        store.db(), storage.bucket(exercise_editor.CONTENT_BUCKET), _body(request)
+    )
+
+
+@https_fn.on_call()
+def list_events_admin(request: https_fn.CallableRequest) -> dict:
+    """Every event with its seats, soonest first, for the dashboard's Events
+    tab. Admin only."""
+    _require_admin(request)
+    from events import admin as events_admin
+
+    return events_admin.list_all(store.db())
+
+
+@https_fn.on_call()
+def save_event(request: https_fn.CallableRequest) -> dict:
+    """Creates or edits one event whose pictures and clips the dashboard
+    already uploaded. `{ok, eventId}` or `{ok: false, problems}`. Never changes
+    the seats taken. Admin only."""
+    _require_admin(request)
+    from events import admin as events_admin
+
+    return events_admin.save(store.db(), _body(request))
+
+
+@https_fn.on_call()
+def list_community_foods(request: https_fn.CallableRequest) -> dict:
+    """Pending community foods by how many women confirmed them, the published
+    list and the category and allergen vocabularies, for the dashboard's Foods
+    tab. Admin only."""
+    _require_admin(request)
+    from nutrition import community_foods
+
+    return community_foods.list_all(store.db())
+
+
+@https_fn.on_call()
+def review_community_food(request: https_fn.CallableRequest) -> dict:
+    """Approves one candidate into meta/communityFoods or rejects it. Request
+    {key, action: "approve" | "reject"} and, to approve, {nameEn, nameAr,
+    category, allergens, allergensNone}. `{ok, version?}` or `{ok: false,
+    problems}`. Admin only."""
+    _require_admin(request)
+    from nutrition import community_foods
+
+    return community_foods.review(store.db(), _body(request))
+
+
+_SEAT_ERROR_CODES = {
+    "not_found": https_fn.FunctionsErrorCode.NOT_FOUND,
+    "closed": https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    "full": https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+}
+
+
+def _seat_call(request: https_fn.CallableRequest, uid: str, action: str) -> dict:
+    if _claim(request, "verified") is not True:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.NOT_VERIFIED
+        )
+    event_id = _body(request).get("eventId")
+    from events import seats
+
+    if not isinstance(event_id, str) or not seats.ID.match(event_id):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    try:
+        return getattr(seats, action)(store.db(), uid, event_id)
+    except seats.SeatError as error:
+        raise https_fn.HttpsError(_SEAT_ERROR_CODES[error.kind], error.reason)
+
+
+@https_fn.on_call()
+def register_for_event(request: https_fn.CallableRequest) -> dict:
+    """Reserves her seat: `{eventId}` -> `{registered: true, seatsTaken, capacity}`.
+
+    Verified members only. A second call changes nothing. Refusals, each the
+    whole message:
+      event_not_found   NOT_FOUND
+      event_closed      FAILED_PRECONDITION (not published, over, or no seats set)
+      event_full        FAILED_PRECONDITION
+    """
+    uid = _require_auth(request)
+    return _seat_call(request, uid, "register")
+
+
+@https_fn.on_call()
+def cancel_event_registration(request: https_fn.CallableRequest) -> dict:
+    """Gives her seat back: `{eventId}` -> `{registered: false, seatsTaken,
+    capacity}`. Verified members only; a repeat changes nothing."""
+    uid = _require_auth(request)
+    return _seat_call(request, uid, "cancel")
 
 
 @https_fn.on_call()
@@ -1294,9 +1679,11 @@ def join_waitlist(request: https_fn.Request) -> https_fn.Response:
 
 # ------------------------------------------------------------- coaching
 #
-# Dormant while the coach app is off: coaching.COACH_APP_LIVE moves with the
-# app's Feature.coachApp and with coachLive() in both rules files. Each refusal
-# is a code from coaching/errors.py and nothing else.
+# Three switches: coaching.COACH_PORTFOLIO_LIVE (applications, profiles,
+# packages, certificates), coaching.COACH_CLIENTS_LIVE (requests, chat, plans,
+# sessions) and coaching.COACH_PAYMENTS_LIVE (everything about money). They move with coachPortfolioLive() and
+# coachPaymentsLive() in both rules files. Each refusal is a code from
+# coaching/errors.py and nothing else.
 
 _COACHING_ERROR_CODES = {
     "failed_precondition": https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
@@ -1311,9 +1698,23 @@ def _coaching_call(fn, *args, **kwargs):
     from coaching import errors as coaching_errors
 
     try:
-        return fn(*args, **kwargs)
+        return _json_safe(fn(*args, **kwargs))
     except coaching_errors.CoachingError as error:
         raise https_fn.HttpsError(_COACHING_ERROR_CODES[error.code], error.reason)
+
+
+def _json_safe(value):
+    """Stored times leave as ISO-8601 strings; a callable answer must be JSON."""
+    import datetime as dt
+
+    if isinstance(value, dt.datetime):
+        aware = value if value.tzinfo else value.replace(tzinfo=dt.timezone.utc)
+        return aware.isoformat()
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    return value
 
 
 def _claim(request: https_fn.CallableRequest, name: str):
@@ -1323,12 +1724,8 @@ def _claim(request: https_fn.CallableRequest, name: str):
 
 def _coach_object_exists(media_ref: str) -> bool:
     """Whether her certificate photo is in the personal bucket."""
-    from firebase_admin import storage
-
-    from account import deletion
-
     try:
-        return storage.bucket(deletion.PERSONAL_BUCKET).blob(media_ref).exists()
+        return _PersonalBlobs().exists(media_ref)
     except Exception:
         return False
 
@@ -1353,8 +1750,9 @@ def record_signup_role(request: https_fn.CallableRequest) -> dict:
         store.db(),
         uid,
         data,
-        live=coaching.COACH_APP_LIVE,
+        live=coaching.COACH_PORTFOLIO_LIVE,
         timestamp=firestore.SERVER_TIMESTAMP,
+        coach_v=_claim(request, "coachV"),
     )
 
 
@@ -1378,7 +1776,7 @@ def submit_coach_certificate(request: https_fn.CallableRequest) -> dict:
         uid,
         data,
         verified=_claim(request, "verified") is True,
-        live=coaching.COACH_APP_LIVE,
+        live=coaching.COACH_PORTFOLIO_LIVE,
         object_exists=_coach_object_exists,
         timestamp=firestore.SERVER_TIMESTAMP,
     )
@@ -1401,7 +1799,7 @@ def create_coach_invite(request: https_fn.CallableRequest) -> dict:
         uid,
         is_coach=_claim(request, "coachV") == "active",
         verified=_claim(request, "verified") is True,
-        live=coaching.COACH_APP_LIVE,
+        live=coaching.COACH_CLIENTS_LIVE,
         now=dt.datetime.now(dt.timezone.utc),
     )
 
@@ -1425,7 +1823,876 @@ def accept_coach_invite(request: https_fn.CallableRequest) -> dict:
         uid,
         data,
         verified=_claim(request, "verified") is True,
-        live=coaching.COACH_APP_LIVE,
+        live=coaching.COACH_CLIENTS_LIVE,
         now=dt.datetime.now(dt.timezone.utc),
         timestamp=firestore.SERVER_TIMESTAMP,
     )
+
+
+# ------------------------------------------------------- private coaching
+#
+# DECISIONS D61. The logic lives in pure modules under coaching/; these wrappers
+# run the guards, then hand each module the clock and the adapters it needs
+# (the personal bucket, claims, pushes). Member and coach calls refuse while
+# their group's switch is False. Staff calls are not gated, so receiving
+# accounts and seller details can be set before payments are turned on.
+
+
+def _PersonalBlobs():
+    from coaching import blobs
+
+    return blobs.PersonalBlobs()
+
+
+def _coaching_now():
+    import datetime as dt
+
+    return dt.datetime.now(dt.timezone.utc)
+
+
+def _coaching_notify(uid: str, kind: str) -> None:
+    """One push; a failed push never fails the call that caused it."""
+    try:
+        from firebase_admin import messaging
+
+        from coaching import push
+
+        push.send_kind(uid, kind, db=store.db(), messaging=messaging)
+    except Exception:
+        logs.error("coaching_push_failed")
+
+
+def _coaching_merge_claims(uid: str, changes: dict) -> None:
+    from firebase_admin import auth
+
+    from coaching import claims
+
+    claims.merge_claims(auth, uid, changes)
+
+
+def _reencode(raw: bytes, **kwargs) -> bytes:
+    from nutrition import photo
+
+    return photo.reencode(raw, **kwargs)
+
+
+def _verified(request: https_fn.CallableRequest) -> bool:
+    return _claim(request, "verified") is True
+
+
+def _require_verified(request: https_fn.CallableRequest) -> None:
+    from coaching import common
+
+    _coaching_call(common.require_verified, _verified(request))
+
+
+def _portfolio_live() -> bool:
+    import coaching
+
+    return coaching.COACH_PORTFOLIO_LIVE
+
+
+def _clients_live() -> bool:
+    import coaching
+
+    return coaching.COACH_CLIENTS_LIVE
+
+
+def _payments_live() -> bool:
+    import coaching
+
+    return coaching.COACH_PAYMENTS_LIVE
+
+
+@https_fn.on_call()
+def submit_coach_application(request: https_fn.CallableRequest) -> dict:
+    """K01 to K13: every section of a coach application, files already in the
+    bucket under her own prefix. Verified women only."""
+    uid = _require_auth(request)
+    data = _body(request)
+    from coaching import applications
+
+    return _coaching_call(
+        applications.submit, store.db(), uid, data,
+        live=_portfolio_live(), verified=_verified(request), coach_v=_claim(request, "coachV"),
+        blobs=_PersonalBlobs(), now=_coaching_now(), payments_live=_payments_live(),
+    )
+
+
+@https_fn.on_call()
+def list_coach_applications(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from coaching import applications
+
+    return _coaching_call(
+        applications.list_for_review, store.db(), actor, data, now=_coaching_now()
+    )
+
+
+@https_fn.on_call()
+def decide_coach_application(request: https_fn.CallableRequest) -> dict:
+    """Approve (mints coachV), ask for changes, or reject."""
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from coaching import applications
+
+    return _coaching_call(
+        applications.decide, store.db(), actor, data,
+        merge_claims=_coaching_merge_claims, blobs=_PersonalBlobs(),
+        notify=_coaching_notify, reencode=_reencode, now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def add_portfolio_media(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import media
+
+    return _coaching_call(
+        media.add, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"),
+        blobs=_PersonalBlobs(), reencode=_reencode, now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def remove_portfolio_media(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import media
+
+    return _coaching_call(
+        media.remove, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"),
+        blobs=_PersonalBlobs(), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def confirm_portfolio_consent(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import media
+
+    return _coaching_call(
+        media.confirm_consent, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def list_portfolio_media(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request)  # no admin: admins never see these photos
+    data = _body(request)
+    from coaching import media
+
+    return _coaching_call(media.list_for_review, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def decide_portfolio_media(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request)  # reviewer only
+    data = _body(request)
+    from coaching import media
+
+    return _coaching_call(
+        media.decide, store.db(), actor, data,
+        blobs=_PersonalBlobs(), reencode=_reencode,
+        notify=_coaching_notify, now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def suspend_coach(request: https_fn.CallableRequest) -> dict:
+    actor = _require_admin(request)
+    data = _body(request)
+    from coaching import claims
+
+    return _coaching_call(
+        claims.suspend, store.db(), actor, data,
+        merge_claims=_coaching_merge_claims, now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def update_coach_profile(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import profiles
+
+    return _coaching_call(
+        profiles.update, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"),
+        blobs=_PersonalBlobs(), reencode=_reencode, now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def request_payout_account_change(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import profiles
+
+    return _coaching_call(
+        profiles.request_payout_change, store.db(), uid, data,
+        live=_payments_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def confirm_payout_account(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import common as coaching_common
+    from coaching import profiles
+
+    _coaching_call(coaching_common.require_payments_live, _payments_live())
+    return _coaching_call(
+        profiles.confirm_payout, store.db(), actor, data, now=_coaching_now()
+    )
+
+
+@https_fn.on_call()
+def save_coach_package(request: https_fn.CallableRequest) -> dict:
+    """K04: a package she designs. Her price in, the client's final price and
+    what she receives out."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import packages
+
+    return _coaching_call(
+        packages.save, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def request_coaching(request: https_fn.CallableRequest) -> dict:
+    """H03: she asks a coach for a package. No price travels in the request."""
+    uid = _require_auth(request)
+    data = _body(request)
+    from coaching import subscriptions
+
+    return _coaching_call(
+        subscriptions.request, store.db(), uid, data,
+        live=_clients_live(), payments_live=_payments_live(), verified=_verified(request),
+        now=_coaching_now(), notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def respond_coaching_request(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import subscriptions
+
+    return _coaching_call(
+        subscriptions.respond, store.db(), uid, data,
+        live=_clients_live(), payments_live=_payments_live(), coach_v=_claim(request, "coachV"),
+        now=_coaching_now(), notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def end_my_coaching(request: https_fn.CallableRequest) -> dict:
+    """Either the client or the coach leaves a coaching."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import subscriptions
+
+    return _coaching_call(
+        subscriptions.end_mine, store.db(), uid, data,
+        live=_clients_live(), now=_coaching_now(), notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def cancel_coaching_request(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import subscriptions
+
+    return _coaching_call(
+        subscriptions.cancel_request, store.db(), uid, data,
+        live=_clients_live(), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def submit_payment_proof(request: https_fn.CallableRequest) -> dict:
+    """H04: the transfer details and a screenshot, for a person to check.
+    The screenshot is re-encoded without metadata and deleted at the decision."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    from coaching import common as coaching_common
+
+    _coaching_call(coaching_common.require_payments_live, _payments_live())
+    data = _body(request)
+    image = _decode_image(data.get("imageJpeg"), {})
+    from coaching import proofs
+
+    fields = {k: v for k, v in data.items() if k != "imageJpeg"}
+    return _coaching_call(
+        proofs.submit, store.db(), uid, fields, image,
+        live=_payments_live(), now=_coaching_now(), blobs=_PersonalBlobs(), reencode=_reencode,
+    )
+
+
+@https_fn.on_call()
+def list_payment_proofs(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import proofs
+
+    return _coaching_call(proofs.list_for_staff, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def decide_payment_proof(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import proofs
+
+    return _coaching_call(
+        proofs.decide, store.db(), actor, data,
+        now=_coaching_now(), blobs=_PersonalBlobs(), notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def request_cancellation(request: https_fn.CallableRequest) -> dict:
+    """H05: cancel within the 14-day window; staff send the refund."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import refunds
+
+    return _coaching_call(
+        refunds.request, store.db(), uid, data, live=_payments_live(), now=_coaching_now()
+    )
+
+
+@https_fn.on_call()
+def list_refund_requests(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import refunds
+
+    return _coaching_call(refunds.list_for_staff, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def record_refund(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import refunds
+
+    return _coaching_call(
+        refunds.record, store.db(), actor, data, now=_coaching_now(), notify=_coaching_notify
+    )
+
+
+@https_fn.on_call()
+def end_coaching(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import subscriptions
+
+    return _coaching_call(
+        subscriptions.end_early, store.db(), actor, data,
+        now=_coaching_now(), notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def list_payouts_owed(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import payouts
+
+    return _coaching_call(payouts.owed, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def record_coach_payout(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import payouts
+
+    return _coaching_call(
+        payouts.record, store.db(), actor, data, now=_coaching_now(), notify=_coaching_notify
+    )
+
+
+@https_fn.on_call()
+def get_receiving_accounts(request: https_fn.CallableRequest) -> dict:
+    actor = _require_finance(request)
+    data = _body(request)
+    from coaching import receiving
+
+    return _coaching_call(receiving.get, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def set_receiving_accounts(request: https_fn.CallableRequest) -> dict:
+    actor = _require_admin(request)
+    data = _body(request)
+    from coaching import receiving
+
+    return _coaching_call(receiving.set_accounts, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def set_seller_details(request: https_fn.CallableRequest) -> dict:
+    actor = _require_admin(request)
+    data = _body(request)
+    from coaching import receiving
+
+    return _coaching_call(receiving.set_seller, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def publish_coach_plan(request: https_fn.CallableRequest) -> dict:
+    """W08: a workout or meal plan she built, shared with an active client."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import plans
+
+    return _coaching_call(
+        plans.publish, store.db(), uid, data,
+        live=_clients_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+        notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def schedule_live_session(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import sessions
+
+    return _coaching_call(
+        sessions.schedule, store.db(), uid, data,
+        live=_clients_live(), coach_v=_claim(request, "coachV"),
+        now=_coaching_now(), notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def respond_live_session(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import sessions
+
+    return _coaching_call(
+        sessions.respond, store.db(), uid, data, live=_clients_live(), now=_coaching_now()
+    )
+
+
+@https_fn.on_call()
+def mark_session_done(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import sessions
+
+    return _coaching_call(
+        sessions.mark_done, store.db(), uid, data, live=_clients_live(), now=_coaching_now()
+    )
+
+
+@https_fn.on_call()
+def list_coaching_reports(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from coaching import moderation
+
+    return _coaching_call(moderation.list_for_staff, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def decide_coaching_report(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from coaching import claims, moderation, subscriptions
+
+    db = store.db()
+    now = _coaching_now()
+
+    def suspend(coach_uid: str) -> None:
+        claims.suspend(
+            db, actor, {"uid": coach_uid, "reason": "report"},
+            merge_claims=_coaching_merge_claims, now=now,
+        )
+
+    def end_early(sub_id: str) -> None:
+        subscriptions.end_early(
+            db, actor, {"subId": sub_id, "reason": "safety"},
+            now=now, notify=_coaching_notify,
+        )
+
+    return _coaching_call(
+        moderation.decide, db, actor, data, now=now, suspend=suspend, end_early=end_early
+    )
+
+
+@https_fn.on_call()
+def mark_thread_read(request: https_fn.CallableRequest) -> dict:
+    """She opened a thread: her unread count goes to zero and `reads/{uid}`
+    gets the time, in one write."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import chat
+
+    return _coaching_call(
+        chat.mark_read, store.db(), uid, data, live=_clients_live(), now=_coaching_now()
+    )
+
+
+@firestore_fn.on_document_created(
+    document="relationships/{relId}/messages/{messageId}", region=config.REGION
+)
+def on_coaching_message(event) -> None:
+    """Screens a new chat message, hides it when the screen fails, keeps the
+    thread's last activity and pushes the other party (throttled)."""
+    if not _clients_live() or event.data is None:
+        return
+    from coaching import chat
+
+    try:
+        chat.on_message(
+            store.db(), event.params["relId"], event.params["messageId"],
+            event.data.to_dict() or {}, now=_coaching_now(), notify=_coaching_notify,
+        )
+    except Exception:
+        logs.error("coaching_message_trigger_failed")
+        raise
+
+
+@firestore_fn.on_document_created(document="users/{uid}/blocks/{otherUid}", region=config.REGION)
+def on_coaching_block(event) -> None:
+    """A block between a client and a coach ends any open coaching between them."""
+    if not _clients_live():
+        return
+    from coaching import subscriptions
+
+    try:
+        subscriptions.end_for_block(
+            store.db(), event.params["uid"], event.params["otherUid"], now=_coaching_now()
+        )
+    except Exception:
+        logs.error("coaching_block_trigger_failed")
+        raise
+
+
+@scheduler_fn.on_schedule(schedule="every 1 hours", region=config.REGION)
+def coaching_sweeper(event: scheduler_fn.ScheduledEvent) -> None:
+    """Expiries, finished programmes, the ends-soon push, payouts becoming due,
+    and an alert when a payment screenshot outlives its decision window. The
+    retry of a missed coach claim runs always; the client parts need the
+    clients switch, the ledger and proof parts the payments switch."""
+    from coaching import applications, subscriptions
+
+    db, now = store.db(), _coaching_now()
+    try:
+        applications.retry_claims(db, merge_claims=_coaching_merge_claims)
+    except Exception:
+        logs.error("coaching_claim_retry_failed")
+    clients, payments = _clients_live(), _payments_live()
+    if not (clients or payments):
+        return
+    counts = subscriptions.sweep(
+        db, now=now, notify=_coaching_notify, blobs=_PersonalBlobs(), clients=clients, payments=payments
+    )
+    stale = counts["staleProofImages"]
+    if stale:
+        logs.error("coaching_stale_proof_images", count=stale)
+
+
+# ------------------------------------------------------------- meal photos
+#
+# E12 and E13: she photographs a meal, the model names the foods and estimates
+# their grams, and every energy and macro number comes from nutrition/ (the
+# Egyptian dish table, then USDA FoodData Central). The photo is checked,
+# re-encoded without its metadata, sent once to Vertex AI in Frankfurt, and
+# never stored or logged, under the same rule as the ID photos at the top of
+# this file.
+
+
+@https_fn.on_call()
+def record_meal_photo_consent(request: https_fn.CallableRequest) -> dict:
+    """E12: her consent to send a meal photo to Google Vertex AI for an estimate.
+
+    Request {consentVersion, locale?, appVersion?}. The version must be
+    config.MEAL_PHOTO_CONSENT_VERSION; any other is agreement to words we
+    cannot account for and is refused with consent_missing. Recorded once at
+    users/{uid}/consents/meal-photo-v1; agreeing again changes nothing. A
+    locale or app version of the wrong shape is left out rather than stored.
+    """
+    uid = _require_auth(request)
+    data = _body(request)
+    version = data.get("consentVersion")
+    if isinstance(version, bool) or version != config.MEAL_PHOTO_CONSENT_VERSION:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+    store.write_meal_photo_consent(uid, data.get("locale"), data.get("appVersion"))
+    return {"ok": True, "consentVersion": config.MEAL_PHOTO_CONSENT_VERSION}
+
+
+@https_fn.on_call()
+def analyze_meal_photo(request: https_fn.CallableRequest) -> dict:
+    """One meal photo to the foods on it, with grams and macros she can edit.
+
+    Request {imageJpeg: base64, locale: "en" | "ar"}. Order: App Check, auth,
+    body, consent (meal-photo-v1), the image's size and header, the image
+    decoded and re-encoded, then scanCache by the SHA-256 of the re-encoded
+    bytes: a hit is answered with cached: true, no model call and no count. On
+    a miss: her daily scans, the app's daily scans, then the model is called
+    exactly once and its items are cached for 30 days. A photo that cannot be
+    re-encoded is refused before either count moves, so it never costs her a
+    scan.
+
+    Response {items, totals, estimate: true, cached}; nutrition/meal.py
+    documents each item. Refusals, each the whole message:
+      consent_missing            FAILED_PRECONDITION
+      image_undecodable,
+      image_too_large            INVALID_ARGUMENT
+      meal_scan_daily_limit,
+      meal_scans_paused          RESOURCE_EXHAUSTED
+      no_food_seen               NOT_FOUND
+      meal_unclear               FAILED_PRECONDITION
+      meal_service_unavailable   UNAVAILABLE (her scan is given back)
+    """
+    started = time.monotonic()
+    uid = _require_auth(request)
+    # Meal logging is for verified members only (the meal rules say the same),
+    # and a scan costs money, so nobody else reaches the model.
+    if _claim(request, "verified") is not True:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.NOT_VERIFIED
+        )
+    data = _body(request)
+    locale = data.get("locale")
+    if locale is not None and not store.valid_locale(locale):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    if not store.has_meal_photo_consent(uid):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+
+    # Free checks first: the base64 length, the decode, and a JPEG, PNG or WebP
+    # header declaring a sane size. A request that is not a photo does not
+    # spend one of her scans.
+    raw = _decode_image(data.get("imageJpeg"), {})
+    refused = imagesize.refusal(raw)
+    if refused is not None:
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, refused)
+
+    from nutrition import cache as scan_cache
+    from nutrition import config as meal_config
+    from nutrition import meal, model, photo
+
+    # Re-encoded before anything is counted: a header can look like a photo
+    # and the body not be one, and that must not spend a scan, hers or the
+    # app's. The size checks above bound what this decode can cost.
+    try:
+        jpeg = photo.reencode(raw)
+    except photo.PhotoRejected as rejected:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, rejected.code
+        )
+    finally:
+        del raw
+
+    # The same photo again is answered from scanCache: no model call, and
+    # neither her allowance nor the app's moves.
+    cache_key = scan_cache.key(jpeg)
+    cached = _scan_cache_get(cache_key)
+    if cached is not None:
+        del jpeg
+        answer = meal.resolve(cached)
+        answer["cached"] = True
+        _log_meal("cached", None, started, count=len(answer["items"]))
+        return answer
+
+    try:
+        if (
+            store.uid_daily_count_and_increment(uid, meal_config.UID_COUNTER_FIELD)
+            > meal_config.MEAL_SCANS_PER_UID_PER_DAY
+        ):
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+                reasons.MEAL_SCAN_DAILY_LIMIT,
+            )
+        if (
+            store.daily_count_and_increment(meal_config.GLOBAL_COUNTER_FIELD)
+            > meal_config.MEAL_SCANS_GLOBAL_PER_DAY
+        ):
+            logs.warn("meal_scans_paused", field=meal_config.GLOBAL_COUNTER_FIELD)
+            _refund_meal_scan(uid, meal_config.UID_COUNTER_FIELD)
+            raise https_fn.HttpsError(
+                https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED,
+                reasons.MEAL_SCANS_PAUSED,
+            )
+    except BaseException:
+        del jpeg
+        raise
+
+    try:
+        result = model.analyse(jpeg)
+    except model.ServiceUnavailable as down:
+        _refund_meal_scan(uid, meal_config.UID_COUNTER_FIELD)
+        _log_meal(
+            "unavailable", reasons.MEAL_SERVICE_UNAVAILABLE, started, model_error=down.label
+        )
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.UNAVAILABLE, reasons.MEAL_SERVICE_UNAVAILABLE
+        )
+    except model.Unclear as unclear:
+        _log_meal(
+            "unclear",
+            reasons.MEAL_UNCLEAR,
+            started,
+            prompt_tokens=unclear.prompt_tokens,
+            output_tokens=unclear.output_tokens,
+        )
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.MEAL_UNCLEAR
+        )
+    finally:
+        del jpeg
+
+    if not result.items:
+        _log_meal(
+            "no_food",
+            reasons.NO_FOOD_SEEN,
+            started,
+            prompt_tokens=result.prompt_tokens,
+            output_tokens=result.output_tokens,
+        )
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.NOT_FOUND, reasons.NO_FOOD_SEEN
+        )
+
+    _scan_cache_put(cache_key, result.items)
+    answer = meal.resolve(result.items)
+    answer["cached"] = False
+    _log_meal(
+        "estimated",
+        None,
+        started,
+        count=len(answer["items"]),
+        prompt_tokens=result.prompt_tokens,
+        output_tokens=result.output_tokens,
+    )
+    return answer
+
+
+def _scan_cache_get(cache_key: str) -> Optional[list]:
+    """The cached items for this photo, or None. A cache that cannot be read is
+    a miss, never a failed scan."""
+    import datetime as dt
+
+    from nutrition import cache
+
+    try:
+        return cache.get(store.db(), cache_key, dt.datetime.now(dt.timezone.utc))
+    except Exception:
+        logs.warn("scan_cache_unavailable")
+        return None
+
+
+def _scan_cache_put(cache_key: str, items: list) -> None:
+    import datetime as dt
+
+    from nutrition import cache
+
+    try:
+        cache.put(store.db(), cache_key, items, dt.datetime.now(dt.timezone.utc))
+    except Exception:
+        logs.warn("scan_cache_unavailable")
+
+
+def _refund_meal_scan(uid: str, field: str) -> None:
+    """Best effort: our outage must not cost her a scan, and a failed refund
+    must not turn the honest answer into a different error."""
+    try:
+        store.uid_daily_refund(uid, field)
+    except Exception:
+        logs.warn("meal_scan_refund_failed")
+
+
+def _log_meal(
+    outcome: str,
+    reason: Optional[str],
+    started: float,
+    *,
+    count: Optional[int] = None,
+    prompt_tokens: Optional[int] = None,
+    output_tokens: Optional[int] = None,
+    model_error: Optional[str] = None,
+) -> None:
+    """One decision line per model call: outcome, item count, latency and the
+    token usage Vertex AI reported, or the model's error code when it failed.
+    Never the photo, never a food name, never an error message."""
+    fields: dict = {"outcome": outcome, "latencyMs": _ms(started)}
+    if reason:
+        fields["reasons"] = [reason]
+    if count is not None:
+        fields["count"] = count
+    if prompt_tokens is not None:
+        fields["promptTokens"] = prompt_tokens
+    if output_tokens is not None:
+        fields["outputTokens"] = output_tokens
+    if model_error:
+        fields["modelError"] = model_error
+    logs.decision("analyze_meal_photo", **fields)
+
+
+@https_fn.on_call()
+def submit_community_food(request: https_fn.CallableRequest) -> dict:
+    """E13: a meal she confirmed, offered to every woman after the owner checks
+    it. Request {nameEn?, nameAr?, items: [{name, grams}], kcal, proteinG,
+    carbsG, fatG}. Verified members only. Stored as a candidate with no uid and
+    no photo; one confirmation per woman (a hashed marker). `{ok: true}`, also
+    for a repeat. Refusals: community_food_invalid INVALID_ARGUMENT,
+    community_food_daily_limit RESOURCE_EXHAUSTED."""
+    uid = _require_auth(request)
+    if _claim(request, "verified") is not True:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.PERMISSION_DENIED, reasons.NOT_VERIFIED
+        )
+    from nutrition import community_foods, config as meal_config
+
+    row, _ = community_foods.validate_submission(_body(request))
+    if row is None:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.COMMUNITY_FOOD_INVALID
+        )
+    if (
+        store.uid_daily_count_and_increment(uid, meal_config.COMMUNITY_COUNTER_FIELD)
+        > meal_config.COMMUNITY_FOODS_PER_UID_PER_DAY
+    ):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.RESOURCE_EXHAUSTED, reasons.COMMUNITY_FOOD_DAILY_LIMIT
+        )
+    community_foods.submit(store.db(), community_foods.marker_id(uid, store.pepper()), row)
+    return {"ok": True}

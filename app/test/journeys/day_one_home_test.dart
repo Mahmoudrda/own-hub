@@ -78,6 +78,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -129,7 +130,7 @@ void main() {
     final line = tester.widget<Text>(
       find.byKey(const ValueKey('day-one-her-week')),
     );
-    expect(line.data, 'Days a week: 4 · Minutes a session: 20');
+    expect(line.data, '4 days a week · 20 min a session');
     expect(find.textContaining('At home'), findsNothing);
   });
 
@@ -146,12 +147,14 @@ void main() {
     expect(line.data, contains('At a ladies-only gym'));
   });
 
-  testWidgets('"Tell us one thing you eat" opens Eat, not a blank field', (
+  testWidgets('day one leads with one thing to do, not two doors to Eat', (
     tester,
   ) async {
-    final (stack, _) = await _open(tester, 'T01');
-    await _tap(tester, find.text('Tell us one thing you eat'));
-    expect(stack.names.last, _name('E01'));
+    // "Tell us one thing you eat" went (§15, choice overload): the first-week
+    // row already asks for a meal, and Eat is a tab.
+    await _open(tester, 'T01');
+    expect(find.text('Tell us one thing you eat'), findsNothing);
+    expect(find.text('Start day 1'), findsOneWidget);
   });
 
   testWidgets('"Plan this week\'s dinners" is one tap from Home', (

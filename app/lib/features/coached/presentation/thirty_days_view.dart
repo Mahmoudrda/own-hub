@@ -234,12 +234,12 @@ class _DayCell extends StatelessWidget {
     final trained = day.done && day.kind == PlanDayKind.train;
     final rest = day.kind == PlanDayKind.rest;
     final background = day.isToday
-        ? AppColors.primary
+        ? AppColors.actionPrimary
         : trained
         ? AppColors.tertiaryContainer
         : AppColors.surfaceLowest;
     final foreground = day.isToday
-        ? AppColors.onPrimary
+        ? AppColors.onActionPrimary
         : trained
         ? AppColors.onTertiaryContainer
         : AppColors.onSurface;

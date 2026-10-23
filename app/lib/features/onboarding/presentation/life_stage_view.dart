@@ -39,9 +39,11 @@ import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_card.dart';
+import '../domain/body_data.dart';
 import '../domain/intake.dart';
 import '../domain/intake_repository.dart';
 import '../domain/starting_program.dart';
+import 'about_you_block.dart';
 import 'intake_option.dart';
 import 'intake_step_scaffold.dart';
 import '../../../app_state/onboarding_state.dart'
@@ -58,9 +60,13 @@ class LifeStageView extends StatefulWidget {
     this.onClose,
     this.titleOverride,
     this.continueLabel,
+    this.bodyData,
   });
 
   final IntakeRepository repository;
+
+  /// Where the optional "About you" answers go. Null is [BodyDataStore.instance].
+  final BodyDataStore? bodyData;
 
   /// See [IntakeStepScaffold.titleOverride].
   final String? titleOverride;
@@ -78,6 +84,7 @@ class LifeStageView extends StatefulWidget {
 
 class _LifeStageViewState extends State<LifeStageView> {
   late LifeStage _lifeStage;
+  final _aboutYou = GlobalKey<AboutYouBlockState>();
 
   @override
   void initState() {
@@ -89,6 +96,8 @@ class _LifeStageViewState extends State<LifeStageView> {
   }
 
   Future<void> _continue() async {
+    // A number out of range keeps her here with the field marked.
+    if (!(_aboutYou.currentState?.save() ?? true)) return;
     await widget.repository.merge(lifeStage: _lifeStage);
     if (!mounted) return;
     widget.onContinue?.call();
@@ -173,18 +182,22 @@ class _LifeStageViewState extends State<LifeStageView> {
           AppCard(
             variant: AppCardVariant.sage,
             borderRadius: AppRadius.md,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             children: [
               Text(
                 l10n.weSaveYourAnswerWithTheRest,
-                style: AppText.body.copyWith(
+                style: AppText.bodyM.copyWith(
                   color: AppColors.onTertiaryContainer,
                 ),
               ),
             ],
           ),
+        AboutYouBlock(
+          key: _aboutYou,
+          store: widget.bodyData ?? BodyDataStore.instance,
+        ),
         // The only screen that asks about a pregnancy says what the app is.
-        const MedicalDisclaimer(),
+        const MedicalDisclaimer(caption: true),
       ],
     );
   }

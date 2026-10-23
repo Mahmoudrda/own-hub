@@ -8,14 +8,17 @@
 // R1-23: she declares tree nuts, then taps "Yoghurt, dates and nuts".
 @Tags(['qa'])
 library;
+
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/eat_state.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 void main() {
@@ -23,10 +26,17 @@ void main() {
   testWidgets('tree nuts declared, she opens the nut dish', (t) async {
     phone(t);
     final s = t.ensureSemantics();
-    EatAppState.instance.seedRecipeBook(RecipeBook.fromJson((jsonDecode(
-      File('assets/content/rahma_recipes.json').readAsStringSync()) as Map).cast<String, Object?>()));
+    EatAppState.instance.seedRecipeBook(
+      RecipeBook.fromJson(
+        (jsonDecode(
+          File('assets/content/rahma_recipes.json').readAsStringSync(),
+        ) as Map).cast<String, Object?>(),
+      ),
+    );
     await AppRouter.dietaryRepository.save(allergies: {AllergenTag.treeNuts});
-    print('declared: ${AppRouter.dietaryRepository.read().allergies?.map((e)=>e.name)}');
+    print(
+      'declared: ${AppRouter.dietaryRepository.read().allergies?.map((e) => e.name)}',
+    );
     await open(t, appDestinations['E05']!.name, locale: const Locale('en'));
     print('WHAT SHE SEES: ${paintedText(t).join(" | ")}');
     print('WHAT SHE CAN OPEN: ${tappables(t).map((e) => e.label).join(" | ")}');
@@ -59,7 +69,9 @@ void main() {
       reason: 'there must be nothing left to activate',
     );
     print('TOP=${topScreen(t)}');
-    print('interstitial? sheets=${find.byType(BottomSheet).evaluate().length} dialogs=${find.byType(Dialog).evaluate().length+find.byType(AlertDialog).evaluate().length}');
+    print(
+      'interstitial? sheets=${find.byType(BottomSheet).evaluate().length} dialogs=${find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length}',
+    );
     s.dispose();
   });
 }

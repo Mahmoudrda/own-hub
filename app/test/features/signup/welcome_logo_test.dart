@@ -33,7 +33,7 @@ Widget _host(Widget child) => MaterialApp(
 }
 
 void main() {
-  testWidgets('the logo is the brand tile, not a stock icon', (tester) async {
+  testWidgets('the icon is not repeated above the headline', (tester) async {
     await tester.pumpWidget(_host(const WelcomeView()));
     await tester.pumpAndSettle();
 
@@ -44,16 +44,8 @@ void main() {
           w.image is AssetImage &&
           (w.image as AssetImage).assetName == WelcomeView.logoAsset,
     );
-    expect(logo, findsOneWidget);
-    final image = tester.widget<Image>(logo);
-    expect(image.width, 88);
-    expect(image.height, 88);
-    expect(
-      image.excludeFromSemantics,
-      isTrue,
-      reason: 'decorative: the caption under it already says Own Hub',
-    );
-    expect(find.text('Own Hub'), findsOneWidget);
+    expect(logo, findsNothing);
+    expect(find.text('Own Hub'), findsNothing);
   });
 
   test('the tile is rendered at 1x, 2x and 3x of its shown size', () {

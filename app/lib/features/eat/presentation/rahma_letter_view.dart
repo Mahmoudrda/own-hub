@@ -146,10 +146,14 @@ class _HeartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     final pts = <Offset>[
-      const Offset(0.50, 0.82), const Offset(0.16, 0.50),
-      const Offset(0.16, 0.30), const Offset(0.33, 0.20),
-      const Offset(0.50, 0.34), const Offset(0.67, 0.20),
-      const Offset(0.84, 0.30), const Offset(0.84, 0.50),
+      const Offset(0.50, 0.82),
+      const Offset(0.16, 0.50),
+      const Offset(0.16, 0.30),
+      const Offset(0.33, 0.20),
+      const Offset(0.50, 0.34),
+      const Offset(0.67, 0.20),
+      const Offset(0.84, 0.30),
+      const Offset(0.84, 0.50),
     ].map((p) => Offset(p.dx * s, p.dy * s)).toList();
     canvas.drawPath(
       smoothPath(

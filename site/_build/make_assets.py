@@ -62,7 +62,7 @@ SHOTS = os.environ.get(
     "OWNHUB_SHOTS",
     os.path.join(os.path.expanduser("~"), "ownhub/docs/release/launch-pack/screenshots/apple-6.9"),
 )
-SHOT_NAMES = ["02-home", "03-workout", "07-tour-dinners", "06-progress", "08-tour-cycle"]
+SHOT_NAMES = ["02-home", "03-workout", "07-tour-dinners", "06-progress", "08-tour-checkin"]
 SHOT_WIDTHS = [320, 480, 640]
 
 LATIN = (
@@ -152,10 +152,10 @@ def share_images() -> None:
         for s, r in (("latin", LATIN), ("arabic", ARABIC))
     )
     copy = {
-        "en": ("Your training, your food, your cycle.", "Women only.",
+        "en": ("Your training, your food, your month.", "Women only.",
                "A free fitness app for women in Egypt"),
-        "ar": ("تدريبكِ، وطعامكِ، ودورتكِ.", "للنساء فقط.",
-               "تطبيق لياقة مجاني للنساء في مصر"),
+        "ar": ("تمرينك، وأكلك، وشهرك.", "للستات بس.",
+               "تطبيق لياقة ببلاش للستات في مصر"),
     }
     mark = art.icon_svg(size=88)
     underline = art.underline_svg().replace("\n", "")
@@ -165,12 +165,12 @@ def share_images() -> None:
         rtl = lang == "ar"
         html = f"""<!doctype html><html lang="{lang}" dir="{'rtl' if rtl else 'ltr'}"><meta charset="utf-8">
 <style>{face}
-html,body{{margin:0;width:1200px;height:630px;overflow:hidden;background:#FFF8F9;font-family:R,sans-serif;color:#241A1E}}
+html,body{{margin:0;width:1200px;height:630px;overflow:hidden;background:#FCF8F2;font-family:R,sans-serif;color:#123F50}}
 .b{{position:absolute;inset:0;padding:70px 84px;box-sizing:border-box}}
-.top{{display:flex;align-items:center;gap:22px;font-weight:600;font-size:40px;color:#A24661}}
+.top{{display:flex;align-items:center;gap:22px;font-weight:600;font-size:40px;color:#1A5D74}}
 h1{{margin:64px 0 0;font-weight:600;font-size:{62 if rtl else 64}px;line-height:{1.35 if rtl else 1.12};letter-spacing:{0 if rtl else -1}px;max-width:720px}}
 h1 span{{display:inline-block;padding-bottom:14px;background:url("{under_uri}") no-repeat bottom/100% 18px}}
-p{{margin:28px 0 0;font-size:30px;color:#6B5C61}}
+p{{margin:28px 0 0;font-size:30px;color:#52656C}}
 .k{{position:absolute;bottom:-14px;{'left' if rtl else 'right'}:70px;width:380px;height:auto}}
 .blob{{position:absolute;bottom:-160px;{'left' if rtl else 'right'}:-30px;width:540px;height:540px;border-radius:50%;background:#DDEDE1}}
 </style><div class="blob"></div>

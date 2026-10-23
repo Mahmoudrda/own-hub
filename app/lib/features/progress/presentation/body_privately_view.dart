@@ -609,5 +609,4 @@ class _BodyPrivatelyViewState extends State<BodyPrivatelyView> {
       ],
     );
   }
-
 }

@@ -40,12 +40,19 @@ import '../features/account/domain/deletion_manifest.dart';
 import '../features/account/domain/dietary_profile.dart';
 import '../features/account/domain/health_backup.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/train/data/exercise_library_sync.dart'
+    show kExerciseLibraryCacheKeys;
 import '../features/train/data/workout_sync.dart' show kWorkoutCacheKeys;
 import '../features/eat/data/recipe_sync.dart';
+import '../features/train/domain/notification_voice.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'first_gym_guide_state.dart';
 import '../features/signup/domain/legal_acceptance.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
+import 'chosen_programme.dart';
+import 'community_foods_state.dart';
+import 'exercise_library_state.dart';
 import 'workout_library_state.dart';
 import 'cloud_store.dart';
 import 'coach_portfolio_state.dart';
@@ -56,18 +63,37 @@ import 'coaching_link_state.dart';
 import 'community_state.dart';
 import 'analytics_consent.dart';
 import 'crash_consent.dart';
+import 'first_run_moments.dart';
 import 'kitten_setting.dart';
+import 'custom_workout_state.dart';
+import 'my_plan_state.dart';
+import 'bar_preference.dart';
+import 'coach_application_draft.dart';
+import 'coach_client_notes.dart';
+import 'move_notes.dart';
+import 'rest_timer_prefs.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'events_state.dart';
+import 'meal_scan_state.dart';
 import 'firebase_boot.dart';
 import 'home_widget_sync.dart';
 import 'install_id.dart';
 import 'pledge.dart';
+import 'profile_photo_state.dart';
 import 'coach_invite_state.dart';
+import 'rewards_state.dart';
 import 'role_state.dart';
+import 'training_streak_state.dart';
 import 'local_persistence.dart';
+import 'snapshot_owner.dart';
+import 'getting_started.dart';
+import 'guest_session.dart';
+import '../features/onboarding/domain/body_data.dart';
 import 'onboarding_state.dart';
+import 'tip_anchors.dart';
 import 'workout_session_state.dart';
+import 'follow_up_state.dart';
 
 /// The five handset steps, done against the stores this build actually has.
 ///
@@ -75,7 +101,25 @@ import 'workout_session_state.dart';
 /// same as `kLocalWipeOrder` and a future Firebase implementation replaces the
 /// bodies rather than the shape.
 class ThisPhoneWipe implements LocalWipe {
-  const ThisPhoneWipe();
+  const ThisPhoneWipe({this.keepsOwner = false, this.keepsSignUp = false});
+
+  /// True when the wipe is for a different account signing in on this phone:
+  /// the new account's owner record must survive it. Deleting an account
+  /// leaves this false and forgets the owner with everything else.
+  final bool keepsOwner;
+
+  /// True when the wipe runs because a different account just signed in, so
+  /// what the woman signing in did on the way there is hers and stays: the
+  /// terms she accepted at `C06` (waiting to reach the server, read by `C07`'s
+  /// reconcile), this installation's id her check is tied to, and the week she
+  /// built before signing up. Her language is never erased. Only
+  /// [SnapshotOwner] sets it.
+  ///
+  /// Her week is kept only when [OnboardingState.weekBuiltSignedOut] says it
+  /// was built since the last sign-out. Sign-out leaves the previous woman's
+  /// answers on the phone, her life stage among them, and those are not the
+  /// next woman's to inherit.
+  final bool keepsSignUp;
 
   /// Manifest row 29, as far as it reaches here. There is no Auth record to
   /// delete, so signing out is the whole of it, and it goes first for the
@@ -94,10 +138,20 @@ class ThisPhoneWipe implements LocalWipe {
   /// call.
   Future<void> signOut() async {
     unawaited(AppRouter.forgetVerification());
+    GuestSession.instance.exploring = false;
     AppRouter.lastSignupRole = null;
     RoleState.instance.reset();
     AppRouter.lastReviewerPath = null;
+    // The day she first landed, kept by account before the reminders below
+    // are reset, so signing back in does not start her tips again.
+    GettingStarted.keepAnchor();
     await AppRouter.authRepository.signOut();
+    unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
+    ReminderState.instance.reset();
+    // The events and seats read for her, so the next woman on this run is not
+    // reminded about someone else's bookings.
+    EventsState.instance.erase();
+    unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
     // The Home Screen and Lock Screen widgets go back to "Open Own Hub to
     // start". Not awaited, on the same terms as the snapshot erase below.
     unawaited(HomeWidgetSync.instance.clear());
@@ -150,6 +204,7 @@ class ThisPhoneWipe implements LocalWipe {
     // that is slow, wedged or missing must still leave every store below empty
     // and the sheet still has to close and say so.
     unawaited(LocalPersistence.instance.erase());
+    if (!keepsOwner) unawaited(SnapshotOwner.instance.forget());
 
     // The widgets' copy of her week in the App Group, for the same reason:
     // left behind, her count would stay on the Home Screen after the account
@@ -178,13 +233,34 @@ class ThisPhoneWipe implements LocalWipe {
     // Whether the kitten moves, back to the default.
     unawaited(KittenSetting.instance.erase());
 
+    // Her profile photo. Gone from the screens at once and its file deleted,
+    // on a change of account too: it is hers, not the next woman's.
+    unawaited(ProfilePhotoState.instance.erase().catchError((Object _) {}));
+
     // The legal acceptance waiting to reach the server, if any. It belongs to
-    // the account being deleted.
-    unawaited(PendingLegalAcceptance.erase().catchError((Object _) {}));
+    // the account being deleted. On a change of account it is the one the
+    // woman signing in gave at C06, and erasing it would race C07's reconcile
+    // and ask her to agree a second time.
+    if (!keepsSignUp) {
+      unawaited(PendingLegalAcceptance.erase().catchError((Object _) {}));
+    }
 
     // This installation's random id. A new account on this handset gets a
-    // new one, so nothing links the two.
-    unawaited(InstallId.erase().catchError((Object _) {}));
+    // new one, so nothing links the two. On a change of account it is the one
+    // her own check is running under, so it stays.
+    if (!keepsSignUp) {
+      unawaited(InstallId.erase().catchError((Object _) {}));
+    }
+
+    // The getting started tips each account has already been through, so a
+    // woman signing back in is not walked through them again. Kept on a change
+    // of account; deleting hers forgets them.
+    if (!keepsOwner) {
+      unawaited(TipAnchors.instance.erase().catchError((Object _) {}));
+      // The deep breath and the promise tick are first-time moments of a
+      // phone's owner; a deleted account leaves neither flag behind.
+      unawaited(FirstRunMoments.instance.erase().catchError((Object _) {}));
+    }
 
     // The recipe library her signed-in session fetched, and when it last
     // checked. Public content, but kept on this phone because of her
@@ -201,10 +277,42 @@ class ThisPhoneWipe implements LocalWipe {
       );
     }
     WorkoutLibraryState.instance.chosenRowId = null;
+    ChosenProgramme.reset();
+    // Her own workouts, the ones she deleted and today's edits. The server
+    // copies are the `splits` rows of the deletion manifest.
+    CustomWorkoutState.instance.reset();
+    // Her own plan, kept on this phone only.
+    MyPlanState.instance.reset();
+    // The rest she set for each move, kept on this phone only.
+    RestTimerPrefs.instance.reset();
+    // Her notes on moves and the bar she loads, kept on this phone only.
+    MoveNotes.instance.reset();
+    // The coach application she was writing and its photo copies.
+    CoachApplicationDraft.instance.reset();
+    // The private notes a coach keeps about her clients, on this phone only.
+    CoachClientNotes.instance.reset();
+    BarPreference.instance.reset();
+    // The exercise library: its cached catalogue, the clips kept on the phone
+    // and the move she last opened. None of it is hers, and all of it goes.
+    for (final key in kExerciseLibraryCacheKeys) {
+      unawaited(
+        PreferencesSnapshotStorage(key: key).erase().catchError((Object _) {}),
+      );
+    }
+    unawaited(
+      ExerciseLibraryState.instance.media.eraseAll().catchError((Object _) {}),
+    );
+    ExerciseLibraryState.instance.openExerciseId = null;
+    // The shared foods cached on this phone and her choice to share hers.
+    unawaited(CommunityFoodsState.instance.erase().catchError((Object _) {}));
 
     // Rows 5, 13, 14 — her meals, her eating preferences, her meal plans.
     EatAppState.instance.reset();
     AppRouter.mealRepository.store.reset();
+    // The phone's memory that she agreed to meal photos, and any scan still
+    // waiting to be checked. The record itself is on the server, under her
+    // account, and goes with it.
+    unawaited(MealScanState.instance.erase().catchError((Object _) {}));
 
     // Row 4 — her sessions, and the sets inside them.
     WorkoutSessionState.instance.reset();
@@ -214,6 +322,14 @@ class ThisPhoneWipe implements LocalWipe {
     // bests map by reference, so both are reset and neither is replaced.
     AppRouter.progressStore.reset();
     AppRouter.personalBestLedger.reset();
+    // The awards already paid and today's cap (D41), and her training streak
+    // with its sessions per day (D37). Both live only on this phone.
+    RewardsState.instance.reset();
+    TrainingStreakState.instance.reset();
+    // Her day-after answers, week reviews and follow-up settings. Phone only.
+    FollowUpState.instance.reset();
+    // The words her reminders carried and which tone she opens. Phone only.
+    VoiceHistory.instance.reset();
 
     // Rows 35, 36 — her cycle document and every period date. `CycleState`
     // already purges the repository; it also takes Today's cycle row down.
@@ -235,8 +351,18 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.notificationsRepository.reset();
 
     // Row 1 — the maps on `users/{uid}`: her setup answers, her allergies, her
-    // privacy and notification switches.
-    AppRouter.intakeRepository.reset();
+    // privacy and notification switches. The answers the woman signing in
+    // gave before signing up are hers, and stay with the weekly target they
+    // set.
+    final keepsWeek =
+        keepsSignUp && OnboardingState.instance.weekBuiltSignedOut;
+    if (!keepsWeek) {
+      AppRouter.intakeRepository.reset();
+      BodyDataStore.instance.reset();
+    }
+    if (!keepsSignUp) OnboardingState.instance.weekBuiltSignedOut = false;
+    // What she tried as a guest goes with the week it belonged to.
+    if (!keepsWeek) GuestSession.instance.reset();
     OnboardingState.instance.cycleRowDismissed = false;
     // Her agreement to the community's rules. The server's copy goes with
     // users/{uid}/consents.
@@ -244,6 +370,10 @@ class ThisPhoneWipe implements LocalWipe {
     // Her training reminders: the days she chose, and the ones the phone
     // has scheduled.
     ReminderState.instance.reset();
+    // The events and seats read for her, and the notes worked out from them.
+    EventsState.instance.erase();
+    unawaited(AppRouter.pushRegistrar.forget().catchError((Object _) {}));
+    FirstGymGuideState.instance.reset();
     unawaited(AppRouter.reminderScheduler.cancel().catchError((Object _) {}));
     AppRouter.dietaryRepository.reset();
     AppRouter.privacyRepository.reset();
@@ -266,6 +396,11 @@ class ThisPhoneWipe implements LocalWipe {
     CoachedLifeState.instance.reset();
 
     _forgetWhereSheWas();
+
+    // Her weekly target follows her answers, as finishing setup made it.
+    if (keepsWeek && AppRouter.intakeRepository.setupDone) {
+      OnboardingState.instance.reapplyWeeklyTarget();
+    }
   }
 
   /// Manifest row 33. The measurements live in the progress store here and are
@@ -306,6 +441,7 @@ class ThisPhoneWipe implements LocalWipe {
     AppRouter.coachPlanWeekIndex = 0;
     AppRouter.coachPlanOpenSplit = null;
     AppRouter.lastSwappedFor = null;
+    AppRouter.lastRecallOutcome = null;
   }
 }
 
@@ -446,5 +582,16 @@ bool get nothingOfHersRemains {
       AppRouter.cycleRepository.store.periods.isEmpty &&
       AppRouter.blockService.blocks().isEmpty &&
       AppRouter.reportService.reports().isEmpty &&
-      AppRouter.dietaryRepository.read() == DietaryProfile.unasked;
+      AppRouter.dietaryRepository.read() == DietaryProfile.unasked &&
+      RewardsState.instance.awardIds.isEmpty &&
+      !ProfilePhotoState.instance.hasPhoto &&
+      !TrainingStreakState.instance.touched &&
+      !FollowUpState.instance.touched &&
+      !VoiceHistory.instance.touched &&
+      !MyPlanState.instance.hasPlan &&
+      !RestTimerPrefs.instance.touched &&
+      !MoveNotes.instance.touched &&
+      !CoachApplicationDraft.instance.touched &&
+      !CoachClientNotes.instance.touched &&
+      !BarPreference.instance.touched;
 }

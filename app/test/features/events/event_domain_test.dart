@@ -119,6 +119,75 @@ void main() {
       expect(e.capacity, 20);
     });
 
+    EventDraft place(String url, {String capacity = '', int taken = 0}) =>
+        EventDraft(
+          titleEn: 'Walk',
+          titleAr: 'mashy',
+          startsAt: '2026-11-05 18:30',
+          endsAt: '2026-11-05 19:30',
+          mode: EventMode.place,
+          placeName: 'Gym',
+          locationUrl: url,
+          capacity: capacity,
+          seatsTaken: taken,
+        );
+
+    test('the maps link is matched whole, and goo.gl only under /maps', () {
+      for (final ok in [
+        'https://maps.google.com',
+        'https://maps.google.com/?q=cairo',
+        'https://maps.app.goo.gl/abc123',
+        'https://goo.gl/maps/abc',
+        'https://www.google.com/maps/place/x',
+      ]) {
+        expect(place(ok).problems(), isEmpty, reason: ok);
+      }
+      for (final bad in [
+        'https://goo.gl',
+        'https://goo.gl/other/maps',
+        'https://goo.gl/mapsx',
+        'https://maps.google.com/ok\nevil',
+        'https://maps.google.com/has space',
+        'https://maps.google.com.evil.com/x',
+        'http://maps.google.com/x',
+      ]) {
+        expect(
+          place(bad).problems()[EventField.locationUrl],
+          EventProblem.badMapsLink,
+          reason: bad,
+        );
+      }
+    });
+
+    test('the online link takes no whitespace at all', () {
+      for (final bad in ['https://meet.example.com/a\nb', 'https://a b.com']) {
+        final draft = EventDraft(
+          titleEn: 'x',
+          titleAr: 'y',
+          startsAt: '2026-11-05 18:30',
+          endsAt: '2026-11-05 19:30',
+          link: bad,
+        );
+        expect(draft.problems()[EventField.link], EventProblem.badLink);
+      }
+    });
+
+    test('capacity cannot go below the seats already reserved', () {
+      expect(place('', capacity: '10', taken: 12).problems(), {
+        EventField.capacity: EventProblem.capacityBelowSeats,
+      });
+      expect(place('', capacity: '', taken: 12).problems(), {
+        EventField.capacity: EventProblem.capacityBelowSeats,
+      });
+      expect(place('', capacity: '12', taken: 12).problems(), isEmpty);
+      expect(place('', capacity: '', taken: 0).problems(), isEmpty);
+    });
+
+    test('opening a stored event remembers its seats', () {
+      final e = good.toEvent(id: 'e1', status: EventStatus.published)!;
+      expect(EventDraft.of(e.copyWith(seatsTaken: 7)).seatsTaken, 7);
+    });
+
     test('it opens an event exactly as it was saved', () {
       final e = good.toEvent(id: 'e1', status: EventStatus.published)!;
       final again = EventDraft.of(e)
@@ -144,8 +213,14 @@ void main() {
         'audience',
         'capacity',
         'coverFile',
+        'imageFiles',
+        'videoFiles',
+        'locationAddress',
+        'locationUrl',
         'status',
       });
+      // seatsTaken is the server's alone: the rules refuse a changed count.
+      expect(doc.containsKey('seatsTaken'), isFalse);
       expect(doc['audience'], 'all');
       expect(doc['timeZone'], 'Africa/Cairo');
     });

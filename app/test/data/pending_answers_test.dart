@@ -80,15 +80,18 @@ void main() {
       expect(dataStateOf(holdsNothing: false), DataState.hasData);
     });
 
-    test('a store holding nothing says so only once everything has answered', () {
-      expect(dataStateOf(holdsNothing: true), DataState.empty);
+    test(
+      'a store holding nothing says so only once everything has answered',
+      () {
+        expect(dataStateOf(holdsNothing: true), DataState.empty);
 
-      PendingAnswers.expect();
-      expect(dataStateOf(holdsNothing: true), DataState.unknown);
+        PendingAnswers.expect();
+        expect(dataStateOf(holdsNothing: true), DataState.unknown);
 
-      PendingAnswers.answered();
-      expect(dataStateOf(holdsNothing: true), DataState.empty);
-    });
+        PendingAnswers.answered();
+        expect(dataStateOf(holdsNothing: true), DataState.empty);
+      },
+    );
 
     test('two sources are both waited for', () {
       PendingAnswers.expect();
@@ -185,7 +188,9 @@ void main() {
       tester,
     ) async {
       _phone(tester);
-      await tester.pumpWidget(_host((_) => home(key: const ValueKey('settled'))));
+      await tester.pumpWidget(
+        _host((_) => home(key: const ValueKey('settled'))),
+      );
       await tester.pump();
 
       expect(find.text('Day 1'), findsOneWidget);
@@ -198,7 +203,9 @@ void main() {
     ) async {
       _phone(tester);
       PendingAnswers.expect();
-      await tester.pumpWidget(_host((_) => home(key: const ValueKey('waiting'))));
+      await tester.pumpWidget(
+        _host((_) => home(key: const ValueKey('waiting'))),
+      );
       await tester.pump();
 
       expect(
@@ -245,7 +252,9 @@ void main() {
     ) async {
       _phone(tester);
       PendingAnswers.expect();
-      await tester.pumpWidget(_host((_) => home(key: const ValueKey('resolving'))));
+      await tester.pumpWidget(
+        _host((_) => home(key: const ValueKey('resolving'))),
+      );
       await tester.pump();
       expect(find.text('Day 1'), findsNothing);
 
@@ -270,10 +279,14 @@ void main() {
       tester,
     ) async {
       _phone(tester);
-      await tester.pumpWidget(_host((_) => eat(key: const ValueKey('settled'))));
+      await tester.pumpWidget(
+        _host((_) => eat(key: const ValueKey('settled'))),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.text('No plates yet'), findsOneWidget);
+      final l10n = AppL10n.of(tester.element(find.byType(EatView)));
+      expect(find.text(l10n.quickAdd), findsOneWidget);
+      expect(find.byKey(const ValueKey('eat-quick-add')), findsOneWidget);
       expect(find.text('Looking for what you have added.'), findsNothing);
     });
 
@@ -282,7 +295,9 @@ void main() {
     ) async {
       _phone(tester);
       PendingAnswers.expect();
-      await tester.pumpWidget(_host((_) => eat(key: const ValueKey('waiting'))));
+      await tester.pumpWidget(
+        _host((_) => eat(key: const ValueKey('waiting'))),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('No plates yet'), findsNothing);

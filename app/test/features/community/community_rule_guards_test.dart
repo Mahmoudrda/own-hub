@@ -358,7 +358,8 @@ void main() {
     setUpAll(() {
       final file = File('../firebase/firestore.indexes.json');
       expect(file.existsSync(), isTrue);
-      final config = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+      final config =
+          jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
       overrides = (config['fieldOverrides'] as List)
           .cast<Map<String, dynamic>>();
     });

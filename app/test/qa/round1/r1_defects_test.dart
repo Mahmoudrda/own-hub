@@ -24,34 +24,33 @@ import 'round1_harness.dart';
 int get _sessions => AppRouter.todayRepository.day.week.sessionsLogged;
 
 RecipeBook _book() => RecipeBook.fromJson(
-  (jsonDecode(File('assets/content/rahma_recipes.json').readAsStringSync())
-          as Map)
-      .cast<String, Object?>(),
+  (jsonDecode(
+    File('assets/content/rahma_recipes.json').readAsStringSync(),
+  ) as Map).cast<String, Object?>(),
 );
 
 void main() {
   useShippingApp();
 
   // ---------------------------------------------------------------- S1
-  testWidgets(
-    'R1-23a a declared tree-nut allergy hides the nut dish',
-    (t) async {
-      phone(t);
-      final s = t.ensureSemantics();
-      EatAppState.instance.seedRecipeBook(_book());
-      await AppRouter.dietaryRepository.save(allergies: {AllergenTag.treeNuts});
-      await open(t, appDestinations['E05']!.name, locale: const Locale('en'));
-      expect(
-        paintedText(t),
-        isNot(contains('Yoghurt, dates and nuts')),
-        reason:
-            'E10 told her "Dishes that contain it are hidden from your '
-            'recipes". recipes_view.dart:186 draws this row from a RecipeRow '
-            'that carries no allergen field at all, so no guard can filter it.',
-      );
-      s.dispose();
-    },
-  );
+  testWidgets('R1-23a a declared tree-nut allergy hides the nut dish', (
+    t,
+  ) async {
+    phone(t);
+    final s = t.ensureSemantics();
+    EatAppState.instance.seedRecipeBook(_book());
+    await AppRouter.dietaryRepository.save(allergies: {AllergenTag.treeNuts});
+    await open(t, appDestinations['E05']!.name, locale: const Locale('en'));
+    expect(
+      paintedText(t),
+      isNot(contains('Yoghurt, dates and nuts')),
+      reason:
+          'E10 told her "Dishes that contain it are hidden from your '
+          'recipes". recipes_view.dart:186 draws this row from a RecipeRow '
+          'that carries no allergen field at all, so no guard can filter it.',
+    );
+    s.dispose();
+  });
 
   testWidgets('R1-23b a recipe row opens the recipe it names', (t) async {
     phone(t);
@@ -114,15 +113,20 @@ void main() {
     );
   });
 
-  testWidgets('R1-06a T04 and T05 greet her with today', (t) async {
+  testWidgets('R1-06a T04 greets her with today', (t) async {
     phone(t);
     final today = DateTime.now();
     const names = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
       'Sunday',
     ];
     final expected = names[today.weekday - 1];
-    for (final id in ['T04', 'T05']) {
+    for (final id in ['T04']) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       expect(
         paintedText(t),
@@ -141,7 +145,12 @@ void main() {
     // With no session, R12 names the day it is opened. Asserting today's name
     // (rather than "not Tuesday") keeps the check true on every day of the week.
     const names = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
       'Sunday',
     ];
     final today = names[DateTime.now().weekday - 1];
@@ -209,7 +218,8 @@ void main() {
     expect(
       paintedText(t).where((s) => s.contains('kg')),
       isEmpty,
-      reason: 'R07 prescribes 12 kg inside a session whose own subtitle says '
+      reason:
+          'R07 prescribes 12 kg inside a session whose own subtitle says '
           'no equipment, on a fresh install with no history',
     );
   });
@@ -218,10 +228,10 @@ void main() {
   //
   // As written it tapped the 5 chip and demanded a target of 5. That is one of
   // the two ways out of R1-02, and the owner took the other one: O03 no longer
-  // offers a 5 at all (`Intake.allowedDays` is 2, 3, 4) because
-  // `kMaxSessionsTarget` is a product rule — this app counts weeks rather than
-  // days and will not set a target it expects her to miss. With the chip gone,
-  // `tapLabel(t, '5')` has nothing to tap and the case could not run at all.
+  // offers a 5 at all (`Intake.allowedDays` was 2, 3, 4) because
+  // `kMaxSessionsTarget` was a product rule. The owner has since widened the
+  // goal to 1 to 7 (18 Oct 2026), so every chip O03 draws is a goal the rewards
+  // system accepts.
   //
   // The rule in the name is untouched and is still asserted at the top of the
   // range: she taps the biggest number the screen offers, O05 reads that number
@@ -230,35 +240,36 @@ void main() {
   // chip whose value the rewards system silently replaced — fails this case
   // exactly as before, because 4 is now the number that can be silently
   // replaced by 3.
-  testWidgets('R1-02a the days she picks are the days she is measured against',
-      (t) async {
-    phone(t);
-    final s = t.ensureSemantics();
-    await boot(t, locale: const Locale('en'));
-    await tapLabel(t, 'Continue'); // O01 -> O02
-    await tapLabel(t, 'Continue'); // O02 -> O06, home is the default place
-    await tapLabel(t, 'Continue'); // O06 -> O03
-    expect(topScreen(t), 'O03');
-    expect(
-      hasLabel(t, '5'),
-      isFalse,
-      reason: 'a chip the rewards system would refuse must not be offered',
-    );
-    await tapLabel(t, '4');
-    await tapLabel(t, 'Continue'); // O03 -> O07
-    await tapLabel(t, 'Continue'); // O07 -> O04
-    await tapLabel(t, 'Continue'); // O04 -> O05
-    expect(paintedText(t).any((e) => e.contains('Days a week: 4')), isTrue);
-    await tapLabel(t, 'Start day 1 now');
-    expect(
-      AppRouter.todayRepository.day.week.sessionsTarget,
-      4,
-      reason:
-          'O03 says "this becomes your weekly goal" and O05 reads the number '
-          'back to her; the week she is measured against must be that number',
-    );
-    s.dispose();
-  });
+  testWidgets(
+    'R1-02a the days she picks are the days she is measured against',
+    (t) async {
+      phone(t);
+      final s = t.ensureSemantics();
+      await boot(t, locale: const Locale('en'));
+      await tapLabel(t, 'Continue'); // O01 -> O02
+      await tapLabel(t, 'Continue'); // O02 -> O06, home is the default place
+      await tapLabel(t, 'Continue'); // O06 -> O03
+      expect(topScreen(t), 'O03');
+      expect(
+        hasLabel(t, '8'),
+        isFalse,
+        reason: 'a chip the rewards system would refuse must not be offered',
+      );
+      await tapLabel(t, '4');
+      await tapLabel(t, 'Continue'); // O03 -> O04
+      await tapLabel(t, 'Continue'); // O04 -> O05
+      expect(paintedText(t).any((e) => e.contains('4 days a week')), isTrue);
+      await tapLabel(t, 'Start day 1 now');
+      expect(
+        AppRouter.todayRepository.day.week.sessionsTarget,
+        4,
+        reason:
+            'O03 says "this becomes your weekly goal" and O05 reads the number '
+            'back to her; the week she is measured against must be that number',
+      );
+      s.dispose();
+    },
+  );
 
   testWidgets('R1-10a no shipping route renders the not-built panel', (
     t,
@@ -275,7 +286,8 @@ void main() {
     expect(
       paintedText(t).length,
       greaterThan(1),
-      reason: 'E11 renders one English string, "A message to you :)", in both '
+      reason:
+          'E11 renders one English string, "A message to you :)", in both '
           'locales and nothing else',
     );
   });

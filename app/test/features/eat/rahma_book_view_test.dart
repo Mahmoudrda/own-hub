@@ -44,9 +44,8 @@ Widget _host(
   theme: buildTheme(locale),
   home: Builder(
     builder: (context) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: child,
     ),
   ),
@@ -80,11 +79,7 @@ Recipe _kebda({String? reviewedBy}) => Recipe(
   ],
   ingredientsBasis: IngredientsBasis.measures,
   steps: const [
-    RecipeStep(
-      index: 1,
-      textAr: 'هنجيب نص كيلو كبدة فراخ',
-      usesRefs: ['k1'],
-    ),
+    RecipeStep(index: 1, textAr: 'هنجيب نص كيلو كبدة فراخ', usesRefs: ['k1']),
     RecipeStep(
       index: 2,
       textAr: 'ونسيبها نص ساعه',
@@ -104,7 +99,7 @@ Recipe _kebda({String? reviewedBy}) => Recipe(
   allergensRemoved: const {},
   allergensFinal: const {'milk', 'sesame'},
   advisories: const {'pregnancy_liver'},
-  dietTags: const {'high_protein'},
+  dietTags: const {'high_protein', 'no_oven'},
   doneness: 'liver_cooked_through',
   sourcePage: 18,
   authoredBy: 'rahma_mohsen',
@@ -254,10 +249,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(saved, {AllergenTag.sesame});
-      expect(
-        DietaryProfile(allergies: saved).toConstraints().allergies,
-        {'sesame'},
-      );
+      expect(DietaryProfile(allergies: saved).toConstraints().allergies, {
+        'sesame',
+      });
     });
 
     testWidgets('the live control on arrival is the commonest answer', (
@@ -393,19 +387,87 @@ void main() {
   });
 
   group('E05 — the book', () {
-    testWidgets('nothing of hers is shown until she has been asked', (
+    testWidgets('before she has been asked the book is open, question on top', (
       tester,
     ) async {
-      // The ordering the whole feature turns on.
+      // Hiding the book from a woman nobody has asked helps no one, so it is
+      // shown whole, each card says what is in it, and the way to answer is the
+      // first thing on the screen.
       _phone(tester);
+      var opened = 0;
       await tester.pumpWidget(
-        _host(RecipesView(book: _book(), asked: false, onSelectTab: (_) {})),
+        _host(
+          RecipesView(
+            book: _book(reviewedBy: 'qa_reviewer'),
+            asked: false,
+            onAnswerAllergies: () => opened++,
+            onSelectTab: (_) {},
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
       expect(find.text("Rahma's recipes"), findsOneWidget);
-      expect(find.text('Is there anything you cannot eat?'), findsOneWidget);
-      expect(find.text('Kebda Meal'), findsNothing);
+      expect(find.text("What can't you eat?"), findsOneWidget);
+      expect(find.text('Kebda Meal'), findsOneWidget);
+      expect(
+        find.text('Contains: Milk and dairy, Sesame'),
+        findsOneWidget,
+        reason: 'allergen information is on the card',
+      );
+      // The question sits above the book.
+      expect(
+        tester.getTopLeft(find.text("What can't you eat?")).dy,
+        lessThan(tester.getTopLeft(find.text("Rahma's recipes")).dy),
+      );
+      // Nothing is hidden, so no "hidden" row.
+      expect(find.textContaining('is hidden because'), findsNothing);
+
+      await tester.tap(find.byKey(const ValueKey('e05-allergy-prompt')));
+      await tester.pump();
+      expect(opened, 1);
+    });
+
+    testWidgets('unasked, in Arabic at 2.0 text, reads without overflowing', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          RecipesView(
+            book: _book(reviewedBy: 'qa_reviewer'),
+            asked: false,
+            onSelectTab: (_) {},
+          ),
+          locale: const Locale('ar'),
+          textScale: 2.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('إيه اللي ماينفعش تاكليه؟'), findsOneWidget);
+      // The dictionary's Arabic comma, not a Latin one.
+      expect(find.textContaining('، '), findsWidgets);
+      expect(find.textContaining('اللبن ومنتجاته, '), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('once she has answered, the question is gone', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          RecipesView(
+            book: _book(reviewedBy: 'qa_reviewer'),
+            asked: true,
+            constraints: DietaryConstraints.none,
+            onSelectTab: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text("What can't you eat?"), findsNothing);
+      expect(find.textContaining('Contains:'), findsNothing);
     });
 
     testWidgets('once she has answered, her cards are drawn', (tester) async {
@@ -506,7 +568,8 @@ void main() {
       expect(
         find.textContaining('This is not about what you avoid'),
         findsOneWidget,
-        reason: 'the empty state names the real reason and denies the false one',
+        reason:
+            'the empty state names the real reason and denies the false one',
       );
       expect(find.text('Nothing matches that.'), findsNothing);
       expect(
@@ -595,7 +658,7 @@ void main() {
       expect(find.text('Nothing matches that.'), findsOneWidget);
     });
 
-    testWidgets('the prototype rows still carry their cost in EGP', (
+    testWidgets('the prototype rows carry time and protein only', (
       tester,
     ) async {
       // The design note this screen has always had to keep. Rahma's cards being
@@ -612,10 +675,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(
-        find.text('22 min · 540 kcal · 18 g protein · 14 EGP'),
-        findsOneWidget,
-      );
+      expect(find.text('22 min · 18 g protein'), findsOneWidget);
     });
 
     testWidgets('reads in Arabic at 1.6 without overflowing', (tester) async {
@@ -637,20 +697,53 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a dead chip says why it is empty', (tester) async {
-      // "Cheap" selects nothing because nobody has priced a recipe, and "No
-      // nuts" selects nothing because it fails closed on `allergensReviewed`
-      // and nothing is signed. Both fell through to "Nothing matches that.",
-      // which reads as a fault in the app rather than as an absence in the
-      // content. Ramadan already had its own honest line; these two now do too.
+    testWidgets('a chip that would select nothing is not drawn', (
+      tester,
+    ) async {
+      // "Cheap" with no price anywhere, "Ramadan" with no tag anywhere and "No
+      // nuts" with nothing signed were dead ends: each fell through to an empty
+      // screen that read as a fault in the app. A chip no visible recipe
+      // satisfies is not offered, and comes back the moment one does.
+      Future<void> pump(WidgetTester tester, RecipeBook book) async {
+        await tester.pumpWidget(
+          _host(
+            RecipesView(
+              book: book,
+              asked: true,
+              constraints: DietaryConstraints.none,
+              onSelectTab: (_) {},
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      _phone(tester);
+      // Unsigned, with one pan step: nobody has priced it, tagged it for
+      // Ramadan, put it in the fridge or signed it.
+      await pump(tester, _book());
+      expect(find.text('Ramadan'), findsNothing);
+      expect(find.text('Ready in the fridge'), findsNothing);
+      expect(find.text('No nuts'), findsNothing);
+      // What does match stays: the prototype rows are priced, the card has no
+      // oven step.
+      expect(find.text('Cheap'), findsOneWidget);
+      expect(find.text('No oven'), findsOneWidget);
+
+      // The same card signed by somebody else is nut free, so the chip returns.
+      await pump(tester, _book(reviewedBy: 'qa_reviewer'));
+      await tester.ensureVisible(find.text('No nuts'));
+      expect(find.text('No nuts'), findsOneWidget);
+    });
+
+    testWidgets('the chip she has on stays, so she can take it off', (
+      tester,
+    ) async {
       _phone(tester);
       await tester.pumpWidget(
         _host(
           RecipesView(
-            // Unsigned, which is what the shipped book is: "No nuts" fails
-            // closed on `allergensReviewed`, so it can only ever select
-            // nothing until somebody signs a card.
-            book: _book(),
+            book: _book(reviewedBy: 'qa_reviewer'),
             asked: true,
             constraints: DietaryConstraints.none,
             onSelectTab: (_) {},
@@ -658,29 +751,15 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Cheap'));
+      await tester.ensureVisible(find.text('No nuts'));
+      await tester.tap(find.text('No nuts'));
       await tester.pumpAndSettle();
-      expect(find.text('No recipe has been priced yet.'), findsOneWidget);
-      expect(find.text('Nothing matches that.'), findsNothing);
-      await tester.tap(find.text('Cheap'));
-      await tester.pumpAndSettle();
-
-      // Scrolled to first: the book's own chips sit below the fold on a phone,
-      // and a tap on a built-but-offscreen widget is a warning rather than a
-      // failure, so the assertion after it would pass for the wrong reason.
+      expect(find.text('No nuts'), findsOneWidget);
       await tester.ensureVisible(find.text('No nuts'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('No nuts'));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'No recipe can be called nut free yet, because nobody has signed '
-          'off what is in them.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.text('Nothing matches that.'), findsNothing);
+      expect(find.text('No nuts'), findsOneWidget);
     });
 
     testWidgets('a card draws the hands-on time, not the night in the fridge', (
@@ -701,7 +780,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('1,445'), findsNothing);
-      expect(find.text('5 min hands on'), findsWidgets);
+      expect(find.textContaining('5 min hands on'), findsWidgets);
     });
 
     testWidgets('a five-minute breakfast is in the quick filter', (
@@ -963,6 +1042,8 @@ void main() {
 
       await tester.pumpWidget(_host(RahmaRecipeView(recipe: fattah)));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Cook mode'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Cook mode'));
       await tester.pumpAndSettle();
       expect(find.text('Step 1 of 11'), findsOneWidget);
@@ -1121,10 +1202,7 @@ void main() {
       // paragraph and comes out as `Ta3mya & Fool`.
       _phone(tester);
       await tester.pumpWidget(
-        _host(
-          RahmaRecipeView(recipe: _kebda()),
-          locale: const Locale('ar'),
-        ),
+        _host(RahmaRecipeView(recipe: _kebda()), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
       final title = tester.widget<Directionality>(

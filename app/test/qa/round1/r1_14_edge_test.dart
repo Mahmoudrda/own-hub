@@ -8,9 +8,11 @@
 // R1-07 (the race), R1-14 (rest), R1-40 (a best she has not set), R1-08.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 int get _logged => AppRouter.todayRepository.day.week.sessionsLogged;
@@ -31,7 +33,9 @@ void main() {
       if (undoThere) {
         await tapLabel(t, RegExp('Undo'));
         await t.pump(const Duration(seconds: 10));
-        print('  after tapping Undo at ${atMs}ms and waiting 10s: sessions=$_logged');
+        print(
+          '  after tapping Undo at ${atMs}ms and waiting 10s: sessions=$_logged',
+        );
       }
       s.dispose();
     });
@@ -73,14 +77,40 @@ void main() {
     final s = t.ensureSemantics();
     AppRouter.intakeRepository.markSetupDone();
     final found = <String>[];
-    for (final id in ['T02','T04','T05','R03','R07','R08','R12','R13','E01','E02','E03','Y04','Y09','P04']) {
+    for (final id in [
+      'T02',
+      'T04',
+      'T05',
+      'R03',
+      'R07',
+      'R08',
+      'R12',
+      'R13',
+      'E01',
+      'E02',
+      'E03',
+      'Y04',
+      'Y09',
+      'P04',
+    ]) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       for (final e in tappables(t)) {
-        if (!RegExp(r'log|save|done|delete|remove', caseSensitive: false).hasMatch(e.label)) continue;
+        if (!RegExp(
+          r'log|save|done|delete|remove',
+          caseSensitive: false,
+        ).hasMatch(e.label)) {
+          continue;
+        }
         await open(t, appDestinations[id]!.name, locale: const Locale('en'));
-        try { await tapLabel(t, RegExp(RegExp.escape(e.label))); } catch (_) { continue; }
+        try {
+          await tapLabel(t, RegExp(RegExp.escape(e.label)));
+        } catch (_) {
+          continue;
+        }
         t.takeException();
-        final d = find.byType(Dialog).evaluate().length + find.byType(AlertDialog).evaluate().length;
+        final d =
+            find.byType(Dialog).evaluate().length +
+            find.byType(AlertDialog).evaluate().length;
         if (d > 0) found.add('$id "${e.label}" raised a dialog');
         await t.pump(const Duration(seconds: 7));
         t.takeException();

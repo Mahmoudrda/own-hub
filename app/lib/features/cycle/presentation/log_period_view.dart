@@ -31,14 +31,19 @@
 /// is how she supplies the value, not a prompt asking her to approve one.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/format/date_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/hand/hand.dart';
 import '../domain/cycle_repository.dart';
 import '../domain/period_entry.dart';
 
@@ -50,6 +55,7 @@ class LogPeriodView extends StatefulWidget {
     this.now,
     this.onBack,
     this.onSaved,
+    this.onSavedPeriod,
     this.onDeleted,
   });
 
@@ -61,6 +67,11 @@ class LogPeriodView extends StatefulWidget {
   final DateTime? now;
   final VoidCallback? onBack;
   final VoidCallback? onSaved;
+
+  /// The same moment as [onSaved], with what was saved, so the caller can say
+  /// it back to her.
+  final ValueChanged<PeriodEntry>? onSavedPeriod;
+
   final VoidCallback? onDeleted;
 
   @override
@@ -73,6 +84,10 @@ class _LogPeriodViewState extends State<LogPeriodView> {
 
   /// The reasons the last attempt was refused. Empty until she tries.
   Set<PeriodProblem> _problems = const <PeriodProblem>{};
+
+  /// The entry is written and the tick is drawing; Save waits so a second
+  /// tap cannot write it again.
+  bool _saved = false;
 
   DateTime get _today => dayOnly(widget.now ?? AppClock.now());
 
@@ -126,7 +141,13 @@ class _LogPeriodViewState extends State<LogPeriodView> {
     }
 
     if (!mounted) return;
+    // Saved: she feels it and sees the tick drawn before the page moves on.
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
+    setState(() => _saved = true);
+    if (!handMotionOff(context)) await Future<void>.delayed(HandMotion.draw);
+    if (!mounted) return;
     widget.onSaved?.call();
+    widget.onSavedPeriod?.call(entry);
   }
 
   Future<void> _delete() async {
@@ -148,7 +169,9 @@ class _LogPeriodViewState extends State<LogPeriodView> {
         leadingIcon: Icons.close,
       ),
       footer: [
-        AppButton(l10n.save, onPressed: _save),
+        if (_saved)
+          const Center(child: HandTick(size: 28, seed: 21, drawOn: true)),
+        AppButton(l10n.save, onPressed: _saved ? null : _save),
         Row(
           children: [
             if (widget.existing != null)
@@ -177,7 +200,7 @@ class _LogPeriodViewState extends State<LogPeriodView> {
         Text(l10n.noteAPeriod, style: AppText.titleL),
         AppField(
           label: l10n.startDate,
-          hint: isoDay(_start),
+          hint: dayMonthYearLabel(l10n, _start),
           // One message covers both refusals; the dictionary carries it as a
           // single sentence naming both rules.
           errorText: _problems.contains(PeriodProblem.startInFuture)
@@ -197,7 +220,9 @@ class _LogPeriodViewState extends State<LogPeriodView> {
           label: l10n.endDate,
           // "Still bleeding" is what null means, and it is derived from the
           // absence of an end date rather than stored beside it.
-          hint: _end == null ? l10n.stillBleeding : isoDay(_end!),
+          hint: _end == null
+              ? l10n.stillBleeding
+              : dayMonthYearLabel(l10n, _end!),
           errorText:
               _problems.contains(PeriodProblem.endBeforeStart) ||
                   _problems.contains(PeriodProblem.endInFuture)
@@ -221,4 +246,27 @@ class _LogPeriodViewState extends State<LogPeriodView> {
       ],
     );
   }
+}
+
+/// "Period saved · 2026-10-01 to 2026-10-05", or "from 2026-10-01" while it is
+/// still going.
+String periodSavedLabel(AppL10n l10n, PeriodEntry entry) {
+  final end = entry.end;
+  return end == null
+      ? l10n.periodSavedFromStart(dayMonthYearLabel(l10n, entry.start))
+      : l10n.periodSavedStartToEnd(
+          dayMonthYearLabel(l10n, entry.start),
+          dayMonthYearLabel(l10n, end),
+        );
+}
+
+/// "Period removed · 2026-10-01 to 2026-10-05".
+String periodRemovedLabel(AppL10n l10n, PeriodEntry entry) {
+  final end = entry.end;
+  return end == null
+      ? l10n.periodRemovedFromStart(dayMonthYearLabel(l10n, entry.start))
+      : l10n.periodRemovedStartToEnd(
+          dayMonthYearLabel(l10n, entry.start),
+          dayMonthYearLabel(l10n, end),
+        );
 }

@@ -177,18 +177,22 @@ class RecipeSync implements RecipeLibrary {
 
     try {
       final version = await remote.readVersion();
-      await _recordCheck(now);
       final current = await load();
       if (version == null || version <= current.contentVersion) {
+        await _recordCheck(now);
         return const RecipeRefreshResult(RecipeRefreshOutcome.upToDate);
       }
       final payload = await _fetch(remote, version);
       final base = await seed.load();
       final book = _merge(base, _parse(payload, base));
       await cache.write(jsonEncode(payload));
+      // Stamped only now, with the set cached: a download cut short leaves no
+      // stamp, so the next launch asks again instead of waiting a day.
+      await _recordCheck(now);
       return RecipeRefreshResult(RecipeRefreshOutcome.updated, book);
     } on _Rejected catch (error) {
       if (kDebugMode) debugPrint('Recipe library refused: $error');
+      _notBefore = now.add(retryAfterFailure);
       return const RecipeRefreshResult(RecipeRefreshOutcome.rejected);
     } catch (error) {
       _notBefore = now.add(retryAfterFailure);

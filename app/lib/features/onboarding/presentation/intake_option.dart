@@ -42,15 +42,15 @@ class IntakeOption extends StatelessWidget {
       child: AppListItem(
         title: title,
         subtitle: subtitle,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         borderRadius: AppRadius.lg,
         variant: selected ? AppCardVariant.selected : AppCardVariant.outlined,
         onTap: onTap,
         trailing: selected
-            ? const Icon(Icons.check_circle, size: 26, color: AppColors.primary)
+            ? const Icon(Icons.check_circle, size: 24, color: AppColors.primary)
             : Container(
-                width: 26,
-                height: 26,
+                width: 24,
+                height: 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   // The ring that says "not this one", beside a filled tick

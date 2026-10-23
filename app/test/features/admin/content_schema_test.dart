@@ -41,7 +41,32 @@ void main() {
         'floorOnly',
         'videoFile',
         'thumbFile',
+        'angleVideoFile',
+        'primaryMuscles',
+        'secondaryMuscles',
+        'bodyRegion',
+        'place',
+        'level',
+        'kind',
       ]);
+    });
+
+    test('the exercise library columns may be absent from older files', () {
+      final schema = ContentSchema.of(ContentCollection.exercises);
+      for (final name in const [
+        'angleVideoFile',
+        'primaryMuscles',
+        'secondaryMuscles',
+        'bodyRegion',
+        'place',
+        'level',
+        'kind',
+      ]) {
+        expect(schema.column(name)!.mayBeAbsent, isTrue, reason: name);
+        expect(schema.column(name)!.required, isFalse, reason: name);
+      }
+      expect(schema.column('primaryMuscles')!.list, isTrue);
+      expect(schema.column('secondaryMuscles')!.list, isTrue);
     });
 
     test('foods', () {
@@ -254,6 +279,7 @@ void main() {
       expect(ContentSchema.of(ContentCollection.exercises).mediaColumns, [
         'videoFile',
         'thumbFile',
+        'angleVideoFile',
       ]);
       expect(ContentSchema.of(ContentCollection.recipes).mediaColumns, [
         'photoFile',

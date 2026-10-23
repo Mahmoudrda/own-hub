@@ -360,6 +360,20 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('exercise names stay English and left to right in Arabic', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(_view(_mockupBests), locale: const Locale('ar')),
+      );
+      await tester.pumpAndSettle();
+
+      final name = find.text('Goblet squat');
+      expect(name, findsOneWidget);
+      expect(Directionality.of(tester.element(name)), TextDirection.ltr);
+    });
+
     testWidgets('it does not overflow at the largest text size in Arabic', (
       tester,
     ) async {

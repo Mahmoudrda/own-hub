@@ -121,9 +121,7 @@ class _AllergyQuestionViewState extends State<AllergyQuestionView> {
             const SizedBox(height: 4),
             Text(
               l10n.youTickedSomethingYouAvoidTheOther,
-              style: AppText.bodyM.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
             AppButton(
@@ -151,10 +149,7 @@ class _AllergyQuestionViewState extends State<AllergyQuestionView> {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      appBar: AppTopBar(
-        title: l10n.whatYouAvoid,
-        onBack: widget.onBack,
-      ),
+      appBar: AppTopBar(title: l10n.whatYouAvoid, onBack: widget.onBack),
       // ## The footer answers the question in the order it is usually answered
       //
       // It used to open with a **disabled** filled "Save what I avoid" and put
@@ -190,8 +185,10 @@ class _AllergyQuestionViewState extends State<AllergyQuestionView> {
           // visible behind it, which is the thing she needs to see.
           onPressed: _anyTicked
               ? () => _confirmDiscard(context)
-              : () =>
-                    widget.onAnswered(const <AllergenTag>{}, const <DietaryTag>{}),
+              : () => widget.onAnswered(
+                  const <AllergenTag>{},
+                  const <DietaryTag>{},
+                ),
         ),
       ],
       children: [

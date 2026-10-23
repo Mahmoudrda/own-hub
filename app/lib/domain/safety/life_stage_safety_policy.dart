@@ -100,11 +100,7 @@ enum BirthType {
 /// which is why the absence of a [Clearance] is a different state entirely.
 @immutable
 class Clearance {
-  const Clearance({
-    required this.granted,
-    required this.recordedAt,
-    this.note,
-  });
+  const Clearance({required this.granted, required this.recordedAt, this.note});
 
   final bool granted;
   final DateTime recordedAt;
@@ -152,7 +148,8 @@ class PublishDecision {
   final PublishBlockReason? reason;
 
   @override
-  String toString() => allowed ? 'PublishDecision.permitted' : 'blocked($reason)';
+  String toString() =>
+      allowed ? 'PublishDecision.permitted' : 'blocked($reason)';
 }
 
 /// Both sources of her life stage, and what follows from them.
@@ -201,8 +198,7 @@ class LifeStageSafetyPolicy {
   /// The tags [stage] restricts on its own, with no coach input at all.
   static Set<ContraindicationTag> derivedAvoid(LifeStage stage) =>
       switch (stage) {
-        LifeStage.pregnant ||
-        LifeStage.postpartum0to6w => Set.unmodifiable(
+        LifeStage.pregnant || LifeStage.postpartum0to6w => Set.unmodifiable(
           pregnancyAndEarlyPostpartumFloor,
         ),
         LifeStage.postpartum6wTo1y ||

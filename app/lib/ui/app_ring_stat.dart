@@ -30,6 +30,7 @@ class AppRingStat extends StatelessWidget {
     // A sentinel, like `AppProgressBar.trackColour`: swapped for
     // `AppColors.outline` in `build`, never painted as itself.
     this.trackColor = AppColors.outlineVariant,
+    this.animateIn = false,
   });
 
   /// 0–1. Clamped, so a miscounted caller cannot draw more than a full circle.
@@ -49,27 +50,40 @@ class AppRingStat extends StatelessWidget {
   final Color smallColor;
   final Color trackColor;
 
+  /// Sweep up from nothing when it first appears, as a hero ring does. Off,
+  /// it arrives at its value and only changes are animated.
+  final bool animateIn;
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(
-        painter: RingPainter(
-          // Not from [big]: on the rest timer that is the clock, and a seed
-          // that changes every second redrew the ring by a different hand
-          // every second.
-          seed: handSeed(['ring', small, size]),
-          fraction: fraction.clamp(0.0, 1.0),
-          thickness: thickness * 0.85,
-          color: color,
-          // The default track is the light-surface hairline; the pencil guide
-          // wants the darker pencil there. A caller's own track colour — R06's
-          // on the dark player — is kept as given.
-          guide: trackColor == AppColors.outlineVariant
-              ? AppColors.outline
-              : trackColor,
-          textDirection: Directionality.of(context),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(
+          begin: animateIn ? 0 : null,
+          end: fraction.clamp(0.0, 1.0),
+        ),
+        duration: handMotionOff(context) ? Duration.zero : HandTiming.progress,
+        curve: HandTiming.standard,
+        builder: (context, shown, child) => CustomPaint(
+          painter: RingPainter(
+            // Not from [big]: on the rest timer that is the clock, and a seed
+            // that changes every second redrew the ring by a different hand
+            // every second.
+            seed: handSeed(['ring', small, size]),
+            fraction: shown,
+            thickness: thickness * 0.85,
+            color: color,
+            // The default track is the light-surface hairline; the pencil guide
+            // wants the darker pencil there. A caller's own track colour — R06's
+            // on the dark player — is kept as given.
+            guide: trackColor == AppColors.outlineVariant
+                ? AppColors.outline
+                : trackColor,
+            textDirection: Directionality.of(context),
+          ),
+          child: child,
         ),
         child: Center(
           child: Padding(

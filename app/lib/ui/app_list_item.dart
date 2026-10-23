@@ -32,6 +32,7 @@ class AppListItem extends StatelessWidget implements HandSeedName {
   const AppListItem({
     super.key,
     this.title = '',
+    this.titleWidget,
     this.subtitle = '',
     this.leading,
     this.trailing,
@@ -42,6 +43,11 @@ class AppListItem extends StatelessWidget implements HandSeedName {
   });
 
   final String title;
+
+  /// Drawn instead of [title] when a name has to keep its own direction, such
+  /// as an English move name inside an Arabic row. [title] still seeds the
+  /// hand-drawn frame.
+  final Widget? titleWidget;
   final String subtitle;
   final Widget? leading;
   final Widget? trailing;
@@ -65,7 +71,7 @@ class AppListItem extends StatelessWidget implements HandSeedName {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppText.titleM),
+              titleWidget ?? Text(title, style: AppText.titleM),
               if (subtitle.isNotEmpty) ...[
                 const SizedBox(height: 3),
                 Text(
@@ -108,7 +114,8 @@ class AppListItem extends StatelessWidget implements HandSeedName {
       if (onTap == null) return ruled;
       return HandPressable(
         onTap: onTap,
-        scale: 0.985,
+        scale: HandTiming.pressScale,
+        spring: true,
         builder: (_, _) => ruled,
       );
     }
@@ -126,6 +133,8 @@ class AppListItem extends StatelessWidget implements HandSeedName {
       radius: handTightRadius(borderRadius),
       looseCorner: handLooseRadius(borderRadius),
       onTap: onTap,
+      pressScale: HandTiming.pressScale,
+      springPress: true,
       padding: padding,
       child: row,
     );

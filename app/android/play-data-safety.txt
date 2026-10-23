@@ -31,9 +31,13 @@ optional, and purposes as noted.
 
 Personal info
   - Name
-      Collected, processed ephemerally: read from the ID card in memory to
-      cross-check the ID number, never stored. Required.
-      Purpose: Fraud prevention, security and compliance.
+      Two cases. (1) Every member: read from the ID card in memory to
+      cross-check the ID number, never stored (ephemeral).
+      Purpose: Fraud prevention, security and compliance. (2) Coach
+      applicants only: the full name she types into the coach application,
+      kept with it for the review and never shown to members. Collected, not
+      ephemeral, required for an applicant, linked.
+      Purpose: App functionality, Fraud prevention, security and compliance.
   - Phone number
       Collected. Not ephemeral. Required.
       Purpose: Account management, App functionality, Fraud prevention.
@@ -58,12 +62,67 @@ Health and fitness
       stage, allergies. Optional. Purpose: App functionality.
       Otherwise this stays on the phone and is not collected.
 
+Messages
+  - Emails or text messages (in-app messages)
+      Collected: chat messages between a member and the coach she joined,
+      stored in Firestore (Frankfurt) while both accounts exist, readable by
+      the two of them; Own Hub staff read a thread only after one of them
+      reports it. Optional (only if she joins a coach). Linked. Not shared.
+      Purpose: App functionality. Deleted with either account.
+
+Coaching (applications, portfolios, joining a coach; no payments yet)
+  - Coach application: full name (see Name), display name, governorate,
+      languages, headline, education, certificates, specialties, years,
+      qualifications, client feedback, before and after client photos with
+      their written consent, how she coaches, coach terms version. Stored,
+      optional (only if she applies), linked, App functionality. Kept while
+      she is a coach or until she deletes her account; a rejected application
+      has no automatic deletion date.
+  - Public coach portfolio: display name, a copy of her photo, headline,
+      approach, specialties, languages, years, reply time, checked
+      certificate titles, feedback text and packages with prices, plus the
+      approved feedback screenshots, before and after photos of clients (each
+      with that client's written consent, which the coach confirms) and photos
+      of the coach or her work. Shared with other users (verified members)
+      only for an approved coach. The full name is never shown.
+  - Intake form a member sends a coach she asks to join: goal, level, days,
+      place, allergies she keeps, life stage, seven health answers (these fall
+      under Health info, already declared), doctor tick, a note. Visible to
+      that coach only while the coaching lasts. Optional. Linked.
+  - Plans a coach shares are stored under the member's account.
+  - No payments exist in this version: no payment info, purchase history or
+      financial info is collected.
+
+Other user-generated content and app info (three flows to declare)
+  - Scan cache: a fingerprint (hash) of a re-encoded meal photo plus the foods
+      and grams found, kept 30 days, then deleted by TTL. No photo, no user
+      identifier. Purpose: App functionality. Not linked to her.
+  - Dish sharing (opt-in, off by default): on "Log this meal" the dish names,
+      the items (names and grams) and the macros go to a server-only list for
+      team review. A marker keyed by an HMAC of her uid dedupes her
+      confirmation and is deleted with her account. Approved dishes (names,
+      category, allergens, macros; not the items) are shown to all verified
+      members with no link to her. Shared with other users: yes, only if she
+      opts in, without her name.
+  - Event seats: her uid, time reserved and status under the event; readable
+      by her and Own Hub admins; deleted on cancel or account deletion.
+
 Photos and videos
   - Photos
       Collected and processed ephemerally: both sides of her national ID card
       and the selfie frames, for the women-only check. Never stored.
       Required, with a woman-reviewer alternative.
       Purpose: Fraud prevention, security and compliance; App functionality.
+      Also, for coach applicants only, and STORED (not ephemeral): the
+      pictures she picks for the application (profile photo, education and
+      certificate documents, feedback screenshots, before and after photos of
+      clients). Also optional photos of herself or her work. Optional,
+      linked, App functionality. Own Hub's woman reviewer checks each one;
+      on approval Own Hub keeps a re-encoded copy with no location or other
+      metadata, deletes the original, and verified members see the approved
+      items on the portfolio. The coach can remove an item; all are deleted
+      with her account. Before approval a picture is readable only by her
+      and the reviewer.
 
 App activity
   - App interactions
@@ -114,15 +173,28 @@ Not collected
 -------------
 Precise location, contacts, messages (the SMS code is read by the SMS
 Retriever, not READ_SMS), audio, files and docs, calendar, web browsing,
-financial info, in-app search history, the Advertising ID, and photos from the
-gallery (the app cannot read the gallery).
+financial info, in-app search history and the Advertising ID. The app has no
+photo-library permission and cannot read the gallery. The one place she can
+pick an existing picture is her own profile photo, through the system photo
+picker, which hands the app only the single picture she chooses; the profile
+photo stays on the phone, is never uploaded and is removed by Delete
+everything, so it is not collected. The exception is a coach applicant: the
+pictures she picks (or takes) for her application are uploaded and declared
+above under Photos.
 There is no video review. A woman from Own Hub who reviews a case contacts
 her by phone, outside the app; nothing from that contact is collected by the
 app.
-Training reminders are scheduled on the phone (local notifications, opt-in,
-asked after her first finished session). The days and time she picks stay on
-the phone; nothing about them is sent to Own Hub. The manifest carries
-RECEIVE_BOOT_COMPLETED so they survive a restart; no exact-alarm permission.
+Training reminders and event reminders are scheduled on the phone (local
+notifications, opt-in; the training ones are asked after her first finished
+session). The days and time she picks, and which events she booked, are read
+on the phone to plan them; nothing about the notes is sent to Own Hub, and they
+do not name the event. The manifest carries RECEIVE_BOOT_COMPLETED so they
+survive a restart. It also carries SCHEDULE_EXACT_ALARM, used only for the
+"Rest is over" alert while a rest timer runs (and only when the phone allows
+it); reminders and event notes are inexact. The Play exact-alarm declaration
+is an owner step.
+The workout share card is drawn on the phone and leaves it only through the
+system share sheet when she taps Share; nothing is uploaded by the app.
 
 Health apps declaration (Play Console > App content > Health apps)
 -----------------------------------------------------------------
@@ -138,7 +210,10 @@ under 18.
 
 Content rating
 --------------
-No user-generated content and no chat in this version.
+No community. The user-written content other members can see is an approved
+coach's public portfolio (reviewed before it is shown, reportable by members)
+and a dish a member opts to share without her name. A member and the coach she
+joined can chat in text; no images or voice. Reports reach the Own Hub team.
 
 App access
 ----------
@@ -148,3 +223,12 @@ The +20 Firebase test number with its fixed code, and the reviewer allow-list
 Privacy policy URL
 ------------------
 https://own-hub.app/privacy
+
+PostHog addition (12 October 2026; submission answers must match the released build):
+Optional usage analytics also sends eight allowlisted app milestones, an anonymous
+app identifier and SDK device/app metadata to PostHog US after fresh consent.
+No account UID, health values, messages, replay or payment details are sent.
+A fixed integration status log is sent once per process with consent. Include
+app interactions, device identifiers and diagnostics as applicable; verify actual
+SDK traffic and processor terms before submitting Data safety answers. Revocation
+stops new collection and resets the identifier, not server-side historical data.

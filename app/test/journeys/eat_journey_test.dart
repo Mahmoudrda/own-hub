@@ -23,6 +23,7 @@ import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/ui/app_nav_bar.dart';
 import 'package:own_hub/ui/app_undo_bar.dart';
+import 'package:own_hub/ui/hand/hand.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -163,15 +164,16 @@ void main() {
 
       // E04, with the meal already on it — the row appears immediately and the
       // day total moves, before anything has been written (§4.3).
+      // And it names the food and the slot, not "Meal added".
       expect(
         find.descendant(
           of: find.byType(AppUndoBar),
-          matching: find.text('Meal added'),
+          matching: find.textContaining(' added to '),
         ),
         findsOneWidget,
         reason: 'E04 offers the undo the moment it opens, not five seconds in',
       );
-      expect(find.text('About 540 kcal so far today'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
       expect(
         find.text('No plates yet'),
         findsNothing,
@@ -192,7 +194,7 @@ void main() {
         ),
         findsNothing,
       );
-      expect(find.text('About 540 kcal so far today'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
     });
 
     testWidgets('E01 shows the same day, and Home shows the meal', (
@@ -204,8 +206,8 @@ void main() {
       await _windowCloses(tester);
 
       await _open(tester, 'E01');
-      expect(find.text('About 540 kcal so far today'), findsOneWidget);
-      expect(find.text('18 of 95 g'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
+      expect(find.text('18 of 108 g'), findsOneWidget);
 
       await _home(tester);
       expect(
@@ -231,7 +233,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('About 540 kcal so far today'), findsNothing);
+      expect(find.text('18 of 108 g'), findsNothing);
       expect(
         find.byType(AppUndoBar),
         findsNothing,
@@ -241,7 +243,7 @@ void main() {
       expect(_written, isEmpty, reason: 'an undone meal is never written');
 
       await _open(tester, 'E01');
-      expect(find.text('No plates yet'), findsOneWidget);
+      expect(find.text('Day 1'), findsOneWidget);
 
       await _home(tester);
       expect(find.text('Koshari bowl'), findsNothing);
@@ -261,48 +263,55 @@ void main() {
       await _windowCloses(tester);
 
       await _open(tester, 'E01');
+      final plate = find.byTooltip('Add Koshari bowl').first;
       expect(
-        find.text('Koshari bowl'),
+        plate,
         findsOneWidget,
         reason: 'log something twice and it becomes a plate — E09 says so',
       );
-      expect(find.text('540 kcal · 18 g protein'), findsOneWidget);
 
-      await tester.tap(find.text('I ate this'));
+      await tester.ensureVisible(plate);
+      await tester.pumpAndSettle();
+      await tester.tap(plate);
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
-      expect(find.text('About 1,620 kcal so far today'), findsOneWidget);
+      expect(find.text('54 of 108 g'), findsOneWidget);
 
       await _windowCloses(tester);
       expect(_written.length, 3);
     });
 
-    testWidgets("Home's plate logs, with the five seconds", (tester) async {
-      _phone(tester);
-      await _boot(tester);
-      await _typeAndLog(tester, 'koshari');
-      await _windowCloses(tester);
-      await _home(tester);
+    for (final scale in [1.0, 2.0]) {
+      testWidgets("Home's plate logs, with the five seconds"
+          '${scale == 1.0 ? '' : ' (text scale $scale)'}', (tester) async {
+        _phone(tester);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await _boot(tester);
+        await _typeAndLog(tester, 'koshari');
+        await _windowCloses(tester);
+        await _home(tester);
 
-      // Home is a scrolling page and its bottom bar sits over the foot of it,
-      // so the plate has to be clear of the bar before it can be pressed.
-      await tester.drag(find.byType(Scrollable).first, const Offset(0, -240));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Koshari bowl'));
-      await tester.pumpAndSettle();
+        // Home is a scrolling page and its bottom bar sits over the foot of it,
+        // so the plate has to be clear of the bar before it can be pressed.
+        await tester.ensureVisible(find.text('Koshari bowl'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Koshari bowl'));
+        await tester.pumpAndSettle();
 
-      // It logged, and it landed on the logged day rather than merely
-      // navigating there.
-      expect(find.byType(AppUndoBar), findsOneWidget);
-      // One offer, here too: Home used to raise a snackbar of its own and then
-      // carry the same handle to E04's bar.
-      expect(find.byType(SnackBar), findsNothing);
-      expect(find.text('Undo'), findsOneWidget);
-      expect(find.text('About 1,080 kcal so far today'), findsOneWidget);
+        // It logged, and it landed on the logged day rather than merely
+        // navigating there.
+        expect(find.byType(AppUndoBar), findsOneWidget);
+        // One offer, here too: Home used to raise a snackbar of its own and then
+        // carry the same handle to E04's bar.
+        expect(find.byType(SnackBar), findsNothing);
+        expect(find.text('Undo'), findsOneWidget);
+        expect(find.text('36 of 108 g'), findsOneWidget);
 
-      await _windowCloses(tester);
-      expect(_written.length, 2);
-    });
+        await _windowCloses(tester);
+        expect(_written.length, 2);
+      });
+    }
   });
 
   group('recipes', () {
@@ -322,11 +331,10 @@ void main() {
         reason: '18 g is not high protein',
       );
 
-      await tester.tap(find.text('Ramadan'));
-      await tester.pumpAndSettle();
-      expect(find.text('No recipe carries a Ramadan tag yet.'), findsOneWidget);
-
-      await tester.tap(find.text('Ramadan'));
+      // No recipe carries a Ramadan tag, so that chip would select nothing and
+      // is not drawn; the one she has on stays, and takes the filter off.
+      expect(find.text('Ramadan'), findsNothing);
+      await tester.tap(find.text('High protein'));
       await tester.pumpAndSettle();
       expect(find.text('Koshari, portioned'), findsOneWidget);
 
@@ -361,15 +369,9 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('See the steps'));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('The steps for this dish have not been written yet.'),
-        findsOneWidget,
-      );
-
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      // No steps exist for this dish, so there is no button that would only
+      // say so.
+      expect(find.text('See the steps'), findsNothing);
       await tester.tap(find.text('I cooked it and ate a bowl'));
       await tester.pumpAndSettle();
       expect(find.byType(AppUndoBar), findsOneWidget);
@@ -390,10 +392,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // The sample week opens with one line already ticked.
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byType(HandTick), findsOneWidget);
     await tester.tap(find.text('Onions 1 kg'));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(2));
+    expect(find.byType(HandTick), findsNWidgets(2));
 
     // Away and back — through E07, which reads the same document.
     _nav(tester).pop();
@@ -401,7 +403,7 @@ void main() {
     await tester.tap(find.text('See the grocery list'));
     await tester.pumpAndSettle();
     expect(
-      find.byIcon(Icons.check_circle),
+      find.byType(HandTick),
       findsNWidgets(2),
       reason: 'a shop survives being closed mid-market',
     );
@@ -464,8 +466,8 @@ void main() {
   });
 
   group('what she told us she avoids', () {
-    testWidgets('an allergy saved on A02 changes what Eat offers and '
-        'refuses', (tester) async {
+    testWidgets('an allergy saved on A02 changes what Eat offers, '
+        'never what she can log', (tester) async {
       _phone(tester);
       await _boot(tester);
 
@@ -475,6 +477,10 @@ void main() {
       await _home(tester);
 
       await _open(tester, 'A02');
+      await tester.ensureVisible(
+        find.text('Allergies and dietary preferences'),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Allergies and dietary preferences'));
       await tester.pumpAndSettle();
       // "No nuts" until `AllergenTag` grew from four members to sixteen for
@@ -491,31 +497,31 @@ void main() {
       expect(AppRouter.eatConstraints.allergies, {
         'tree_nuts',
       }, reason: 'Eat reads the profile A02 wrote, not a constant');
+      // A safety setting is never saved in silence.
+      expect(
+        find.text('Saved. Dishes with Tree nuts are hidden now.'),
+        findsOneWidget,
+      );
+      // The notice floats over the footer; let it clear.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
 
+      // Unknown allergen data is allowed: the dishes are still offered.
       await _home(tester);
       await _open(tester, 'E01');
       expect(
-        find.text(
-          'We cannot check these dishes for what you avoid yet, so '
-          'none are suggested.',
-        ),
-        findsOneWidget,
-        reason: 'no dish lists its allergens, so unknown reads as unsafe',
+        find.text('Ful and baladi'),
+        findsWidgets,
+        reason:
+            'only a dish known to hold tree nuts is hidden from suggestions',
       );
-      expect(find.text('Ful and baladi'), findsNothing);
 
-      // And the guard holds at the moment of the log, not only in the list.
+      // And logging is never blocked: she is recording what she ate.
       await _typeAndLog(tester, 'koshari');
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'Nobody has listed what is in Koshari bowl yet, so we '
-          'cannot check it against what you avoid.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.byType(AppUndoBar), findsOneWidget);
       await _windowCloses(tester);
-      expect(_written, isEmpty);
+      expect(_written.map((i) => i.foodId), ['koshari_bowl']);
     });
   });
 }

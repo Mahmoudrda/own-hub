@@ -12,13 +12,17 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/format/number_label.dart';
+import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_card.dart'
     show handCardLook, handLooseRadius, handTightRadius;
 // AppCardVariant comes through app_list_item.dart, which re-exports it.
 import '../../../ui/app_chevron.dart';
 import '../../../ui/app_list_item.dart';
+import '../../../ui/app_step_bar.dart';
 import '../../../ui/hand/hand.dart';
+import 'exercise_labels.dart' show MoveName;
 
 /// A move in the day's list. `moveRow()`.
 class MoveRow extends StatelessWidget {
@@ -29,10 +33,24 @@ class MoveRow extends StatelessWidget {
     this.done = false,
     this.current = false,
     this.onTap,
+    this.note,
+    this.hasClip = false,
+    this.tag,
   });
+
+  /// A short word on the row's trailing edge, such as "Completed" or "Up
+  /// next". Null draws none.
+  final String? tag;
 
   final String name;
   final String detail;
+
+  /// The move has a clip to watch: a small play mark beside the chevron.
+  final bool hasClip;
+
+  /// One short line under the prescription — this week's challenge, on the
+  /// move it is about (D38). Null draws nothing.
+  final String? note;
 
   /// Logged. Struck off the list, and it stays struck off.
   final bool done;
@@ -46,7 +64,8 @@ class MoveRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppListItem(
       title: name,
-      subtitle: detail,
+      titleWidget: MoveName(name, style: AppText.titleM),
+      subtitle: note == null ? detail : '$detail\n$note',
       variant: current ? AppCardVariant.selected : AppCardVariant.outlined,
       onTap: onTap,
       // The done icon is ringed in pencil by the row; the open loop sits in a
@@ -66,7 +85,55 @@ class MoveRow extends StatelessWidget {
       // Forward, which is leftward in Arabic. [AppChevron] resolves that from
       // the ambient Directionality rather than leaving it to a flag on a
       // Material constant that no test here asserts.
-      trailing: const AppChevron(),
+      trailing: tag != null
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  key: const ValueKey('move-row-tag'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: done
+                        ? AppColors.tertiaryContainer
+                        : AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Text(
+                    tag!,
+                    style: AppText.label.copyWith(
+                      fontSize: 13,
+                      color: done
+                          ? AppColors.onTertiaryContainer
+                          : AppColors.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const AppChevron(),
+              ],
+            )
+          : hasClip
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Semantics(
+                  label: AppL10n.of(context).videoAvailable,
+                  child: const ExcludeSemantics(
+                    child: Icon(
+                      Icons.play_circle_outline,
+                      size: 22,
+                      color: AppColors.primaryDim,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const AppChevron(),
+              ],
+            )
+          : const AppChevron(),
     );
   }
 }
@@ -118,10 +185,12 @@ class SetRow extends StatelessWidget {
         child: Row(
           children: [
             done
-                ? const Icon(
-                    Icons.check_circle,
-                    size: 22,
-                    color: AppColors.tertiary,
+                ? const SpringPop(
+                    child: Icon(
+                      Icons.check_circle,
+                      size: 22,
+                      color: AppColors.tertiary,
+                    ),
                   )
                 : _Ring(
                     size: 22,
@@ -183,10 +252,18 @@ class TrainTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.onClose,
     this.closeIcon = Icons.close,
     this.actions = const [],
+    this.sets,
   });
 
   final String title;
   final VoidCallback? onClose;
+
+  /// Sets of today's session behind her, and all of them. Drawn as a bar
+  /// under the title, one segment a set, so the finish line is always in
+  /// view — the goal gradient of the second video study in the guide's §15.
+  /// Null draws no bar: a screen opened outside a session has no session to
+  /// measure against.
+  final ({int done, int total})? sets;
 
   /// [Icons.close] for a screen drawn over the workout, [Icons.arrow_back] for
   /// one that genuinely has a previous page.
@@ -195,7 +272,17 @@ class TrainTopBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> actions;
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => Size.fromHeight(_hasBar ? 64 + _barHeight : 64);
+
+  static const double _barHeight = 14;
+
+  bool get _hasBar {
+    final bar = sets;
+    return bar != null &&
+        bar.total > 0 &&
+        bar.done >= 0 &&
+        bar.done <= bar.total;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -227,6 +314,21 @@ class TrainTopBar extends StatelessWidget implements PreferredSizeWidget {
               style: AppText.titleM.copyWith(color: AppColors.onSurface),
             ),
       actions: actions,
+      bottom: _hasBar
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(_barHeight),
+              child: Semantics(
+                label: AppL10n.of(context).setsDoneDoneOfTotal(
+                  countLabel(sets!.done),
+                  countLabel(sets!.total),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: AppStepBar(step: sets!.done, total: sets!.total),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }

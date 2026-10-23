@@ -27,7 +27,6 @@ import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
-import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
 import 'widgets/verification_bullet.dart';
 
@@ -71,8 +70,9 @@ class WhyWeCheckView extends StatelessWidget {
               : l10n.thisIsWhatKeepsOwnHubWomen,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
-        AppCard(
-          variant: AppCardVariant.sage,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 14,
           children: [
             // The card itself says she is a woman — we never guess from her
             // face. Rule 8, stated before she is asked for anything.

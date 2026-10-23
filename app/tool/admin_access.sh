@@ -44,6 +44,13 @@
 #      is uploaded as it is; over 200 MB is refused. Each lands in
 #      content/<collection>/<id>/ and appears in the console's media library,
 #      ready to be chosen. Add --keep-original after the id to skip the WebP.
+#
+#   4. The exercise library members browse (R14). After its clips and posters
+#      are uploaded, publish the reviewed catalogue. Without --write it only
+#      prints what would change:
+#
+#        bash tool/admin_access.sh publish-exercises ../6-v2/content/exercise_library/catalogue.json
+#        bash tool/admin_access.sh publish-exercises ../6-v2/content/exercise_library/catalogue.json --write
 
 set -euo pipefail
 CALLER_PWD="$PWD"
@@ -53,7 +60,7 @@ FLUTTER="${FLUTTER:-flutter}"
 FUNCTIONS="../functions"
 
 usage() {
-  sed -n '2,48p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,53p' "$0" | sed 's/^# \{0,1\}//'
   exit 2
 }
 
@@ -134,6 +141,20 @@ case "${1:-}" in
     (cd "$FUNCTIONS" && GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT:-own-hub}" \
       .venv/bin/python -m tools.upload_media --collection "$collection" \
       --doc "$doc" ${extra[@]+"${extra[@]}"} "${files[@]}")
+    ;;
+  publish-exercises)
+    if [ "$#" -lt 2 ]; then
+      echo "Usage: bash tool/admin_access.sh publish-exercises <catalogue.json> [--write]" >&2
+      exit 2
+    fi
+    catalogue="$2"
+    case "$catalogue" in
+      /*) ;;
+      *) catalogue="$CALLER_PWD/$catalogue" ;;
+    esac
+    shift 2
+    (cd "$FUNCTIONS" && GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT:-own-hub}" \
+      .venv/bin/python -m tools.publish_exercise_library "$catalogue" "$@")
     ;;
   *)
     usage

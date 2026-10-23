@@ -322,9 +322,7 @@ class _ComposerState extends State<_Composer> {
                         ),
                 ),
                 IconButton(
-                  onPressed: typing
-                      ? (_canSend ? _send : null)
-                      : widget.onSend,
+                  onPressed: typing ? (_canSend ? _send : null) : widget.onSend,
                   tooltip: widget.sendLabel,
                   iconSize: 22,
                   color: AppColors.primaryDim,

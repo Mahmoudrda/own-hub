@@ -19,14 +19,13 @@
 /// the branch and this screen renders it, so the day the field lands nothing
 /// here changes — but nothing populates it yet, and the build report says so.
 ///
-/// ## Only four of the 124 moves can be named
+/// ## Every move the product knows has a name
 ///
-/// The dictionary holds an exercise name for four moves — the four the prototype
-/// draws. A best on any other move has no label in either language, and
-/// inventing one in the widget would put untranslated English in front of an
-/// Arabic reader. So [personalBestRow] returns null for an unnameable exercise
-/// and the row is left out, which is reported as a content gap rather than
-/// papered over with an exercise id.
+/// The four prototype moves keep their dictionary titles. Any other move is
+/// named by `ExerciseTraits.nameOf` (the synced library, then the bundled
+/// table). A best on a move neither knows has no name to show, so
+/// [personalBestRow] returns null and the row is left out. Names are English
+/// in both languages.
 ///
 /// ## The delta is computed; the detail line still is not
 ///
@@ -55,12 +54,24 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
+import '../../train/domain/exercise_traits.dart';
 import '../../train/domain/weight_label.dart';
+import '../../train/presentation/exercise_labels.dart'
+    show MoveName, englishMoveNames;
+import '../../train/presentation/set_labels.dart' show measuredLabel;
 
 /// One row of P03, already resolved against the dictionary.
 @immutable
 class PersonalBestRow {
-  const PersonalBestRow({required this.title, this.detail, this.delta});
+  const PersonalBestRow({
+    required this.title,
+    this.detail,
+    this.delta,
+    this.exerciseId,
+  });
+
+  /// The move the best is on, so a row can open that move's history.
+  final String? exerciseId;
 
   /// The exercise's name.
   final String title;
@@ -73,59 +84,110 @@ class PersonalBestRow {
   final String? delta;
 }
 
-/// Resolves one best into a row, or null when it cannot be named.
+/// Resolves one best into a row, or null when its move cannot be named.
 ///
-/// The comparison is against the *whole* line, not just its headline number: a
-/// woman who squatted 12 kg × 10 on a different date, or coming from a different
-/// previous best, is not described by "12 kg × 10 · 16 September · was 10 kg".
+/// The four moves the mockup draws keep their stated detail line, which only
+/// reads when every figure on it is hers. Every other move is named from
+/// `exercise_traits.dart` (the synced library first, then the bundled table)
+/// and its detail line is the figure it was measured on: kilos, reps or
+/// seconds. English move names are shown in both languages, fenced left to
+/// right by [MoveName].
 PersonalBestRow? personalBestRow(AppL10n l10n, PersonalBest best) {
-  // The same rule for all four rows, and it is arithmetic rather than a lookup:
-  // see [_delta].
   final delta = _delta(l10n, best);
+  final value = _value(l10n, best);
 
-  return switch (best.exerciseId) {
-    'goblet_squat' => PersonalBestRow(
-      title: l10n.gobletSquat,
-      detail:
-          _is(best.loadKg, 12) &&
-              _is(best.reps, 10) &&
-              best.dateKey == '2026-09-16' &&
-              _is(best.previous?.loadKg, 10)
-          ? l10n.n12Kg1016SeptemberWas10
-          : null,
-      delta: delta,
-    ),
-    'glute_bridge' => PersonalBestRow(
-      title: l10n.gluteBridge,
-      detail:
-          _is(best.reps, 15) &&
-              best.dateKey == '2026-09-09' &&
-              _is(best.previous?.reps, 12)
-          ? l10n.n3159SeptemberWas312
-          : null,
-      delta: delta,
-    ),
-    'plank_hold' => PersonalBestRow(
-      title: l10n.plankHold,
-      detail:
-          _is(best.holdSec, 45) &&
-              best.dateKey == '2026-09-02' &&
-              _is(best.previous?.holdSec, 30)
-          ? l10n.n45Seconds2SeptemberWas30
-          : null,
-      delta: delta,
-    ),
-    'step_back_lunge' => PersonalBestRow(
-      title: l10n.stepBackLunge,
-      detail:
-          best.metric == BestMetric.variation && best.dateKey == '2026-08-26'
-          ? l10n.movedToTheHarderVersion26August
-          : null,
-      delta: delta,
-    ),
-    // 120 of the 124 moves have no name in the dictionary. Reported, not faked.
-    _ => null,
-  };
+  PersonalBestRow stated(String title, bool applies, String Function() line) =>
+      PersonalBestRow(
+        title: title,
+        detail: applies ? line() : value,
+        delta: delta,
+        exerciseId: best.exerciseId,
+      );
+
+  switch (best.exerciseId) {
+    case 'goblet_squat':
+      return stated(
+        englishMoveNames.gobletSquat,
+        _is(best.loadKg, 12) &&
+            _is(best.reps, 10) &&
+            best.dateKey == '2026-09-16' &&
+            _is(best.previous?.loadKg, 10),
+        () => l10n.n12Kg1016SeptemberWas10,
+      );
+    case 'glute_bridge':
+      return stated(
+        englishMoveNames.gluteBridge,
+        _is(best.reps, 15) &&
+            best.dateKey == '2026-09-09' &&
+            _is(best.previous?.reps, 12),
+        () => l10n.n3159SeptemberWas312,
+      );
+    case 'plank_hold':
+      return stated(
+        englishMoveNames.plankHold,
+        _is(best.holdSec, 45) &&
+            best.dateKey == '2026-09-02' &&
+            _is(best.previous?.holdSec, 30),
+        () => l10n.n45Seconds2SeptemberWas30,
+      );
+    case 'step_back_lunge':
+      return stated(
+        englishMoveNames.stepBackLunge,
+        best.metric == BestMetric.variation && best.dateKey == '2026-08-26',
+        () => l10n.movedToTheHarderVersion26August,
+      );
+  }
+
+  if (ExerciseTraits.of(best.exerciseId) == null) return null;
+  return PersonalBestRow(
+    title: ExerciseTraits.nameOf(best.exerciseId),
+    detail: value,
+    delta: delta,
+    exerciseId: best.exerciseId,
+  );
+}
+
+/// Her figure on the move's own metric: "40 kg × 8", "15 reps", "45 s".
+/// Null for a harder-version best, which names no figure.
+String? _value(AppL10n l10n, PersonalBest best) => switch (best.metric) {
+  BestMetric.load when best.loadKg != null => measuredLabel(
+    l10n,
+    weightKg: best.loadKg,
+    reps: best.reps,
+  ),
+  BestMetric.reps when best.reps != null => measuredLabel(
+    l10n,
+    reps: best.reps,
+  ),
+  BestMetric.hold when best.holdSec != null => measuredLabel(
+    l10n,
+    holdSeconds: best.holdSec,
+  ),
+  _ => null,
+};
+
+/// Her bests, newest first, at most [limit] of them (all when null). A stable
+/// sort on the date, so two bests of one day keep the order they came in. The
+/// rows are sorted before they are made, so only the ones shown are resolved.
+List<PersonalBestRow> personalBestRows(
+  AppL10n l10n,
+  Iterable<PersonalBest> bests, {
+  int? limit,
+}) {
+  final all = bests.toList();
+  // List.sort is not stable, so the position breaks a tie on the date.
+  final order = [for (var i = 0; i < all.length; i++) i]
+    ..sort((a, b) {
+      final byDate = all[b].dateKey.compareTo(all[a].dateKey);
+      return byDate != 0 ? byDate : a.compareTo(b);
+    });
+  final rows = <PersonalBestRow>[];
+  for (final i in order) {
+    if (rows.length == limit) break;
+    final row = personalBestRow(l10n, all[i]);
+    if (row != null) rows.add(row);
+  }
+  return rows;
 }
 
 bool _is(num? value, num expected) => value != null && value == expected;
@@ -181,7 +243,11 @@ class PersonalBestsView extends StatelessWidget {
     required this.bests,
     this.onBack,
     this.onSelectTab,
+    this.onOpenHistory,
   });
+
+  /// Opens the history of one move, given its id. Null draws no button.
+  final ValueChanged<String>? onOpenHistory;
 
   /// Her bests, newest first. Read through `BestsRepository`, which offers no
   /// ordering but by date and no way to ask for anybody else's.
@@ -196,9 +262,7 @@ class PersonalBestsView extends StatelessWidget {
 
     // A best on a move the dictionary cannot name resolves to null and drops
     // out here, rather than appearing as a row with an exercise id in it.
-    final rows = <PersonalBestRow>[
-      for (final best in bests) ?personalBestRow(l10n, best),
-    ];
+    final rows = personalBestRows(l10n, bests);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -234,6 +298,7 @@ class PersonalBestsView extends StatelessWidget {
                       color: AppColors.amber,
                     ),
                     title: row.title,
+                    titleWidget: MoveName(row.title, style: AppText.titleM),
                     subtitle: row.detail ?? '',
                     trailing: row.delta == null
                         ? null
@@ -243,6 +308,9 @@ class PersonalBestsView extends StatelessWidget {
                               color: AppColors.onSurfaceVariant,
                             ),
                           ),
+                    onTap: onOpenHistory == null || row.exerciseId == null
+                        ? null
+                        : () => onOpenHistory!(row.exerciseId!),
                   ),
                 // The rule that keeps a best meaningful, said on the screen
                 // where she would otherwise wonder why a session is missing.

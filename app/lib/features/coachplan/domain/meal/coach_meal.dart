@@ -65,13 +65,16 @@ class MealIngredient {
 @immutable
 class MealNutrition {
   /// No numbers, because at least one ingredient is not in the verified pack.
-  const MealNutrition.unavailable() : resolved = false, kcal = null,
-       proteinG = null;
+  const MealNutrition.unavailable()
+    : resolved = false,
+      kcal = null,
+      proteinG = null;
 
   /// Every ingredient resolved, so the figures come from the pack.
-  const MealNutrition.resolved({required int this.kcal,
-    required int this.proteinG})
-    : resolved = true;
+  const MealNutrition.resolved({
+    required int this.kcal,
+    required int this.proteinG,
+  }) : resolved = true;
 
   final bool resolved;
 

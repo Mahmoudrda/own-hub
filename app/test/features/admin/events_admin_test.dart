@@ -163,7 +163,7 @@ void main() {
       expect(find.text('Use a link that starts with https://'), findsOneWidget);
     });
 
-    testWidgets('in person asks for a place name, never an address', (
+    testWidgets('in person asks for a place, an address and a Maps link', (
       tester,
     ) async {
       _phone(tester);
@@ -175,18 +175,81 @@ void main() {
       await _type(tester, 'Starts, Cairo time', '2026-11-07 08:00');
       await _type(tester, 'Ends, Cairo time', '2026-11-07 09:00');
       await _tap(tester, 'In person');
-      expect(
-        find.text('A name is enough. No street address needed.'),
-        findsOneWidget,
-      );
       await _type(tester, 'Place name', 'Zamalek ladies gym');
-      await _type(tester, 'Capacity, optional', '20');
+      await _type(tester, 'Street address (optional)', '4 Brazil St, Zamalek');
+      await _type(
+        tester,
+        'Google Maps link (optional)',
+        'https://maps.app.goo.gl/abc',
+      );
+      await _type(tester, 'Seats members can reserve (optional)', '20');
       await _tap(tester, 'Publish');
       final stored = store.events.values.single;
       expect(stored.mode, EventMode.place);
       expect(stored.placeName, 'Zamalek ladies gym');
+      expect(stored.locationAddress, '4 Brazil St, Zamalek');
+      expect(stored.locationUrl, 'https://maps.app.goo.gl/abc');
       expect(stored.link, isNull);
       expect(stored.capacity, 20);
+      expect(stored.seatsTaken, 0);
+    });
+
+    testWidgets('a Maps link from any other host is refused beside the field', (
+      tester,
+    ) async {
+      _phone(tester);
+      final store = InMemoryEvents();
+      await tester.pumpWidget(_host(EventFormView(store: store)));
+      await tester.pumpAndSettle();
+      await _type(tester, 'Title (English)', 'Walk');
+      await _type(tester, 'Title (Arabic)', 'mashy');
+      await _type(tester, 'Starts, Cairo time', '2026-11-07 08:00');
+      await _type(tester, 'Ends, Cairo time', '2026-11-07 09:00');
+      await _tap(tester, 'In person');
+      await _type(tester, 'Place name', 'Zamalek ladies gym');
+      await _type(
+        tester,
+        'Google Maps link (optional)',
+        'https://evil.example.com/x',
+      );
+      await _tap(tester, 'Publish');
+      expect(store.writes, isEmpty);
+      expect(find.text('Use a link from Google Maps.'), findsOneWidget);
+    });
+
+    testWidgets('several pictures and clips come from the media library', (
+      tester,
+    ) async {
+      _phone(tester);
+      final store = InMemoryEvents();
+      await tester.pumpWidget(
+        _host(
+          EventFormView(
+            store: store,
+            mediaNames: const ['a.webp', 'b.webp', 'intro.mp4', 'notes.pdf'],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await _fill(tester);
+      expect(find.text('notes.pdf'), findsNothing);
+      await tester.ensureVisible(find.text('Event videos'));
+      await tester.pumpAndSettle();
+      // The picture names appear under the cover and under the pictures.
+      await tester.tap(find.text('b.webp').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('a.webp').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('intro.mp4'));
+      await tester.pumpAndSettle();
+      await _tap(tester, 'Publish');
+      final stored = store.events.values.single;
+      expect(stored.imageFiles, ['b.webp', 'a.webp']);
+      expect(stored.videoFiles, ['intro.mp4']);
+      expect(stored.picturePaths, [
+        'content/events/${stored.id}/b.webp',
+        'content/events/${stored.id}/a.webp',
+      ]);
     });
 
     testWidgets('cancelling asks once, inline, then stores cancelled', (
@@ -258,10 +321,8 @@ void main() {
       _phone(tester);
       await tester.pumpWidget(_host(EventFormView(store: InMemoryEvents())));
       await tester.pumpAndSettle();
-      expect(
-        find.text('No pictures in the media library yet.'),
-        findsOneWidget,
-      );
+      expect(find.text('No pictures in the media library yet.'), findsWidgets);
+      expect(find.text('No videos in the media library yet.'), findsOneWidget);
     });
 
     testWidgets('in Arabic, the Arabic title field reads right to left', (

@@ -43,7 +43,7 @@ void main() {
         await AppRouter.readVerificationAtLaunch();
 
         expect(AppRouter.isVerified, isFalse);
-        expect(AppRouter.verificationGate('T01'), isNotNull);
+        expect(AppRouter.verificationGate('P01'), isNotNull);
       },
     );
 

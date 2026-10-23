@@ -52,6 +52,11 @@ class VerificationEvidence {
   /// quietly leave the first attempt in the heap beside the second. Asserts on
   /// [CaptureTarget.selfie] rather than accepting it, because a selfie filed as
   /// a card side would be submitted as a document and read as one.
+  ///
+  /// A new front starts a new run, so any liveness frames still held from an
+  /// earlier one are zeroed and let go here: the selfie always comes after
+  /// both sides, and frames from before this front answer a session that is
+  /// no longer the one she is on.
   void holdCardSide(CaptureTarget side, Uint8List jpeg) {
     assert(
       side == CaptureTarget.idFront || side == CaptureTarget.idBack,
@@ -59,11 +64,37 @@ class VerificationEvidence {
     );
     final previous = _cardSides[side];
     if (previous != null) _wipe(previous);
+    if (side == CaptureTarget.idFront) dropFrames();
     _cardSides[side] = jpeg;
+  }
+
+  /// Wipes one side of the card, when she chose to take it again.
+  ///
+  /// Straight away rather than when the next photograph replaces it, so a
+  /// retake she then abandons does not leave the first attempt in the heap.
+  void dropCardSide(CaptureTarget side) {
+    final previous = _cardSides.remove(side);
+    if (previous != null) _wipe(previous);
   }
 
   /// One frame of the liveness check, JPEG, from `C11`.
   void addFrame(Uint8List jpeg) => _frames.add(jpeg);
+
+  /// Wipes every liveness frame and leaves the card alone.
+  ///
+  /// Run each time a selfie session opens. Frame `n` answers step `n`, so a
+  /// run of the steps always starts from none: a retake, a fresh challenge or
+  /// a camera reopened after Settings would otherwise append four new frames
+  /// to the old ones, and the server refuses a frame count that does not
+  /// match its steps.
+  void dropFrames() {
+    // Zeroed first, then let go: clearing the list alone would leave every
+    // frame in the heap until the collector got round to it.
+    for (final frame in _frames) {
+      _wipe(frame);
+    }
+    _frames.clear();
+  }
 
   /// The front of the card, or null before `C10` has run.
   Uint8List? get front => _cardSides[CaptureTarget.idFront];
@@ -83,8 +114,7 @@ class VerificationEvidence {
   /// Both sides are required. One side is not a cheaper version of the check,
   /// it is a different check, and a server asked to cross-reference a word
   /// against a digit with only the digit in hand can only pretend.
-  bool get isComplete =>
-      front != null && back != null && _frames.isNotEmpty;
+  bool get isComplete => front != null && back != null && _frames.isNotEmpty;
 
   /// Total bytes held, for the size assertions and for a debug build's log.
   int get byteCount =>

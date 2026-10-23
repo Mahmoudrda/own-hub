@@ -96,7 +96,7 @@ void main() {
       AppRouter.featureFlags = saved;
     });
 
-    testWidgets('seventeen dark screens do it, and this is the whole list', (
+    testWidgets('fifteen dark screens do it, and this is the whole list', (
       t,
     ) async {
       phone(t);
@@ -112,20 +112,31 @@ void main() {
       // pinned so that an eighteenth — or a shipping one — cannot arrive
       // quietly. The shipping case above is the one that blocks.
       //
+      // W02 left when the coach's client page got her tab bar with the rest of
+      // coaching.
+      //
       // C04 and C05 left the list when the look-around page became the tour.
       // Each stop is the real screen inside its own `ScreenScope`, so the bar
       // on the Home stop claims Home on a screen that is Home, and the tour
-      // maps its tabs to its own stops rather than to routes.
-      expect(
-        liars.map((l) => l.split(' ').first).toSet(),
-        {
-          'C14',
-          'G03', 'G04', 'G05', 'G11', 'G16',
-          'M03', 'M04', 'M05', 'M07', 'M09', 'M10', 'M12', 'M14', 'M15',
-          'W02', 'K19',
-        },
-        reason: liars.join('\n'),
-      );
+      // maps its tabs to its own stops rather than to routes. C14 left when
+      // the waiting screen lost its bar: nothing opens until the check ends.
+      expect(liars.map((l) => l.split(' ').first).toSet(), {
+        'G03',
+        'G04',
+        'G05',
+        'G11',
+        'G16',
+        'M03',
+        'M04',
+        'M05',
+        'M07',
+        'M09',
+        'M10',
+        'M12',
+        'M14',
+        'M15',
+        'K19',
+      }, reason: liars.join('\n'));
     });
   });
 }

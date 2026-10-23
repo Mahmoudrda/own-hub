@@ -52,6 +52,14 @@ class ParsedItem {
   int get kcal => size.kcal * servings;
   int get proteinG => size.proteinG * servings;
 
+  /// Null when the size does not carry the figure.
+  int? get carbsG => _times(size.carbsG);
+  int? get fatG => _times(size.fatG);
+  int? get fiberG => _times(size.fiberG);
+
+  int? _times(int? perServing) =>
+      perServing == null ? null : perServing * servings;
+
   ParsedItem withSize(FoodSize next) => ParsedItem(
     food: food,
     size: next,
@@ -269,4 +277,42 @@ class MealSentenceParser {
     }
     return buffer.toString();
   }
+}
+
+/// Words that only link one ingredient phrase to the next.
+const _recipeConnectors = {
+  'على',
+  'عليها',
+  'عليهم',
+  'عليه',
+  'او',
+  'أو',
+  'مع',
+  'من',
+  'في',
+  'ب',
+};
+
+/// The words of [text] left once every one of [phrases] is taken out of it,
+/// without bare "and"s, digits and connectors. A step with none left is only
+/// ingredients, and has no method in it.
+List<String> arabicMethodWords(String text, Iterable<String> phrases) {
+  final all = <String>{
+    for (final p in phrases) ...[p, ...p.split('\n').map((l) => l.trim())],
+  }..remove('');
+  final longestFirst = all.toList()
+    ..sort((a, b) => b.length.compareTo(a.length));
+  var rest = text;
+  for (final phrase in longestFirst) {
+    rest = rest.replaceAll(phrase, ' ');
+  }
+  final out = <String>[];
+  for (var token in rest.split(RegExp(r'[^\p{L}\p{N}]+', unicode: true))) {
+    if (token.length > 1) token = token.replaceFirst(RegExp('^و+'), '');
+    if (token.isEmpty || token == 'و') continue;
+    if (RegExp(r'^\p{N}+$', unicode: true).hasMatch(token)) continue;
+    if (_recipeConnectors.contains(token)) continue;
+    out.add(token);
+  }
+  return out;
 }

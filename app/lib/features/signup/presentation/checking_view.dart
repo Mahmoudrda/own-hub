@@ -27,9 +27,11 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/app_preparation_steps.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_step_progress.dart';
+import '../../../ui/hand/mascot/kitten.dart';
 import '../domain/verification.dart';
 
 class CheckingView extends StatefulWidget {
@@ -46,6 +48,7 @@ class CheckingView extends StatefulWidget {
     this.onAskForReviewerWhileChecking,
     this.onClose,
     this.onSignInAgain,
+    this.reassuringSteps = false,
   });
 
   /// The server did not accept her sign-in: out to sign in again (N4).
@@ -102,6 +105,10 @@ class CheckingView extends StatefulWidget {
   /// router can tell the two apart. Falls back to [onRetake].
   final VoidCallback? onTryAgain;
 
+  /// Tick the steps that are done in turn (D39), rather than drawing them
+  /// done at once. The match is never ticked either way.
+  final bool reassuringSteps;
+
   @override
   State<CheckingView> createState() => _CheckingViewState();
 }
@@ -117,6 +124,13 @@ class _CheckingViewState extends State<CheckingView> {
 
   /// True once the check has run longer than usual.
   bool _slow = false;
+
+  /// The card has been read and the match is under way. Without the ticking
+  /// steps there is no reading to wait for, so it starts there.
+  late bool _matching = !widget.reassuringSteps;
+
+  /// The verdict is in and it is a yes.
+  bool _verified = false;
 
   @override
   void initState() {
@@ -138,6 +152,7 @@ class _CheckingViewState extends State<CheckingView> {
     if (!mounted) return;
     switch (state) {
       case VerificationVerified(:final result):
+        setState(() => _verified = true);
         widget.onVerified?.call(result);
       case VerificationAwaitingReviewer():
       case VerificationNeedsAnotherLook():
@@ -153,6 +168,7 @@ class _CheckingViewState extends State<CheckingView> {
       case VerificationTryTomorrow():
       case VerificationChecksUsedUp():
       case VerificationUnreachable():
+      case VerificationTooSlow():
       case VerificationAppCannotReach():
       case VerificationSignInAgain():
         setState(() => _stop = state);
@@ -196,6 +212,18 @@ class _CheckingViewState extends State<CheckingView> {
             : AppButton(
                 l10n.askForAWomanReviewer,
                 onPressed: widget.onAskForReviewer,
+              ),
+      ),
+      VerificationTooSlow() => (
+        l10n.yourConnectionIsTooSlow,
+        l10n.weCouldNotFinishTheCheckIn,
+        // Her choice, not a verdict, so no decision is recorded (the same
+        // button the slow check offers).
+        (widget.onTryAgain ?? widget.onRetake) == null
+            ? null
+            : AppButton(
+                l10n.tryAgain,
+                onPressed: widget.onTryAgain ?? widget.onRetake,
               ),
       ),
       VerificationAppCannotReach() => (
@@ -305,13 +333,19 @@ class _CheckingViewState extends State<CheckingView> {
               height: 132,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
+                color: AppColors.pinkSoft,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.hourglass_top,
-                size: 52,
-                color: AppColors.primary,
+              // Reading the card, then matching it, then a light cheer when it
+              // is done. Only here: every stop below is plain words.
+              child: Kitten(
+                pose: _verified
+                    ? KittenPose.cheer
+                    : _matching
+                    ? KittenPose.point
+                    : KittenPose.think,
+                size: 72,
+                sessionBudget: true,
               ),
             ),
           ),
@@ -329,21 +363,42 @@ class _CheckingViewState extends State<CheckingView> {
         // The first two are true by the time this screen opens: both sides of
         // the card and the selfie were taken on the screens before it. The
         // third is the one the server is working on.
-        const _Step(
-          icon: Icons.check_circle,
-          done: true,
-          labelKey: _StepLabel.cardTaken,
-        ),
-        const _Step(
-          icon: Icons.check_circle,
-          done: true,
-          labelKey: _StepLabel.selfieTaken,
-        ),
-        const _Step(
-          icon: Icons.autorenew,
-          done: false,
-          labelKey: _StepLabel.matching,
-        ),
+        //
+        // D39: the two that are done tick in turn, in sage, over a moment —
+        // the work she did is seen being counted — and the match waits in
+        // pencil. It never ticks here: only the verdict, routed by the
+        // listener above, can say the match is done, and nothing on this
+        // screen holds that verdict back.
+        if (widget.reassuringSteps)
+          AppPreparationSteps(
+            key: const ValueKey('checking-steps'),
+            labels: [
+              l10n.bothSidesOfYourCardTaken,
+              l10n.selfieTaken,
+              l10n.matchingYourSelfieToYourCard,
+            ],
+            completed: 2,
+            onShown: () {
+              if (mounted && !_matching) setState(() => _matching = true);
+            },
+          )
+        else ...const [
+          _Step(
+            icon: Icons.check_circle,
+            done: true,
+            labelKey: _StepLabel.cardTaken,
+          ),
+          _Step(
+            icon: Icons.check_circle,
+            done: true,
+            labelKey: _StepLabel.selfieTaken,
+          ),
+          _Step(
+            icon: Icons.autorenew,
+            done: false,
+            labelKey: _StepLabel.matching,
+          ),
+        ],
         const AppSpacer(),
         if (_slow)
           Semantics(

@@ -49,7 +49,10 @@ List<({DateTime at, num kg})> _weighIns(List<num> kgs) => [
 ];
 
 AppButton _shareButton(WidgetTester tester) => tester.widget<AppButton>(
-  find.ancestor(of: find.text('Share my card'), matching: find.byType(AppButton)),
+  find.ancestor(
+    of: find.text('Share my card'),
+    matching: find.byType(AppButton),
+  ),
 );
 
 void main() {
@@ -298,10 +301,7 @@ void main() {
   testWidgets('reads in Arabic, from the dictionary', (tester) async {
     _phone(tester);
     await tester.pumpWidget(
-      _host(
-        const ShareProgressView(story: _story),
-        locale: const Locale('ar'),
-      ),
+      _host(const ShareProgressView(story: _story), locale: const Locale('ar')),
     );
     await tester.pumpAndSettle();
 

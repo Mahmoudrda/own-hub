@@ -23,4 +23,12 @@ export 'hand_painters.dart'
         TickPainter,
         UnderlinePainter;
 export 'hand_surface.dart';
+export 'hand_swap.dart';
+export 'finger_tilt.dart';
+export 'motion.dart';
+export 'page_transition.dart';
+export 'spring_pop.dart';
+export 'stagger_in.dart';
+export 'skeleton.dart';
+export 'tilt_parallax.dart';
 export 'mascot/kitten.dart';

@@ -46,16 +46,27 @@ class FirestoreWorkoutSource implements WorkoutRemoteSource {
 
   static const GetOptions _server = GetOptions(source: Source.server);
 
+  /// A read that has not answered by now is a connection too poor to use. It
+  /// throws, the check counts as failed and tries again in an hour.
+  static const Duration readTimeout = Duration(seconds: 10);
+
   @override
   Future<int?> readVersion() async {
-    final doc = await _db.doc('meta/workouts').get(_server);
+    final doc = await _db
+        .doc('meta/workouts')
+        .get(_server)
+        .timeout(readTimeout);
     final version = doc.data()?['version'];
     return version is int ? version : null;
   }
 
   @override
   Future<Map<String, Object?>?> readLibrary(int version) async =>
-      (await _db.doc('workoutLibrary/v$version').get(_server)).data();
+      (await _db
+              .doc('workoutLibrary/v$version')
+              .get(_server)
+              .timeout(readTimeout))
+          .data();
 }
 
 enum WorkoutRefreshOutcome {
@@ -127,16 +138,16 @@ class WorkoutSync {
     }
     try {
       final version = await remote.readVersion();
-      _notBefore = now.add(checkEvery);
-      try {
-        await checks.write(now.toUtc().toIso8601String());
-      } catch (_) {}
       final current = await load();
       if (version == null || version <= current.version) {
+        await _stampChecked(now);
         return (WorkoutRefreshOutcome.upToDate, null);
       }
       final raw = await remote.readLibrary(version);
-      if (raw == null) return (WorkoutRefreshOutcome.rejected, null);
+      if (raw == null) {
+        _notBefore = now.add(retryAfterFailure);
+        return (WorkoutRefreshOutcome.rejected, null);
+      }
       final WorkoutLibrary library;
       try {
         library = WorkoutLibrary.parse(_plain(raw));
@@ -145,15 +156,28 @@ class WorkoutSync {
         }
       } on FormatException catch (error) {
         if (kDebugMode) debugPrint('Workout library refused: $error');
+        _notBefore = now.add(retryAfterFailure);
         return (WorkoutRefreshOutcome.rejected, null);
       }
       await cache.write(jsonEncode(library.toJson()));
+      await _stampChecked(now);
       return (WorkoutRefreshOutcome.updated, library);
     } catch (error) {
       _notBefore = now.add(retryAfterFailure);
       if (kDebugMode) debugPrint('Workout library check failed: $error');
       return (WorkoutRefreshOutcome.failed, null);
     }
+  }
+
+  /// "Checked today" is written only once the answer is in hand: the library
+  /// is cached, or the server said there is nothing newer. A read that timed
+  /// out or a download cut short leaves no stamp, so the next launch asks
+  /// again instead of waiting a day on a library she never received.
+  Future<void> _stampChecked(DateTime now) async {
+    _notBefore = now.add(checkEvery);
+    try {
+      await checks.write(now.toUtc().toIso8601String());
+    } catch (_) {}
   }
 
   static Map<String, Object?> _plain(Map<String, Object?> data) =>

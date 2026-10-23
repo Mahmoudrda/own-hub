@@ -112,7 +112,7 @@ void main() {
       await AppRouter.readVerificationAtLaunch();
 
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
       expect(AppRouter.awaitingReviewer, isFalse);
     });
 
@@ -138,7 +138,7 @@ void main() {
       await AppRouter.readVerificationAtLaunch();
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
 
     test('no evidence at all keeps the gate shut (Protected List 4)', () async {
@@ -147,7 +147,7 @@ void main() {
       await AppRouter.readVerificationAtLaunch();
 
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
 
     test('a failure that is not the network does not use the memory', () async {
@@ -189,14 +189,14 @@ void main() {
 
       expect(AppRouter.signedInUid, isNull);
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
     });
 
     test('nobody remembered: the front door, as before', () async {
       AppRouter.verificationBackend = FakeBackend(ready: false, uid: null);
       await AppRouter.readVerificationAtLaunch();
       expect(AppRouter.isVerified, isFalse);
-      expect(AppRouter.verificationGate('T01'), isNotNull);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
     });
   });
 
@@ -214,6 +214,90 @@ void main() {
       // The token timed out, which is a network answer: her memory holds.
       expect(AppRouter.isVerified, isTrue);
     }, timeout: const Timeout(Duration(seconds: 20)));
+  });
+
+  group('a remembered launch does not wait for the network (D44)', () {
+    const approved = ServerVerification(ServerVerificationState.approved);
+
+    test('memory and the on-device status agree: open at once, with a token '
+        'and a server that never answer', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final backend = FakeBackend(
+        cached: approved,
+        status: () => Completer<Never>().future,
+      );
+      AppRouter.verificationBackend = backend;
+
+      final clock = Stopwatch()..start();
+      await AppRouter.readVerificationAtLaunch();
+      clock.stop();
+
+      expect(clock.elapsed, lessThan(const Duration(milliseconds: 500)));
+      expect(AppRouter.isVerified, isTrue);
+      expect(AppRouter.verificationGate('P01'), isNull);
+    });
+
+    test('the claim read right behind it still decides: a revoked claim '
+        'closes the gate', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final answer = Completer<bool>();
+      final backend = FakeBackend(
+        cached: approved,
+        claim: ({bool forceRefresh = false}) => answer.future,
+      );
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+      expect(AppRouter.isVerified, isTrue);
+
+      answer.complete(false);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(AppRouter.isVerified, isFalse);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
+      expect(await VerificationMemory.verifiedUid(), isNull);
+    });
+
+    test('a failure that is not the network closes what the memory opened, '
+        'as the full read would', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final backend = FakeBackend(
+        cached: approved,
+        claim: _throws(FirebaseAuthException(code: 'user-disabled')),
+        status: () async =>
+            const ServerVerification(ServerVerificationState.rejected),
+      );
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+      expect(AppRouter.isVerified, isTrue, reason: 'open for the first frame');
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(AppRouter.isVerified, isFalse);
+      expect(AppRouter.verificationGate('P01'), isNotNull);
+    });
+
+    test('memory alone is not enough: without the cached approval the full '
+        'read runs', () async {
+      await VerificationMemory.rememberVerified('u1');
+      final backend = FakeBackend(claim: _says(false));
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+
+      expect(AppRouter.isVerified, isFalse);
+    });
+
+    test('a cached approval alone is not enough for an account this phone '
+        'never proved', () async {
+      await VerificationMemory.rememberVerified('someone-else');
+      final backend = FakeBackend(cached: approved, claim: _says(false));
+      AppRouter.verificationBackend = backend;
+
+      await AppRouter.readVerificationAtLaunch();
+
+      expect(AppRouter.isVerified, isFalse);
+    });
   });
 
   group('the refresh is retried, not fired once', () {
@@ -272,6 +356,9 @@ void main() {
       await tester.pump();
       final l10n = AppL10n.of(tester.element(find.byType(BeingCheckedView)));
 
+      expect(opened, 0, reason: 'the kitten cheers first');
+      await tester.pump(const Duration(milliseconds: 1700));
+
       expect(find.text(l10n.yourCheckIsDone), findsOneWidget);
       expect(find.text(l10n.theAppOpensAsSoonAsYour), findsNothing);
       expect(find.text(l10n.aWomanFromOwnHubReviewsYour), findsNothing);
@@ -288,7 +375,7 @@ void main() {
       );
       expect(AppRouter.awaitingReviewer, isFalse);
       expect(AppRouter.isVerified, isTrue);
-      expect(AppRouter.verificationGate('T01'), isNull);
+      expect(AppRouter.verificationGate('P01'), isNull);
     });
   });
 }

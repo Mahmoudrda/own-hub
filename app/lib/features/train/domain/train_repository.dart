@@ -55,6 +55,7 @@ class PlannedMove {
     this.needsEquipment = false,
     this.floorOnly = false,
     this.videoAssetId,
+    this.restSeconds,
   });
 
   final String exerciseId;
@@ -81,6 +82,10 @@ class PlannedMove {
   /// Identifies the demo loop in the video library. Null until the 124 titles
   /// are produced, which is every move today.
   final String? videoAssetId;
+
+  /// The rest the plan gives after this move, in seconds. Null when the plan
+  /// names none; R09 then rests her the standard minute.
+  final int? restSeconds;
 }
 
 /// One day of the plan: the assignment R03 renders.
@@ -114,7 +119,7 @@ class WorkoutDay {
   final String? planVersion;
 }
 
-/// A row in the bundled workout library — R11.
+/// A row in the workout library Train lists under Explore.
 @immutable
 class LibraryWorkout {
   const LibraryWorkout({
@@ -125,9 +130,14 @@ class LibraryWorkout {
     this.needsEquipment = false,
     this.minutes = 10,
     this.posterAssetId,
+    this.exerciseIds = const <String>[],
   });
 
   final String id;
+
+  /// The moves in the session, so Train can offer it only when she can watch
+  /// every one of them.
+  final List<String> exerciseIds;
 
   /// "Floor legs, no jumping".
   final String title;
@@ -232,6 +242,10 @@ class PersonalBestEligibility {
 /// A widget that reached for a Firebase Storage download URL instead would cost
 /// roughly $1,352 a month in egress at launch scale. Hence an interface: there is
 /// one place that decision lives, and it is not a screen.
+///
+/// The exercise library's short demo clips (R15) are the exception D42
+/// records: downloaded once from the content bucket and kept on the phone
+/// (`exercise_media_store.dart`). The follow-along titles stay here.
 abstract class WorkoutVideoRepository {
   /// The playable URL, or null when the asset has not been produced yet.
   Uri? urlFor(String assetId);
@@ -305,6 +319,27 @@ abstract class TrainRepository {
     required String activity,
     required int durationSec,
   });
+
+  /// Corrects one set she logged, after its undo window has closed.
+  ///
+  /// The set is found by its prescription's `order` within [exerciseId] in
+  /// [sessionId]; what she did replaces what was written. The prescription is
+  /// never touched: this records a different outcome, never a different plan.
+  Future<void> replaceSet({
+    required String sessionId,
+    required String exerciseId,
+    required LoggedSet set,
+  });
+
+  /// Removes a session she logged by mistake, with every set written to it.
+  /// Returns the session, or null when there was none under [sessionId].
+  ///
+  /// Reachable only when the removal's own undo window has closed. Points and
+  /// the week are the rewards group's to take back, not this interface's.
+  ///
+  /// The removal is remembered, so a copy of the session on the server is
+  /// marked removed rather than merged back.
+  Future<TrainSession?> removeSession(String sessionId);
 }
 
 /// What the server does when a flush lands.
@@ -337,6 +372,7 @@ class InMemoryTrainRepository implements TrainRepository {
     this.day,
     this.workouts = const <LibraryWorkout>[],
     this.alternatives = const <MoveAlternative>[],
+    this.alternativesFinder,
     this.onFlushed,
   });
 
@@ -349,6 +385,10 @@ class InMemoryTrainRepository implements TrainRepository {
   /// Swap candidates offered on R05.
   final List<MoveAlternative> alternatives;
 
+  /// Candidates worked out for one move, from the exercise library. When set
+  /// it is the only source: a move it finds nothing for has no swap.
+  final List<MoveAlternative> Function(String exerciseId)? alternativesFinder;
+
   /// Run after a flush has landed, the way a Cloud Function runs after a write.
   ///
   /// Null by default, so a repository with no hook behaves exactly as it always
@@ -356,6 +396,15 @@ class InMemoryTrainRepository implements TrainRepository {
   final FlushedMove? onFlushed;
 
   final Map<String, TrainSession> _sessions = <String, TrainSession>{};
+
+  /// Sessions she removed, by id, with the two facts the cloud needs to mark
+  /// them removed: the source the rules require an update to keep, and the day.
+  ///
+  /// The rules keep a session with a set in it on the server for good, and the
+  /// merge takes back any session the phone does not hold. Without this record
+  /// a removed session came back at the next sign-in, after her week and her
+  /// points had already been taken down for it.
+  final Map<String, RemovedSession> _removed = <String, RemovedSession>{};
 
   /// Every flush that reached "the server", in order. A test asserts against this
   /// to prove an undone log never arrived.
@@ -385,8 +434,11 @@ class InMemoryTrainRepository implements TrainRepository {
   Future<List<LibraryWorkout>> library() async => workouts;
 
   @override
-  Future<List<MoveAlternative>> alternativesFor(String exerciseId) async =>
-      alternatives.where((a) => a.exerciseId != exerciseId).toList();
+  Future<List<MoveAlternative>> alternativesFor(String exerciseId) async {
+    final finder = alternativesFinder;
+    if (finder != null) return finder(exerciseId);
+    return alternatives.where((a) => a.exerciseId != exerciseId).toList();
+  }
 
   @override
   Future<TrainSession> startSession(WorkoutDay day) async {
@@ -413,6 +465,7 @@ class InMemoryTrainRepository implements TrainRepository {
       sets: sets,
     );
     _sessions[session.id] = session;
+    _removed.remove(session.id);
     _liveSessionId = session.id;
     return session;
   }
@@ -487,6 +540,8 @@ class InMemoryTrainRepository implements TrainRepository {
       endedReason: EndedReason.finished,
       completed: true,
     );
+    // Logged again after she removed it: the same id is hers again.
+    _removed.remove(id);
     _sessions[id] = session;
     return session;
   }
@@ -508,8 +563,95 @@ class InMemoryTrainRepository implements TrainRepository {
       endedReason: EndedReason.finished,
       completed: true,
     );
+    // Logged again after she removed it: the same id is hers again.
+    _removed.remove(id);
     _sessions[id] = session;
     return session;
+  }
+
+  @override
+  Future<void> replaceSet({
+    required String sessionId,
+    required String exerciseId,
+    required LoggedSet set,
+  }) async {
+    final order = set.prescribed.order;
+    // Newest first: a set logged twice is corrected where it last landed.
+    for (var i = flushes.length - 1; i >= 0; i--) {
+      final flush = flushes[i];
+      if (flush.sessionId != sessionId || flush.exerciseId != exerciseId) {
+        continue;
+      }
+      final at = flush.sets.indexWhere((s) => s.prescribed.order == order);
+      if (at < 0) continue;
+      flushes[i] = (
+        sessionId: flush.sessionId,
+        exerciseId: flush.exerciseId,
+        sets: [
+          for (var j = 0; j < flush.sets.length; j++)
+            j == at ? set : flush.sets[j],
+        ],
+      );
+      return;
+    }
+    // Never written: the correction is the first record of it.
+    flushes.add((sessionId: sessionId, exerciseId: exerciseId, sets: [set]));
+  }
+
+  @override
+  Future<TrainSession?> removeSession(String sessionId) async {
+    final removed = _sessions.remove(sessionId);
+    flushes.removeWhere((f) => f.sessionId == sessionId);
+    if (_liveSessionId == sessionId) _liveSessionId = null;
+    if (removed != null) {
+      _removed[sessionId] = RemovedSession(
+        id: sessionId,
+        source: removed.source,
+        dateKey: removed.dateKey,
+      );
+    }
+    return removed;
+  }
+
+  /// The sessions she removed, as the snapshot and the cloud keep them.
+  List<RemovedSession> get removedSessions =>
+      List<RemovedSession>.unmodifiable(_removed.values);
+
+  /// Whether [sessionId] is one she removed. The merge reads it so a copy
+  /// still on the server is never taken back.
+  bool isRemoved(String sessionId) => _removed.containsKey(sessionId);
+
+  /// Puts back the sessions she had removed when the app closed.
+  ///
+  /// Separate from [restore] on purpose: the merge restores the sessions it
+  /// folds in, and a removal must not be forgotten by that.
+  void restoreRemoved(Iterable<RemovedSession> removed) {
+    _removed
+      ..clear()
+      ..addEntries(
+        removed
+            .where((r) => !_sessions.containsKey(r.id))
+            .map((r) => MapEntry(r.id, r)),
+      );
+  }
+
+  /// The sets she logged for [exerciseId] in [sessionId], one per set number,
+  /// in order. A set written twice reads as its latest outcome.
+  List<LoggedSet> loggedSetsFor({
+    required String sessionId,
+    required String exerciseId,
+  }) {
+    final byOrder = <int, LoggedSet>{};
+    for (final flush in flushes) {
+      if (flush.sessionId != sessionId || flush.exerciseId != exerciseId) {
+        continue;
+      }
+      for (final set in flush.sets) {
+        if (set.isLogged) byOrder[set.prescribed.order] = set;
+      }
+    }
+    final orders = byOrder.keys.toList()..sort();
+    return [for (final order in orders) byOrder[order]!];
   }
 
   /// Every session she has, as the snapshot keeps them.
@@ -519,6 +661,24 @@ class InMemoryTrainRepository implements TrainRepository {
   /// `lib/app_state/local_persistence.dart`.
   List<TrainSession> get sessions =>
       List<TrainSession>.unmodifiable(_sessions.values);
+
+  /// Her finished sessions that counted, newest day first (ties: the one saved
+  /// last first). Abandoned sessions and sessions still under way are left out.
+  List<TrainSession> completedSessions({int limit = 20}) {
+    final all = _sessions.values.toList();
+    final order = <String, int>{
+      for (var i = 0; i < all.length; i++) all[i].id: i,
+    };
+    final done =
+        [
+          for (final s in all)
+            if (s.completed && s.endedReason != EndedReason.abandoned) s,
+        ]..sort((a, b) {
+          final byDay = b.dateKey.compareTo(a.dateKey);
+          return byDay != 0 ? byDay : order[b.id]!.compareTo(order[a.id]!);
+        });
+    return done.take(limit).toList();
+  }
 
   /// The counter behind `live-1`, `live-2`, so a session started after a
   /// restart does not reuse an id an earlier one already holds.
@@ -551,6 +711,13 @@ class InMemoryTrainRepository implements TrainRepository {
     _counter = sessionCounter;
   }
 
+  /// Points the repository back at a live session that was under way when the
+  /// app closed, so her next flush is attributed to it. Nothing when the
+  /// repository does not hold that session.
+  void resumeLive(String sessionId) {
+    if (_sessions.containsKey(sessionId)) _liveSessionId = sessionId;
+  }
+
   /// Drops every session and every flush, keeping the bundled library.
   ///
   /// Account deletion calls it: `_sessions` and `flushes` are her workouts,
@@ -558,11 +725,37 @@ class InMemoryTrainRepository implements TrainRepository {
   /// and are not hers to delete.
   void reset() {
     _sessions.clear();
+    _removed.clear();
     flushes.clear();
     swaps.clear();
     _liveSessionId = null;
     _counter = 0;
   }
+}
+
+/// A session she removed: enough to mark its cloud copy removed and to keep
+/// the merge from bringing it back.
+@immutable
+class RemovedSession {
+  const RemovedSession({
+    required this.id,
+    required this.source,
+    required this.dateKey,
+  });
+
+  final String id;
+  final SessionSource source;
+  final String dateKey;
+
+  @override
+  bool operator ==(Object other) =>
+      other is RemovedSession &&
+      other.id == id &&
+      other.source == source &&
+      other.dateKey == dateKey;
+
+  @override
+  int get hashCode => Object.hash(id, source, dateKey);
 }
 
 /// The video library before any of it has been produced.

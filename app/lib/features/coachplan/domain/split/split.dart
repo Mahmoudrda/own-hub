@@ -129,27 +129,23 @@ class SplitDaySlot {
     ],
   );
 
-  Map<String, Object?> toWire({required SplitOwnerKind ownerKind}) =>
-      <String, Object?>{
-        'dayIndex': dayIndex,
-        'kind': kind.wireName,
-        if (title != null) 'title': title,
-        if (minutes != null) 'minutes': minutes,
-        if (restBetweenSetsSec != null)
-          'restBetweenSetsSec': restBetweenSetsSec,
-        if (moves.isNotEmpty)
-          'moves': <Map<String, Object?>>[
-            for (final move in moves) move.toWire(),
-          ],
-        // D7: the key does not exist on her own split, rather than existing
-        // and being empty.
-        if (ownerKind == SplitOwnerKind.coach &&
-            approvedAlternatives.isNotEmpty)
-          'approvedAlternatives': <Map<String, Object?>>[
-            for (final alternative in approvedAlternatives)
-              alternative.toWire(),
-          ],
-      };
+  Map<String, Object?> toWire({
+    required SplitOwnerKind ownerKind,
+  }) => <String, Object?>{
+    'dayIndex': dayIndex,
+    'kind': kind.wireName,
+    if (title != null) 'title': title,
+    if (minutes != null) 'minutes': minutes,
+    if (restBetweenSetsSec != null) 'restBetweenSetsSec': restBetweenSetsSec,
+    if (moves.isNotEmpty)
+      'moves': <Map<String, Object?>>[for (final move in moves) move.toWire()],
+    // D7: the key does not exist on her own split, rather than existing
+    // and being empty.
+    if (ownerKind == SplitOwnerKind.coach && approvedAlternatives.isNotEmpty)
+      'approvedAlternatives': <Map<String, Object?>>[
+        for (final alternative in approvedAlternatives) alternative.toWire(),
+      ],
+  };
 
   @override
   String toString() => 'SplitDaySlot($dayIndex, ${kind.wireName})';

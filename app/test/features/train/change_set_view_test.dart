@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/logging/log_command_bus.dart';
+import 'package:own_hub/features/train/domain/exercise_library.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/change_set_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -267,4 +268,32 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  for (final locale in const [Locale('en'), Locale('ar')]) {
+    for (final shown in [true, false]) {
+      testWidgets(
+        'the plate helper ${shown ? 'fits' : 'is hidden by its switch'} at '
+        'text scale 2.0 in ${locale.languageCode}',
+        (tester) async {
+          await tester.pumpWidget(
+            _host(
+              ChangeSetView(
+                equipment: const [LibraryEquipment.barbell],
+                weightOptionsKg: const [40, 42.5, 45],
+                plateHelper: shown,
+              ),
+              locale: locale,
+              textScale: 2,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(
+            find.byKey(const ValueKey('plate-diagram')),
+            shown ? findsOneWidget : findsNothing,
+          );
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
 }

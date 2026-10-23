@@ -80,7 +80,8 @@ class RecipeAccess {
   bool get isOpen => reason == null;
 
   @override
-  String toString() => isOpen ? 'RecipeAccess.open' : 'RecipeAccess.locked($reason)';
+  String toString() =>
+      isOpen ? 'RecipeAccess.open' : 'RecipeAccess.locked($reason)';
 }
 
 /// What the entitlement document says, once it has been read.

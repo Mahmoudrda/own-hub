@@ -14,6 +14,8 @@ import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/eat_view.dart';
+import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
+    show PlusButton, QuickAddCard;
 import 'package:own_hub/domain/format/number_label.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -98,6 +100,7 @@ EatView _eat({
   MealRepository? repository,
   LogCommandBus? bus,
   LogHandle? justLogged,
+  int foodPointsPreview = 0,
   ValueChanged<LogHandle>? onLogged,
   DietaryConstraints constraints = DietaryConstraints.none,
 }) {
@@ -107,6 +110,7 @@ EatView _eat({
     bus: bus,
     now: _lunchtime,
     justLogged: justLogged,
+    foodPointsPreview: foodPointsPreview,
     onLogged: onLogged,
     onOpenRecipes: () {},
     onType: () {},
@@ -128,7 +132,7 @@ void main() {
 
       expect(find.text('Molokhia with chicken'), findsOneWidget);
       expect(find.text('460 kcal · 34 g protein'), findsOneWidget);
-      expect(find.text('I ate this'), findsOneWidget);
+      expect(find.byType(PlusButton), findsOneWidget);
     });
 
     testWidgets('one tap logs it, and the write waits five seconds', (
@@ -145,7 +149,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one tap.
-      await tester.tap(find.text('I ate this'));
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -180,7 +186,9 @@ void main() {
       // Lunch is empty and reads "Now".
       expect(find.text('Now'), findsOneWidget);
 
-      await tester.tap(find.text('I ate this'));
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       // §4.3: the logged row appears with its real numbers straight away, even
@@ -208,7 +216,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('I ate this'));
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump(const Duration(seconds: 2));
 
       expect(handles.single.undo(), isTrue);
@@ -269,8 +279,8 @@ void main() {
 
       expect(
         find.text('About ${countLabel(kcal)} kcal so far today'),
-        findsOneWidget,
-        reason: 'the sentence must state what she actually logged',
+        findsNothing,
+        reason: 'the app promises no calorie line',
       );
       expect(
         find.textContaining('${countLabel(protein)} of '),
@@ -306,7 +316,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('I ate this'));
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -329,12 +341,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // What will appear here, and why it is empty.
-      expect(find.text('No plates yet'), findsOneWidget);
-      expect(
-        find.textContaining('Add something twice and it becomes a one-tap'),
-        findsOneWidget,
-      );
+      // No empty state: the quick strip is already full of popular dishes.
+      expect(find.text('No plates yet'), findsNothing);
+      expect(find.text('Quick add'), findsOneWidget);
       expect(find.text('Day 1'), findsOneWidget);
     });
 
@@ -347,12 +356,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Or start from one of these'), findsOneWidget);
+      expect(find.text('Quick add'), findsOneWidget);
       expect(
-        find.text('I ate this'),
-        findsNWidgets(3),
+        find.byType(QuickAddCard, skipOffstage: false),
+        findsNWidgets(6),
         reason:
-            'three real Egyptian starters — an empty box would ask her to '
+            'six real Egyptian starters — an empty box would ask her to '
             'invent an answer',
       );
     });
@@ -391,13 +400,15 @@ void main() {
 
       await tester.pumpWidget(_host(_eat(repository: repository, bus: bus)));
       await tester.pumpAndSettle();
-      expect(find.text('No plates yet'), findsOneWidget);
+      expect(find.text('Day 1'), findsOneWidget);
 
-      await tester.tap(find.text('I ate this').first);
+      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.pump();
+      await tester.tap(find.byType(PlusButton).first);
       await tester.pump();
 
       expect(
-        find.text('No plates yet'),
+        find.text('Day 1'),
         findsNothing,
         reason: 'the day-one branch ends at her first log of any kind',
       );
@@ -425,7 +436,7 @@ void main() {
       bus.dispose();
     });
 
-    testWidgets('five points land once a day, not once an item', (
+    testWidgets('no points are claimed for a log that will pay nothing (D41)', (
       tester,
     ) async {
       _phone(tester);
@@ -436,6 +447,32 @@ void main() {
 
       await tester.pumpWidget(
         _host(_eat(repository: _repositoryWithHistory(), justLogged: handle)),
+      );
+      await tester.pumpAndSettle();
+
+      // The second meal of a day, or a day already at its cap: the pill used
+      // to say "+5 points" regardless, and nothing was ever paid.
+      expect(find.textContaining('points'), findsNothing);
+      bus.dispose();
+    });
+
+    testWidgets('five points land once a day, not once an item', (
+      tester,
+    ) async {
+      _phone(tester);
+      final bus = LogCommandBus();
+      final handle = bus.submit(
+        UndoableLog(describe: 'Meal added', commit: () async {}),
+      );
+
+      await tester.pumpWidget(
+        _host(
+          _eat(
+            repository: _repositoryWithHistory(),
+            justLogged: handle,
+            foodPointsPreview: 5,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -456,12 +493,7 @@ void main() {
         find.byWidgetPredicate(
           (w) =>
               w is Text &&
-              const [
-                'Breakfast',
-                'Lunch',
-                'Dinner',
-                'Snack',
-              ].contains(w.data),
+              const ['Breakfast', 'Lunch', 'Dinner', 'Snack'].contains(w.data),
         ),
         findsWidgets,
       );
@@ -476,19 +508,37 @@ void main() {
       bus.dispose();
     });
 
-    testWidgets('E01 shows the Ramadan pill instead, not the points one', (
-      tester,
-    ) async {
+    testWidgets('E01 shows no pill while Ramadan mode is off', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
         _host(_eat(repository: _repositoryWithHistory())),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Ramadan mode off'), findsOneWidget);
+      expect(find.text('Ramadan mode off'), findsNothing);
       expect(find.text('+5 points'), findsNothing);
       expect(find.text('Undo'), findsNothing);
     });
+  });
+
+  group('E01 at the largest text size', () {
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets('does not overflow in ${locale.languageCode}', (
+        tester,
+      ) async {
+        _phone(tester);
+        await tester.pumpWidget(
+          _host(
+            _eat(repository: InMemoryMealRepository()),
+            locale: locale,
+            textScale: 2.0,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(QuickAddCard), findsWidgets);
+      });
+    }
   });
 
   group('P0-A11Y-01 — Arabic', () {
@@ -506,7 +556,7 @@ void main() {
       // the same word. Asserting one would be asserting a bug.
       expect(find.text('الأكل'), findsWidgets);
       expect(find.text('بروتين'), findsOneWidget);
-      expect(find.text('أكلت ده'), findsOneWidget);
+      expect(find.byKey(const ValueKey('slot-picks-title')), findsOneWidget);
       expect(find.text('Eat'), findsNothing);
     });
 
@@ -539,8 +589,8 @@ void main() {
       // The dictionary uses Western digits in all of its values containing a
       // number, and P0-A11Y-01 requires it. Eastern Arabic digits here would
       // mean something reached for NumberFormat.
-      expect(find.textContaining('٤٦٠'), findsNothing);
-      expect(find.textContaining('460'), findsOneWidget);
+      expect(find.textContaining(RegExp('[٠-٩]')), findsNothing);
+      expect(find.textContaining(RegExp('[0-9]')), findsWidgets);
     });
 
     testWidgets('does not overflow at the largest text size in Arabic', (

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from identity import config, decisions, review, store
+from identity import approvals, config, decisions, review, store
 from tests import fake_firestore
 from tests.fake_review_store import FakeReviewStore
 
@@ -79,6 +79,7 @@ def test_the_hourly_job_runs_the_retry(monkeypatch):
     flag_id = _booked(fake)
     review.decide(fake, "rev", flag_id, True)
     monkeypatch.setattr(main.store, "FirestoreReviewStore", lambda: fake)
+    monkeypatch.setattr(approvals, "revoked_since_approval", lambda uid: False)
     main.expire_stale_reviews.__wrapped__(None)
     assert fake.minted == ["her"]
     assert not fake.flags[flag_id].get("mintPending")
@@ -99,3 +100,47 @@ def test_the_firestore_store_marks_lists_and_clears(monkeypatch):
     s.clear_mint_pending("f1")
     assert s.mint_pending_flags(10) == []
     assert "mintPending" not in db.docs[f"{config.COL_FLAGS}/f1"]
+
+
+class _Auth:
+    def __init__(self, claims):
+        self.claims = dict(claims)
+
+    def get_user(self, uid):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(custom_claims=dict(self.claims))
+
+    def set_custom_user_claims(self, uid, claims):
+        self.claims = dict(claims)
+
+
+@pytest.fixture
+def auth(monkeypatch):
+    import firebase_admin.auth as real
+
+    fake = _Auth({})
+    monkeypatch.setattr(real, "get_user", fake.get_user)
+    monkeypatch.setattr(real, "set_custom_user_claims", fake.set_custom_user_claims)
+    return fake
+
+
+def test_taking_verification_back_suspends_an_active_coach_claim(auth):
+    auth.claims = {"verified": True, "coachV": "active", "womanReviewer": True}
+    store.mint_claims("her", False)
+    assert auth.claims == {"verified": False, "coachV": "suspended", "womanReviewer": True}
+
+
+def test_taking_verification_back_leaves_other_coach_states_alone(auth):
+    auth.claims = {"verified": True}
+    store.mint_claims("her", False)
+    assert auth.claims == {"verified": False}
+    auth.claims = {"verified": True, "coachV": "suspended"}
+    store.mint_claims("her", False)
+    assert auth.claims["coachV"] == "suspended"
+
+
+def test_giving_verification_keeps_the_coach_claim_as_it_is(auth):
+    auth.claims = {"verified": False, "coachV": "suspended"}
+    store.mint_claims("her", True)
+    assert auth.claims == {"verified": True, "coachV": "suspended"}

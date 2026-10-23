@@ -40,7 +40,7 @@ Food _tagged(String id, Set<String> allergens, {Set<String>? dietTags}) => Food(
   sizes: _sizes,
 );
 
-/// A dish as the pack actually ships it today: **no allergen data at all.**
+/// A food with no allergen list: the hand-written samples and typed-in foods.
 Food _untagged(String id) => Food(foodId: id, names: [id], sizes: _sizes);
 
 void main() {
@@ -115,13 +115,13 @@ void main() {
       );
     });
 
-    test('this is the state EVERY dish is in today', () {
-      // The shipped pack carries no allergens[]. Recorded as an executable fact
-      // rather than as a comment: if the content lands and this test starts
-      // failing, that is the signal to re-run P0-EAT-01 for real.
-      final shippedShape = _untagged('anything_at_all');
-      expect(shippedShape.allergensUnknown, isTrue);
-      expect(guard.assess(shippedShape).isBlocked, isTrue);
+    test('this is the state of the samples and of foods she types in', () {
+      // The bundled pack now carries an allergens list on every food (see
+      // eat_more_macros_test.dart). A food without one is still unknown, which
+      // is what the hand-written samples and her own typed-in foods are.
+      final unlisted = _untagged('anything_at_all');
+      expect(unlisted.allergensUnknown, isTrue);
+      expect(guard.assess(unlisted).isBlocked, isTrue);
     });
   });
 

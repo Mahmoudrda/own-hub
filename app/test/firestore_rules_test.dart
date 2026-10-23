@@ -150,10 +150,11 @@ void main() {
     test('plan fields are forbidden on a message document', () {
       expect(
         rules,
-        contains("['planVersion', 'assignments', 'published']"),
+        contains("['senderUid', 'type', 'text', 'recipeId', 'createdAt']"),
         reason:
-            'if a message can hold plan fields, "the coach changed my plan '
-            'in chat" becomes a shape this collection can hold',
+            'a message is a whitelist of five keys, so it can hold no plan '
+            'field: "the coach changed my plan in chat" is not a shape this '
+            'collection can hold',
       );
     });
 
@@ -172,21 +173,26 @@ void main() {
       expect(
         _matchBlock(rules, 'match /plans/'),
         contains('allow write: if false;'),
-        reason: 'a client that can write a plan can prescribe training to '
+        reason:
+            'a client that can write a plan can prescribe training to '
             'another woman, which is the one thing a coach is verified for',
       );
     });
   });
 
   group('spine C10 — consent is checked at read time', () {
-    test('a client result is readable only while consent is granted', () {
-      expect(
-        rules,
-        contains("resource.data.consentState == 'granted'"),
-        reason:
-            'checking consent at read time is what makes withdrawal take '
-            'effect everywhere at once',
+    test('no client result is readable: the old results path is closed', () {
+      // The coach results path read a woman's result while her consent was
+      // granted. Nothing writes it any more, so it is shut for everyone,
+      // which also means no result can outlive a withdrawn consent.
+      const head = 'match /results/{resultId} {';
+      final start = rules.indexOf(head);
+      expect(start, isNonNegative);
+      final block = rules.substring(
+        start,
+        rules.indexOf('}', start + head.length),
       );
+      expect(block, contains('allow read, write: if false;'));
     });
   });
 

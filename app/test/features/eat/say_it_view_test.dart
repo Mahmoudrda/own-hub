@@ -12,11 +12,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/say_it_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
 final DateTime _lunchtime = DateTime(2026, 9, 15, 13, 12);
@@ -69,6 +71,14 @@ SayItView _sayIt({
 }
 
 void main() {
+  final savedFlags = AppRouter.featureFlags;
+  setUp(() {
+    AppRouter.featureFlags = FeatureFlags.allOff.with_({
+      for (final f in Feature.values) f: f != Feature.accountRequired,
+    });
+  });
+  tearDown(() => AppRouter.featureFlags = savedFlags);
+
   group('P0-LOG-08 — the transcript is shown before saving', () {
     testWidgets('her words are on screen before anything is written', (
       tester,
@@ -269,7 +279,7 @@ void main() {
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.byType(Dialog), findsNothing);
-      expect(find.text('تراجع'), findsOneWidget);
+      expect(find.text('تراجعي'), findsOneWidget);
 
       bus.dispose();
     });

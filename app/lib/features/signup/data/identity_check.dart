@@ -30,6 +30,7 @@ import '../domain/verification.dart';
 import '../domain/verification_evidence.dart';
 import '../domain/verification_provider.dart';
 import 'callable_review_request.dart';
+import 'review_scheduling_repository.dart';
 import 'callable_verification_provider.dart';
 import 'camera_capture_service.dart';
 import 'provider_verification_repository.dart';
@@ -75,14 +76,19 @@ class IdentityCheck {
     VerificationProvider? provider,
     ClaimRefresher? refreshClaims,
     ReviewRequester? reviews,
+    ReviewSchedulingRepository? scheduling,
     Future<String?> Function()? installId,
   }) : _provider = provider ?? CallableVerificationProvider(),
        _refreshClaims = refreshClaims ?? _refreshIdToken,
        reviews = reviews ?? CallableReviewRequester(),
+       scheduling = scheduling ?? CallableReviewScheduling(),
        _installId = installId ?? InstallId.read;
 
   /// `request_review`, shared by C15 and the error branch of C12.
   final ReviewRequester reviews;
+
+  /// Reviewer list, free times and booking, for C15 and C14.
+  final ReviewSchedulingRepository scheduling;
 
   final Future<String?> Function() _installId;
 
@@ -100,6 +106,10 @@ class IdentityCheck {
   );
 
   CaptureService get capture => _capture;
+
+  /// When the current liveness session stops being accepted, or null before
+  /// one is minted. `C11` reads it each time its camera opens.
+  DateTime? get livenessExpiresAt => _capture.challenge?.expiresAt;
 
   late final ProviderVerificationRepository _verification =
       ProviderVerificationRepository(
@@ -175,6 +185,8 @@ class IdentityCheck {
   static Future<void> _refreshIdToken() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-    await user.getIdToken(true);
+    // Bounded: on a poor connection this is the call that used to hang the
+    // "You're in" screen. A timeout throws, and the caller retries.
+    await user.getIdToken(true).timeout(const Duration(seconds: 10));
   }
 }

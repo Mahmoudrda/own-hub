@@ -7,32 +7,57 @@ import 'package:flutter/services.dart';
 
 import 'app_state/analytics_consent.dart';
 import 'app_state/analytics_session.dart';
+import 'app_state/posthog_analytics.dart';
+import 'app_state/profile_photo_state.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
-import 'app_state/kitten_setting.dart';
+import 'app_state/first_run_moments.dart';
+import 'app_state/tip_anchors.dart';
+import 'features/eat/data/meal_camera.dart' show sweepCameraLeftovers;
+import 'features/onboarding/presentation/deep_breath_view.dart';
+import 'ui/hand/launch_splash.dart';
+import 'features/eat/domain/meal_images.dart';
 import 'app_state/crash_reports.dart';
 import 'app_state/eat_state.dart';
 import 'app_state/events_state.dart';
 import 'app_state/remote_features.dart';
+import 'app_state/community_foods_state.dart';
+import 'app_state/exercise_library_state.dart';
 import 'app_state/workout_library_state.dart';
 import 'app_state/content_images.dart';
 import 'ui/content_image.dart';
 import 'app_state/firebase_boot.dart';
 import 'app_state/home_widget_sync.dart';
 import 'app_state/local_persistence.dart';
+import 'app_state/snapshot_owner.dart';
 import 'app_state/onboarding_state.dart';
+import 'app_state/app_changes.dart';
 import 'app_state/role_state.dart';
+import 'app_state/notification_taps.dart';
 import 'app_state/widget_links.dart';
 import 'config/legal_links.dart';
 import 'features/account/domain/health_backup.dart';
+import 'features/onboarding/domain/starting_program.dart'
+    show StartingProgrammes;
 import 'domain/analytics/analytics_gateway.dart';
 import 'domain/flags/feature_flags.dart';
 import 'domain/identity/user_roles.dart';
 import 'l10n/app_l10n.dart';
+import 'features/signup/domain/auth_repository.dart';
+import 'features/train/domain/exercise_traits.dart' show ExerciseTraits;
 import 'routing/app_router.dart';
 import 'routing/app_routes.dart';
 import 'theme/app_tokens.dart';
 import 'theme/hand_theme.dart';
+
+/// Reads what each move is measured on, then re-reads her logged history once
+/// for bests the old detector could not see. The table comes first: with none
+/// loaded a best fails closed. Idempotent, and it pays and counts nothing.
+@visibleForTesting
+Future<void> prepareMoveBests() async {
+  await ExerciseTraits.load();
+  AppRouter.sessionBests.backfill(repository: AppRouter.trainRepository);
+}
 
 Future<void> main() async {
   // Dark status-bar content, before anything is drawn.
@@ -60,7 +85,8 @@ Future<void> main() async {
     debugPrint('LegalLinks are empty: a release build will refuse to start.');
   }
 
-  // Usage statistics. A release build hands every event to Firebase, which
+  // Usage statistics. A release build uses Firebase and the bounded PostHog
+  // milestone sink. Each provider
   // sends nothing until she allows it ("Help improve Own Hub", C06 or
   // Privacy): collection is off natively and the sink checks her choice on
   // every event. A debug build prints the funnel to the console instead. See
@@ -80,7 +106,13 @@ Future<void> main() async {
   // snapshot restores nothing and the app opens exactly as it did before any
   // of this existed.
   await LocalPersistence.instance.load();
+  // Whose week that was. Read with it, so the check below has the owner.
+  await SnapshotOwner.instance.load();
   LocalPersistence.instance.start();
+
+  // Her day moves on to today, and any week that ended while the app was
+  // closed is closed now (D41). After the restore, so it works on her data.
+  AppRouter.startOfDay();
 
   // Her crash-report choice, read before Firebase so collection is set from
   // it at once. Off unless she allowed it (privacy policy v3, 3.7).
@@ -88,13 +120,52 @@ Future<void> main() async {
   // Her usage-statistics choice, read before Firebase for the same reason.
   // Off unless she allowed it, and a separate choice from crash reports.
   await AnalyticsConsent.instance.load();
-  await KittenSetting.instance.load();
+  unawaited(
+    PostHogAnalytics.instance.applyConsent(AnalyticsConsent.instance.allowed),
+  );
+  // The day each account on this phone first landed, so a woman signing back
+  // in does not get the getting started tips again.
+  await TipAnchors.instance.load();
+  // Whether the first-launch breath and the plan tick have been shown.
+  await FirstRunMoments.instance.load();
+  // Her profile photo, if she set one. Kept on this phone only.
+  await ProfilePhotoState.instance.load();
+  // The starting programmes, bundled. A file that cannot be read leaves the
+  // placeholder catalogue, and Train is what it was.
+  try {
+    StartingProgrammes.adopt(
+      await rootBundle.loadString(StartingProgrammes.assetPath),
+    );
+  } catch (_) {}
+
+  await prepareMoveBests();
+
+  // Which painted meal pictures are bundled. Unreadable means none, and every
+  // screen keeps its drawn mark.
+  try {
+    MealImages.adopt(await rootBundle.loadString(MealImages.indexPath));
+  } catch (_) {}
 
   // The back end, brought up AFTER her local week and unable to fail the
   // launch. The order matters: whatever Firebase does or does not do, the
   // first frame is already drawn from her own data, so a dead network costs
   // her nothing she can see. See `lib/app_state/firebase_boot.dart`.
   await FirebaseBoot.start();
+
+  // Whose phone this is, BEFORE any of her data can be drawn or synced. A
+  // different account than the one the snapshot belongs to wipes it here, and
+  // again whenever another account signs in later. This listener is added
+  // before the cloud store's, so the erase runs first on the same event.
+  // Signed out (the tour) claims nothing.
+  final signedIn = AppRouter.authRepository.current;
+  if (signedIn is AuthSignedIn) {
+    await SnapshotOwner.instance.claim(signedIn.uid);
+  }
+  AppRouter.authRepository.watch().listen((state) {
+    if (state is AuthSignedIn) {
+      unawaited(SnapshotOwner.instance.claim(state.uid));
+    }
+  });
   // Pictures from the content library, for a signed-in account only.
   ContentImage.resolver = ContentImages.url;
 
@@ -142,14 +213,18 @@ Future<void> main() async {
   // check rather than the app. See `AppRouter.readVerificationAtLaunch`.
   await AppRouter.readVerificationAtLaunch();
   AppRouter.watchVerificationToken();
+  AppRouter.watchPrivateCoaching();
 
-  // The Home Screen and Lock Screen widgets, iOS only. They read this week's
+  // The Home Screen and Lock Screen widgets (iOS), and the Android Today
+  // widget. They read this week's
   // count and today's state from the same repository Home draws, and only
   // while she is signed in and verified; otherwise they say "Open Own Hub to
   // start". Started after the verification read above, so the first payload
   // it writes already knows whether she is let in. See
   // `lib/app_state/home_widget_sync.dart`.
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.android)) {
     HomeWidgetSync.instance.start(
       readDay: () => AppRouter.todayRepository.day,
       isOpen: () => AppRouter.isVerified && AppRouter.signedInUid != null,
@@ -192,10 +267,20 @@ Future<void> main() async {
     } catch (_) {
       // The rules refuse health writes without the consent anyway.
     }
+    // A pledge agreed offline, or whose record failed, is sent again. Not
+    // awaited: the sync never waits on it.
+    unawaited(AppRouter.retryPledgeRecord());
     await CloudStore.instance.start();
   }());
 
+  // Only a cold start draws the logo on; a resume never builds the app again.
+  LaunchSplash.enabled = true;
   runApp(const OwnHubApp());
+
+  // Any photo file the camera left behind (a shutter that failed after it
+  // wrote, a delete that did not go through) goes now, after the first frame
+  // and without waiting on it. No photo is kept on the phone.
+  unawaited(sweepCameraLeftovers());
 
   // The once-a-day recipe library check, after the first frame so it can
   // never delay it. Offline or signed out it reads nothing and the bundled
@@ -217,6 +302,24 @@ Future<void> main() async {
   // The bundled session stays the answer for day one whatever this finds.
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => unawaited(WorkoutLibraryState.instance.refresh()),
+  );
+
+  // The exercise library (D42) the same way. Its clips are fetched only when
+  // she opens a move.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(ExerciseLibraryState.instance.refresh()),
+  );
+
+  // The foods other women shared and the owner approved: the cache at once,
+  // the server at most once a day.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(CommunityFoodsState.instance.refresh()),
+  );
+
+  // The Egyptian dish pack, so the plates Home offers can be named and logged
+  // before she ever opens Eat.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => EatAppState.instance.ensureFoodPack(),
   );
 }
 
@@ -272,6 +375,9 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   /// update sheet. Owned here so every app gets its own.
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
+  /// Read once: the logo draws on at a cold start only.
+  final bool _coldStart = LaunchSplash.takeColdStart();
+
   @override
   void initState() {
     super.initState();
@@ -282,7 +388,14 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // language she left. Nothing happens when she has none. After the first
     // frame: setting them up first reads the whole time-zone database, which
     // the first frame has no use for.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reapplyReminders());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Opening the app starts the gentle check-ins counting again. The
+      // navigator exists by now, so a tap on a notification that launched
+      // the app can open its screen.
+      _noteOpened();
+      NotificationTaps.start(_navigatorKey);
+      unawaited(AppRouter.startPushWatch(_locale.value.languageCode));
+    });
     _locale.addListener(_reapplyReminders);
     // The widgets speak the language she chose here, not the phone's.
     _relabelWidgets();
@@ -293,7 +406,6 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // a return after a quiet week, after the first frame and again whenever
     // she allows statistics. Nothing leaves the phone unless she allowed it.
     AnalyticsConsent.onGranted = _describeForStatistics;
-    KittenSetting.instance.addListener(_reportKitten);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _describeForStatistics();
       unawaited(AnalyticsSession.noteOpened(DateTime.now()));
@@ -306,17 +418,30 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // Every change of side, chosen at C08 or switched from her picture, is
     // kept for the next launch (R1-P17).
     _roles.addListener(_keepRoles);
+    AppChanges.instance.addListener(_followAccount);
   }
 
   void _keepRoles() => RoleState.instance.keep(_roles.value);
+
+  String? _roleUid = AppRouter.signedInUid;
+
+  /// Her side follows the account: another woman signing in on this phone
+  /// starts from her own roles, not the last one's.
+  void _followAccount() {
+    final uid = AppRouter.signedInUid;
+    final next = rolesAfterAccountChange(_roleUid, uid, AppRouter.featureFlags);
+    _roleUid = uid;
+    if (next == null || next == _roles.value) return;
+    // Not a choice of hers, so it is not kept as one.
+    _roles.removeListener(_keepRoles);
+    _roles.value = next;
+    _roles.addListener(_keepRoles);
+  }
 
   void _relabelWidgets() => HomeWidgetSync.instance.useLocale(_locale.value);
 
   void _reportLanguage() =>
       AnalyticsSession.languageChanged(_locale.value.languageCode);
-
-  void _reportKitten() =>
-      AnalyticsSession.kittenChanged(KittenSetting.instance.moves);
 
   void _describeForStatistics() => unawaited(
     AnalyticsSession.describe(languageCode: _locale.value.languageCode),
@@ -326,14 +451,27 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     AppRouter.reapplyTrainingReminders(lookupAppL10n(_locale.value)),
   );
 
+  /// Opened or brought back: notes it, then sets everything again, which also
+  /// catches a new time zone or a day that moved on.
+  void _noteOpened() =>
+      unawaited(AppRouter.noteAppOpened(lookupAppL10n(_locale.value)));
+
   /// Back in the foreground: a refresh the network refused at launch is
   /// tried again (R1). Does nothing when nothing is owed.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // A phone left open overnight comes back on a new day, and on a Monday
+      // on a new week.
+      AppRouter.startOfDay();
       unawaited(AppRouter.refreshVerificationIfOwed());
+      // A library published while she was away, or one an offline launch
+      // could not fetch. Rate-limited inside; usually a no-op.
+      unawaited(ExerciseLibraryState.instance.refresh());
+      unawaited(CommunityFoodsState.instance.refresh());
       unawaited(CrashReports.trail(CrashTrail.resumed));
       unawaited(AnalyticsSession.noteOpened(DateTime.now()));
+      _noteOpened();
     }
   }
 
@@ -389,12 +527,12 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     _locale.removeListener(_reapplyReminders);
     _locale.removeListener(_relabelWidgets);
     _locale.removeListener(_reportLanguage);
-    KittenSetting.instance.removeListener(_reportKitten);
     if (AnalyticsConsent.onGranted == _describeForStatistics) {
       AnalyticsConsent.onGranted = null;
     }
     _locale.dispose();
     _roles.removeListener(_keepRoles);
+    AppChanges.instance.removeListener(_followAccount);
     _roles.dispose();
     super.dispose();
   }
@@ -509,7 +647,19 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     final setup = AppRouter.onGenerateRoute(
       RouteSettings(name: appRoutes['O01']!.name),
     );
-    return setup == null ? [front] : [front, setup];
+    if (setup == null) return [front];
+    // The very first launch of a phone with nobody signed in: one deep breath
+    // on top of the questions, shown once. Never for a returning member.
+    if (FirstRunMoments.instance.breathDue &&
+        AppRouter.signedInUid == null &&
+        !OnboardingState.instance.beforeSignup) {
+      return [
+        front,
+        setup,
+        MaterialPageRoute<void>(builder: (_) => const DeepBreathView()),
+      ];
+    }
+    return [front, setup];
   }
 
   @override
@@ -551,9 +701,29 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
             onGenerateInitialRoutes: _firstRunStack,
             onGenerateRoute: AppRouter.onGenerateRoute,
             onUnknownRoute: AppRouter.onUnknownRoute,
+            builder: (context, child) => LaunchSplash(
+              show: _coldStart,
+              child: child ?? const SizedBox(),
+            ),
+            scrollBehavior: const _CalmScrollBehavior(),
           ),
         ),
       ),
     );
   }
+}
+
+/// A list stops at its end. Android 12 and later otherwise stretch the whole
+/// page when she scrolls past the top or bottom, which reads as the app
+/// sagging under her thumb. iPhone keeps its own bounce, which is what people
+/// there expect from every app.
+class _CalmScrollBehavior extends MaterialScrollBehavior {
+  const _CalmScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }

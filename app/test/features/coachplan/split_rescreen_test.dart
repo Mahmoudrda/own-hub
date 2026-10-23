@@ -130,10 +130,12 @@ SplitApplication _apply(
   catalogue: _catalogue,
 );
 
-List<String> _movesOnFirstDay(SplitApplication applied) =>
-    applied.days['2026-09-19']!.workout!.moves
-        .map((m) => m.exerciseId)
-        .toList();
+List<String> _movesOnFirstDay(SplitApplication applied) => applied
+    .days['2026-09-19']!
+    .workout!
+    .moves
+    .map((m) => m.exerciseId)
+    .toList();
 
 void main() {
   group('an untagged move is unknown content, not unrestricted content', () {
@@ -149,7 +151,8 @@ void main() {
       expect(
         applied.suppressedExerciseIds,
         contains('unlabelled_move'),
-        reason: 'a missing tag reads as unknown, therefore unsafe — the move '
+        reason:
+            'a missing tag reads as unknown, therefore unsafe — the move '
             'half of the rule a dish with no allergen list is blocked by',
       );
     });
@@ -179,7 +182,8 @@ void main() {
       expect(
         _movesOnFirstDay(_apply(_split(), constraints)),
         <String>['glute_bridge'],
-        reason: 'a refer suppresses moves; it is not a failure state, and it '
+        reason:
+            'a refer suppresses moves; it is not a failure state, and it '
             'is not nothing either',
       );
     });
@@ -211,7 +215,8 @@ void main() {
       expect(
         _movesOnFirstDay(applied),
         <String>['glute_bridge'],
-        reason: 'her constraints could not be read, so every restricting tag '
+        reason:
+            'her constraints could not be read, so every restricting tag '
             'is treated as though it might be the one she cannot do',
       );
       expect(
@@ -233,7 +238,8 @@ void main() {
       expect(
         applied.days['2026-09-19']!.isRest,
         isFalse,
-        reason: 'an emptied session is still a session she can see and a coach '
+        reason:
+            'an emptied session is still a session she can see and a coach '
             'can fill — it is not silently turned into a rest day',
       );
     });
@@ -251,7 +257,8 @@ void main() {
       expect(
         _movesOnFirstDay(applied),
         <String>['glute_bridge'],
-        reason: 'the bridge carries no restricting tag, so the floor derived '
+        reason:
+            'the bridge carries no restricting tag, so the floor derived '
             'from her pregnancy does not reach it',
       );
     });
@@ -278,7 +285,8 @@ void main() {
       expect(
         applied.days['2026-09-19']!.workout!.approvedAlternatives,
         isEmpty,
-        reason: 'an easier option she can tap mid-session is prescribed '
+        reason:
+            'an easier option she can tap mid-session is prescribed '
             'content like any other',
       );
       expect(applied.suppressedExerciseIds, contains('goblet_squat'));
@@ -320,14 +328,18 @@ void main() {
         _resolved(),
       );
 
-      expect(_movesOnFirstDay(applied), <String>['goblet_squat', 'glute_bridge']);
+      expect(_movesOnFirstDay(applied), <String>[
+        'goblet_squat',
+        'glute_bridge',
+      ]);
       expect(
         applied.days['2026-09-19']!.workout!.approvedAlternatives.single,
         const ApprovedAlternative(
           exerciseId: 'glute_bridge',
           forExerciseId: 'goblet_squat',
         ),
-        reason: 'she was asked and named nothing, so the template crosses whole',
+        reason:
+            'she was asked and named nothing, so the template crosses whole',
       );
       expect(applied.suppressedExerciseIds, isEmpty);
     });

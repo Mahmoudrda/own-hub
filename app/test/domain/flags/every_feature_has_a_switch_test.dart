@@ -49,10 +49,13 @@ void main() {
         'O04',
         'O05',
         'O06',
-        'O07',
       });
       for (final id in AppRouter.ungatedScreens.where((id) => id != 'C02')) {
-        expect(AppRouter.featureForFlow(appRoutes[id]!.flow), isNull, reason: id);
+        expect(
+          AppRouter.featureForFlow(appRoutes[id]!.flow),
+          isNull,
+          reason: id,
+        );
       }
     });
   });
@@ -117,7 +120,10 @@ void main() {
 
     test('it can switch on only what the owner runs herself', () {
       expect(
-        [for (final f in Feature.values) if (f.serverMayTurnOn) f],
+        [
+          for (final f in Feature.values)
+            if (f.serverMayTurnOn) f,
+        ],
         [Feature.events],
       );
     });
@@ -165,9 +171,10 @@ void main() {
       addTearDown(() => AppRouter.featureFlags = saved);
       // The planner's drafts are the assistant's: planner on, assistant off.
       AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.coachApp: true,
         Feature.coachPlanning: true,
       });
-      expect(AppRouter.screenIsOn('W03'), isTrue);
+      expect(AppRouter.screenIsOn('W04'), isTrue);
       expect(AppRouter.screenIsOn('K26'), isFalse);
       expect(AppRouter.screenIsOn('K27'), isFalse);
       // "I already did it" opens from Home but is Train's.

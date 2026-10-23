@@ -32,7 +32,9 @@ class _Screen extends StatelessWidget {
   Widget build(BuildContext context) {
     _builds[name] = (_builds[name] ?? 0) + 1;
     return Scaffold(
-      body: Center(child: Text('$name=$_shared', textDirection: TextDirection.ltr)),
+      body: Center(
+        child: Text('$name=$_shared', textDirection: TextDirection.ltr),
+      ),
     );
   }
 }

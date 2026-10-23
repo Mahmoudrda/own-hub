@@ -32,7 +32,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// Written as two adjacent literals so that this file, which has to name it,
 /// does not match itself.
-const String _needle = 'FeatureFlags.' 'shipped';
+const String _needle =
+    'FeatureFlags.'
+    'shipped';
 
 /// Files permitted to read the shipped defaults, each with a reason.
 ///
@@ -45,6 +47,11 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       '"ships off" records that Feature.events is off in the shipped set, '
       'which is the owner\'s promise that nothing about events shows until '
       'she switches it on. Every other case there sets its own flags.',
+  'test/features/events/event_seats_test.dart':
+      'Its last case, "the flag ships on", records that Feature.events is on '
+      'in the shipped set, the owner\'s decision that events are live at '
+      'launch. Every other case there, the nav bar ones included, builds its '
+      'own world from FeatureFlags.allOff.',
   'test/release/compliance_copy_test.dart':
       'Its microphone group proves a privacy-policy claim about the build that '
       'goes to the stores: voice logging is off in the shipped set, so E03 and '
@@ -89,17 +96,24 @@ const Map<String, String> _mayReadTheDefaults = <String, String>{
       'Its subject is the shipped set itself: that it decides every feature by '
       'name, that no part ships on under a parent that ships off, and that '
       'the launch carries no paid surface and no assistant.',
+  'test/nav_reachability_test.dart':
+      'It measures the screens that ship, so the shipped set is its subject: '
+      'a screen the release keeps dark is not counted against the graph.',
+  'test/routing/coaching_router_test.dart':
+      'It proves the coaching entry points as the release has them: the coach '
+      'app and the marketplace on, payments off, behind a verified account.',
   'test/store/store_screenshots_test.dart':
       'The store screenshots must show the product as it ships, so the '
       'shipped flags are its subject. It overrides only `accountRequired`, '
       'so the screens open without a verified account.',
 };
 
-List<File> _testFiles() => Directory('test')
-    .listSync(recursive: true)
-    .whereType<File>()
-    .where((f) => f.path.endsWith('.dart'))
-    .toList();
+List<File> _testFiles() =>
+    Directory('test')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.dart'))
+        .toList();
 
 String _rel(File f) => f.path.replaceFirst(RegExp(r'^.*?/?test/'), 'test/');
 

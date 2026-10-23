@@ -40,25 +40,37 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/widgets.dart';
 
 import '../domain/clock/app_clock.dart';
+import '../features/eat/data/egyptian_food_pack.dart';
 import '../features/eat/data/firestore_recipe_source.dart';
 import '../features/eat/data/recipe_sync.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
 import '../features/eat/domain/allergy_guard.dart';
+import '../features/eat/domain/custom_food.dart';
+import '../features/eat/domain/food_library.dart';
+import '../features/eat/domain/daily_targets.dart';
+import '../features/eat/domain/day_totals.dart';
 import '../features/eat/domain/item_id.dart';
+import '../features/eat/domain/meal_day_reader.dart';
 import '../features/eat/domain/meal_log_service.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/eat/domain/meal_sentence_parser.dart';
 import '../features/eat/domain/meal_slot_state_machine.dart';
 import '../features/eat/presentation/eat_day_view_model.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
+import '../features/eat/presentation/meal_labels.dart';
 import '../features/eat/presentation/meal_log_session.dart';
+import '../features/onboarding/domain/body_data.dart';
 import '../features/today/domain/today_day.dart';
 import '../domain/logging/log_command_bus.dart';
 import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../ui/app_undo_snackbar.dart';
+import '../domain/format/day_key.dart';
 import 'app_changes.dart';
+import 'guest_session.dart';
+import 'rewards_state.dart';
 import 'firebase_boot.dart';
+import 'getting_started.dart';
 import 'honest_notice.dart';
 
 /// A plate she has actually eaten, with the figure her own log carried.
@@ -89,7 +101,10 @@ class UsualPlate {
 }
 
 class EatAppState {
-  EatAppState._();
+  EatAppState._() {
+    // A favourite a guest kept is starred once she is verified.
+    GuestSession.favouriteHandler ??= replayFavourite;
+  }
 
   static final EatAppState instance = EatAppState._();
 
@@ -106,6 +121,7 @@ class EatAppState {
   MealLogSession get session => _session ??= MealLogSession(
     repository: AppRouter.mealRepository,
     onCommitted: _committed,
+    onRemoved: _removed,
   );
 
   final Map<String, UsualPlate> _plates = <String, UsualPlate>{};
@@ -118,6 +134,144 @@ class EatAppState {
   /// community ids use. Without it E06 opened on koshari whichever row she
   /// pressed, over a Log button that wrote koshari.
   String? openRecipeId;
+
+  // ------------------------------------------------------------ targets ----
+
+  /// The day's targets from her goal, her training week and her body data.
+  DailyTargets targets() {
+    final intake = AppRouter.intakeRepository.read();
+    return DailyTargets.compute(
+      body: BodyDataStore.instance.read(),
+      goal: intake.goal,
+      daysPerWeek: intake.days,
+      minutesPerSession: intake.minutes,
+    );
+  }
+
+  /// Today as it will read once every meal still inside its undo window is
+  /// written, against her protein target. Home and Eat both draw this, so a
+  /// meal she has just logged moves their rings at once.
+  DayTotals totalsWithPending(MealDay stored, {DailyTargets? against}) {
+    return const MealDayReader().totals(
+      session.project(stored),
+      proteinTargetG: (against ?? targets()).proteinG,
+    );
+  }
+
+  // ----------------------------------------- favourites and custom foods ----
+
+  /// Hands the foods she typed in to every screen that builds the library.
+  /// Called after her preferences are read from the phone.
+  void syncCustomFoods([EatPrefs? prefs]) {
+    EatCustomFoods.current =
+        (prefs ?? AppRouter.mealRepository.store.prefs).customFoods;
+    AppChanges.bump();
+  }
+
+  /// Stars or unstars [foodId] and says which it did. Newest star first.
+  Future<bool> toggleFavourite(MealRepository repository, String foodId) async {
+    final prefs = await repository.prefs();
+    return setFavourite(
+      repository,
+      foodId,
+      starred: !prefs.favourites.contains(foodId),
+    );
+  }
+
+  /// Makes [foodId] starred or not, and returns the state it is now in.
+  Future<bool> setFavourite(
+    MealRepository repository,
+    String foodId, {
+    required bool starred,
+  }) async {
+    final prefs = await repository.prefs();
+    final rest = [
+      for (final id in prefs.favourites)
+        if (id != foodId) id,
+    ];
+    final next = starred
+        ? [foodId, ...rest].take(kFavouriteCap).toList()
+        : rest;
+    await repository.savePrefs(prefs.copyWith(favourites: next));
+    AppChanges.bump();
+    return (await repository.prefs()).favourites.contains(foodId);
+  }
+
+  /// Stars the food a guest tried to star before she signed up.
+  static Future<void> replayFavourite(BuildContext context, String foodId) =>
+      instance.setFavourite(AppRouter.mealRepository, foodId, starred: true);
+
+  /// Keeps a food she typed in, and returns it so the caller can log it.
+  Future<CustomFood> addCustomFood(
+    MealRepository repository, {
+    required String name,
+    required int kcal,
+    int proteinG = 0,
+    int? carbsG,
+    int? fatG,
+    int? fiberG,
+  }) async {
+    final prefs = await repository.prefs();
+    final food = CustomFood(
+      id: '${CustomFood.idPrefix}${AppClock.now().microsecondsSinceEpoch}',
+      name: name.trim(),
+      kcal: kcal,
+      proteinG: proteinG,
+      carbsG: carbsG,
+      fatG: fatG,
+      fiberG: fiberG,
+    );
+    final next = [food, ...prefs.customFoods].take(kCustomFoodCap).toList();
+    final saved = prefs.copyWith(customFoods: next);
+    await repository.savePrefs(saved);
+    syncCustomFoods(await repository.prefs());
+    return food;
+  }
+
+  /// Keeps a meal she confirmed on E13 as one of her foods, so the next time
+  /// it is one tap. A meal with the same name (spelled the way search reads
+  /// it) is not added twice: her latest confirmed figures replace the old
+  /// ones and the food keeps its id, so a star on it stays.
+  Future<CustomFood> rememberMealAsFood(
+    MealRepository repository, {
+    required String name,
+    required int kcal,
+    required int proteinG,
+    int? carbsG,
+    int? fatG,
+    int? fiberG,
+    Set<String>? allergens,
+  }) async {
+    final prefs = await repository.prefs();
+    final key = FoodLibrary.normalise(name);
+    CustomFood? same;
+    for (final food in prefs.customFoods) {
+      if (FoodLibrary.normalise(food.name) == key) {
+        same = food;
+        break;
+      }
+    }
+    final food = CustomFood(
+      id:
+          same?.id ??
+          '${CustomFood.idPrefix}${AppClock.now().microsecondsSinceEpoch}',
+      name: name.trim(),
+      kcal: kcal,
+      proteinG: proteinG,
+      carbsG: carbsG,
+      fatG: fatG,
+      fiberG: fiberG,
+      allergens: allergens,
+    );
+    final next = [
+      food,
+      for (final other in prefs.customFoods)
+        if (other.id != food.id) other,
+    ].take(kCustomFoodCap).toList();
+    await repository.savePrefs(prefs.copyWith(customFoods: next));
+    syncCustomFoods(await repository.prefs());
+    return food;
+  }
 
   // ------------------------------------------------------- Rahma's book ----
 
@@ -146,10 +300,7 @@ class EatAppState {
   /// rate-limited inside [RecipeSync], so calling this from a build costs
   /// nothing after the first time.
   void ensureRecipeBook({RecipeLibrary? library}) {
-    _bookLoad ??= (library ?? recipeSync).load().then(
-      _adopt,
-      onError: (_) {},
-    );
+    _bookLoad ??= (library ?? recipeSync).load().then(_adopt, onError: (_) {});
     if (library == null) unawaited(refreshRecipes());
   }
 
@@ -221,6 +372,81 @@ class EatAppState {
     return plates;
   }
 
+  /// Reads the bundled Egyptian dishes once a run, then redraws the screens
+  /// that search them. Idempotent, so every Eat builder may call it.
+  void ensureFoodPack() {
+    if (_foodPackAsked) return;
+    _foodPackAsked = true;
+    unawaited(
+      EgyptianFoodPack.ensureLoaded().then((_) {
+        if (EgyptianFoodPack.isLoaded) AppChanges.bump();
+      }),
+    );
+  }
+
+  bool _foodPackAsked = false;
+
+  /// What she has eaten before, for E02's "You've had": each food of her
+  /// plates at the size she ate it, newest plate first. Foods that have left
+  /// the pack are skipped.
+  List<ParsedItem> historyEntries(AppL10n l10n) {
+    final library = eatSampleLibrary(l10n);
+    final plates = usualPlates.toList()
+      ..sort((a, b) => b.lastAt.compareTo(a.lastAt));
+    final seen = <String>{};
+    final out = <ParsedItem>[];
+    for (final plate in plates) {
+      for (final item in plate.items) {
+        final entry = entryFor(library, item.foodId, sizeId: item.size);
+        if (entry == null || !seen.add('${item.foodId}:${item.size}')) continue;
+        out.add(
+          ParsedItem(
+            food: entry.food,
+            size: entry.size,
+            servings: item.servings.toInt(),
+            sourceText: entry.sourceText,
+          ),
+        );
+      }
+    }
+    return out;
+  }
+
+  /// The same foods as [historyEntries], most eaten first, each at the portion
+  /// she had it in last. The Frequent tab on E02.
+  List<ParsedItem> frequentEntries(AppL10n l10n) {
+    final library = eatSampleLibrary(l10n);
+    final plates = usualPlates.toList()
+      ..sort((a, b) => b.lastAt.compareTo(a.lastAt));
+    final counts = <String, int>{};
+    final latest = <String, ParsedItem>{};
+    final order = <String>[];
+    for (final plate in plates) {
+      for (final item in plate.items) {
+        final entry = entryFor(library, item.foodId, sizeId: item.size);
+        if (entry == null) continue;
+        if (!counts.containsKey(item.foodId)) order.add(item.foodId);
+        counts[item.foodId] = (counts[item.foodId] ?? 0) + plate.timesEaten;
+        latest.putIfAbsent(
+          item.foodId,
+          () => ParsedItem(
+            food: entry.food,
+            size: entry.size,
+            servings: item.servings.toInt(),
+            sourceText: entry.sourceText,
+          ),
+        );
+      }
+    }
+    // The one eaten more recently comes first on a tie.
+    final rank = {for (final (i, id) in order.indexed) id: i};
+    order.sort((a, b) {
+      final byCount = counts[b]!.compareTo(counts[a]!);
+      return byCount != 0 ? byCount : rank[a]!.compareTo(rank[b]!);
+    });
+    return [for (final id in order) latest[id]!];
+  }
+
   /// What Home's meal card lists.
   List<PlateSuggestion> get homePlates => [
     for (final plate in usualPlates.take(kHomePlates)) plate.suggestion,
@@ -273,6 +499,13 @@ class EatAppState {
   /// Nothing is sent anywhere: there is no library to publish to and no account
   /// behind this build, so the bookmark is the icon on the page and this note.
   void toggleSaved(BuildContext context, String recipeId) {
+    if (!_saved.contains(recipeId) &&
+        !GuestSession.require(
+          context,
+          PendingAction.bookmarkRecipe(recipeId),
+        )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final added = _saved.add(recipeId);
     if (!added) _saved.remove(recipeId);
@@ -327,6 +560,12 @@ class EatAppState {
     DateTime? at,
   }) {
     if (entries.isEmpty) return null;
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal(entries, origin: origin),
+    )) {
+      return null;
+    }
     final l10n = AppL10n.of(context);
     final now = at ?? AppClock.now();
     final slot = EatDayViewModel.slotAt(now);
@@ -350,10 +589,15 @@ class EatAppState {
       return null;
     }
 
+    final prepared = outcome as MealLogPrepared;
     final handle = session.submit(
-      outcome as MealLogPrepared,
+      prepared,
       slot: slot,
-      describe: l10n.mealAdded,
+      describe: mealAddedLabel(
+        l10n,
+        mealFoodNames(eatSampleLibrary(l10n), prepared.items),
+        slot,
+      ),
     );
     // **No snackbar here.** This used to raise one and then hand the handle
     // back, and its only caller — Home's plate — carries that handle straight
@@ -363,6 +607,53 @@ class EatAppState {
     // nothing. One log, one undo: carry the handle to the screen that draws the
     // bar, or call [showUndo] if you are staying put.
     return handle;
+  }
+
+  /// A meal from her coach's plan. Unlike a free log, a planned row is put to
+  /// the allergy guard, and logging the same row again corrects it instead of
+  /// adding a second helping. Returns the handle for the undo, or null when it
+  /// was refused (the reason has been said out loud).
+  LogHandle? logPlanned(
+    BuildContext context, {
+    required MealSlot slot,
+    required int index,
+    required ParsedItem entry,
+    DateTime? at,
+  }) {
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal([entry], origin: MealOrigin.plan),
+    )) {
+      return null;
+    }
+    final l10n = AppL10n.of(context);
+    final now = at ?? AppClock.now();
+    final day = dayIdOf(now);
+    final outcome =
+        MealLogService(
+          repository: AppRouter.mealRepository,
+          library: eatSampleLibrary(l10n),
+          guard: AllergyGuard(AppRouter.eatConstraints),
+        ).correctPlannedLog(
+          day: MealDay(dayId: day),
+          planRef: PlanRef(assignmentId: day, slot: slot, idx: index),
+          entry: entry,
+          at: now,
+        );
+    if (outcome is MealLogRefused) {
+      explainRefusal(context, outcome);
+      return null;
+    }
+    final prepared = outcome as MealLogPrepared;
+    return session.submit(
+      prepared,
+      slot: slot,
+      describe: mealAddedLabel(
+        l10n,
+        mealFoodNames(eatSampleLibrary(l10n), prepared.items),
+        slot,
+      ),
+    );
   }
 
   /// The five-second offer for a caller that does not carry the handle onward,
@@ -466,9 +757,11 @@ class EatAppState {
   void reset() {
     _session?.reset();
     _session = null;
+    _foodPackAsked = false;
     _plates.clear();
     _saved.clear();
     openRecipeId = null;
+    EatCustomFoods.current = const <CustomFood>[];
   }
 
   // -------------------------------------------------------------- private ---
@@ -484,26 +777,84 @@ class EatAppState {
   void _committed(PendingMeal meal) {
     if (meal.items.isEmpty) return;
 
-    final plateId = plateIdOf([
-      for (final item in meal.items) (foodId: item.foodId, size: item.size),
-    ]);
-    final existing = _plates[plateId];
-    _plates[plateId] = UsualPlate(
-      plateId: plateId,
-      items: [
-        for (final item in meal.items)
-          PlateItem(
-            foodId: item.foodId,
-            size: item.size,
-            servings: item.servings,
-          ),
-      ],
-      kcal: meal.items.fold(0, (sum, item) => sum + item.kcal),
-      timesEaten: (existing?.timesEaten ?? 0) + 1,
-      lastAt: meal.at,
+    // A plate she photographed is not one Home can name or log again in one
+    // tap, so it is not remembered as a plate. It still counts as her meal
+    // below: Home's card and the day's points do not care how she logged it.
+    final photographed = meal.items.any(
+      (item) => item.origin == MealOrigin.photo,
     );
+    // The getting started tip about photos has nothing left to say.
+    if (photographed) GettingStarted.notePhotoMeal();
+    // A logged meal is a day she was here: today's nudge has nothing to add.
+    unawaited(AppRouter.noteMealLogged());
+    if (!photographed) {
+      final plateId = plateIdOf([
+        for (final item in meal.items) (foodId: item.foodId, size: item.size),
+      ]);
+      final existing = _plates[plateId];
+      _plates[plateId] = UsualPlate(
+        plateId: plateId,
+        items: [
+          for (final item in meal.items)
+            PlateItem(
+              foodId: item.foodId,
+              size: item.size,
+              servings: item.servings,
+            ),
+        ],
+        kcal: meal.items.fold(0, (sum, item) => sum + item.kcal),
+        timesEaten: (existing?.timesEaten ?? 0) + 1,
+        lastAt: meal.at,
+      );
+    }
 
+    // A meal is the first thing logged on many days: Home's day moves on to
+    // the meal's before the meal is written into it.
+    AppRouter.todayRepository.rollTo(meal.at);
     AppRouter.todayRepository.recordMeal(at: meal.at, plates: homePlates);
+    // The first meal of the day pays once (D41). E04 announced "+5 points" on
+    // every log for months while nothing was ever credited.
+    RewardsState.instance.creditFoodDay(
+      day: dayKey(meal.at),
+      progress: AppRouter.progressStore,
+    );
+    AppChanges.bump();
+  }
+
+  /// A removal that has been **written**, with the day as it now stands.
+  ///
+  /// The same ground an Undo would have left: the plate the removal broke
+  /// ([plateId], decided by the session) is counted once less, and when the
+  /// day has no meal left, Home's card goes back to nothing logged and the
+  /// day's food points come off.
+  void _removed(PendingMeal removal, MealDay day, String? plateId) {
+    final plate = plateId == null ? null : _plates[plateId];
+    if (plate != null) {
+      if (plate.timesEaten <= 1) {
+        _plates.remove(plate.plateId);
+      } else {
+        _plates[plate.plateId] = UsualPlate(
+          plateId: plate.plateId,
+          items: plate.items,
+          kcal: plate.kcal,
+          timesEaten: plate.timesEaten - 1,
+          lastAt: plate.lastAt,
+        );
+      }
+    }
+
+    final dayEmpty = MealSlot.values.every((slot) => day.itemsIn(slot).isEmpty);
+    AppRouter.todayRepository.mealRemoved(
+      dayId: removal.dayId,
+      dayEmpty: dayEmpty,
+      plates: homePlates,
+    );
+    if (dayEmpty) {
+      RewardsState.instance.uncreditFoodDay(
+        day: removal.dayId,
+        progress: AppRouter.progressStore,
+      );
+    }
     AppChanges.bump();
   }
 }

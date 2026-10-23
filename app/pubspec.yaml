@@ -98,7 +98,7 @@ dependencies:
   timezone: ^0.11.1
   flutter_timezone: ^5.1.1
   # The Home Screen and Lock Screen widgets (ios/OwnHubWidgets). Writes one
-  # JSON string to the App Group group.com.ownhub.app: this week's session
+  # JSON string to the App Group group.com.ownhub.fitness: this week's session
   # count against her target, today's state and whether a meal is logged,
   # never her cycle, life stage, body or programme
   # (lib/features/today/domain/widget_projection.dart). It stays on the phone.
@@ -115,6 +115,22 @@ dependencies:
   # App interactions in android/play-data-safety.txt.
   firebase_analytics: ^12.6.0
   share_plus: ^13.3.1
+  posthog_flutter: ^5.53.0
+  # The exercise library's demo clips (R15, D42): played muted and looping
+  # from a file on the phone, mixing with whatever she is listening to.
+  video_player: ^2.14.1
+  # Only for the cache folder those clips are kept in after the first view:
+  # library content, nothing of hers. Dart's file calls stat, so
+  # ios/Runner/PrivacyInfo.xcprivacy declares the file-timestamp reason C617.1.
+  path_provider: ^2.1.6
+  animations: ^3.0.0
+  sensors_plus: ^7.1.1
+  # Her profile photo (lib/app_state/profile_photo_state.dart). The system
+  # pickers only: the photo library opens in the out-of-process picker on iOS
+  # and the system photo picker on Android, so no library permission is asked
+  # for, and the camera uses the permission the app already has. The picture
+  # is redrawn and kept on the phone; it is never uploaded.
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:
@@ -199,6 +215,11 @@ flutter:
     - assets/art/
     - assets/art/2.0x/
     - assets/art/3.0x/
+    # Painted meal pictures, installed by `tool/install_meal_images.py`; the
+    # ids that exist are listed in assets/art/meals/index.json.
+    - assets/art/meals/
+    - assets/art/meals/2.0x/
+    - assets/art/meals/3.0x/
     # The logo on C01: the app tile, rendered from assets/brand/ownhub-mark.svg
     # at 88 px and its 2x and 3x by `tool/render_brand_icons.py --logo`.
     - assets/brand/logo/ownhub-tile.png
@@ -216,6 +237,17 @@ flutter:
     # the interface is the app's own voice, and they reach the screen through
     # different pipes so they cannot be smeared into each other.
     - assets/content/rahma_recipes.json
+    # The three starting plans by goal, each in a home, a dumbbell and a gym
+    # variant (D47). Content, so JSON, for the reason above. Drafted, and
+    # marked as pending Rahma's sign-off inside the file.
+    - assets/content/starting_programmes.json
+    - assets/content/exercise_traits.json
+    # The reminder lines in two tones, chosen on the phone (notification_voice.dart).
+    - assets/content/notification_lines.json
+    # 159 Egyptian dishes with per 100 g macros and S, M and L portions, built from
+    # functions/nutrition/egyptian_dishes.json by tool/build_food_pack.py. USDA
+    # FoodData Central (CC0) is the source; the recipes are pending dietitian review.
+    - assets/content/foods_eg.json
 
   fonts:
     - family: Rubik

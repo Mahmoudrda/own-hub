@@ -1,8 +1,8 @@
-// What a member sees of events, and that she sees none of it until the owner
-// switches Feature.events on.
+// What a member sees of events, and that she sees none of it while the owner
+// has Feature.events switched off.
 //
 //   * T09 lists published events in Cairo time, in her language, with an
-//     honest empty state, and asks her for nothing;
+//     honest empty state, and sends nothing about her on opening;
 //   * Home's Upcoming card is drawn only with the flag on AND an event to come;
 //   * with the flag off, T09 is FeatureOff, the card is absent and nothing is
 //     read from the server;
@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:own_hub/app_state/events_state.dart';
 import 'package:own_hub/app_state/remote_features.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
@@ -102,10 +103,16 @@ class _CountingReader implements EventReader {
   _CountingReader(this.events);
   final List<HubEvent> events;
   int reads = 0;
+  final List<bool> cacheFirstAsked = <bool>[];
 
   @override
-  Future<List<HubEvent>> upcoming(DateTime now, {int limit = 20}) async {
+  Future<List<HubEvent>> upcoming(
+    DateTime now, {
+    int limit = 20,
+    bool cacheFirst = false,
+  }) async {
     reads++;
+    cacheFirstAsked.add(cacheFirst);
     return upcomingOf(events, now);
   }
 }
@@ -124,8 +131,9 @@ class _FakeSwitches implements FeatureSwitchStore {
 
 void main() {
   final shipped = AppRouter.featureFlags;
+  final off = FeatureFlags.shipped.with_({Feature.events: false});
   setUp(() {
-    AppRouter.featureFlags = FeatureFlags.shipped;
+    AppRouter.featureFlags = off;
     EventsState.instance.reset();
   });
   tearDown(() {
@@ -153,10 +161,10 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Online'), findsOneWidget);
-      expect(find.text('Zamalek ladies gym · Places: 20'), findsOneWidget);
+      expect(find.text('Zamalek ladies gym'), findsOneWidget);
       expect(find.text('Thirty quiet minutes on the floor.'), findsOneWidget);
 
-      await tester.tap(find.text('Open the link'));
+      await tester.tap(find.text('Open event link'));
       expect(opened, ['https://meet.example.com/stretch']);
     });
 
@@ -216,8 +224,8 @@ void main() {
   });
 
   group('the flag', () {
-    test('ships off', () {
-      expect(FeatureFlags.shipped.isOn(Feature.events), isFalse);
+    test('ships on', () {
+      expect(FeatureFlags.shipped.isOn(Feature.events), isTrue);
       expect(AppRouter.screenFeatures['T09'], Feature.events);
     });
 
@@ -234,9 +242,7 @@ void main() {
       tester,
     ) async {
       _phone(tester);
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
+      AppRouter.featureFlags = FeatureFlags.shipped;
       var opened = 0;
       await tester.pumpWidget(
         _host(_today(next: _online(), onOpenEvents: () => opened++)),
@@ -251,9 +257,7 @@ void main() {
 
     testWidgets('on, with nothing planned: no card at all', (tester) async {
       _phone(tester);
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
+      AppRouter.featureFlags = FeatureFlags.shipped;
       await tester.pumpWidget(_host(_today()));
       await tester.pumpAndSettle();
       expect(find.textContaining('Upcoming events'), findsNothing);
@@ -289,9 +293,7 @@ void main() {
     });
 
     test('on: read once, then not again within the hour', () async {
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
-      });
+      AppRouter.featureFlags = FeatureFlags.shipped;
       final reader = _CountingReader([_online()]);
       var now = DateTime.utc(2026, 11, 1, 10);
       EventsState.instance.source = () => reader;
@@ -305,12 +307,97 @@ void main() {
       expect(reader.reads, 2);
     });
 
-    test('switched off again: the list empties', () async {
-      AppRouter.featureFlags = FeatureFlags.shipped.with_({
-        Feature.events: true,
+    group('across cold starts', () {
+      final now = DateTime.utc(2026, 11, 1, 10);
+
+      Future<String?> storedReadAt() async =>
+          (await SharedPreferences.getInstance()).getString(kEventsReadAtKey);
+
+      setUp(() {
+        TestWidgetsFlutterBinding.ensureInitialized();
+        AppRouter.featureFlags = FeatureFlags.shipped;
       });
-      EventsState.instance.seed([_online()]);
+
+      test('a first launch reads the server and keeps the time', () async {
+        SharedPreferences.setMockInitialValues({});
+        final reader = _CountingReader([_online()]);
+        EventsState.instance.source = () => reader;
+        EventsState.instance.now = () => now;
+        await EventsState.instance.refresh();
+        await Future<void>.delayed(Duration.zero);
+        expect(reader.cacheFirstAsked, [false]);
+        expect(await storedReadAt(), now.toIso8601String());
+      });
+
+      test('a launch inside the hour reads the phone copy first', () async {
+        final before = now.subtract(const Duration(minutes: 20));
+        SharedPreferences.setMockInitialValues({
+          kEventsReadAtKey: before.toIso8601String(),
+        });
+        final reader = _CountingReader([_online()]);
+        EventsState.instance.source = () => reader;
+        EventsState.instance.now = () => now;
+        await EventsState.instance.refresh();
+        await Future<void>.delayed(Duration.zero);
+        expect(reader.cacheFirstAsked, [true]);
+        expect([for (final e in EventsState.instance.upcoming) e.id], ['e1']);
+        // The server time is not moved by a read from the phone.
+        expect(await storedReadAt(), before.toIso8601String());
+        // Still inside the hour from that read: nothing more is asked.
+        await EventsState.instance.refresh();
+        expect(reader.reads, 1);
+      });
+
+      test(
+        'after the hour, or with a forced read, the server answers',
+        () async {
+          SharedPreferences.setMockInitialValues({
+            kEventsReadAtKey: now
+                .subtract(const Duration(minutes: 61))
+                .toIso8601String(),
+          });
+          final reader = _CountingReader([_online()]);
+          EventsState.instance.source = () => reader;
+          EventsState.instance.now = () => now;
+          await EventsState.instance.refresh();
+          expect(reader.cacheFirstAsked, [false]);
+          EventsState.instance.erase();
+          await Future<void>.delayed(Duration.zero);
+          SharedPreferences.setMockInitialValues({
+            kEventsReadAtKey: now
+                .subtract(const Duration(minutes: 5))
+                .toIso8601String(),
+          });
+          await EventsState.instance.refresh(force: true);
+          expect(reader.cacheFirstAsked, [false, false]);
+        },
+      );
+
+      test('a stored time in the future is not trusted', () async {
+        SharedPreferences.setMockInitialValues({
+          kEventsReadAtKey: now.add(const Duration(days: 3)).toIso8601String(),
+        });
+        final reader = _CountingReader([_online()]);
+        EventsState.instance.source = () => reader;
+        EventsState.instance.now = () => now;
+        await EventsState.instance.refresh();
+        expect(reader.cacheFirstAsked, [false]);
+      });
+
+      test('erase forgets the stored time', () async {
+        SharedPreferences.setMockInitialValues({
+          kEventsReadAtKey: now.toIso8601String(),
+        });
+        EventsState.instance.erase();
+        await Future<void>.delayed(Duration.zero);
+        expect(await storedReadAt(), isNull);
+      });
+    });
+
+    test('switched off again: the list empties', () async {
       AppRouter.featureFlags = FeatureFlags.shipped;
+      EventsState.instance.seed([_online()]);
+      AppRouter.featureFlags = off;
       await EventsState.instance.refresh(force: true);
       expect(EventsState.instance.upcoming, isEmpty);
     });
@@ -320,33 +407,33 @@ void main() {
     test('events are the only thing the server can switch on', () {
       expect(Feature.events.serverMayTurnOn, isTrue);
       expect(
-        [for (final f in Feature.values) if (f.serverMayTurnOn) f],
+        [
+          for (final f in Feature.values)
+            if (f.serverMayTurnOn) f,
+        ],
         [Feature.events],
       );
     });
 
-    test(
-      'a verified woman takes the owner\'s answer for events, and nothing '
-      'switches on the community or off the gate',
-      () async {
-        AppRouter.lastVerification = VerificationResult(
-          method: VerificationMethod.automatic,
-          decidedAt: DateTime(2026, 10, 2),
-          imagesDeletedAt: DateTime(2026, 10, 2),
-        );
-        final store = _FakeSwitches({
-          'events': true,
-          // Anything else in the document is ignored.
-          'community': true,
-          'accountRequired': false,
-        });
-        RemoteFeatures.store = () => store;
-        await RemoteFeatures.load();
-        expect(AppRouter.featureFlags.isOn(Feature.events), isTrue);
-        expect(AppRouter.featureFlags.isOn(Feature.community), isFalse);
-        expect(AppRouter.featureFlags.isOn(Feature.accountRequired), isTrue);
-      },
-    );
+    test('a verified woman takes the owner\'s answer for events, and nothing '
+        'switches on the community or off the gate', () async {
+      AppRouter.lastVerification = VerificationResult(
+        method: VerificationMethod.automatic,
+        decidedAt: DateTime(2026, 10, 2),
+        imagesDeletedAt: DateTime(2026, 10, 2),
+      );
+      final store = _FakeSwitches({
+        'events': true,
+        // Anything else in the document is ignored.
+        'community': true,
+        'accountRequired': false,
+      });
+      RemoteFeatures.store = () => store;
+      await RemoteFeatures.load();
+      expect(AppRouter.featureFlags.isOn(Feature.events), isTrue);
+      expect(AppRouter.featureFlags.isOn(Feature.community), isFalse);
+      expect(AppRouter.featureFlags.isOn(Feature.accountRequired), isTrue);
+    });
 
     test('nothing is read before she is verified', () async {
       final store = _FakeSwitches({'events': true});
@@ -355,16 +442,22 @@ void main() {
       expect(AppRouter.featureFlags.isOn(Feature.events), isFalse);
     });
 
-    test('Z14 publishes events, and refuses what the server cannot move', () async {
-      final store = _FakeSwitches({});
-      RemoteFeatures.store = () => store;
-      expect(await RemoteFeatures.publish(Feature.events, true), isTrue);
-      expect(
-        await RemoteFeatures.publish(Feature.accountRequired, false),
-        isFalse,
-      );
-      expect(await RemoteFeatures.publish(Feature.verification, false), isFalse);
-      expect(store.writes, [('events', true)]);
-    });
+    test(
+      'Z14 publishes events, and refuses what the server cannot move',
+      () async {
+        final store = _FakeSwitches({});
+        RemoteFeatures.store = () => store;
+        expect(await RemoteFeatures.publish(Feature.events, true), isTrue);
+        expect(
+          await RemoteFeatures.publish(Feature.accountRequired, false),
+          isFalse,
+        );
+        expect(
+          await RemoteFeatures.publish(Feature.verification, false),
+          isFalse,
+        );
+        expect(store.writes, [('events', true)]);
+      },
+    );
   });
 }

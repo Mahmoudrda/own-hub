@@ -12,7 +12,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/undo_offer.dart';
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -41,7 +43,18 @@ class WeekPlanView extends StatefulWidget {
     this.fillFrom = const <String>[],
     this.recipeTitle,
     this.lead,
+    this.embedded = false,
+    this.onChanged,
   });
+
+  /// Drawn inside the Eat hub's Plan segment: the week's dinners with no
+  /// scaffold or top bar, the rearrange control as a button in the page, and no
+  /// link to the grocery list (the hub draws the list under the dinners).
+  final bool embedded;
+
+  /// The week changed (a dinner picked, filled, swapped or rearranged), so the
+  /// grocery list under it can read the plan again.
+  final VoidCallback? onChanged;
 
   /// The line under the title, in place of the one the plan decides. The
   /// tour's sample week says it is a sample: "built from recipes you have
@@ -93,9 +106,11 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     unawaited(_load());
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool changed = false}) async {
     final plan = await _repo.mealPlan(_weekId);
-    if (mounted) setState(() => _plan = plan);
+    if (!mounted) return;
+    setState(() => _plan = plan);
+    if (changed) widget.onChanged?.call();
   }
 
   /// Rearranges the week — the same five dinners, moved on by a day.
@@ -114,6 +129,9 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     final days = plan.dinners.keys.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
     final recipes = [for (final day in days) plan.dinners[day]!];
+    // Her arrangement as it was, so one tap puts it back. Every tap moved
+    // every dinner and the only way back was four more taps.
+    final before = {for (final day in days) day: plan.dinners[day]!};
 
     for (var i = 0; i < days.length; i++) {
       await _repo.swapDinner(
@@ -122,14 +140,33 @@ class _WeekPlanViewState extends State<WeekPlanView> {
         recipeId: recipes[(i + 1) % recipes.length],
       );
     }
-    await _load();
+    await _load(changed: true);
+    if (!mounted) return;
+    offerUndo(
+      context,
+      bus: _bus,
+      describe: AppL10n.of(context).weekRearranged,
+      onUndo: () async {
+        for (final entry in before.entries) {
+          await _repo.swapDinner(
+            weekId: _weekId,
+            day: entry.key,
+            recipeId: entry.value,
+          );
+        }
+        await _load(changed: true);
+      },
+    );
   }
+
+  /// The undo window for a rearranged week.
+  final LogCommandBus _bus = LogCommandBus();
 
   Future<void> _pick(PlanDay day) async {
     final pick = widget.onPickDinner;
     if (pick == null) return;
     await pick(day);
-    await _load();
+    await _load(changed: true);
   }
 
   /// Puts one of [WeekPlanView.fillFrom] on every day that has no dinner,
@@ -154,7 +191,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
       );
       next++;
     }
-    await _load();
+    await _load(changed: true);
   }
 
   String _title(AppL10n l10n, String recipeId) =>
@@ -162,6 +199,7 @@ class _WeekPlanViewState extends State<WeekPlanView> {
 
   @override
   void dispose() {
+    unawaited(_bus.flushAll());
     if (_ownsRepo) unawaited(_repo.dispose());
     super.dispose();
   }
@@ -171,57 +209,61 @@ class _WeekPlanViewState extends State<WeekPlanView> {
     final l10n = AppL10n.of(context);
     final view = const WeekPlanViewModel().build(weekId: _weekId, plan: _plan);
 
-    return AppScaffold(
-      appBar: AppTopBar(
-        title: l10n.thisWeek,
-        onBack: widget.onBack,
-        actions: [
-          IconButton(
-            onPressed: widget.onRegenerate ?? () => unawaited(_rearrange()),
-            tooltip: l10n.rearrangeTheWeek,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.autorenew),
-          ),
-        ],
-      ),
-      footer: [
-        if (AppRouter.screenIsOn('E08'))
+    final footer = <Widget>[
+      // One action while nothing is planned: fill the week, or choose the
+      // first dinner when there is no pack to fill from.
+      if (!view.hasPlan && widget.fillFrom.isNotEmpty)
+        AppButton(
+          l10n.fillMyWeekFromRahmasRecipes,
+          key: const ValueKey('e07-fill-week'),
+          onPressed: () => unawaited(_fillWeek()),
+        )
+      else if (!view.hasPlan && widget.onPickDinner != null)
+        AppButton(
+          l10n.planMyWeek,
+          key: const ValueKey('e07-plan-week'),
+          onPressed: () => unawaited(_pick(view.dinners.first.day)),
+        ),
+      if (!widget.embedded && AppRouter.screenIsOn('E08'))
+        if (view.hasPlan)
           AppButton(
             l10n.seeTheGroceryList,
             onPressed: () =>
                 openScreen(context, 'E08', widget.onOpenGroceryList),
           ),
-      ],
-      children: [
-        // "Five dinners, built from recipes you have logged before. Swap any
-        // of them." — over five rows all reading "Need an idea for dinner?",
-        // which is what a woman with no plan saw. There were no five dinners,
-        // nothing had been built, and there was nothing to swap.
-        //
-        // The guard was already written and this screen was not using it:
-        // `WeekPlanView.hasPlan` carries the doc "True once anything has been
-        // planned. Before that E07 offers to build one rather than showing five
-        // blank rows with no explanation."
-        Text(
-          widget.lead ??
-              (view.hasPlan
-                  ? l10n.fiveDinnersBuiltFromRecipesYouHave
-                  : l10n.nothingIsPlannedForThisWeekYet),
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+    ];
+    final children = <Widget>[
+      // "Five dinners, built from recipes you have logged before. Swap any
+      // of them." — over five rows all reading "Need an idea for dinner?",
+      // which is what a woman with no plan saw. There were no five dinners,
+      // nothing had been built, and there was nothing to swap.
+      //
+      // The guard was already written and this screen was not using it:
+      // `WeekPlanView.hasPlan` carries the doc "True once anything has been
+      // planned. Before that E07 offers to build one rather than showing five
+      // blank rows with no explanation."
+      Text(
+        widget.lead ??
+            (view.hasPlan
+                ? l10n.fiveDinnersBuiltFromRecipesYouHave
+                : l10n.nothingIsPlannedForThisWeekYet),
+        style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+      ),
+      // A planner page: one ink rule heads the week, and each day below it
+      // is a pencil-ruled line of its own.
+      const HandRule(seed: 23, ink: true, height: 10),
+      // One tap fills every empty day from Rahma's dinners; a day she chose
+      // stays hers. Once a dinner exists the button gives way to the rows.
+      if (view.hasPlan &&
+          widget.fillFrom.isNotEmpty &&
+          view.dinners.any((d) => !d.isPlanned))
+        AppButton(
+          l10n.fillMyWeekFromRahmasRecipes,
+          key: const ValueKey('e07-fill-week'),
+          variant: AppButtonVariant.outlined,
+          onPressed: () => unawaited(_fillWeek()),
         ),
-        // A planner page: one ink rule heads the week, and each day below it
-        // is a pencil-ruled line of its own.
-        const HandRule(seed: 23, ink: true, height: 10),
-        // One tap fills every empty day from Rahma's dinners; a day she chose
-        // stays hers.
-        if (widget.fillFrom.isNotEmpty && view.dinners.any((d) => !d.isPlanned))
-          AppButton(
-            l10n.fillMyWeekFromRahmasRecipes,
-            key: const ValueKey('e07-fill-week'),
-            variant: AppButtonVariant.outlined,
-            onPressed: () => unawaited(_fillWeek()),
-          ),
+      if (view.hasPlan)
         for (final row in view.dinners)
           AppListItem(
             key: ValueKey('e07-day-${row.day.name}'),
@@ -257,7 +299,16 @@ class _WeekPlanViewState extends State<WeekPlanView> {
               openScreen(context, 'E06');
             },
           ),
-        if (AppRouter.screenIsOn('E08'))
+      // First view of a week with nothing planned only: it waves once.
+      if (!view.hasPlan)
+        const Kitten(
+          pose: KittenPose.wave,
+          size: 56,
+          moment: 'E07',
+          sessionBudget: true,
+        ),
+      if (!widget.embedded && AppRouter.screenIsOn('E08'))
+        if (view.hasPlan)
           AppCard(
             variant: AppCardVariant.tonal,
             onTap: () => openScreen(context, 'E08', widget.onOpenGroceryList),
@@ -295,7 +346,45 @@ class _WeekPlanViewState extends State<WeekPlanView> {
               ),
             ],
           ),
-      ],
+    ];
+
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: kStackGap,
+        children: [
+          // The week's own buttons sit with the week, not pinned below it.
+          ...children.take(2),
+          ...footer,
+          ...children.skip(2),
+          if (view.hasPlan)
+            AppButton(
+              l10n.rearrangeTheWeek,
+              key: const ValueKey('e07-rearrange'),
+              variant: AppButtonVariant.outlined,
+              onPressed: widget.onRegenerate ?? () => unawaited(_rearrange()),
+            ),
+        ],
+      );
+    }
+
+    return AppScaffold(
+      appBar: AppTopBar(
+        title: l10n.thisWeek,
+        onBack: widget.onBack,
+        actions: [
+          IconButton(
+            onPressed: widget.onRegenerate ?? () => unawaited(_rearrange()),
+            tooltip: l10n.rearrangeTheWeek,
+            iconSize: 24,
+            color: AppColors.onSurfaceVariant,
+            icon: const Icon(Icons.autorenew),
+          ),
+        ],
+      ),
+      footer: footer,
+      children: children,
     );
   }
 }

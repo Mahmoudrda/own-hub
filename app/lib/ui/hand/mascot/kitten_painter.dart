@@ -1,10 +1,11 @@
 /// The kitten: the one character in the product, drawn in the rose tone.
 ///
-/// It is the owner's chosen design (A1): a round, soft rose kitten whose head
-/// is most of it, two big ears with blunt tips and deep rose insides, big
-/// wide-set deep rose eyes with one light catch each, and a small ":3" mouth.
-/// Flat colour, no outline: a paw in front of the body is told apart by a
-/// slightly deeper rose edge, nothing darker.
+/// It is the owner's chosen design (A1): a round, soft rose kitten with a big
+/// head, two ears with blunt tips and inner shapes, almond eyes with one light
+/// catch each, a small nose and a ":3" mouth. It is drawn the way the licensed
+/// illustrations are: flat colour with soft shading, three tones of each
+/// colour (base, shade, highlight) and no outline. A paw in front of the body
+/// is told apart by its shade edge, nothing darker.
 ///
 /// Everything is laid out in a 1 x 1 box and built once for the whole app;
 /// a frame only moves a few parts with the canvas and draws two short lines
@@ -17,8 +18,8 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
+import '../../../theme/app_tokens.dart';
 import '../../../theme/hand_tokens.dart';
-import '../art_palette.dart';
 import '../hand_geometry.dart';
 
 /// What the kitten does when it appears.
@@ -45,7 +46,28 @@ enum KittenPose {
   lookRight(700, physical: true),
 
   /// Blinks twice, slowly.
-  blink(700, physical: true);
+  blink(700, physical: true),
+
+  /// A paw to the chin and the eyes up and away, while something is read.
+  think(900, physical: false),
+
+  /// Sits down and folds both paws in front, eyes soft. For a wait that is
+  /// not hers to hurry.
+  wait(700, physical: false),
+
+  /// Dips its head twice, a small yes. Where a cheer would be too much.
+  nod(600, physical: false),
+
+  /// One paw over its head and the other out wide, leaning into a long
+  /// stretch, glad.
+  stretch(1200, physical: false),
+
+  /// Curls both paws up to its chest, as if lifting something, proud.
+  lift(1000, physical: false),
+
+  /// Rises into view from the bottom edge of its box and rests its paws on
+  /// that edge. The box clips it, so it comes from the screen edge below.
+  peek(900, physical: false);
 
   const KittenPose(this.moveMs, {required this.physical});
 
@@ -68,6 +90,48 @@ const int kittenBreaths = 2;
 Duration kittenRunFor(KittenPose pose) =>
     Duration(milliseconds: pose.moveMs + kittenBreathMs * kittenBreaths);
 
+/// The idle loop every kitten runs once its move is over, unless she asked for
+/// less motion: a slow breath, a float of a few pixels and a blink every few
+/// seconds. One loop of [kittenIdleMs] holds five breaths and two blinks, so a
+/// kitten blinks every 5.2 s and 6.8 s and the wrap is seamless.
+abstract final class KittenIdle {
+  /// Length of the loop, five breaths long.
+  static const int loopMs = kittenIdleMs;
+
+  /// Time of one breath in, out.
+  static const int breathMs = 2400;
+
+  /// How far it floats up at the top of a breath, in logical pixels.
+  static const double floatDp = 3;
+
+  /// How much bigger it is at the top of a breath: 1.00 to 1.025.
+  static const double scale = 0.025;
+
+  /// Where the kitten stands in its square, which the breath grows about.
+  static const double baseY = 0.96;
+
+  /// Room above the square the float and the breath need, in logical pixels.
+  static double headroomFor(double size) => floatDp + size * 0.03;
+
+  /// 0 to 1 and back along a sine, over each breath of the loop.
+  static double breath(double t) =>
+      (1 - math.cos(2 * math.pi * (loopMs / breathMs) * t)) / 2;
+
+  /// How shut the eyes are at [t]: 0 open, 1 shut, a hump 160 ms long.
+  static double blink(double t) {
+    final ms = t * loopMs;
+    return math.max(_blinkAt(ms, 1200), _blinkAt(ms, 6400));
+  }
+
+  static double _blinkAt(double ms, double start) {
+    final u = (ms - start) / 160;
+    return u <= 0 || u >= 1 ? 0 : math.sin(math.pi * u);
+  }
+}
+
+/// One idle loop, in milliseconds.
+const int kittenIdleMs = 12000;
+
 /// Where every moving part is at one instant.
 @immutable
 class KittenFrame {
@@ -85,6 +149,7 @@ class KittenFrame {
     this.smile = 0,
     this.tail = 0,
     this.ear = 0,
+    this.dip = 0,
   });
 
   /// How far the whole kitten is above where it sits, in box units.
@@ -123,6 +188,9 @@ class KittenFrame {
   /// Twitch of the trailing ear in radians.
   final double ear;
 
+  /// How far the head is lowered, in box units.
+  final double dip;
+
   /// Where [pose] is at [ms] into its run.
   factory KittenFrame.at(KittenPose pose, double ms) {
     final move = _move(pose, math.min(ms, pose.moveMs.toDouble()));
@@ -147,8 +215,28 @@ class KittenFrame {
       smile: move.smile,
       tail: 0.22 * sway * sway,
       ear: 0.16 * _hump(end, 1.3, 1.6),
+      dip: move.dip,
     );
   }
+
+  /// This frame with the eyes [open] by that much, for a blink laid over a
+  /// kitten that is otherwise still.
+  KittenFrame withEyes(double open) => KittenFrame(
+    lift: lift,
+    squash: squash,
+    headTilt: headTilt,
+    lead: lead,
+    trail: trail,
+    leadPaw: leadPaw,
+    trailPaw: trailPaw,
+    look: look,
+    eyeOpen: open,
+    happy: happy,
+    smile: smile,
+    tail: tail,
+    ear: ear,
+    dip: dip,
+  );
 
   /// The frame a still kitten shows: the end of the run.
   factory KittenFrame.end(KittenPose pose) =>
@@ -218,6 +306,81 @@ class KittenFrame {
         return KittenFrame(
           eyeOpen: 1 - _hump(u, 0.14, 0.42) - _hump(u, 0.52, 0.8),
         );
+      case KittenPose.think:
+        // The leading paw folds up to the chin, the face tips and the eyes
+        // go up and away from it, as if reading something.
+        final reach = _pop(u, 0.06, 0.55);
+        final eyes = _ease(u, 0.1, 0.6);
+        return KittenFrame(
+          squash: give,
+          lead: _lerp(_armRest, 1.35, reach),
+          leadPaw: _lerp(_pawRest, 4.4, reach),
+          look: Offset(-0.45 * eyes, -0.8 * eyes),
+          headTilt: 0.09 * eyes,
+        );
+      case KittenPose.wait:
+        // Settles a little lower and brings both paws together in front.
+        // The eyes soften but stay open: waiting is never sleep.
+        final sit = _ease(u, 0.05, 0.8);
+        final fold = _ease(u, 0.15, 0.85);
+        return KittenFrame(
+          squash: give * (1 - 0.05 * sit),
+          lead: _lerp(_armRest, 0.3, fold),
+          trail: _lerp(_armRest, 0.3, fold),
+          leadPaw: _lerp(_pawRest, -1.2, fold),
+          trailPaw: _lerp(_pawRest, -1.2, fold),
+          headTilt: 0.05 * sit,
+          eyeOpen: 1 - 0.22 * sit,
+        );
+      case KittenPose.stretch:
+        // The leading paw goes up and over the head while the other reaches
+        // out wide, the body grows a little taller, and it settles back.
+        final up = _pop(u, 0.08, 0.42);
+        final hold = 1 - 0.1 * _ease(u, 0.62, 1);
+        return KittenFrame(
+          squash: give * (1 + 0.05 * _hump(u, 0.1, 0.8)),
+          lead: _lerp(_armRest, 2.45, up) * hold,
+          leadPaw: _lerp(_pawRest, 2.95, up) * hold,
+          trail: _lerp(_armRest, 1.7, up) * hold,
+          trailPaw: _lerp(_pawRest, 2.2, up) * hold,
+          headTilt: -0.09 * _ease(u, 0.1, 0.45) * hold,
+          happy: _ease(u, 0.12, 0.34),
+          smile: _ease(u, 0.12, 0.34),
+        );
+      case KittenPose.lift:
+        // Both paws take hold low in front and curl up to the chest.
+        final curl = _pop(u, 0.1, 0.55);
+        final grip = _ease(u, 0, 0.12);
+        final arm = _lerp(_armRest, 0.6, grip);
+        return KittenFrame(
+          squash: give,
+          lead: arm,
+          trail: arm,
+          leadPaw: _lerp(_lerp(_pawRest, -1.0, grip), -1.9, curl),
+          trailPaw: _lerp(_lerp(_pawRest, -1.0, grip), -1.9, curl),
+          happy: _ease(u, 0.3, 0.55),
+          smile: _ease(u, 0.3, 0.55),
+        );
+      case KittenPose.peek:
+        // Up from below the edge to rest its paws on it, eyes on her.
+        final rise = _pop(u, 0.04, 0.7);
+        final grab = _ease(u, 0.25, 0.7);
+        final arm = _lerp(_armRest, 1.9, grab);
+        return KittenFrame(
+          lift: _lerp(-0.95, -0.4, rise),
+          lead: arm,
+          trail: arm,
+          leadPaw: _lerp(_pawRest, 2.6, grab),
+          trailPaw: _lerp(_pawRest, 2.6, grab),
+          headTilt: 0.06 * _hump(u, 0.5, 1),
+        );
+      case KittenPose.nod:
+        final down = _hump(u, 0.05, 0.5) + _hump(u, 0.5, 0.95);
+        return KittenFrame(
+          squash: give,
+          dip: 0.045 * down,
+          eyeOpen: 1 - 0.35 * down,
+        );
     }
   }
 }
@@ -253,19 +416,136 @@ double _hump(double t, double a, double b) {
   return v * v;
 }
 
+/// What the kitten holds, drawn in the same flat, soft-shaded style.
+enum KittenProp {
+  /// A tiny dumbbell, for training screens.
+  dumbbell,
+
+  /// A heart, for a finished week.
+  heart,
+
+  /// A small card with a tick, for something saved.
+  tickCard,
+}
+
+/// One colour in three tones.
+@immutable
+class _Tri {
+  const _Tri(this.base, this.shade, this.light);
+
+  final Color base;
+  final Color shade;
+  final Color light;
+}
+
+/// The colour the kitten is drawn in. Pink everywhere, and sage where it
+/// keeps her company through a wait rather than celebrating.
+@immutable
+class KittenTint {
+  const KittenTint._(this._body, this.inner, this.nose, this.eye);
+
+  final _Tri _body;
+
+  /// The inside of an ear: a deeper pink than the body.
+  final Color inner;
+
+  /// The nose and mouth.
+  final Color nose;
+
+  /// The eyes, the one dark on the kitten.
+  final Color eye;
+
+  /// The deeper edge that tells a paw from the body behind it.
+  Color get edge => _body.shade;
+
+  static const KittenTint rose = KittenTint._(
+    _Tri(AppColors.brandPink, AppColors.pinkShade, AppColors.pinkSoft),
+    AppColors.pinkDeep,
+    AppColors.pinkDeep,
+    AppColors.petrolDark,
+  );
+  static const KittenTint sage = KittenTint._(
+    _Tri(Color(0xFFA6CCAC), Color(0xFF8DB896), Color(0xFFC5E0CA)),
+    Color(0xFF7FA98A),
+    AppColors.tertiary,
+    AppColors.onTertiaryContainer,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      other is KittenTint && other._body == _body && other.eye == eye;
+
+  @override
+  int get hashCode => Object.hash(_body, eye);
+}
+
+/// The cream of the belly and muzzle, with its own shade.
+const _Tri _cream = _Tri(
+  Color(0xFFFBEFE0),
+  Color(0xFFF0DCC6),
+  Color(0xFFFFF8EE),
+);
+
+/// The heart: a deeper pink than the body, so it stands out of it.
+const _Tri _heartTone = _Tri(
+  Color(0xFFE58F8B),
+  Color(0xFFC9706C),
+  AppColors.pinkSoft,
+);
+
+/// The tick on a card: sage, as everything done in the product.
+const _Tri _sage = _Tri(
+  Color(0xFFA6CCAC),
+  Color(0xFF8DB896),
+  Color(0xFFC5E0CA),
+);
+
+/// A dumbbell bar, and a card's edge.
+const _Tri _steel = _Tri(
+  AppColors.petrolMuted,
+  Color(0xFF4F7480),
+  Color(0xFF9FB8C0),
+);
+
 /// Paints the kitten at whatever [progress] says, 0 to 1 through its run.
 class KittenPainter extends CustomPainter {
-  KittenPainter({required this.progress, required this.pose, required this.rtl})
-    : super(repaint: progress);
+  KittenPainter({
+    required this.progress,
+    required this.pose,
+    required this.rtl,
+    this.tint = KittenTint.rose,
+    this.prop,
+    this.blinking = false,
+    this.idle,
+    this.headroom = 0,
+  }) : super(
+         repaint: idle == null ? progress : Listenable.merge([progress, idle]),
+       );
 
   final Animation<double> progress;
+
+  /// The idle loop, 0 to 1 round [kittenIdleMs]: breathing, a small float and
+  /// a blink every few seconds. Null draws the pose and nothing more.
+  final Animation<double>? idle;
+
+  /// Space above the square the kitten is drawn in, in logical pixels, for the
+  /// float and the breath to rise into. The square sits at the bottom of the
+  /// canvas, so nothing painted leaves it.
+  final double headroom;
   final KittenPose pose;
   final bool rtl;
+  final KittenTint tint;
 
-  static const ArtTone _tone = ArtTones.rose;
+  /// Held in front of it, if anything.
+  final KittenProp? prop;
 
-  /// The deeper rose that tells a paw from the body behind it.
-  static const Color _edgeColour = Color(0xFFE99BB2);
+  /// One blink laid over its last frame, with [progress] running 0 to 1
+  /// through the blink alone.
+  final bool blinking;
+
+  _Tri get _b => tint._body;
+
+  static Paint _solid(Color c) => Paint()..color = c;
 
   static Paint _stroke(Color c) => Paint()
     ..color = c
@@ -273,13 +553,26 @@ class KittenPainter extends CustomPainter {
     ..strokeCap = StrokeCap.round
     ..strokeJoin = StrokeJoin.round;
 
-  static final Paint _fill = Paint()..color = _tone.fill;
-  static final Paint _ink = Paint()..color = _tone.line;
-  static final Paint _inkLine = _stroke(_tone.line);
-  static final Paint _shine = Paint()..color = HandInk.page;
-  static final Paint _pawEdge = Paint()..color = _edgeColour;
-  static final Paint _armFill = _stroke(_tone.fill);
-  static final Paint _tailFill = _stroke(_tone.fill);
+  late final Paint _base = _solid(_b.base);
+  late final Paint _shade = _solid(_b.shade);
+  late final Paint _light = _solid(_b.light);
+  late final Paint _inner = _solid(tint.inner);
+  late final Paint _eye = _solid(tint.eye);
+  late final Paint _eyeLine = _stroke(tint.eye);
+  late final Paint _noseFill = _solid(tint.nose);
+  late final Paint _mouthLine = _stroke(tint.nose);
+  static final Paint _glow = _solid(const Color(0x2EFFFFFF));
+  late final Paint _cast = _solid(_b.shade.withValues(alpha: 0.18))
+    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.03);
+  late final Paint _cheek = _solid(_b.shade.withValues(alpha: 0.85));
+  static final Paint _creamBase = _solid(_cream.base);
+  static final Paint _creamShade = _solid(_cream.shade);
+  static final Paint _shine = _solid(HandInk.page);
+  late final Paint _armBase = _stroke(_b.base);
+  late final Paint _armShade = _stroke(_b.shade);
+  late final Paint _tailBase = _stroke(_b.base);
+  late final Paint _tailShade = _stroke(_b.shade);
+  static final Paint _tailTip = _stroke(_cream.base);
 
   // Arm layout in the box, leading side to the right.
   static const double _shoulderX = 0.14;
@@ -325,15 +618,42 @@ class KittenPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final s = math.min(size.width, size.height);
     final run = kittenRunFor(pose).inMilliseconds;
-    final f = KittenFrame.at(pose, progress.value * run);
+    var f = blinking
+        ? KittenFrame.end(pose).withEyes(1 - _hump(progress.value, 0.2, 0.6))
+        : KittenFrame.at(pose, progress.value * run);
+    // The loop joins in as the move ends, so the two never double up.
+    final loop = idle;
+    final live = loop == null
+        ? 0.0
+        : blinking
+        ? 1.0
+        : _ease(progress.value, 0.85, 1);
+    final breath = loop == null ? 0.0 : KittenIdle.breath(loop.value) * live;
+    if (loop != null && live > 0) {
+      final open = 1 - KittenIdle.blink(loop.value) * live;
+      if (open < f.eyeOpen) f = f.withEyes(open);
+    }
 
     canvas.save();
-    canvas.translate((size.width - s) / 2, (size.height - s) / 2);
+    // Coming in from the edge below: nothing shows past the box.
+    if (pose == KittenPose.peek) canvas.clipRect(Offset.zero & size);
+    canvas.translate(
+      (size.width - s) / 2,
+      headroom > 0 ? size.height - s : (size.height - s) / 2,
+    );
     if (rtl && !pose.physical) {
       canvas.translate(s, 0);
       canvas.scale(-1, 1);
     }
     canvas.scale(s);
+    if (breath > 0) {
+      // Up by the float, and a little bigger about where it sits.
+      canvas.translate(0, -KittenIdle.floatDp * breath / s);
+      final grow = 1 + KittenIdle.scale * breath;
+      canvas.translate(0.5, KittenIdle.baseY);
+      canvas.scale(grow);
+      canvas.translate(-0.5, -KittenIdle.baseY);
+    }
     // A little room all round, so a hop or a raised paw never leaves the box.
     canvas.translate(0.5, 0.49);
     canvas.scale(_fit);
@@ -342,37 +662,47 @@ class KittenPainter extends CustomPainter {
     canvas.restore();
   }
 
-  static const double _fit = 0.955;
+  static const double _fit = 0.94;
 
   /// The paw's soft edge in box units: thin, and never under 0.9 px.
   static double _edgeFor(double s) => math.max(0.9, s * 0.008) / s;
 
-  static void _paintKitten(Canvas canvas, KittenFrame f, double edge) {
-    final fill = _fill;
-    final ink = _ink;
-
-    // An arm comes out from behind the body and head in their own colour,
-    // so only the part against the page shows. The paw at its end is drawn
-    // on top with a deeper rose edge, so it reads in front of the body.
+  void _paintKitten(Canvas canvas, KittenFrame f, double edge) {
     final drop = 0.3 * (1 - f.squash);
+
     void arm(double side, double upper, double fore) {
       final s = Offset(0.5 + side * _shoulderX, _shoulderY + drop);
       final e = _elbow(s, side, upper);
       final p = _reach(e, side, fore, _foreLen);
-      final shaft = _armFill..strokeWidth = _armWidth;
+      // The shade is the whole arm; the base sits a little up and in from it.
+      final shaft = _armShade..strokeWidth = _armWidth;
       canvas.drawLine(s, e, shaft);
       canvas.drawLine(e, p, shaft);
+      final lit = _armBase..strokeWidth = _armWidth - 0.014;
+      final nudge = Offset(-side * 0.003, -0.004);
+      canvas.drawLine(s + nudge, e + nudge, lit);
+      canvas.drawLine(e + nudge, p + nudge, lit);
     }
 
     void paw(double side, double upper, double fore) {
       final s = Offset(0.5 + side * _shoulderX, _shoulderY + drop);
       final e = _elbow(s, side, upper);
       final p = _reach(e, side, fore, _foreLen);
-      canvas.drawCircle(p, _pawR + edge, _pawEdge);
+      canvas.drawCircle(p, _pawR + edge, _shade);
       // The wrist runs over the edge, so the paw joins its arm.
       final wrist = Offset.lerp(e, p, 0.45)!;
-      canvas.drawLine(wrist, p, _armFill..strokeWidth = _armWidth);
-      canvas.drawCircle(p, _pawR, fill);
+      canvas.drawLine(wrist, p, _armBase..strokeWidth = _armWidth - 0.014);
+      final top = p.translate(-side * 0.003, -0.004);
+      canvas.drawCircle(top, _pawR - 0.002, _base);
+      canvas.drawCircle(top.translate(-0.012, -0.014), _pawR * 0.22, _light);
+      // Two toe lines, small enough to stay quiet.
+      for (final x in const [-0.011, 0.011]) {
+        canvas.drawLine(
+          top.translate(x, 0.012),
+          top.translate(x, 0.031),
+          _armShade..strokeWidth = 0.005,
+        );
+      }
     }
 
     canvas.save();
@@ -380,9 +710,12 @@ class KittenPainter extends CustomPainter {
 
     // Tail, behind everything, swinging from where it meets the body.
     canvas.save();
-    canvas.translate(0.36, 0.93);
+    canvas.translate(0.4, 0.92);
     canvas.rotate(f.tail);
-    canvas.drawPath(_parts.tail, _tailFill..strokeWidth = 0.062);
+    canvas.drawPath(_parts.tailRoot, _tailShade..strokeWidth = 0.07);
+    canvas.drawPath(_parts.tailTip, _tailShade..strokeWidth = 0.07);
+    canvas.drawPath(_parts.tailRoot, _tailBase..strokeWidth = 0.058);
+    canvas.drawPath(_parts.tailTip, _tailTip..strokeWidth = 0.058);
     canvas.restore();
 
     arm(-1, f.trail, f.trailPaw);
@@ -393,7 +726,30 @@ class KittenPainter extends CustomPainter {
     canvas.translate(0.5, 0.995);
     canvas.scale(1, f.squash);
     canvas.translate(-0.5, -0.995);
-    canvas.drawPath(_parts.body, fill);
+    canvas.drawPath(_parts.body, _shade);
+    canvas.drawPath(_parts.bodyLit, _base);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: const Offset(0.5, 0.735),
+        width: 0.34,
+        height: 0.08,
+      ),
+      _cast,
+    );
+    canvas.drawPath(_parts.belly, _creamShade);
+    canvas.drawPath(_parts.bellyLit, _creamBase);
+    for (final side in const [-1.0, 1.0]) {
+      canvas.drawPath(_parts.foot(side), _shade);
+      canvas.drawPath(_parts.footLit(side), _base);
+      for (final toe in const [-0.014, 0.014]) {
+        final x = 0.5 + side * 0.115 + toe;
+        canvas.drawLine(
+          Offset(x, 0.948),
+          Offset(x, 0.966),
+          _armShade..strokeWidth = 0.006,
+        );
+      }
+    }
     canvas.restore();
 
     // Everything above the body rides down as it squashes.
@@ -402,24 +758,61 @@ class KittenPainter extends CustomPainter {
 
     // Head, ears and face turn together about the neck.
     canvas.save();
+    canvas.translate(0, f.dip);
     canvas.translate(0.5, 0.72);
     canvas.rotate(f.headTilt);
     canvas.translate(-0.5, -0.72);
-    canvas.drawPath(_parts.earLead, fill);
-    canvas.drawPath(_parts.innerLead, ink);
+    canvas.drawPath(_parts.earLead, _base);
+    canvas.drawPath(_parts.earShadeLead, _shade);
+    canvas.drawPath(_parts.innerLead, _inner);
     canvas.save();
     canvas.translate(0.33, 0.3);
     canvas.rotate(-f.ear);
     canvas.translate(-0.33, -0.3);
-    canvas.drawPath(_parts.earTrail, fill);
-    canvas.drawPath(_parts.innerTrail, ink);
+    canvas.drawPath(_parts.earTrail, _base);
+    canvas.drawPath(_parts.earShadeTrail, _shade);
+    canvas.drawPath(_parts.innerTrail, _inner);
     canvas.restore();
-    // The head goes over the ears, so the deep rose insides end on its curve.
-    canvas.drawPath(_parts.head, fill);
+    // The head goes over the ears, so the inner shapes end on its curve.
+    canvas.drawPath(_parts.head, _base);
+    canvas.drawPath(_parts.glow, _glow);
 
     final fx = 0.06 * f.look.dx;
     final fy = 0.04 * f.look.dy;
     final happy = f.happy.clamp(0.0, 1.0);
+
+    for (final side in const [-1.0, 1.0]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(0.5 + side * 0.225 + fx, 0.605 + fy),
+          width: 0.1,
+          height: 0.06,
+        ),
+        _cheek,
+      );
+    }
+    // The muzzle: two soft cream pads under the nose.
+    for (final side in const [-1.0, 1.0]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(0.5 + side * 0.046 + fx, 0.6 + fy),
+          width: 0.106,
+          height: 0.086,
+        ),
+        _creamShade,
+      );
+    }
+    for (final side in const [-1.0, 1.0]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(0.5 + side * 0.046 + fx, 0.597 + fy),
+          width: 0.1,
+          height: 0.08,
+        ),
+        _creamBase,
+      );
+    }
+
     for (final side in const [-1.0, 1.0]) {
       final c = Offset(0.5 + side * _eyeSpread + fx, _eyeY + fy);
       // The eye on the side she turns toward comes nearer, so a little bigger.
@@ -429,18 +822,19 @@ class KittenPainter extends CustomPainter {
         canvas.save();
         canvas.translate(c.dx, c.dy + r * 0.25);
         canvas.scale(r);
-        canvas.drawPath(_parts.happyEye, _inkLine..strokeWidth = 0.32);
+        canvas.drawPath(_parts.happyEye, _eyeLine..strokeWidth = 0.32);
         canvas.restore();
         continue;
       }
       final open = (f.eyeOpen * (1 - 1.7 * happy)).clamp(0.1, 1.0);
-      canvas.drawOval(
-        Rect.fromCenter(center: c, width: r * 2, height: r * 2 * open),
-        ink,
-      );
+      canvas.save();
+      canvas.translate(c.dx, c.dy);
+      canvas.scale(side * r * 1.08, r * 0.96 * open);
+      canvas.drawPath(_parts.almond, _eye);
+      canvas.restore();
       if (open > 0.55) {
         canvas.drawCircle(
-          c.translate(r * 0.24, -r * 0.34 * open),
+          c.translate(r * 0.2, -r * 0.3 * open),
           r * 0.27,
           _shine,
         );
@@ -448,16 +842,23 @@ class KittenPainter extends CustomPainter {
     }
 
     canvas.save();
+    canvas.translate(0.5 + fx, 0.556 + fy);
+    canvas.drawPath(_parts.nose, _noseFill);
+    canvas.restore();
+
+    canvas.save();
     canvas.translate(0.5 + fx, _mouthY + fy);
     if (f.smile > 0.5) {
-      canvas.drawPath(_parts.smile, ink);
+      canvas.drawPath(_parts.smile, _eye);
     } else {
-      canvas.drawPath(_parts.mouth, _inkLine..strokeWidth = 0.011);
+      canvas.drawPath(_parts.mouth, _mouthLine..strokeWidth = 0.011);
     }
     canvas.restore();
     canvas.restore();
 
     canvas.restore();
+
+    _paintProp(canvas, f, drop);
 
     // Paws last, so a raised paw is in front of the cheek.
     paw(-1, f.trail, f.trailPaw);
@@ -465,14 +866,132 @@ class KittenPainter extends CustomPainter {
     canvas.restore();
   }
 
-  static const double _eyeSpread = 0.15;
+  /// What it holds sits low in front of the body, where the resting paws
+  /// meet, and between the paws when they curl it up.
+  void _paintProp(Canvas canvas, KittenFrame f, double drop) {
+    final held = prop;
+    if (held == null) return;
+    var at = Offset(0.5, 0.9 + drop);
+    if (pose == KittenPose.lift) {
+      final a = pawOf(f, lead: true), b = pawOf(f, lead: false);
+      at = Offset.lerp(a, b, 0.5)!.translate(0, drop);
+    }
+    canvas.save();
+    canvas.translate(at.dx, at.dy);
+    switch (held) {
+      case KittenProp.dumbbell:
+        _dumbbell(canvas);
+      case KittenProp.heart:
+        _heart(canvas);
+      case KittenProp.tickCard:
+        _tickCard(canvas);
+    }
+    canvas.restore();
+  }
+
+  void _lit(Canvas canvas, Path path, _Tri t, Offset shift) {
+    canvas.drawPath(path, _solid(t.shade));
+    canvas.save();
+    canvas.translate(shift.dx, shift.dy);
+    canvas.drawPath(path, _solid(t.base));
+    canvas.restore();
+  }
+
+  void _dumbbell(Canvas canvas) {
+    const a = _steel;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTRB(-0.21, -0.016, 0.21, 0.016),
+        const Radius.circular(0.012),
+      ),
+      _solid(_steel.shade),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTRB(-0.21, -0.018, 0.21, 0.008),
+        const Radius.circular(0.01),
+      ),
+      _solid(_steel.base),
+    );
+    for (final side in const [-1.0, 1.0]) {
+      final x = side * 0.21;
+      final plate = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(x, 0), width: 0.06, height: 0.115),
+        const Radius.circular(0.022),
+      );
+      canvas.drawRRect(plate, _solid(a.shade));
+      canvas.drawRRect(
+        plate.shift(const Offset(-0.004, -0.005)),
+        _solid(a.base),
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x - 0.009, -0.03),
+          width: 0.016,
+          height: 0.034,
+        ),
+        _solid(a.light),
+      );
+    }
+  }
+
+  void _heart(Canvas canvas) {
+    _lit(canvas, _parts.heart, _heartTone, const Offset(-0.004, -0.005));
+    canvas.save();
+    canvas.translate(-0.034, -0.045);
+    canvas.rotate(-0.5);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset.zero, width: 0.04, height: 0.02),
+      _solid(_heartTone.light),
+    );
+    canvas.restore();
+  }
+
+  void _tickCard(Canvas canvas) {
+    const a = _sage;
+    canvas.rotate(-0.07);
+    final card = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset.zero, width: 0.19, height: 0.215),
+      const Radius.circular(0.026),
+    );
+    canvas.drawRRect(card, _solid(_steel.shade));
+    canvas.drawRRect(
+      card.shift(const Offset(-0.004, -0.005)),
+      _solid(_cream.light),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTRB(-0.07, -0.085, 0.07, -0.062),
+        const Radius.circular(0.011),
+      ),
+      _solid(_heartTone.light),
+    );
+    final tick = Path()
+      ..moveTo(-0.045, 0.02)
+      ..cubicTo(-0.035, 0.03, -0.025, 0.045, -0.018, 0.058)
+      ..cubicTo(-0.005, 0.03, 0.02, -0.005, 0.05, -0.03);
+    canvas.drawPath(tick, _stroke(a.shade)..strokeWidth = 0.036);
+    canvas.drawPath(
+      tick.shift(const Offset(-0.003, -0.004)),
+      _stroke(a.base)..strokeWidth = 0.03,
+    );
+  }
+
+  static const double _eyeSpread = 0.14;
   static const double _eyeY = 0.54;
   static const double _eyeR = 0.066;
   static const double _mouthY = 0.578;
 
   @override
   bool shouldRepaint(KittenPainter old) =>
-      old.pose != pose || old.rtl != rtl || old.progress != progress;
+      old.pose != pose ||
+      old.rtl != rtl ||
+      old.tint != tint ||
+      old.prop != prop ||
+      old.blinking != blinking ||
+      old.headroom != headroom ||
+      old.idle != idle ||
+      old.progress != progress;
 }
 
 /// The kitten's outlines, built once in the 1 x 1 box.
@@ -482,19 +1001,36 @@ class _KittenParts {
   _KittenParts() {
     head = _loop((a) {
       final ca = math.cos(a), sa = math.sin(a);
-      // A little fuller in the cheeks than on top, like A1.
-      final rx = 0.32 * (1 + 0.05 * sa);
-      return Offset(0.5 + rx * _soft(ca, 2.15), 0.5 + 0.24 * _soft(sa, 2.15));
+      // Fuller in the cheeks than on top, so the face is round where it
+      // meets the neck.
+      final rx = 0.32 * (1 + 0.07 * sa);
+      return Offset(0.5 + rx * _soft(ca, 2.1), 0.5 + 0.225 * _soft(sa, 2.1));
     });
+    // The lit face sits a little up and to the light, so the shade shows as
+    // a soft crescent along the chin and the far cheek.
+    // A soft crescent along the top-left of the head, where the light is.
+    glow = Path.combine(
+      PathOperation.difference,
+      _fit(head, 0.5, 0.5, 0.9, 0.86, -0.012, -0.02),
+      _fit(head, 0.5, 0.5, 0.9, 0.86, 0.02, 0.026),
+    );
     body = _loop(
       (a) => Offset(
         0.5 + 0.225 * _soft(math.cos(a), 2.25),
         0.83 + 0.165 * _soft(math.sin(a), 2.25),
       ),
     );
+    bodyLit = _fit(body, 0.5, 0.83, 0.94, 0.93, -0.01, -0.014);
+    belly = _loop(
+      (a) => Offset(
+        0.5 + 0.125 * _soft(math.cos(a), 2.2),
+        0.875 + 0.1 * _soft(math.sin(a), 2.2),
+      ),
+    );
+    bellyLit = _fit(belly, 0.5, 0.875, 0.93, 0.9, -0.004, -0.007);
     // The leading ear sits on the right; the painter mirrors it for Arabic.
     // Broad at the base, leaning out, a blunt round tip, the outer side
-    // running down into the cheek the way A1's does.
+    // running down into the cheek.
     earLead = Path()
       ..moveTo(0.53, 0.31)
       ..cubicTo(0.62, 0.22, 0.7, 0.115, 0.775, 0.09)
@@ -502,20 +1038,45 @@ class _KittenParts {
       ..cubicTo(0.88, 0.25, 0.878, 0.38, 0.83, 0.5)
       ..lineTo(0.6, 0.5)
       ..close();
+    // The outer edge of the ear in shade, a thin band down its far side.
+    earShadeLead = Path()
+      ..moveTo(0.865, 0.14)
+      ..cubicTo(0.88, 0.25, 0.878, 0.38, 0.83, 0.5)
+      ..lineTo(0.775, 0.5)
+      ..cubicTo(0.812, 0.4, 0.822, 0.27, 0.815, 0.16)
+      ..cubicTo(0.812, 0.115, 0.79, 0.098, 0.775, 0.1)
+      ..cubicTo(0.835, 0.075, 0.862, 0.098, 0.865, 0.14)
+      ..close();
     innerLead = Path()
       ..moveTo(0.575, 0.335)
-      ..cubicTo(0.64, 0.25, 0.71, 0.16, 0.775, 0.137)
-      ..cubicTo(0.81, 0.125, 0.83, 0.14, 0.835, 0.175)
-      ..cubicTo(0.848, 0.26, 0.846, 0.35, 0.815, 0.44)
+      ..cubicTo(0.64, 0.25, 0.71, 0.16, 0.765, 0.142)
+      ..cubicTo(0.795, 0.132, 0.815, 0.148, 0.82, 0.18)
+      ..cubicTo(0.832, 0.26, 0.83, 0.35, 0.8, 0.44)
       ..lineTo(0.62, 0.45)
       ..close();
+    // Shorter and narrower, so they sit on the head rather than tower.
+    earLead = _fit(earLead, 0.7, 0.5, 0.9, 0.82, 0, 0);
+    earShadeLead = _fit(earShadeLead, 0.7, 0.5, 0.9, 0.82, 0, 0);
+    innerLead = _fit(innerLead, 0.7, 0.5, 0.9, 0.82, 0, 0);
+    innerLead = _fit(innerLead, 0.7, 0.45, 0.88, 0.88, 0, 0);
     earTrail = earLead.transform(_mirror);
+    earShadeTrail = earShadeLead.transform(_mirror);
     innerTrail = innerLead.transform(_mirror);
-    tail = Path()
+    // The tail rises from the hip in one S, its tip in cream.
+    final tail = Path()
       ..moveTo(0, 0)
-      ..cubicTo(-0.14, 0.01, -0.22, -0.06, -0.2, -0.17)
-      ..cubicTo(-0.19, -0.22, -0.15, -0.24, -0.12, -0.22);
-    // ":3", the way A1 draws it: two small soft bumps.
+      ..cubicTo(-0.15, 0.015, -0.25, -0.07, -0.22, -0.18)
+      ..cubicTo(-0.19, -0.24, -0.22, -0.3, -0.31, -0.31);
+    final metric = tail.computeMetrics().first;
+    tailRoot = metric.extractPath(0, metric.length * 0.8);
+    tailTip = metric.extractPath(metric.length * 0.8, metric.length);
+    nose = Path()
+      ..moveTo(-0.021, -0.007)
+      ..cubicTo(-0.012, -0.012, 0.012, -0.012, 0.021, -0.007)
+      ..cubicTo(0.019, 0.004, 0.008, 0.012, 0, 0.014)
+      ..cubicTo(-0.008, 0.012, -0.019, 0.004, -0.021, -0.007)
+      ..close();
+    // ":3", two small soft bumps.
     mouth = Path()
       ..moveTo(-0.034, -0.008)
       ..cubicTo(-0.032, 0.014, -0.006, 0.016, 0, 0.0)
@@ -529,18 +1090,80 @@ class _KittenParts {
     happyEye = Path()
       ..moveTo(-0.85, 0.25)
       ..quadraticBezierTo(0, -0.9, 0.85, 0.25);
+    // An almond in a unit eye, the outer corner on +x and a little higher
+    // than the inner, a gentle lid on top and a fuller curve beneath.
+    almond = Path()
+      ..moveTo(-0.95, 0.14)
+      ..cubicTo(-0.6, -0.95, 0.6, -1.0, 1.0, -0.02)
+      ..cubicTo(0.6, 0.9, -0.4, 1.0, -0.95, 0.14)
+      ..close();
+    // A heart about 0.14 wide, centred on its middle.
+    heart = Path()
+      ..moveTo(0, 0.07)
+      ..cubicTo(-0.05, 0.035, -0.085, 0.01, -0.085, -0.03)
+      ..cubicTo(-0.085, -0.065, -0.04, -0.085, 0, -0.045)
+      ..cubicTo(0.04, -0.085, 0.085, -0.065, 0.085, -0.03)
+      ..cubicTo(0.085, 0.01, 0.05, 0.035, 0, 0.07)
+      ..close();
   }
 
   late final Path head;
+  late final Path glow;
   late final Path body;
-  late final Path earLead;
-  late final Path innerLead;
+  late final Path bodyLit;
+  late final Path belly;
+  late final Path bellyLit;
+  late Path earLead;
+  late Path earShadeLead;
+  late Path innerLead;
   late final Path earTrail;
+  late final Path earShadeTrail;
   late final Path innerTrail;
-  late final Path tail;
+  late final Path tailRoot;
+  late final Path tailTip;
+  late final Path nose;
   late final Path mouth;
   late final Path smile;
   late final Path happyEye;
+  late final Path almond;
+  late final Path heart;
+
+  /// A hind foot on [side], and the lit top of it.
+  Path foot(double side) => _feet[side < 0 ? 0 : 1];
+  Path footLit(double side) => _feetLit[side < 0 ? 0 : 1];
+
+  late final List<Path> _feet = [
+    for (final side in const [-1.0, 1.0])
+      _loop(
+        (a) => Offset(
+          0.5 + side * 0.115 + 0.075 * _soft(math.cos(a), 2.2),
+          0.955 + 0.038 * _soft(math.sin(a), 2.2),
+        ),
+        n: 24,
+      ),
+  ];
+  late final List<Path> _feetLit = [
+    for (final (i, side) in const [-1.0, 1.0].indexed)
+      _fit(_feet[i], 0.5 + side * 0.115, 0.955, 0.92, 0.88, -0.004, -0.005),
+  ];
+
+  /// [p] scaled about ([cx], [cy]) and then moved by ([dx], [dy]).
+  static Path _fit(
+    Path p,
+    double cx,
+    double cy,
+    double sx,
+    double sy,
+    double dx,
+    double dy,
+  ) => p.transform(
+    Float64List.fromList([
+      sx, 0, 0, 0, //
+      0, sy, 0, 0, //
+      0, 0, 1, 0, //
+      cx - sx * cx + dx, cy - sy * cy + dy, 0, 1, //
+    ]),
+  );
 
   /// x to 1 - x: the other side of the box.
   static final Float64List _mirror = Float64List.fromList(const [
@@ -554,7 +1177,7 @@ class _KittenParts {
   static double _soft(double v, double n) =>
       v.sign * math.pow(v.abs(), 2 / n).toDouble();
 
-  static Path _loop(Offset Function(double a) at) => smoothPath([
-    for (var i = 0; i < 64; i++) at(2 * math.pi * i / 64),
+  static Path _loop(Offset Function(double a) at, {int n = 64}) => smoothPath([
+    for (var i = 0; i < n; i++) at(2 * math.pi * i / n),
   ], close: true);
 }

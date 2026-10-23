@@ -8,7 +8,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/eat/domain/meal_repository.dart';
+import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
+import 'package:own_hub/features/train/presentation/tier_tabs.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -61,8 +64,20 @@ TodayView _today({
   DateTime? now,
   int? level,
   String? sessionTitle,
+  String? firstName,
+  int? sessionMinutes,
+  ValueChanged<PlateSuggestion>? onLogPlate,
+  MealRepository? mealRepository,
+  VoidCallback? onSignIn,
+  Widget? tierTabs,
 }) {
   return TodayView(
+    onSignIn: onSignIn,
+    tierTabs: tierTabs,
+    firstName: firstName,
+    sessionMinutes: sessionMinutes,
+    onLogPlate: onLogPlate,
+    mealRepository: mealRepository ?? InMemoryMealRepository(),
     // The prototype's day, asked for by name. `InMemoryTodayRepository()` now
     // starts on day one, which is what a fresh install must get; these cases
     // are about a day part way through, so they state the day they mean.
@@ -72,7 +87,6 @@ TodayView _today({
           day: InMemoryTodayRepository.defaultDay(date: _tuesday),
         ),
     now: now ?? _tuesday,
-    level: level,
     sessionTitle: sessionTitle,
     onStartSession: () {},
     onRecall: () {},
@@ -94,6 +108,13 @@ Future<void> _countWalk(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 800));
 }
+
+// With her first week open that arc is the one progress line, so the week's
+// own count line is only asserted once the arc is done.
+final _firstWeekDone = FirstWeekArc(
+  hasAnyLog: true,
+  completed: FirstWeekStep.values.toSet(),
+);
 
 void main() {
   group('everything she might log today is already on the screen', () {
@@ -225,6 +246,7 @@ void main() {
             repository: InMemoryTodayRepository(
               day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
                 week: const WeekProgress(sessionsLogged: 2, sessionsTarget: 4),
+                arc: _firstWeekDone,
               ),
             ),
           ),
@@ -252,6 +274,7 @@ void main() {
             repository: InMemoryTodayRepository(
               day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
                 week: const WeekProgress(sessionsLogged: 3, sessionsTarget: 3),
+                arc: _firstWeekDone,
               ),
             ),
           ),
@@ -277,7 +300,7 @@ void main() {
       await tester.pumpWidget(_host(_today(level: 3)));
       await tester.pumpAndSettle();
 
-      expect(find.text('Level 3'), findsOneWidget);
+      expect(find.text('Level 3'), findsNothing, reason: 'the level is on P01');
       expect(find.text('Level 7 · Regular'), findsNothing);
       expect(find.text('Level 7'), findsNothing);
       expect(
@@ -500,7 +523,10 @@ void main() {
     await tester.pumpWidget(_host(_today(), locale: const Locale('ar')));
     await tester.pumpAndSettle();
 
-    expect(find.text('الثلاثاء'), findsOneWidget);
+    // The weekday heads the greeting and is also the strip's label for the
+    // day, which Arabic spells the same way at both sizes.
+    expect(find.text('الثلاثاء'), findsWidgets);
+    expect(find.text('صباح الخير'), findsOneWidget);
     expect(find.text('تمرين النهارده'), findsOneWidget);
     expect(find.text('احسبيها'), findsOneWidget);
     expect(find.text('الأسبوع ده، 1 من 3'), findsOneWidget);
@@ -515,7 +541,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      Directionality.of(tester.element(find.text('الثلاثاء'))),
+      Directionality.of(tester.element(find.text('الثلاثاء').first)),
       TextDirection.rtl,
     );
   });
@@ -534,5 +560,159 @@ void main() {
       isNull,
       reason: 'an overflow here hides the thing she came to tap',
     );
+  });
+
+  group('Home in the reference style', () {
+    testWidgets('greets by the hour, with her name', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(_today(firstName: 'Mai')));
+      await tester.pumpAndSettle();
+      expect(find.text('Good morning, Mai'), findsOneWidget);
+      expect(find.text('Tuesday'), findsOneWidget);
+
+      await tester.pumpWidget(
+        _host(_today(firstName: 'Mai', now: DateTime(2026, 9, 15, 14))),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Good afternoon, Mai'), findsOneWidget);
+
+      await tester.pumpWidget(_host(_today(now: DateTime(2026, 9, 15, 19))));
+      await tester.pumpAndSettle();
+      expect(find.text('Good evening'), findsOneWidget);
+    });
+
+    testWidgets('the week strip has seven days and boxes only today', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(_today()));
+      await tester.pumpAndSettle();
+      final strip = find.byKey(const ValueKey('today-week-strip'));
+      expect(strip, findsOneWidget);
+      expect(
+        find.descendant(of: strip, matching: find.text('Tue')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: strip, matching: find.byIcon(Icons.check)),
+        findsNothing,
+      );
+    });
+
+    testWidgets('a session logged today ticks today on the strip', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          _today(
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(date: _tuesday)
+                  .copyWith(state: DayState.done),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('today-week-strip')),
+          matching: find.byIcon(Icons.check),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text("Today's session is done"), findsOneWidget);
+    });
+
+    testWidgets('the Today card carries the minutes when it has them', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(_today(sessionMinutes: 25)));
+      await tester.pumpAndSettle();
+      expect(find.text('Week 3 of 8 · 25 min'), findsOneWidget);
+    });
+
+    testWidgets('the Eat card shows the day so far and logs a plate in one '
+        'tap', (tester) async {
+      _phone(tester);
+      PlateSuggestion? logged;
+      await tester.pumpWidget(
+        _host(
+          _today(
+            onLogPlate: (plate) => logged = plate,
+            repository: InMemoryTodayRepository(
+              day: InMemoryTodayRepository.defaultDay(date: _tuesday),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('today-eat-ring')), findsOneWidget);
+      expect(find.text('Carbs'), findsOneWidget);
+      expect(find.text('Fat'), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsWidgets);
+
+      await tester.ensureVisible(find.text('Ful and baladi'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ful and baladi'));
+      await tester.pump();
+      expect(logged?.foodId, 'ful_baladi');
+    });
+
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets(
+        'does not overflow at text scale 2.0 in ${locale.languageCode}',
+        (tester) async {
+          _phone(tester);
+          await tester.pumpWidget(
+            _host(
+              _today(firstName: 'Mai', sessionMinutes: 25),
+              locale: locale,
+              textScale: 2.0,
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets('a guest header with the pill and tier tabs fits at 2.0 in '
+          '${locale.languageCode}', (tester) async {
+        _phone(tester);
+        var signIns = 0;
+        await tester.pumpWidget(
+          _host(
+            _today(
+              firstName: 'Mai',
+              sessionMinutes: 25,
+              onSignIn: () => signIns++,
+              tierTabs: const TierTabs(selected: TrainingLevel.beginner),
+            ),
+            locale: locale,
+            textScale: 2.0,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(TierTabs), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('sign-in-pill')));
+        expect(signIns, 1);
+      });
+    }
+
+    testWidgets('the Eat card has a Log food button and a kcal target', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(_host(_today()));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('today-log-food')));
+      expect(find.byKey(const ValueKey('today-log-food')), findsOneWidget);
+      expect(find.textContaining('of '), findsWidgets);
+      expect(find.textContaining(' kcal'), findsWidgets);
+    });
   });
 }

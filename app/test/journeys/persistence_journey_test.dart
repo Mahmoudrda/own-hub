@@ -33,6 +33,8 @@ import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../qa/round6/history_fixture.dart';
+
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
   tester.view.devicePixelRatio = 3.0;
@@ -97,9 +99,12 @@ Future<void> _trainAndFinish(WidgetTester tester) async {
     await tester.pumpAndSettle();
   }
 
-  final finish = find.text('Finish here');
+  // Ending early asks for a second tap ("Finish now · n moves left").
+  final finish = find.byKey(const ValueKey('r13-finish-here'));
   if (finish.evaluate().isNotEmpty) {
     await tester.tap(finish);
+    await tester.pump();
+    if (finish.evaluate().isNotEmpty) await tester.tap(finish);
     await tester.pumpAndSettle();
   }
 }
@@ -351,6 +356,10 @@ void main() {
       // Her meals are unreadable; her training is fine. The training comes back.
       final whole =
           jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
+      // Every section that decodes when nothing is wrong. Counted rather than
+      // written down, so adding a section (D37 and D41 added two) does not
+      // quietly loosen this test.
+      final all = AppSnapshot.restore(jsonEncode(whole));
       whole['meals'] = 'rubbish';
       whole['train'] = <String, Object?>{'sessions': 'rubbish too'};
       final restored = AppSnapshot.restore(jsonEncode(whole));
@@ -361,7 +370,7 @@ void main() {
       );
       expect(
         restored,
-        lessThan(10),
+        lessThan(all),
         reason: 'the sections that did not decode were not',
       );
     });
@@ -405,6 +414,15 @@ void main() {
       expect(recorder.writes, 1, reason: 'paused does not wait for the timer');
       expect(recorder.document, contains('the-one-she-just-finished'));
 
+      // A bump that changes nothing is not written again; a real change
+      // is.
+      await _swipeAway(tester, 'AppLifecycleState.resumed');
+      AppChanges.bump();
+      await _swipeAway(tester, 'AppLifecycleState.paused');
+      expect(recorder.writes, 1, reason: 'nothing changed, nothing rewritten');
+
+      await _swipeAway(tester, 'AppLifecycleState.resumed');
+      fillTrainHistory(sessions: 1);
       AppChanges.bump();
       await _swipeAway(tester, 'AppLifecycleState.detached');
       expect(recorder.writes, 2, reason: 'detached writes too');

@@ -47,7 +47,7 @@ class WeeklyGoal {
     this.tz = kDefaultTimezone,
   });
 
-  /// 2 to 4, the range O03 offers. **Hers**, and the only counter on this
+  /// 1 to 7, the range O03 offers. **Hers**, and the only counter on this
   /// object she may write.
   final int sessionsTarget;
 

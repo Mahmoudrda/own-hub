@@ -18,6 +18,7 @@ import 'package:own_hub/features/signup/presentation/checking_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_button.dart';
+import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 Widget _host(
   Widget child, {
@@ -403,6 +404,40 @@ void main() {
       return repository;
     }
 
+    testWidgets('a connection too slow says so, asks nobody, and offers the '
+        'retake as her own choice', (tester) async {
+      var reviews = 0;
+      var retakes = 0;
+      var tryAgains = 0;
+      final repository = FakeVerificationRepository();
+      await tester.pumpWidget(
+        _host(
+          CheckingView(
+            repository: repository,
+            onAwaitingReviewer: () => reviews++,
+            onRetake: () => retakes++,
+            onTryAgain: () => tryAgains++,
+          ),
+        ),
+      );
+      repository.decide(const VerificationState.tooSlow());
+      await tester.pumpAndSettle();
+
+      final l10n = AppL10n.of(tester.element(find.byType(CheckingView)));
+      expect(find.text(l10n.yourConnectionIsTooSlow), findsOneWidget);
+      expect(find.text(l10n.weCouldNotFinishTheCheckIn), findsOneWidget);
+      expect(reviews, 0);
+      expect(
+        retakes,
+        0,
+        reason: 'a stop is not a verdict, so nothing recorded',
+      );
+
+      await tester.tap(find.text('Try again'));
+      expect(tryAgains, 1);
+      expect(retakes, 0);
+    });
+
     testWidgets('a daily limit says try again tomorrow', (tester) async {
       var reviews = 0;
       var closes = 0;
@@ -476,6 +511,129 @@ void main() {
       repository.decide(const VerificationState.rejected());
       await tester.pumpAndSettle();
       expect(rejected, 1);
+    });
+  });
+
+  testWidgets('G16: the done steps tick, and matching never does', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          reassuringSteps: true,
+          repository: FakeVerificationRepository(
+            const VerificationState.checking(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const ValueKey('checking-steps')), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+    // Two ticks for the two steps that happened on the screens before; the
+    // match stays waiting in pencil.
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('checking-steps')),
+        matching: find.byIcon(Icons.autorenew),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Matching your selfie to your card'), findsOneWidget);
+  });
+
+  testWidgets('G16: the verdict is never held back by the steps', (
+    tester,
+  ) async {
+    var approved = 0;
+    final repository = FakeVerificationRepository(
+      const VerificationState.checking(),
+    );
+    await tester.pumpWidget(
+      _host(
+        CheckingView(
+          reassuringSteps: true,
+          repository: repository,
+          onVerified: (_) => approved++,
+        ),
+      ),
+    );
+    // Decided while the steps are still ticking: it still routes at once.
+    await tester.pump(const Duration(milliseconds: 100));
+    repository.decide(_verified());
+    await tester.pumpAndSettle();
+    expect(approved, 1);
+  });
+
+  group('the kitten', () {
+    setUp(Kitten.resetPlayed);
+
+    KittenPose pose(WidgetTester tester) =>
+        tester.widget<Kitten>(find.byType(Kitten)).pose;
+
+    testWidgets('thinks while the card is read, points while it is matched', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          CheckingView(
+            repository: FakeVerificationRepository(
+              const VerificationState.checking(),
+            ),
+            reassuringSteps: true,
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(Kitten), findsOneWidget);
+      expect(pose(tester), KittenPose.think);
+      await tester.pumpAndSettle();
+      expect(find.byType(Kitten), findsOneWidget);
+      expect(pose(tester), KittenPose.point);
+    });
+
+    testWidgets('gives a light cheer when the check is done', (tester) async {
+      final repository = FakeVerificationRepository(
+        const VerificationState.checking(),
+      );
+      await tester.pumpWidget(
+        _host(
+          CheckingView(
+            repository: repository,
+            reassuringSteps: true,
+            onVerified: (_) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      repository.decide(_verified());
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(Kitten), findsOneWidget);
+      expect(pose(tester), KittenPose.cheer);
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('is not there on the stops that say it could not finish', (
+      tester,
+    ) async {
+      for (final stop in const [
+        VerificationState.tryTomorrow(),
+        VerificationState.checksUsedUp(),
+        VerificationState.tooSlow(),
+        VerificationState.unreachable(),
+      ]) {
+        await tester.pumpWidget(
+          _host(
+            CheckingView(
+              key: UniqueKey(),
+              repository: FakeVerificationRepository(stop),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(Kitten), findsNothing, reason: '$stop');
+      }
     });
   });
 }

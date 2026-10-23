@@ -44,6 +44,7 @@ import 'package:meta/meta.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
+import 'custom_food.dart';
 import 'plate_rollup.dart';
 
 /// The four slots, fixed forever.
@@ -64,8 +65,9 @@ enum MealSource { planned, search, voice }
 ///
 /// Kept off [MealSource] so the spine's declared enum is untouched. `nudge` is
 /// the lock-screen meal action (T03), which lands on the same guarded path as
-/// every other entry point.
-enum MealOrigin { plan, suggestion, recipe, search, voice, nudge }
+/// every other entry point. `photo` is a plate she photographed on E12 and
+/// checked on E13: its source stays `search`, because she chose every item.
+enum MealOrigin { plan, suggestion, recipe, search, voice, nudge, photo }
 
 /// Where a planned item came from in the plan. `{assignmentId, slot, idx}`.
 ///
@@ -107,6 +109,11 @@ class PlanRef {
 /// them, alongside `libVersion` on the day document. G5 §9 Q2: if the library
 /// later corrects a food's macros, her history does not silently change
 /// underneath her.
+///
+/// Carbs, fat and fibre are frozen the same way, and are null where nobody
+/// knows them: every item logged before they existed, and every food in the
+/// pack that does not carry them. Null counts as nothing in a total and is
+/// never shown as a zero.
 @immutable
 class MealItem {
   const MealItem({
@@ -119,6 +126,11 @@ class MealItem {
     required this.origin,
     required this.kcal,
     required this.proteinG,
+    this.carbsG,
+    this.fatG,
+    this.fiberG,
+    this.name,
+    this.grams,
     this.planRef,
     this.helpingOf,
     this.allergenOverride = const <String>[],
@@ -144,6 +156,20 @@ class MealItem {
   /// Frozen at log time. See the class note.
   final int kcal;
   final int proteinG;
+
+  /// Frozen at log time, and null when unknown. See the class note.
+  final int? carbsG;
+  final int? fatG;
+  final int? fiberG;
+
+  /// What she called it, for a food the pack does not hold: a plate she
+  /// photographed and checked, or one she typed by hand on E13. Null for a
+  /// food from the pack, which is named from the pack in her language.
+  final String? name;
+
+  /// The weight she approved, for an item logged by weight (E13). Null for a
+  /// portion from the pack, which is a size and never a gram figure.
+  final num? grams;
 
   final PlanRef? planRef;
 
@@ -180,6 +206,9 @@ class MealItem {
     num? servings,
     int? kcal,
     int? proteinG,
+    int? carbsG,
+    int? fatG,
+    int? fiberG,
     DateTime? loggedAt,
     String? helpingOf,
     List<String>? allergenOverride,
@@ -194,6 +223,11 @@ class MealItem {
       origin: origin,
       kcal: kcal ?? this.kcal,
       proteinG: proteinG ?? this.proteinG,
+      carbsG: carbsG ?? this.carbsG,
+      fatG: fatG ?? this.fatG,
+      fiberG: fiberG ?? this.fiberG,
+      name: name,
+      grams: grams,
       planRef: planRef,
       helpingOf: helpingOf ?? this.helpingOf,
       allergenOverride: allergenOverride ?? this.allergenOverride,
@@ -294,6 +328,9 @@ class MealWrite {
     required this.removed,
     required this.kcalDelta,
     required this.proteinDelta,
+    this.carbsDelta = 0,
+    this.fatDelta = 0,
+    this.fiberDelta = 0,
     required this.tz,
     required this.libVersion,
     required this.skip,
@@ -314,13 +351,22 @@ class MealWrite {
   }) {
     var kcal = 0;
     var protein = 0;
+    var carbs = 0;
+    var fat = 0;
+    var fiber = 0;
     for (final item in added) {
       kcal += item.kcal;
       protein += item.proteinG;
+      carbs += item.carbsG ?? 0;
+      fat += item.fatG ?? 0;
+      fiber += item.fiberG ?? 0;
     }
     for (final item in removed) {
       kcal -= item.kcal;
       protein -= item.proteinG;
+      carbs -= item.carbsG ?? 0;
+      fat -= item.fatG ?? 0;
+      fiber -= item.fiberG ?? 0;
     }
     return MealWrite._(
       dayId: dayId,
@@ -329,6 +375,9 @@ class MealWrite {
       removed: List<MealItem>.unmodifiable(removed),
       kcalDelta: kcal,
       proteinDelta: protein,
+      carbsDelta: carbs,
+      fatDelta: fat,
+      fiberDelta: fiber,
       tz: tz,
       libVersion: libVersion,
       skip: false,
@@ -369,6 +418,12 @@ class MealWrite {
   /// `FieldValue.increment(...)`. Signed: a correction downward is negative.
   final int kcalDelta;
   final int proteinDelta;
+
+  /// The same, for the macros an item may not carry. An unknown value moves
+  /// nothing.
+  final int carbsDelta;
+  final int fatDelta;
+  final int fiberDelta;
 
   final String tz;
   final int libVersion;
@@ -515,6 +570,8 @@ class EatPrefs {
     this.ramadanMode = RamadanMode.auto,
     this.proteinTargetGOverride,
     this.libVersion = 0,
+    this.favourites = const <String>[],
+    this.customFoods = const <CustomFood>[],
   });
 
   /// At most [kPlateCap] entries. See [PlateRollup] for the eviction rule.
@@ -528,11 +585,21 @@ class EatPrefs {
 
   final int libVersion;
 
+  /// The foods she starred, newest first, at most [kFavouriteCap]. Local to
+  /// this phone: the cloud document's rules do not carry them.
+  final List<String> favourites;
+
+  /// Foods she typed in herself, at most [kCustomFoodCap]. Local like
+  /// [favourites].
+  final List<CustomFood> customFoods;
+
   EatPrefs copyWith({
     Map<String, Plate>? plates,
     RamadanMode? ramadanMode,
     int? proteinTargetGOverride,
     int? libVersion,
+    List<String>? favourites,
+    List<CustomFood>? customFoods,
   }) {
     return EatPrefs(
       plates: plates ?? this.plates,
@@ -540,9 +607,14 @@ class EatPrefs {
       proteinTargetGOverride:
           proteinTargetGOverride ?? this.proteinTargetGOverride,
       libVersion: libVersion ?? this.libVersion,
+      favourites: favourites ?? this.favourites,
+      customFoods: customFoods ?? this.customFoods,
     );
   }
 }
+
+/// The cap on starred foods.
+const int kFavouriteCap = 100;
 
 /// The hard cap on remembered plates (§1.1), asserted in the security rules too.
 const int kPlateCap = 40;
@@ -568,6 +640,11 @@ enum GroceryGroup { vegetables, protein, cupboard }
 ///
 /// Keyed by [itemKey] = `sha1(ingredientId + ':' + unit)`, so a tick made on two
 /// devices converges on one line instead of ticking two.
+///
+/// A line made from one of Rahma's recipes carries her own words in [text] and
+/// the recipe it belongs to in [recipeId], and is keyed by the recipe id and
+/// her `ingredientRef`. A line with neither is the older kind: [ingredientId]
+/// names a fixed sample ingredient, and a snapshot that holds one still reads.
 @immutable
 class GroceryLine {
   const GroceryLine({
@@ -576,6 +653,8 @@ class GroceryLine {
     required this.group,
     this.ticked = false,
     this.tickedAt,
+    this.text,
+    this.recipeId,
   });
 
   final String itemKey;
@@ -584,12 +663,20 @@ class GroceryLine {
   final bool ticked;
   final DateTime? tickedAt;
 
+  /// The ingredient as her recipe writes it. Null on a sample line.
+  final String? text;
+
+  /// The dinner the line is for. Null on a sample line.
+  final String? recipeId;
+
   GroceryLine copyWith({bool? ticked, DateTime? tickedAt}) => GroceryLine(
     itemKey: itemKey,
     ingredientId: ingredientId,
     group: group,
     ticked: ticked ?? this.ticked,
     tickedAt: tickedAt ?? this.tickedAt,
+    text: text,
+    recipeId: recipeId,
   );
 }
 
@@ -667,6 +754,10 @@ abstract class MealRepository {
   /// because `eatPrefs/other` is a document the rules refuse anyway.
   Future<EatPrefs> prefs();
 
+  /// Replaces the preferences document, for what only the phone keeps (her
+  /// favourites and the foods she typed in).
+  Future<void> savePrefs(EatPrefs prefs);
+
   /// Folds one logging event into the rollup.
   ///
   /// Debounced by the caller to at most once a day (§2's cost table). Idempotent
@@ -688,6 +779,15 @@ abstract class MealRepository {
     required String weekId,
     required String itemKey,
     required bool ticked,
+  });
+
+  /// Makes the list match the dinners: [lines] are the lines her dinners need,
+  /// and a tick she already made on the same line is kept. Lines made from a
+  /// recipe that is no longer on the plan go. Sample lines (no recipe) go too
+  /// once there are real ones, and stay when there are none.
+  Future<void> syncGroceries({
+    required String weekId,
+    required List<GroceryLine> lines,
   });
 
   Future<void> dispose();
@@ -831,11 +931,11 @@ class InMemoryMealRepository implements MealRepository {
   /// The shared documents. Two repositories over one store are two devices.
   final MealStore store;
 
-
   @override
   int get mealsAdded => store.days.values.fold(
     0,
-    (count, day) => count + day.slots.values.where((items) => items.isNotEmpty).length,
+    (count, day) =>
+        count + day.slots.values.where((items) => items.isNotEmpty).length,
   );
   @override
   DataState get dataState => dataStateOf(holdsNothing: store.days.isEmpty);
@@ -934,6 +1034,9 @@ class InMemoryMealRepository implements MealRepository {
   Future<EatPrefs> prefs() async => store.prefs;
 
   @override
+  Future<void> savePrefs(EatPrefs prefs) async => store.prefs = prefs;
+
+  @override
   Future<void> recordPlate(PlateObservation observation) async {
     if (store.prefs.plates.length > kPlateCap) {
       throw StateError(
@@ -979,6 +1082,28 @@ class InMemoryMealRepository implements MealRepository {
         itemKey: line.copyWith(ticked: ticked, tickedAt: AppClock.now()),
       },
     );
+  }
+
+  @override
+  Future<void> syncGroceries({
+    required String weekId,
+    required List<GroceryLine> lines,
+  }) async {
+    final plan = store.plans[weekId];
+    if (plan == null) return;
+    final next = <String, GroceryLine>{
+      // Sample lines stay until a real line replaces them.
+      if (lines.isEmpty)
+        for (final entry in plan.groceries.entries)
+          if (entry.value.recipeId == null) entry.key: entry.value,
+    };
+    for (final line in lines.take(kGroceryCap)) {
+      final before = plan.groceries[line.itemKey];
+      next[line.itemKey] = before == null
+          ? line
+          : line.copyWith(ticked: before.ticked, tickedAt: before.tickedAt);
+    }
+    store.plans[weekId] = plan.copyWith(groceries: next);
   }
 
   @override

@@ -1,0 +1,105 @@
+{
+  "about": "What the coaching chat refuses before sending (the app) and hides after sending (on_coaching_message). functions/coaching/chat.py screen() and the app's ChatScreen must give the same verdict for every case. reason is one of contact, payment, link, abuse; null means the text is allowed.",
+  "cases": [
+    {
+      "text": "See you at the session tomorrow",
+      "reason": null
+    },
+    {
+      "text": "3 sets of 12, rest 60 seconds",
+      "reason": null
+    },
+    {
+      "text": "Drink 2.5 litres of water and sleep 7 to 8 hours",
+      "reason": null
+    },
+    {
+      "text": "Your session is at 18:30 on 24/10/2026",
+      "reason": null
+    },
+    {
+      "text": "We did 120 kg on the leg press, well done",
+      "reason": null
+    },
+    {
+      "text": "تمرين النهارده ٣ مجموعات × ١٢ عدة",
+      "reason": null
+    },
+    {
+      "text": "اشربي ٢ لتر مية في اليوم",
+      "reason": null
+    },
+    {
+      "text": "This week: 12 10 10 8 8 6 12 10",
+      "reason": null
+    },
+    {
+      "text": "Plates today 22.5 25 27.5 30 32.5",
+      "reason": null
+    },
+    {
+      "text": "0 1 0 1 2 3 4 5 6 7 8",
+      "reason": "contact"
+    },
+    {
+      "text": "02 2345 6789 is the gym",
+      "reason": "contact"
+    },
+    {
+      "text": "Call me on 01012345678",
+      "reason": "contact"
+    },
+    {
+      "text": "my number is 010 1234 5678",
+      "reason": "contact"
+    },
+    {
+      "text": "+20 100 123 4567 whatsapp",
+      "reason": "contact"
+    },
+    {
+      "text": "كلميني على ٠١٠١٢٣٤٥٦٧٨",
+      "reason": "contact"
+    },
+    {
+      "text": "رقمي 0122-345-6789",
+      "reason": "contact"
+    },
+    {
+      "text": "send it to sara.m@instapay instead",
+      "reason": "payment"
+    },
+    {
+      "text": "pay me directly on vodafone cash and I will give you a discount",
+      "reason": "payment"
+    },
+    {
+      "text": "حوليلي على فودافون كاش أرخص",
+      "reason": "payment"
+    },
+    {
+      "text": "ابعتي الفلوس انستاباي على طول",
+      "reason": "payment"
+    },
+    {
+      "text": "check https://example.com/plan",
+      "reason": "link"
+    },
+    {
+      "text": "join www.example.com",
+      "reason": "link"
+    },
+    {
+      "text": "follow me on instagram.com/coach",
+      "reason": "link"
+    },
+    {
+      "text": "you are stupid",
+      "reason": "abuse"
+    },
+    {
+      "text": "انتي غبية",
+      "reason": "abuse"
+    }
+  ]
+}

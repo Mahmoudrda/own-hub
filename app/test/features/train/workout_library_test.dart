@@ -1,3 +1,4 @@
+import 'dart:io';
 // The owner's workouts: the document format, the rules the member app holds
 // it to, life-stage gating, the member reader, and the mapping onto Train's
 // own types.
@@ -82,6 +83,9 @@ class _Source implements WorkoutRemoteSource {
   int? version;
   Map<String, Object?>? library;
   Object? offline;
+
+  /// Thrown from the library read only, after the version read succeeded.
+  Object? libraryFails;
   int versionReads = 0;
   int libraryReads = 0;
 
@@ -95,6 +99,7 @@ class _Source implements WorkoutRemoteSource {
   @override
   Future<Map<String, Object?>?> readLibrary(int version) async {
     libraryReads++;
+    if (libraryFails != null) throw libraryFails!;
     return library;
   }
 }
@@ -295,6 +300,32 @@ void main() {
       expect((await offline.load()).version, 4);
     });
 
+    test('a download that fails leaves no "checked" stamp, so the next launch '
+        'asks again; a cached library stamps it', () async {
+      final source = remote()..libraryFails = const SocketException('cut');
+      final checks = _Memory();
+      final cache = _Memory();
+      final now = DateTime.utc(2026, 10, 7, 9);
+      WorkoutSync make() => WorkoutSync(
+        source: () => source,
+        cache: cache,
+        checks: checks,
+        now: () => now,
+      );
+      expect((await make().refresh()).$1, WorkoutRefreshOutcome.failed);
+      expect(checks.value, isNull);
+      expect(cache.value, isNull);
+
+      source.libraryFails = null;
+      expect((await make().refresh()).$1, WorkoutRefreshOutcome.updated);
+      expect(checks.value, isNotNull);
+      expect(source.versionReads, 2);
+    });
+
+    test('a server read gives up after ten seconds', () {
+      expect(FirestoreWorkoutSource.readTimeout, const Duration(seconds: 10));
+    });
+
     test('the version is read at most once a day', () async {
       final source = remote();
       final checks = _Memory();
@@ -392,6 +423,7 @@ void main() {
         day.moves.last.prescriptionLabel,
         '3 × 30 seconds · Rest 45 seconds',
       );
+      expect(day.moves.first.restSeconds, 45, reason: 'R09 rests by the plan');
       expect(day.moves.first.sets, hasLength(3));
       expect(day.moves.first.sets.first.reps, 12);
       expect(day.moves.first.cues.first, 'Stop if your back hurts.');
@@ -404,7 +436,7 @@ void main() {
         now: DateTime(2026, 10, 7),
       );
       expect(arabic.title, 'quwwa');
-      expect(arabic.moves.first.name, 'jisr');
+      expect(arabic.moves.first.name, 'Glute bridge');
 
       final row = libraryRowFrom(
         l10n,

@@ -70,7 +70,7 @@ DELETE_SUBJECT = "Own Hub: account deletion request"
 
 DELETE_BODY = """Hello,
 
-I am writing about the Own Hub app, bundle id com.ownhub.app.
+I am writing about the Own Hub app (iPhone com.ownhub.fitness, Android com.ownhub.app).
 
 Please delete my Own Hub account and the data you hold about me.
 
@@ -152,7 +152,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             The first 100 women on the list try Own Hub before it opens to
             everyone.</p>
             <div class="form-card">""" + FORM + """
-            <p class="small">That is all we ask for. The waitlist is not an
+            <p class="small">That&rsquo;s all we ask for. The waitlist isn&rsquo;t an
             account. What we keep, and for how long, is in the
             <a href="/privacy#c-waitlist">privacy policy</a>.</p>
             </div>
@@ -173,9 +173,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="wrap hero-grid">
         <div class="hero-copy">
           <p class="eyebrow">""" + eyebrow + """</p>
-          <h1>Your training, your food, your cycle. <span class="hand">Women only.</span></h1>
-          <p class="lede">Home workouts, food you already cook, and your cycle,
-          in one app only verified women can enter. In Arabic and English.</p>
+          <h1>Workouts and food that fit your month. <span class="hand">Women only.</span></h1>
+          <p class="lede">Home workouts, food you already cook, and a plan that follows how you
+          feel from day to day. Only verified women get in. It works in Arabic and English.</p>
           """ + hero_cta + """
         </div>
         <div class="hero-art">
@@ -187,20 +187,22 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 
     <section class="band" aria-labelledby="inside">
       <div class="wrap">
+        <div class="lead-row">
         <div class="prose">
 """ + h2("inside", "What is inside it", "no-rule") + """
-          <p class="lede">Train, cook and follow your cycle, privately. In the
-          app, &ldquo;Show me around&rdquo; shows it all on a sample week
-          before you join, and saves nothing.</p>
+          <p class="lede">Want to see it first? Tap &ldquo;Show me around&rdquo; in the app and
+          try everything on a sample week before you join. Nothing is saved.</p>
+        </div>
+        """ + art.hairline_svg("phone", "mark") + """
         </div>
         <ul class="shots">
-          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Tap a set when you finish it. The rest timer starts itself.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card of what you have done, to share if you want.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "08-tour-cycle", "My cycle in the tour: how are you feeling, with today, calendar and patterns.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>My cycle.</b> Private from the start, gentler on harder days.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Every move has a short video. Tap a set when you finish it, and the rest timer starts itself.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card with everything you&rsquo;ve done. Share it if you like.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "07-tour-dinners", "The week of dinners in the tour: five sample dinners, planned for you.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Eat.</b> A week of dinners planned for you, gentler on harder days.</figcaption></figure></li>
         </ul>
-        <p class="small">What is not in this version: there is no community and no
-        coaching, so nothing in the app connects you to another member, and
-        there is no assistant.</p>
+        <p class="small">Coaching with Own Hub-reviewed coaches is available, free for
+        now. This version has no community or assistant, and nothing in the app
+        connects you to another member except a coach you choose.</p>
       </div>
     </section>
 
@@ -208,17 +210,18 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="wrap split even">
         <div class="prose">
 """ + h2("women-only", "Women only, checked once", "no-rule") + """
-          <p class="lede">A space for women only means something only if it is
-          checked. So every member is checked once, at the door, and then the
-          check stays out of her way.</p>
-          <p>Your cycle, measurements and weight stay on your phone unless you
-          choose to back them up. The <a href="/privacy">privacy policy</a>
+          <p class="lede">A women-only space only means something if someone checks.
+          So we check every member once, at the door, and then stay out of her
+          way.</p>
+          <p>Whatever you note about your body, plus your measurements and weight,
+          stays on your phone unless you choose to back it up. The <a href="/privacy">privacy policy</a>
           says exactly what the app keeps, where, and for how long.</p>
+          """ + art.hairline_svg("lockers", "mark") + """
         </div>
           <ol class="steps card">
             <li>You join with your Egyptian mobile number and a code sent by SMS.</li>
             <li>You show your national ID card and take a live selfie. If the
-            check cannot decide, a woman from Own Hub contacts you to arrange
+            check can&rsquo;t decide, a woman from Own Hub contacts you to arrange
             it.</li>
             <li>The check runs on our own server in Frankfurt, Germany. The
             photographs of your card and your face are never stored.</li>
@@ -232,10 +235,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 """ + h2("doors", "The rest of this site", "no-rule") + """
         </div>
         <ul class="doorways">
-          <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span></a></li>
-          <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span></a></li>
-          <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, the hours messages are read, and answers to the things women write in about.</span></a></li>
-          <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span></a></li>
+          <li><a href="/privacy"><span class="t">Privacy Policy</span><span class="d">What the app collects, where it is kept, and why your ID and selfie photos are never stored.</span>""" + art.hairline_svg("vault", "door") + """</a></li>
+          <li><a href="/terms"><span class="t">Terms of Use</span><span class="d">What Own Hub is, what it is not, and the medical warning worth reading even if you skip the rest.</span>""" + art.hairline_svg("drawer", "door") + """</a></li>
+          <li><a href="/support"><span class="t">Support</span><span class="d">How to reach a person, when messages get read, and answers to what women ask most.</span>""" + art.hairline_svg("query", "door") + """</a></li>
+          <li><a href="/delete-account"><span class="t">Delete your data</span><span class="d">How to delete your account from inside the app, and how to ask without installing it.</span>""" + art.hairline_svg("basket", "door") + """</a></li>
         </ul>
       </div>
     </section>
@@ -294,8 +297,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
-          <b>Applies to:</b> Own Hub for iOS and Android, bundle id
-          <code>com.ownhub.app</code>, and this website.
+          <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
+          and Android, package <code>com.ownhub.app</code>, and this website.
         </p>
         <p>If the English and Arabic versions of this policy differ, the Arabic
         version applies.</p>
@@ -319,7 +322,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             turn on health backup yourself.</li>
             <li>Once you are verified, your workouts and meals are copied to
             Google Cloud in Frankfurt, so a new phone does not mean starting
-            again. No other member can see them.</li>
+            again. No other member can see them, unless you choose to share a
+            dish (section 3.13), which is shared without your name.</li>
+            <li>If you choose to apply to coach, your application, with its
+            documents and photos, is kept on our server in Frankfurt. Only
+            Own Hub&rsquo;s woman reviewer sees all of it, and members see only
+            the public portfolio you build (section 3.15).</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -387,8 +395,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 """ + h3("c-check", "3.3 Checking that you are a woman aged 18 or over") + """
         <p>This happens once, when you join, and only after you have read a
         separate screen and agreed to it. The camera does not start until our
-        server has recorded that agreement. The camera is the only way to take
-        the photographs: the app cannot upload a picture that is already on
+        server has recorded that agreement. For this check the camera is the
+        only way to take the photographs: the app cannot upload a picture that is already on
         your phone.</p>
         <ul>
           <li><b>Photographs of the front and back of your ID card.</b> Sent
@@ -459,7 +467,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         copy is also kept in Google Cloud Firestore in Frankfurt, Germany, so
         that it survives a lost or replaced phone. Server security rules let
         only your own verified account read it. No other member can see
-        it.</p>
+        it, unless you choose to share a dish (section 3.13), which is shared
+        without your name.</p>
         <p>Your Ramadan setting stays on your phone only.</p>
         <p>If you add an Own Hub widget to your Home Screen or Lock Screen, it
         shows how many sessions you have done this week, whether today&rsquo;s
@@ -468,6 +477,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         pregnancy or postpartum stage, weight, measurements or allergies, and
         nothing is sent anywhere. Signing out or deleting your account clears
         it.</p>
+        <p>Your profile photo stays on your phone. Own Hub never uploads it.
+        Only you see it. Delete everything removes it from this phone; if you
+        back up your whole phone, a copy made earlier stays in that
+        backup.</p>
+        <p>The workout card you can share is made on your phone from your
+        session, its calories are an estimate, and nothing is sent unless you
+        tap Share and choose where it goes; there is no account and no
+        tracking involved.</p>
         <ul>
           <li><b>Basis:</b> performing our agreement with you.</li>
         </ul>
@@ -485,6 +502,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         the consent, and our server&rsquo;s security rules refuse the copy
         without it. If you turn backup off, we delete the copy on our servers
         straight away. The copy on your phone stays.</p>
+        <p>How you say you feel after a session and your answers on the
+        Friday week review stay on this phone. They are never part of the
+        backup, even when health backup is on, they are never sent for
+        statistics, and <b>Delete everything</b> erases them.</p>
         <p><b>Your cycle and health information is never used for advertising
         or marketing, never sold, never sent to any analytics service, and
         never used to train AI.</b></p>
@@ -553,6 +574,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           you have agreed to the check.</li>
         </ul>
 
+<section aria-label="PostHog"><h3>PostHog, only if you allow usage statistics</h3>
+        <p>PostHog receives a small set of app milestones (such as completing setup or a workout), an anonymous app identifier and technical device metadata in the United States. We send no account identifier, health values, messages or payment details, and do not enable session recordings. We send one fixed integration status log per app process while consent is enabled. Usage is optional and turning it off stops new collection and resets the identifier; this does not erase records already received by a provider. PostHog's free plan currently retains analytics for one year and logs for 14 days. The Google Analytics retention period below applies only to Google. New consent is required when this provider is introduced.</p></section>
+
 """ + h3("c-ai", "3.8 Artificial intelligence") + """
         <ul>
           <li><b>We never use your data to train AI models, ours or
@@ -564,6 +588,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>The face comparison uses open-source models that run on our own
           server. Their authors trained them before Own Hub existed. They are
           not trained or adjusted with your face.</li>
+          <li>If you choose to analyse a photo of a meal, Google Cloud Vertex AI
+          (Gemini) reads it to estimate the food on the plate. Section 3.12
+          explains how.</li>
           <li>There is no AI assistant in this version of Own Hub. If we add
           one, we will ask for your separate agreement first, naming the
           provider, before anything is sent to it.</li>
@@ -600,6 +627,245 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         standard data any website receives, such as your IP address and browser type, in
         order to deliver the pages.</p>
 
+""" + h3("c-notifications", "3.11 Reminders and notifications") + """
+        <p>Almost every notification Own Hub shows is made on your phone and
+        never comes from our servers.</p>
+        <ul>
+          <li><b>Scheduled on your phone.</b> Training reminders, rest-timer
+          alerts, the &ldquo;add a session you did&rdquo; nudge and the gentle
+          check-ins after some days away are all scheduled by the app on your
+          phone. They are never sent from our servers, and we do not receive
+          anything about them.</li>
+          <li><b>The words are chosen on your phone.</b> The words of a
+          reminder are chosen on your phone from what you did in the app, such
+          as your training days, the food you log and which notes you open, and
+          nothing about that choice is sent anywhere.</li>
+          <li><b>Event reminders.</b> When Own Hub events are open to you, the
+          app reads the list of events and, for the next few, whether you
+          booked a seat. It then schedules a few notes on your phone: three
+          days, one day and three hours before an event you have not booked,
+          and the morning of and three hours before an event you have booked.
+          The notes do not name the event. They are scheduled on your phone,
+          never sent from our servers, and we receive nothing about them. You
+          can turn them off with Event reminders in Notifications. Quiet hours
+          apply.</li>
+          <li><b>The one thing we store for push.</b> A device token, which lets
+          us tell you when your account check is done. We use it for nothing
+          else. It is deleted when you delete your account.</li>
+          <li><b>Quiet hours.</b> Reminders are never shown between 22:00 and
+          08:00. Anything due in that time waits until 08:00. Two things can
+          still reach you then: a rest timer you started yourself, and word
+          that your account check is done.</li>
+          <li><b>Your choice.</b> You can turn each type off in Notifications
+          in the app. You can also turn all of them off in your phone&rsquo;s
+          settings.</li>
+          <li><b>What they never show.</b> Notifications never show health,
+          cycle or weight details.</li>
+        </ul>
+
+""" + h3("c-meal-photos", "3.12 Meal photos") + """
+        <p>Once your account is verified, you can photograph a meal and Own Hub
+        will estimate what is on the plate. This is optional. You can always
+        type your meal instead.</p>
+        <ul>
+          <li><b>When a photo is sent.</b> Only when you tap &ldquo;Analyse my
+          meal&rdquo;, after you have seen the photo. Nothing is sent while the
+          camera is open, and nothing is sent on its own.</li>
+          <li><b>Where it goes.</b> To Google Cloud Vertex AI (Gemini) in the
+          European Union, in Frankfurt, Germany (europe-west3). The photo is
+          sent once, without its location or other details from your camera,
+          and is used only to estimate the meal.</li>
+          <li><b>Not kept.</b> Own Hub does not keep the photo, on your phone
+          or on our servers, and never puts it in your photo library. To take
+          it, the camera writes a temporary copy on your phone for a moment,
+          and the app deletes that copy right away. The photo is then held only
+          in the app&rsquo;s memory, and is deleted as soon as the estimate
+          comes back. Our server logs record only the outcome and how many
+          foods were found, never the photo or the food. Separately from the
+          logs, see the next point.</li>
+          <li><b>A repeat answer, kept 30 days.</b> To answer the same photo
+          again without asking Google again, our server keeps a fingerprint of
+          the photo (a one-way code made from the photo, from which the photo
+          cannot be rebuilt) and the foods and weights found in it, for 30 days,
+          then deletes them automatically. It holds no photo, and nothing that
+          identifies you: no account identifier, name or phone number. It is
+          used only when the exact same photo is analysed again.</li>
+          <li><b>Not used for training.</b> Under Google Cloud&rsquo;s terms,
+          Google does not use the photo to train its models, and we never do
+          either.</li>
+          <li><b>An estimate you check.</b> The foods and their weights are a
+          guess. The energy, protein, carbohydrate, fat and fibre figures come
+          from public nutrition tables (USDA FoodData Central) and a table of
+          Egyptian dishes, never from the AI. You can change every item, its
+          weight and its figures, remove it or add another, and nothing is
+          logged until you tap &ldquo;Log this meal&rdquo;. What you log is
+          kept with your meals (section 3.5).</li>
+          <li><b>A limit.</b> Up to 5 meal photos a day for each member.</li>
+          <li><b>Your agreement.</b> Before your first meal photo, the app asks
+          for your agreement and our server records it, with the date, the
+          language and the app version. If you do not agree, the camera does
+          not open.</li>
+          <li><b>Basis:</b> your consent, given in the app before your first
+          meal photo.</li>
+        </ul>
+
+""" + h3("c-dish-sharing", "3.13 Sharing a dish with other members (optional)") + """
+        <p>Under the meal check, and in Profile, then Privacy, there is a switch
+        that lets you help other members find Egyptian dishes. It is <b>off</b>
+        until you turn it on, and it is separate from the meal photo
+        agreement.</p>
+        <ul>
+          <li><b>What is sent.</b> Only when the switch is on and you tap
+          &ldquo;Log this meal&rdquo;: the name of the dish or dishes, what is in
+          it (the names of the foods and their weights) and the energy, protein,
+          carbohydrate and fat figures. It goes to a list on our server
+          that only the Own Hub team can read. It never includes your photo or
+          your name.</li>
+          <li><b>How we count you once.</b> To avoid counting your confirmation
+          twice, the server keeps a marker made from your account identifier
+          with a secret key that only the server holds, so the marker cannot be
+          turned back into you by anyone without that key. The marker is deleted
+          when you delete your account. A dish waiting for review that only you
+          had confirmed is deleted with it.</li>
+          <li><b>Review.</b> The Own Hub team reviews each dish before anyone
+          sees it.</li>
+          <li><b>What other members see.</b> A dish the team approves is shown to
+          all verified members, with its name, category, allergens and figures.
+          It does not show what is in it, your photo or your name, and it carries
+          no link to you.</li>
+          <li><b>Turning it off.</b> Turning the switch off stops any future
+          sharing. It does not withdraw dishes that have already been approved,
+          because they carry no link to you and we cannot tell which are
+          yours.</li>
+          <li><b>Basis:</b> your consent, given by turning the switch on.</li>
+        </ul>
+
+""" + h3("c-events", "3.14 Event seats") + """
+        <p>If you reserve a seat at an Own Hub event, our server records your
+        place: your account identifier, when you reserved and the status of the
+        seat, under that event. Only you and the Own Hub team can read it. The
+        team uses it to count seats and run the event. Cancelling your seat
+        deletes it, and so does deleting your account.</p>
+        <ul>
+          <li><b>Basis:</b> performing our agreement with you.</li>
+        </ul>
+
+""" + h3("c-coach", "3.15 If you apply to coach (optional)") + """
+        <p>This applies only if you choose to apply, from <b>Profile</b>, then
+        <b>Become a coach</b>, and only if you are a verified member. If you
+        never apply, none of it happens. Coaches are checked before members can
+        see them. In this version an approved coach has a public portfolio that
+        members can read, and members can join a coach for free
+        (section 3.16). Payments are not offered yet, so no payment data
+        exists.</p>
+        <p><b>What an application holds:</b></p>
+        <ul>
+          <li>your full name, used only for the review;</li>
+          <li>your display name, governorate, languages, a one-line headline
+          and your profile photo;</li>
+          <li>your education (degree, institution and year) and your
+          certificates (title, issuer and year), each with a photo of the
+          document if you add one;</li>
+          <li>your specialties, years of experience and qualifications;</li>
+          <li>at least two pieces of feedback from clients: the words, who it
+          is from as you typed it, and a screenshot if you add one;</li>
+          <li>at least one before and after transformation, with the photos of
+          your client and your confirmation that she agreed in writing;</li>
+          <li>optionally, photos of yourself or your work;</li>
+          <li>how you coach: your approach, check-ins each week, how quickly
+          you reply and where you train;</li>
+          <li>the version of the coach terms you accepted, and when. You accept
+          them in the last step, and the <a href="/coach-terms">Coach Terms</a>
+          are published on this site.</li>
+        </ul>
+        <p>Until you send it, your draft stays on your phone, and <b>Delete
+        everything</b> erases it. You pick each picture with the camera or your
+        phone&rsquo;s own picker, and Own Hub receives only the pictures you
+        choose. When you send the application they are uploaded to Google Cloud
+        Storage in Frankfurt, Germany, in a folder that only your account can
+        write to. Feedback screenshots and before and after photos show other
+        people, so add them only with the written consent of the woman in
+        them. Photos of yourself or your work are yours to choose.</p>
+        <p>The reviewer checks every picture before members see it. When she
+        approves one, Own Hub keeps a re-encoded copy with no location or other
+        metadata and deletes the original. You can remove any item from your
+        portfolio yourself, and all of it is deleted with your account.</p>
+        <p><b>Who sees what:</b></p>
+        <ul>
+          <li>Own Hub&rsquo;s woman reviewer sees the whole application,
+          including feedback screenshots and transformation photos, to decide
+          it.</li>
+          <li>The Own Hub administrator can read the written parts of the
+          application and open your profile photo, education documents and
+          certificates. Before an item is approved, only you and Own Hub&rsquo;s
+          woman reviewer can open your feedback screenshots and before and after
+          photos. Once approved, an item is shown to verified members on your
+          portfolio like the rest of it.</li>
+          <li>No member sees your application. Your full name is never shown to
+          members.</li>
+          <li>Once the reviewer approves you, verified members can see your
+          public portfolio, and only this: your display name, a copy of your
+          photo, your headline, your approach, your specialties, languages and
+          years of experience, how quickly you reply and where you train; the
+          title, issuer and year of the certificates the reviewer checked; the
+          feedback text, with the name or word you typed beside it, and the
+          feedback screenshots, before and after photos and photos of you or
+          your work that the reviewer approved; and your packages, with what
+          each includes and its price.
+          Members can ask to join a coach for free (section 3.16); nobody can
+          pay yet.</li>
+          <li>A member can report a portfolio. The team reads the report and may
+          hide or suspend the portfolio (Coach Terms, section 7).</li>
+        </ul>
+        <p><b>Why:</b> to check coaches before members see them, and to show
+        the portfolio you build. Nothing from an application is used for
+        advertising or to train AI.</p>
+        <p><b>How long:</b> your application and its files are kept while you
+        are a coach, or until you delete your account. If an application is
+        not approved, or the reviewer asks for changes, it and its files are
+        kept on our server with no automatic deletion date, so that we can tell
+        you why and so that you can apply again after 30 days. Deleting your
+        account removes all of it (section 7).</p>
+        <p><b>To withdraw an application:</b> write to {{mailto:contactPrivacy}}
+        and we will delete it, or use <b>Delete everything</b> in the app.</p>
+        <ul>
+          <li><b>Basis:</b> your consent, given when you accept the coach terms
+          and send the application. The photos of your clients rest on the
+          written consent you confirm you hold.</li>
+        </ul>
+
+""" + h3("c-coaching", "3.16 Joining a coach, and chatting with her") + """
+        <p>This applies only if you ask to join a coach, from her portfolio. It
+        is free: Own Hub offers no payments yet, so no payment details are asked
+        for or kept.</p>
+        <ul>
+          <li><b>What you share with her.</b> When you ask to join, you fill in
+          a short form: your goal, your level, how many days a week, where you
+          train, the allergies you choose to keep on it (they come filled in
+          from your profile and you can remove them), your life stage, your
+          answers to seven health questions, whether you have spoken to your
+          doctor, and a note if you write one. Your first name, if you give
+          it, goes to the coach you ask, together with your answers. Our server
+          stores it with the request, in Frankfurt, Germany.</li>
+          <li><b>Who sees it.</b> Only that coach, and only while the coaching
+          lasts. When it ends, she loses access to it. Nobody else sees it.</li>
+          <li><b>Chat.</b> Once the coach accepts, you and she can exchange text
+          messages. They are stored on Google Cloud Firestore in Frankfurt,
+          readable by both of you. Own Hub staff read a thread only after one
+          of you reports it. When the coaching ends the chat closes, and the
+          messages stay until either of you deletes her account, which deletes
+          the coaching and its messages. Messages are filtered for phone and
+          payment details.</li>
+          <li><b>Plans a coach shares.</b> A workout plan or meal plan she
+          shares with you is stored under your account, so you can follow it
+          in the app.</li>
+          <li><b>Reminders.</b> When she writes, we may send you a push
+          notification through Firebase Cloud Messaging, at most once every few
+          minutes for a conversation. It does not show the message.</li>
+          <li><b>Basis:</b> your consent, given on the form when you ask to
+          join, and performing the free coaching you asked for.</li>
+        </ul>
+
 """ + h2("where", "4. Who handles your data, and where") + """
         <p>We do not sell your data, and we do not share it with advertisers,
         data brokers or marketing companies. The service providers below
@@ -621,12 +887,20 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("Google Cloud Firestore, Cloud Functions, Cloud Storage and Secret Manager", [
                 ("Handles", "Your account, training and meals, health "
                             "information if you turn on backup, verification "
-                            "results and the keyed ID code"),
+                            "results and the keyed ID code. If you apply to "
+                            "coach: your application and its files "
+                            "(section 3.15). If you join a coach: your "
+                            "form, chat and shared plans (section 3.16)"),
                 ("Where", "Frankfurt, Germany (europe-west3)"),
             ]),
             ("Google Cloud Vision", [
                 ("Handles", "The text on your ID card, during the check only"),
                 ("Where", "European Union"),
+            ]),
+            ("Google Cloud Vertex AI (Gemini), only if you analyse a meal photo", [
+                ("Handles", "The meal photo, during the estimate only "
+                            "(section 3.12)"),
+                ("Where", "Frankfurt, Germany (europe-west3)"),
             ]),
             ("Google Play Integrity, Apple App Attest, reCAPTCHA, Firebase App Check", [
                 ("Handles", "Confirmation that the app and the device are genuine"),
@@ -672,7 +946,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p>Your data is stored and processed outside Egypt:</p>
         <ul>
           <li><b>Germany and the European Union:</b> your account, your training
-          and meals, any health backup, and your verification.</li>
+          and meals, any health backup, your verification, any meal photo you
+          choose to analyse (and the 30-day repeat answer from it), any dish you
+          choose to share, your event seats, and, if you apply to coach, your
+          application and portfolio, and, if you join a coach, your form and chat.</li>
           <li><b>The United States:</b> your phone number, for sign-in.</li>
           <li><b>Google data centres worldwide, which include the United
           States:</b> the device checks, ML Kit performance data, crash reports
@@ -696,6 +973,36 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("ID card photographs, selfie, name and date of birth from the card, your raw ID number",
              "Never stored. Discarded from memory when the check ends, whatever the result."),
             ("The single-use selfie session", "5 minutes, then deleted automatically"),
+            ("Meal photos",
+             "Not kept. The camera&rsquo;s temporary copy on your phone exists "
+             "only for the moment the photo is taken, and is deleted right "
+             "away. The photo is deleted from memory as soon as the estimate "
+             "comes back (section 3.12)."),
+            ("The repeat answer for a meal photo (a fingerprint of the photo and the foods and weights found; no photo, nothing that identifies you)",
+             "30 days, then deleted automatically (section 3.12)"),
+            ("A dish you chose to share, while it waits for review (dish names, what is in it, figures; a keyed marker instead of your identity)",
+             "While it waits. When the team decides, the dish is not deleted: see the next two rows. The marker is deleted with your account, and a dish still waiting that only you had confirmed is deleted with it (section 3.13)."),
+            ("A dish the team declined (dish names, what is in it with weights, figures; a keyed marker instead of your identity)",
+             "Kept on our server, where only the Own Hub team can read it, and no deletion period is set. When you delete your account, the marker is deleted; the dish itself stays, because nothing in it identifies you (section 3.13)."),
+            ("The review record of a dish the team approved (dish names, what is in it with weights, figures; a keyed marker instead of your identity)",
+             "Kept on our server, where only the Own Hub team can read it, and no deletion period is set. It still holds what is in the dish; the published entry below does not. When you delete your account, the marker is deleted; the record itself stays (section 3.13)."),
+            ("A count of the dishes you shared today (kept on your verification record)",
+             "Replaced the next time you share or scan on a new UTC day, and deleted with your account (section 3.13)"),
+            ("A dish the team approved (names, category, allergens, figures; no link to you)",
+             "Kept, and shown to verified members. Not withdrawn when you turn sharing off or delete your account, because it carries no link to you (section 3.13)."),
+            ("Your seat at an event (account identifier, time reserved, status)",
+             "Until you cancel the seat or delete your account (section 3.14)"),
+            ("A coach application and its files (section 3.15)",
+             "While you are a coach, or until you delete your account"),
+            ("An application that was not approved, or sent back for changes, and its files",
+             "Kept with no automatic deletion date, so that we can tell you why and you can apply again after 30 days. Deleted with your account."),
+            ("The form you filled in to join a coach, and the coaching record",
+             "The coach can read the form only while the coaching lasts. It is kept until you or the coach delete your account."),
+            ("Chat messages with a coach",
+             "Kept after the coaching ends, readable by you and the coach, until either of you deletes her account. Staff read a thread only after a report."),
+            ("Plans a coach shared with you", "Until you delete your account"),
+            ("Your public coach portfolio and the copy of your photo",
+             "While it is published. Deleted with your account."),
             ("Verification result and review case",
              "180 days after the case is decided, or earlier if you delete your "
              "account. A case still waiting for review is kept until it is decided."),
@@ -751,8 +1058,16 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           180 days end, linked to no account;</li>
           <li>reviewer access log entries for your case, until their year
           ends;</li>
+          <li>any dish the team approved after you shared it, which carries no
+          link to you (section 3.13);</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
+        <p>If you joined a coach, deleting everything also deletes the
+        coaching, its chat and the plans she shared. If she deletes her account,
+        the same happens to the coaching and chat you had with her.</p>
+        <p>If you applied to coach, deleting everything also removes your
+        application, its documents and photos, your public portfolio, your
+        packages and the copy of your photo.</p>
         <p>Crash reports, usage statistics and ML Kit data are never linked to
         your account. Deleting everything also turns usage statistics off and
         resets the identifier on your phone. Google deletes this data on the
@@ -827,9 +1142,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           your health information.</li>
           <li>No sale of your data.</li>
           <li>No training of AI on your data.</li>
-          <li>No access to your contacts, location, photo library, microphone,
-          text messages, or Apple Health or Health Connect. The app itself
-          never uses your microphone, and there is no video review.</li>
+          <li>No access to your contacts, location, microphone, text messages,
+          or Apple Health or Health Connect. The app itself never uses your
+          microphone, and there is no video review.</li>
+          <li>No access to your photo library. If you pick your profile photo
+          from your photos, your phone&rsquo;s own picker hands Own Hub only
+          the one picture you choose, and that picture stays on your
+          phone. The exception is a picture you choose for a coach
+          application: it is uploaded when you send the application (section
+          3.15).</li>
           <li>Nothing that guesses your sex, age or anything else about you from
           your face.</li>
         </ul>
@@ -850,6 +1171,48 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>23 October 2026, portfolio photos:</b> section 3.15 now says
+          that an approved coach&rsquo;s portfolio can show members feedback
+          screenshots, before and after photos of her clients (each with that
+          client&rsquo;s written consent, which the coach confirms) and photos of
+          the coach or her work. Own Hub&rsquo;s woman reviewer checks each one
+          first, the approved copy is re-encoded with no location or other
+          metadata and the original is deleted, and the coach can remove an
+          item. It is all deleted with her account. Earlier text said that only
+          her profile photo was shown.</li>
+          <li><b>23 October 2026, coach applications:</b> section 3.15 is new:
+          an optional application for verified women who want to coach, and the
+          public portfolio of an approved coach. Sections 4, 5, 6, 7 and 10 now
+          mention it, and section 3.16 is new: joining a coach for free and
+          chatting with her. It collects nothing unless you apply or ask to
+          join, and you accept the Coach Terms or fill in the form with its own
+          consent at that moment, so you are not asked to accept again.</li>
+          <li><b>21 October 2026, repeat answers, dish sharing and event
+          seats:</b> section 3.12 now says a fingerprint of the photo and the
+          foods found are kept for 30 days to answer the same photo again.
+          Section 3.13 is new: an optional switch, off until you turn it on,
+          that shares a dish without your name. Section 3.14 is new: event
+          seats. Statements that your meals are seen by no one now name the
+          dish-sharing exception. A correction the same day: section 3.13 no
+          longer lists fibre, which is not sent, and section 6 now says that a
+          dish the team has decided on is kept on our server, with a keyed
+          marker instead of your identity (deleted with your account) and no
+          deletion period for the dish, and that a count of the dishes you
+          shared is replaced the next time you share or scan on a new UTC day.
+          Section 3.6 now also says that how you feel after a session and your
+          week review answers stay on your phone only. Also that day, to
+          explain what already happens on your phone: section 3.11 now
+          describes event reminders, which are scheduled on your phone and
+          never sent from our servers; section 3.5 now says that your profile
+          photo stays on your phone and is never uploaded, and that the workout
+          card you can share is made on your phone and sent nowhere unless you
+          tap Share; and section 10 now says how the photo picker works. None
+          of this collects anything new, so you are not asked to accept
+          again.</li>
+          <li><b>17 October 2026, meal photos:</b> section 3.12. An optional
+          feature with its own agreement, asked in the app before the first
+          meal photo. Nothing changes for you unless you use it.</li>
+          <li><b>12 October 2026, pre-release analytics update:</b> optional PostHog US usage milestones and one technical status log, requiring fresh analytics consent.</li>
           <li><b>3.0, update before release:</b> usage statistics with Google
           Analytics for Firebase, only with your separate consent (&ldquo;Help
           improve Own Hub&rdquo;), and more detail on what a crash report
@@ -901,7 +1264,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         "title": "Terms of Use · Own Hub",
         "description": (
             "The terms for using Own Hub: a free fitness app for women in "
-            "Egypt, with a women-only account, no community, no coaching and "
+            "Egypt, with a women-only account, no community and "
             "nothing to buy. Not a medical device."
         ),
         "body": """
@@ -911,8 +1274,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
-          <b>Applies to:</b> Own Hub for iOS and Android, bundle id
-          <code>com.ownhub.app</code>.
+          <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
+          and Android, package <code>com.ownhub.app</code>.
         </p>
         <p>If the English and Arabic versions of these Terms differ, the Arabic
         version applies.</p>
@@ -944,10 +1307,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           password, and there is no profile that anyone else can see.</li>
           <li><b>It is free.</b> There are no adverts, no in-app purchases, no
           subscriptions and no payments of any kind.</li>
-          <li><b>What is not in this version:</b> no community, no coaching and
-          no AI assistant. Nothing in the app connects you to another person.
-          If any of these arrives, it will come in a later version, with
-          updated Terms that you will be asked to accept.</li>
+          <li><b>What is not in this version:</b> no community, no AI
+          assistant and no payments. Nothing in the app puts you in touch with
+          another person unless you ask to join a coach, which is free, and
+          then you can chat with her. Two things are shown to other members: a dish you choose to share, without your name, and, if you
+          apply to coach and are approved, the public portfolio you build, under
+          the <a href="/coach-terms">Coach Terms</a>. Members can read
+          portfolios under Find a coach and ask to join, but nobody can pay
+          yet. If any missing feature arrives, it will come in a later
+          version, with updated Terms that you will be asked to accept.</li>
         </ul>
 
 """ + h2("t3", "3. Who may use it, and why it is for women only") + """
@@ -1057,8 +1425,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         that any particular result will follow from using it.</p>
 
 """ + h2("t12", "12. Later features") + """
-        <p>Community, coaching, an AI assistant and payments are not part of
-        this version. Each will come with its own rules, published with the
+        <p>Community, an AI assistant and payments are not part of this
+        version. Each will come with its own rules, published with the
         release that switches it on, and you will be asked to accept them
         before you use it.</p>
 
@@ -1157,6 +1525,139 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 """,
     }
 
+    # ------------------------------------------------------ coach terms ----
+    pages["coach-terms"] = {
+        "title": "Coach Terms · Own Hub",
+        "description": (
+            "The rules for women who apply to coach on Own Hub: reviewed "
+            "coaches only, accurate information, client consent, what you may "
+            "coach, and what happens if a portfolio is reported."
+        ),
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>Coach Terms</h1>
+        <p class="meta">
+          <b>Version:</b> 1 (coach-terms-v1)<br>
+          <b>Effective date:</b> {{policyEffectiveDate}}<br>
+          <b>Applies to:</b> women who apply to coach on Own Hub, in the app.
+        </p>
+        <p>If the English and Arabic versions of these Terms differ, the Arabic
+        version applies.</p>
+        <p class="lede">You accept these terms in the last step of the coach
+        application. They sit beside the <a href="/terms">Terms of Use</a> and
+        the <a href="/privacy#c-coach">Privacy Policy</a>, which still apply to
+        you as a member.</p>
+
+""" + h2("k1", "1. Reviewed coaches only", "no-rule") + """
+        <ul>
+          <li>Only a verified member can apply, and only a coach whom Own
+          Hub&rsquo;s woman reviewer has approved is shown to members.</li>
+          <li>The reviewer may approve, ask you for changes, or refuse, and
+          tells you why. After a refusal you can apply again after 30
+          days.</li>
+          <li>Approval means your portfolio can be shown to members. Nothing is
+          shown before it.</li>
+        </ul>
+
+""" + h2("k2", "2. Accurate information") + """
+        <ul>
+          <li>Everything in your application and portfolio must be true:
+          your name, your education, your certificates, your years of
+          experience and your feedback.</li>
+          <li>Certificates and documents must be your own and unaltered.</li>
+          <li>Keep your portfolio up to date. We may remove a portfolio that
+          is not accurate.</li>
+        </ul>
+
+""" + h2("k3", "3. Your clients&rsquo; photos and words") + """
+        <ul>
+          <li>Add a before and after photo, or a screenshot of a
+          client&rsquo;s message, only with that woman&rsquo;s written consent.
+          You confirm in the app that you have it.
+          A clear message from her is enough. Keep it, and show it to us if we
+          ask.</li>
+          <li>Own Hub&rsquo;s woman reviewer checks every photo and screenshot
+          before members see it. When she approves one, we keep a re-encoded
+          copy with no location or other metadata and delete the original.
+          Verified members then see the approved items on your portfolio. You
+          can remove an item yourself, and everything is deleted with your
+          account.</li>
+          <li>You may also add photos of yourself or your work, which are
+          checked the same way.</li>
+          <li>If a client withdraws her consent, tell us and we delete the
+          photos.</li>
+        </ul>
+
+""" + h2("k4", "4. What you may coach") + """
+        <ul>
+          <li>General fitness and healthy eating only.</li>
+          <li>Do not diagnose or treat any condition, prescribe a medical diet
+          or recommend supplements.</li>
+          <li>If a woman is pregnant or has recently given birth, or you think
+          she may have an eating disorder, refer her to a doctor.</li>
+        </ul>
+
+""" + h2("k5", "5. Keep it inside Own Hub") + """
+        <ul>
+          <li>Do not put payment details or ways to reach you outside Own Hub
+          (a phone number, a messaging account, a social media page) in your
+          portfolio.</li>
+          <li>Do not ask a member to pay you or to talk to you outside Own
+          Hub.</li>
+        </ul>
+
+""" + h2("k6", "6. What members see, and prices") + """
+        <ul>
+          <li>Members see the public portfolio described in the Privacy Policy,
+          section 3.15, including the photos the reviewer approved, and nothing
+          else from your application.</li>
+          <li>A price you set for a package is shown to members as the price.
+          In this version a member can ask to join for free, and nobody can pay
+          yet.</li>
+          <li>When a member joins you, you can read the form she filled in only
+          while the coaching lasts, and you may use it only to coach her.
+          Messages with her stay inside Own Hub.</li>
+        </ul>
+
+""" + h2("k7", "7. Reports, hiding and suspension") + """
+        <ul>
+          <li>Any member can report a portfolio.</li>
+          <li>Own Hub may hide or suspend a portfolio after a report, or if it
+          breaks these terms. We tell you why and let you reply, unless the
+          law, an order from an authority or someone&rsquo;s safety prevents
+          it.</li>
+        </ul>
+
+""" + h2("k8", "8. Stopping") + """
+        <ul>
+          <li>You can withdraw an application, or stop being a coach, at any
+          time. Write to {{mailto:contactSupport}}, or delete your account in
+          the app, from Profile, then Your data.</li>
+          <li>Deleting your account removes your application, its documents and
+          your portfolio, as the Privacy Policy describes.</li>
+        </ul>
+
+""" + h2("k9", "9. Payments, later") + """
+        <p>Payments are not part of this version. If they are offered later,
+        they will come with their own terms,
+        shown to you before anything is charged, and you will be asked to accept
+        them first.</p>
+
+""" + h2("k10", "10. Changes, law and contact") + """
+        <ul>
+          <li>If we change these terms in a way that matters, we ask you to
+          accept them in the app. Other changes are published here.</li>
+          <li>These terms are governed by the laws of the Arab Republic of
+          Egypt, and disputes go to {{courtVenue}}.</li>
+          <li>Contact: {{mailto:contactSupport}} &middot; {{legalEntity}},
+          {{legalAddress}}</li>
+        </ul>
+      </div>
+    </div>
+""",
+    }
+
     # ---------------------------------------------------------- support ----
     pages["support"] = {
         "title": "Support · Own Hub",
@@ -1170,9 +1671,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <h1>Support</h1>
         <p class="meta"><b>Last updated:</b> {{effectiveDate}}</p>
 
-        <p class="lede">Write to {{mailto:contactSupport}} and you will get an
-        answer. There is no ticket system, no chatbot and no form to fill
-        in.</p>
+        <p class="lede">Write to {{mailto:contactSupport}} and a person will
+        answer. There&rsquo;s no ticket system or chatbot in the way.</p>
 
 """ + h2("who-reads", "Who reads it, and when") + """
         <div class="callout">
@@ -1242,11 +1742,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           with your national ID card and a live selfie; if the automatic check
           is unsure, or you choose the niqab route, a woman from Own Hub
           reviews your case and contacts you by phone within 72 hours to finish
-          your check. There is no community, no coaching
-          and no assistant in this version: nothing in the app connects you to
-          another member, and nothing in it can be bought. If you were expecting
-          one of those, you were reading about a later version that is not
-          out.</p>
+          your check. There is no community and no assistant
+          in this version, and nothing in it can be bought. Coaching with
+          Own Hub-reviewed coaches is available, free for now. If you were expecting
+          the community or the assistant, you were reading about a later
+          version that is not out. You can choose to share a dish, without your
+          name, and you can ask a coach to take you on.</p>
 
 """ + h3("q-language", "How do I switch between Arabic and English?") + """
           <p>Profile, then Language. Pick the one you want and the whole app
@@ -1260,7 +1761,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           that one card cannot open two accounts. We never keep the photographs
           of your card or your face, and we never keep the ID number itself.
           Once you are verified, your training and meals, kept in Frankfurt,
-          Germany, where no other member can see them. Your cycle, check-ins,
+          Germany, where no other member can see them (unless you choose to
+          share a dish, which is shared without your name). Your cycle, check-ins,
           measurements, life stage, allergies and weight only if you turn on
           health backup yourself.</p>
           <p>If you allow crash reports, Firebase Crashlytics receives a report
@@ -1284,6 +1786,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><a href="/terms">Terms of Use</a>: including the medical warning,
           which is worth reading before you start training.</li>
         </ul>
+        <p class="small">Line drawings: <a href="https://github.com/lucasmarkes/hairline">Hairline
+        by Lucas Marques</a>, under the MIT licence.</p>
       </div>
     </div>
 """,
@@ -1314,8 +1818,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           same way.</p>
         </div>
 """ + kv([
-            ("App", "Own Hub, iOS and Android, bundle id "
-                    "<code>com.ownhub.app</code>"),
+            ("App", "Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>, "
+                    "and Android, package <code>com.ownhub.app</code>"),
             ("Publisher and developer", "{{legalEntity}}"),
             ("Country", "{{legalAddress}}"),
             ("Where to write", "{{mailto:contactPrivacy}}"),
@@ -1435,7 +1939,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>Join the waitlist</h1>
-        <p class="lede">Own Hub is not open yet, and it is free, all of it.
+        <p class="lede">Own Hub isn&rsquo;t open yet, and all of it is free.
         Leave your Egyptian mobile number or your email address. The first
         100 women on the list try it before it opens to everyone. Everyone
         else hears from us once, the day it opens.</p>
@@ -1506,11 +2010,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         "description": "That address is not on this site. Here is everything that is.",
         "body": """
     <div class="wrap lost">
+      <div class="lead-row">
       <div class="prose">
         <h1>That page is not here</h1>
         <p class="lede">The address you followed does not exist on this site,
         which has only six pages. One of these is almost certainly the one you
         wanted.</p>
+      </div>
+      """ + art.hairline_svg("loupe", "mark") + """
       </div>
       <ul class="doorways">
         <li><a href="/"><span class="t">Home</span><span class="d">What Own Hub is.</span></a></li>

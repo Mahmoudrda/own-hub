@@ -10,6 +10,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/features/signup/data/callable_verification_provider.dart';
 import 'package:own_hub/features/signup/data/provider_verification_repository.dart';
 import 'package:own_hub/features/signup/domain/id_capture.dart';
 import 'package:own_hub/features/signup/domain/liveness_challenge.dart';
@@ -58,7 +59,10 @@ class _Reviews implements ReviewRequester {
   final List<ReviewPath> asked = <ReviewPath>[];
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async {
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async {
     asked.add(path);
     final answers = _answers;
     if (answers == null || answers.isEmpty) return ReviewRequestState.pending;
@@ -575,7 +579,9 @@ void main() {
       },
     );
 
-    test('a timeout claims nothing and asks nobody', () async {
+    test('a call that runs out of time says the connection is too slow, '
+        'asks nobody, and keeps nothing', () async {
+      final evidence = _filled();
       final reviews = _Reviews(<Object>[
         const VerificationCallFailure('unavailable'),
       ]);
@@ -583,14 +589,54 @@ void main() {
         _ScriptedProvider(<Object>[
           const VerificationCallFailure('deadline-exceeded'),
         ]),
+        evidence: evidence,
         reviews: reviews,
       );
       await repository.submit(method: VerificationMethod.automatic);
       final settled = await _settle(repository);
-      expect(settled, isA<VerificationReviewOffered>());
+      expect(settled, isA<VerificationTooSlow>());
       expect(settled.isPending, isFalse);
       expect(reviews.asked, isEmpty);
+      // The privacy rule: the photographs are gone whichever way it ended.
+      expect(evidence.byteCount, 0);
       await repository.dispose();
+    });
+
+    test('the retry after "too slow" carries the same operation id, and a '
+        'decision that follows clears it', () async {
+      final provider = _ScriptedProvider(<Object>[
+        const VerificationCallFailure('deadline-exceeded'),
+        const VerificationCallFailure('deadline-exceeded'),
+        const VerificationDecision(outcome: VerificationOutcome.approved),
+        const VerificationDecision(outcome: VerificationOutcome.approved),
+      ]);
+      final repository = _repository(provider);
+      Future<void> attempt() async {
+        repository.challenge = _challenge(
+          DateTime.now().add(const Duration(minutes: 2)),
+        );
+        repository.evidence
+          ..holdCardSide(CaptureTarget.idFront, Uint8List.fromList(<int>[1, 2]))
+          ..holdCardSide(CaptureTarget.idBack, Uint8List.fromList(<int>[3, 4]));
+        await repository.submit(method: VerificationMethod.automatic);
+        await _settle(repository);
+      }
+
+      await attempt();
+      expect(repository.current, isA<VerificationTooSlow>());
+      await attempt();
+      await attempt();
+      expect(repository.current, isA<VerificationVerified>());
+      await attempt();
+      expect(provider.sawOperationId, ['op-1', 'op-1', 'op-1', 'op-2']);
+      await repository.dispose();
+    });
+
+    test('the callable waits as long as the server does', () {
+      expect(
+        CallableVerificationProvider.submitTimeout,
+        const Duration(seconds: 120),
+      );
     });
 
     test('the niqab path that cannot reach the server says so', () async {

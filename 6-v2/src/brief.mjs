@@ -51,7 +51,7 @@ export const brief = {
     'No men in product imagery, and no member faces without written consent.',
     'Do not describe verification in a way engineering has not confirmed — the deletion promise is a commitment we must keep.',
     'Do not call anything "AI" unless that feature has shipped.',
-    'Arabic first, in polished Egyptian Arabic, the way a good Cairene trainer talks to a woman she respects, written by a person — never machine-translated from English. Legal and consent wording stays in Modern Standard Arabic.',
+    'Arabic first, in polished Egyptian Arabic, the way a good Cairene trainer talks to a woman she respects, written by a person — never machine-translated from English. Arabic is Egyptian everywhere, including legal and consent (owner decision 14 Oct 2026).',
     'Never say the cycle feature predicts ovulation, balances hormones, or is medically verified. It is general wellbeing, not diagnosis or contraception.',
     'Never claim food cures cramps, and never show calorie or macro targets changing with a cycle phase.',
     'Never promise a coach replies instantly. The stated hours are Sunday to Thursday, 9:00–17:00 Cairo, within one working day.',

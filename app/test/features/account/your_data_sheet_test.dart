@@ -59,9 +59,15 @@ void main() {
       find.textContaining('removes it from our servers and clears this phone'),
       findsOneWidget,
     );
-    expect(find.textContaining('Some things are kept on purpose'), findsOneWidget);
+    expect(
+      find.textContaining('Some things are kept on purpose'),
+      findsOneWidget,
+    );
     // The fraud signals and the access log, which expire on their own.
-    expect(find.textContaining('180 days after the last attempt'), findsOneWidget);
+    expect(
+      find.textContaining('180 days after the last attempt'),
+      findsOneWidget,
+    );
     expect(find.textContaining('after one year'), findsOneWidget);
     // One timing, the same as the privacy policy.
     expect(find.textContaining('usually takes under a minute'), findsOneWidget);
@@ -108,9 +114,7 @@ void main() {
     expect(results, [null]);
   });
 
-  testWidgets('M8: "Ask for a copy" opens the request', (
-    tester,
-  ) async {
+  testWidgets('M8: "Ask for a copy" opens the request', (tester) async {
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3.0;
     addTearDown(tester.view.reset);
@@ -151,7 +155,10 @@ void main() {
       onDelete: () async => AccountDeletionResult.done,
       locale: const Locale('ar'),
     );
-    expect(find.textContaining('حذف حسابك بيشيله من سيرفراتنا'), findsOneWidget);
+    expect(
+      find.textContaining('حذف حسابك بيشيله من سيرفراتنا'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 }

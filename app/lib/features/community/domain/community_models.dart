@@ -261,11 +261,7 @@ class CommunityPost {
       );
     }
     if (kind != PostKind.story && expiresAt != null) {
-      throw ArgumentError.value(
-        expiresAt,
-        'expiresAt',
-        'only a story expires',
-      );
+      throw ArgumentError.value(expiresAt, 'expiresAt', 'only a story expires');
     }
     if (!blurApplied && blurOptOut == null) {
       throw ArgumentError.value(
@@ -352,32 +348,32 @@ class CommunityPost {
     bool? savedByMe,
     bool? pendingUpload,
   }) => CommunityPost(
-        postId: postId,
-        authorCard: authorCard,
-        kind: kind,
-        audienceKeys: audienceKeys,
-        createdAt: createdAt,
-        media: media,
-        caption: caption,
-        topics: topics,
-        groupId: groupId,
-        parentPostId: parentPostId,
-        cost: cost,
-        blurApplied: blurApplied,
-        blurOptOut: blurOptOut,
-        visibility: visibility,
-        expiresAt: expiresAt,
-        likeCount: likeCount,
-        commentCount: commentCount,
-        followUpCount: followUpCount,
-        latestFollowUpAt: latestFollowUpAt,
-        likedByMe: likedByMe ?? this.likedByMe,
-        savedByMe: savedByMe ?? this.savedByMe,
-        // Viewer state too, in the strict sense: a queued post is badged in
-        // HER feed and does not exist at all in anyone else's.
-        pendingUpload: pendingUpload ?? this.pendingUpload,
-        schemaV: schemaV,
-      );
+    postId: postId,
+    authorCard: authorCard,
+    kind: kind,
+    audienceKeys: audienceKeys,
+    createdAt: createdAt,
+    media: media,
+    caption: caption,
+    topics: topics,
+    groupId: groupId,
+    parentPostId: parentPostId,
+    cost: cost,
+    blurApplied: blurApplied,
+    blurOptOut: blurOptOut,
+    visibility: visibility,
+    expiresAt: expiresAt,
+    likeCount: likeCount,
+    commentCount: commentCount,
+    followUpCount: followUpCount,
+    latestFollowUpAt: latestFollowUpAt,
+    likedByMe: likedByMe ?? this.likedByMe,
+    savedByMe: savedByMe ?? this.savedByMe,
+    // Viewer state too, in the strict sense: a queued post is badged in
+    // HER feed and does not exist at all in anyone else's.
+    pendingUpload: pendingUpload ?? this.pendingUpload,
+    schemaV: schemaV,
+  );
 
   @override
   String toString() => 'CommunityPost($postId, ${kind.wireName})';

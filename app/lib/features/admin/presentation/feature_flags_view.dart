@@ -36,6 +36,7 @@ import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/app_scaffold.dart' show AppTopBar;
 import '../../../ui/hand/hand.dart';
 
 class FeatureFlagsView extends StatefulWidget {
@@ -132,15 +133,7 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
 
     return Scaffold(
       backgroundColor: AppColors.surfaceLow,
-      appBar: AppBar(
-        title: Text(l10n.featureFlags, style: AppText.titleM),
-        leading: widget.onBack == null
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: widget.onBack,
-              ),
-      ),
+      appBar: AppTopBar(title: l10n.featureFlags, onBack: widget.onBack),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [

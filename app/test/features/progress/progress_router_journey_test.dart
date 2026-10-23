@@ -52,7 +52,6 @@ Widget _app(String screenId) {
   );
 }
 
-
 /// The shipped build closes the whole app until she is verified. This file is
 /// about the product behind the gate, so she is walked as a verified woman,
 /// through the same seam C12 sets when the server approves her. The flags

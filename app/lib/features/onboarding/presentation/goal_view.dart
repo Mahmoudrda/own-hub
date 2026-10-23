@@ -67,6 +67,11 @@ class _GoalViewState extends State<GoalView> {
     final options = <(TrainingGoal, String, String)>[
       (TrainingGoal.stronger, l10n.getStronger, l10n.buildUpLiftABitMoreEach),
       (
+        TrainingGoal.buildMuscle,
+        l10n.buildMuscle,
+        l10n.heavierLiftsBuiltUpALittleEach,
+      ),
+      (
         TrainingGoal.feelBetter,
         l10n.feelBetterInMyBody,
         l10n.energySleepLessBackPain,
@@ -90,7 +95,7 @@ class _GoalViewState extends State<GoalView> {
       // them; this says both before the first one.
       lead: l10n.aFewShortQuestionsOneAtA,
       title: l10n.whatDoYouWantMost,
-      subtitle: l10n.pickOneItChangesTheProgramNot,
+      subtitle: l10n.pickOneItShapesYourProgram,
       onContinue: _continue,
       // Skip writes nothing. The preselected default stands, which is exactly
       // what a skipped question means.

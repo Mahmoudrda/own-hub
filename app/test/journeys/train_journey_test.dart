@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
+import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/main.dart';
@@ -65,9 +66,9 @@ void main() {
 
     // Set 1 of the FIRST move, not a fixed example of somebody's second set.
     final state = WorkoutSessionState.instance;
-    expect(state.currentMove?.name, 'Glute bridge');
+    expect(state.currentMove?.name, 'Donkey kick');
     expect(state.setIndex, 0);
-    expect(find.text('Glute bridge'), findsWidgets);
+    expect(find.text('Donkey kick'), findsWidgets);
 
     await _logTheSet(tester);
     // Resting, with the next set waiting behind it.
@@ -76,7 +77,7 @@ void main() {
 
     await tester.tap(find.text("I'm ready, next set"));
     await tester.pumpAndSettle();
-    expect(state.currentMove?.name, 'Glute bridge');
+    expect(state.currentMove?.name, 'Donkey kick');
     expect(state.setIndex, 1);
 
     // Last set of the move rolls on to the next move.
@@ -84,9 +85,11 @@ void main() {
     await tester.tap(find.text("I'm ready, next set"));
     await tester.pumpAndSettle();
     await _logTheSet(tester);
-    // The second move of the session, which is the step-back lunge since the
-    // 12 kg goblet squat left a session that promises no equipment.
-    expect(state.currentMove?.name, 'Step-back lunge', reason: 'next move');
+    expect(
+      state.currentMove?.name,
+      'Straight-leg glute kickback',
+      reason: 'next move',
+    );
     expect(state.setIndex, 0);
   });
 
@@ -117,9 +120,12 @@ void main() {
     }
 
     // However she got here, finishing is one tap and counts once.
-    final finish = find.text('Finish here');
+    // Ending early asks for a second tap ("Finish now · n moves left").
+    final finish = find.byKey(const ValueKey('r13-finish-here'));
     if (finish.evaluate().isNotEmpty) {
       await tester.tap(finish);
+      await tester.pump();
+      if (finish.evaluate().isNotEmpty) await tester.tap(finish);
       await tester.pumpAndSettle();
     }
 
@@ -160,5 +166,98 @@ void main() {
       anyOf(progressBefore, progressBefore + 1),
       reason: 'never more than one credit for one recalled session',
     );
+  });
+
+  testWidgets('G01 and G02: one session per Start, and the last set is kept', (
+    tester,
+  ) async {
+    // Her clock, so the session lasts as long as a real one: a test that
+    // finishes inside a second would have no minutes for R10 to state.
+    var now = DateTime.now();
+    AppClock.debugNow = () => now;
+    addTearDown(() => AppClock.debugNow = null);
+
+    final flushesBefore = AppRouter.trainRepository.flushes.length;
+    await _open(tester, 'R03');
+    final liveBefore = AppRouter.trainRepository.liveSessionId;
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    now = now.add(const Duration(minutes: 4));
+    final live = AppRouter.trainRepository.liveSessionId;
+    expect(live, isNot(liveBefore), reason: 'Start made a session');
+    // Exactly one: the id counter moved by one, not two.
+    int number(String? id) => int.tryParse(id?.split('-').last ?? '') ?? 0;
+    expect(number(live) - number(liveBefore), 1);
+
+    // Log the whole first move and finish at once, inside the undo window.
+    await tester.tap(find.textContaining('I did').first);
+    // Through R13's page transition, and well inside the five seconds.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text('Finish here'));
+    await tester.pump();
+    // The second tap that confirms it, still inside the window.
+    await tester.tap(find.byKey(const ValueKey('r13-finish-here')));
+    await tester.pumpAndSettle();
+
+    // The move she logged a moment before finishing was written, and R10
+    // was told about it.
+    expect(AppRouter.trainRepository.flushes.length, flushesBefore + 1);
+    final summary = WorkoutSessionState.instance.lastSummary;
+    expect(summary, isNotNull);
+    expect(summary!.sets, greaterThan(0));
+    expect(find.textContaining('Moves: 1'), findsOneWidget);
+  });
+
+  testWidgets('R10 counts the session it is reporting: 1 of 3, next is 2', (
+    tester,
+  ) async {
+    // Other walks in this file credit the shared week first, so the figure
+    // is "one more than it was", which is 1 of 3 on a fresh week.
+    final before = _weekOnHome;
+    await _open(tester, 'R03');
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('I did').first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.tap(find.text('Finish here'));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('r13-finish-here')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('This week'), findsOneWidget, reason: 'on R10');
+    expect(find.text('${before + 1} of 3'), findsOneWidget);
+    expect(find.text('$before of 3'), findsNothing);
+    if (before + 1 < 3) {
+      expect(
+        find.textContaining('Next: session ${before + 2}'),
+        findsOneWidget,
+      );
+    }
+  });
+
+  testWidgets('G10: undo on R09 puts her back on the set, on R07', (
+    tester,
+  ) async {
+    await _open(tester, 'R03');
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    final state = WorkoutSessionState.instance;
+    expect(state.setIndex, 0);
+
+    await tester.tap(find.textContaining('Done ·').first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text("I'm ready, next set"), findsOneWidget);
+    expect(state.setIndex, 1);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(state.setIndex, 0, reason: 'the position came back with the set');
+    expect(state.loggedSetCount, 0);
+    expect(find.text("I'm ready, next set"), findsNothing, reason: 'off R09');
+    expect(find.textContaining('Done ·'), findsWidgets, reason: 'on R07');
   });
 }

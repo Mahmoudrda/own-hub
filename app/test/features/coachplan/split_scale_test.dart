@@ -78,7 +78,10 @@ Split _split({String name = 'Upper / lower'}) => Split(
       kind: DaySlotKind.session,
       title: 'Full body',
       minutes: 30,
-      moves: <PrescribedMove>[_move('glute_bridge', 1), _move('goblet_squat', 2)],
+      moves: <PrescribedMove>[
+        _move('glute_bridge', 1),
+        _move('goblet_squat', 2),
+      ],
     ),
     SplitDaySlot(
       dayIndex: 2,
@@ -133,8 +136,8 @@ class _CountingGateway implements PlanPublishGateway {
     );
     return PublishReceipt(
       version: version,
-      assignmentsWritten: (request.payload['days']! as Map<String, Object?>)
-          .length,
+      assignmentsWritten:
+          (request.payload['days']! as Map<String, Object?>).length,
       mealSlotsWritten: 0,
     );
   }
@@ -191,37 +194,41 @@ Future<List<PublishOutcome>> _applyAndPublishAll({
 
 void main() {
   group('P0-SPLIT-05 — one split applied to a full book', () {
-    test('sixty calls carrying thirty-one days each, not 1,860 writes', () async {
-      final gateway = _CountingGateway();
-      final drafts = InMemoryPlanDraftRepository();
-      final outcomes = await _applyAndPublishAll(
-        split: _split(),
-        drafts: drafts,
-        publisher: CoachPlanPublisher(
-          gateway: gateway,
-          queue: InMemoryPublishIntentQueue(),
-        ),
-      );
+    test(
+      'sixty calls carrying thirty-one days each, not 1,860 writes',
+      () async {
+        final gateway = _CountingGateway();
+        final drafts = InMemoryPlanDraftRepository();
+        final outcomes = await _applyAndPublishAll(
+          split: _split(),
+          drafts: drafts,
+          publisher: CoachPlanPublisher(
+            gateway: gateway,
+            queue: InMemoryPublishIntentQueue(),
+          ),
+        );
 
-      expect(outcomes.every((o) => o.isPublished), isTrue);
-      expect(
-        gateway.requests,
-        hasLength(kClientCap),
-        reason: 'one callable per client — the device never loops over days',
-      );
+        expect(outcomes.every((o) => o.isPublished), isTrue);
+        expect(
+          gateway.requests,
+          hasLength(kClientCap),
+          reason: 'one callable per client — the device never loops over days',
+        );
 
-      final serverWrites = gateway.requests.fold<int>(
-        0,
-        (total, r) => total + (r.payload['days']! as Map<String, Object?>).length,
-      );
-      expect(serverWrites, kClientCap * _daysInMonth);
-      expect(
-        (serverWrites / _maxOpsPerCommit).ceil(),
-        lessThanOrEqualTo(4),
-        reason: 'the server chunks the fan-out; it is bounded and one-time',
-      );
-      expect(drafts.writes, kClientCap);
-    });
+        final serverWrites = gateway.requests.fold<int>(
+          0,
+          (total, r) =>
+              total + (r.payload['days']! as Map<String, Object?>).length,
+        );
+        expect(serverWrites, kClientCap * _daysInMonth);
+        expect(
+          (serverWrites / _maxOpsPerCommit).ceil(),
+          lessThanOrEqualTo(4),
+          reason: 'the server chunks the fan-out; it is bounded and one-time',
+        );
+        expect(drafts.writes, kClientCap);
+      },
+    );
 
     test('replaying the whole book creates zero extra versions', () async {
       final gateway = _CountingGateway();
@@ -254,36 +261,39 @@ void main() {
       expect(gateway.versions, hasLength(kClientCap));
     });
 
-    test('each month is screened against her own list, not the last one\'s', () async {
-      final gateway = _CountingGateway();
-      await _applyAndPublishAll(
-        split: _split(),
-        drafts: InMemoryPlanDraftRepository(),
-        publisher: CoachPlanPublisher(
-          gateway: gateway,
-          queue: InMemoryPublishIntentQueue(),
-        ),
-      );
-
-      String movesOn(String clientUid) {
-        final request = gateway.requests.firstWhere(
-          (r) => r.clientUid == clientUid,
+    test(
+      'each month is screened against her own list, not the last one\'s',
+      () async {
+        final gateway = _CountingGateway();
+        await _applyAndPublishAll(
+          split: _split(),
+          drafts: InMemoryPlanDraftRepository(),
+          publisher: CoachPlanPublisher(
+            gateway: gateway,
+            queue: InMemoryPublishIntentQueue(),
+          ),
         );
-        final days = request.payload['days']! as Map<String, Object?>;
-        final day = days['2026-09-01']! as Map<String, Object?>;
-        final workout = day['workout']! as Map<String, Object?>;
-        return (workout['moves']! as List<Object?>)
-            .map((m) => (m! as Map<String, Object?>)['exerciseId'])
-            .join(',');
-      }
 
-      expect(movesOn(_uid(0)), 'glute_bridge,goblet_squat');
-      expect(
-        movesOn(_sheAvoidsSquats),
-        'glute_bridge',
-        reason: 'the squat is absent from hers, and from nobody else\'s',
-      );
-    });
+        String movesOn(String clientUid) {
+          final request = gateway.requests.firstWhere(
+            (r) => r.clientUid == clientUid,
+          );
+          final days = request.payload['days']! as Map<String, Object?>;
+          final day = days['2026-09-01']! as Map<String, Object?>;
+          final workout = day['workout']! as Map<String, Object?>;
+          return (workout['moves']! as List<Object?>)
+              .map((m) => (m! as Map<String, Object?>)['exerciseId'])
+              .join(',');
+        }
+
+        expect(movesOn(_uid(0)), 'glute_bridge,goblet_squat');
+        expect(
+          movesOn(_sheAvoidsSquats),
+          'glute_bridge',
+          reason: 'the squat is absent from hers, and from nobody else\'s',
+        );
+      },
+    );
 
     test('editing the split afterwards writes zero documents', () async {
       final gateway = _CountingGateway();
@@ -302,7 +312,9 @@ void main() {
       );
       final draftWrites = drafts.writes;
       final calls = gateway.requests.length;
-      final published = gateway.requests.map((r) => r.payload.toString()).toList();
+      final published = gateway.requests
+          .map((r) => r.payload.toString())
+          .toList();
 
       await splits.save(
         split.withChanges(

@@ -17,7 +17,16 @@ import 'package:own_hub/routing/app_router.dart';
 import '../round1/round1_harness.dart';
 
 const List<String> _changed = <String>[
-  'R12', 'P04', 'Y11', 'O04', 'T04', 'T05', 'T07', 'T02', 'R10', 'T08',
+  'R12',
+  'P04',
+  'Y11',
+  'O04',
+  'T04',
+  'T05',
+  'T07',
+  'T02',
+  'R10',
+  'T08',
 ];
 
 void main() {
@@ -37,8 +46,10 @@ void main() {
         nav(t).pushNamed(dest.name);
         await settle(t);
         final err = t.takeException();
-        print('=== $id $loc  top=${topScreen(t)}  '
-            '${err == null ? "" : "THREW ${'$err'.split('\n').first}"} ===');
+        print(
+          '=== $id $loc  top=${topScreen(t)}  '
+          '${err == null ? "" : "THREW ${'$err'.split('\n').first}"} ===',
+        );
         for (final line in paintedText(t)) {
           print('  | $line');
         }

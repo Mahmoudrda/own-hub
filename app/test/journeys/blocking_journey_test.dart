@@ -223,11 +223,15 @@ void main() {
       expect(find.text('Nada'), findsOneWidget);
       await _tap(tester, find.text('Unblock'));
 
+      // The sheet closes on her choice and the unblock waits for its
+      // five seconds, so Undo can keep the block.
+      expect(find.text('Unblocked Nada'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 6));
+
       expect(AppRouter.blockService.isBlocked(_nada), isFalse);
       expect(AppRouter.communityStore.graph.hides(_nada), isFalse);
 
-      // Close the sheet and go back to the feed she left.
-      await _tap(tester, find.text('Blocked members').last);
+      // Back to the feed she left.
       await _goTo(tester, 'M01');
       expect(find.textContaining(_herPost), findsWidgets);
     });

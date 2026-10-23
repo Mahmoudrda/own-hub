@@ -110,11 +110,12 @@ class RecipeBook {
       // both mean a person is still working on this, and what separates them is
       // whether it is fit to be **read at all**. That distinction had no reader
       // anywhere under `lib/` — the unsigned marker and the "no nuts" filter are
-      // both driven by `allergenReviewedBy`, which is a different fact — so the
-      // field was schema with nothing behind it, and a half-written card
-      // arriving from Firestore would have been drawn on her screen.
+      // both driven by who has checked the allergens, which is a different
+      // fact — so the field was schema with nothing behind it, and a
+      // half-written card arriving from Firestore would have been drawn on her
+      // screen.
       //
-      // Vacuous on today's seed, where all thirty-nine are `review`, in exactly
+      // Vacuous on today's seed, where every row is `published`, in exactly
       // the way the publication gates in `rahma_seed_test.dart` are vacuous: it
       // is written now so the day a row carries `draft`, the door is already
       // shut. Dropping at parse rather than filtering per screen is what stops
@@ -158,6 +159,10 @@ class SeededRecipeLibrary implements RecipeLibrary {
 
   static RecipeBook? _cache;
 
+  /// The ids of the bundled recipes once they are read, else null.
+  static Set<String>? get seededIds =>
+      _cache == null ? null : {for (final r in _cache!.recipes) r.recipeId};
+
   /// Drops the parsed copy. Tests that load a different asset call it; nothing
   /// in the app does, because the seed cannot change while the app is running.
   @visibleForTesting
@@ -167,8 +172,8 @@ class SeededRecipeLibrary implements RecipeLibrary {
   Future<RecipeBook> load() async {
     final cached = _cache;
     if (cached != null) return cached;
-    final raw = await (readAsset?.call(assetKey) ??
-        rootBundle.loadString(assetKey));
+    final raw =
+        await (readAsset?.call(assetKey) ?? rootBundle.loadString(assetKey));
     final book = RecipeBook.fromJson(
       (jsonDecode(raw) as Map).cast<String, Object?>(),
     );

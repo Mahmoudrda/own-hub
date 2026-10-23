@@ -20,19 +20,28 @@ class CallableReviewRequester implements ReviewRequester {
 
   /// The request body. Pinned to the contract by
   /// test/contracts/identity_contract_test.dart.
-  static Map<String, Object?> payloadFor(ReviewPath path) => <String, Object?>{
+  static Map<String, Object?> payloadFor(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) => <String, Object?>{
     'path': path.name,
+    'knownReviewerId': ?knownReviewerId,
   };
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async {
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async {
     final callable = _functions.httpsCallable(
       kRequestReviewCallable,
       options: HttpsCallableOptions(timeout: const Duration(seconds: 30)),
     );
     final HttpsCallableResult<Object?> response;
     try {
-      response = await callable.call<Object?>(payloadFor(path));
+      response = await callable.call<Object?>(
+        payloadFor(path, knownReviewerId: knownReviewerId),
+      );
     } on FirebaseFunctionsException catch (error) {
       throw callFailureFrom(error);
     }

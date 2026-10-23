@@ -8,9 +8,11 @@
 // R1-38: after a session logged THROUGH THE UI, do Home, Train and Progress agree?
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 void main() {
@@ -23,13 +25,20 @@ void main() {
     await tapLabel(t, RegExp("Legs and glutes, today's plan"));
     await t.pump(const Duration(seconds: 8));
     t.takeException();
-    print('store: today=${AppRouter.todayRepository.day.week.sessionsLogged}/'
-          '${AppRouter.todayRepository.day.week.sessionsTarget}  '
-          'progress=${AppRouter.progressStore.goal.sessionsTarget}');
-    for (final id in ['T01','R01','P01']) {
-      if (id == 'T01') { await boot(t, locale: const Locale('en')); }
-      else { await open(t, appDestinations[id]!.name, locale: const Locale('en')); }
-      final week = paintedText(t).where((e) => RegExp(r'of 3|of 4|week').hasMatch(e)).toList();
+    print(
+      'store: today=${AppRouter.todayRepository.day.week.sessionsLogged}/'
+      '${AppRouter.todayRepository.day.week.sessionsTarget}  '
+      'progress=${AppRouter.progressStore.goal.sessionsTarget}',
+    );
+    for (final id in ['T01', 'R01', 'P01']) {
+      if (id == 'T01') {
+        await boot(t, locale: const Locale('en'));
+      } else {
+        await open(t, appDestinations[id]!.name, locale: const Locale('en'));
+      }
+      final week = paintedText(t)
+          .where((e) => RegExp(r'of 3|of 4|week').hasMatch(e))
+          .toList();
       print('$id says: ${week.join(" | ")}');
     }
     s.dispose();

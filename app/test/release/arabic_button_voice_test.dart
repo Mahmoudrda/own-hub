@@ -1,9 +1,9 @@
 // R1-P24 and A7: the Arabic buttons speak in one voice.
 //
-// A button is either her own words in the first person ("أنا مدرِّبة، أريد
-// إعداد ملفي"), a neutral verbal noun ("الموافقة وإرسال الرمز"), or "let us"
-// ("يلا نبدأ"). None of them gives the app an order as if it were a woman
-// ("أدخليني", "أنشئي ملفي") or orders the team in the plural ("أرسلوا"). And an
+// A button is either her own words in the first person ("أنا مدرّبة، عايزة
+// أجهّز ملفي", "موافقة وعايزة الكود"), or "let us" ("يلا نبدأ"). None of them
+// gives the app an order as if it were a woman ("أدخليني", "أنشئي ملفي") or
+// orders the team in the plural ("أرسلوا"). And an
 // exercise is named for what the body does, not by a literal "dead insect".
 
 import 'dart:convert';
@@ -19,19 +19,18 @@ void main() {
   final ar = _arb('ar');
 
   test('the pledge button invites rather than orders the app', () {
-    expect(ar['iAgreeLetMeIn'], 'أوافق، لنبدأ');
+    expect(ar['iAgreeLetMeIn'], 'موافقة، يلا نبدأ');
   });
 
   test('the coach button is in her own words', () {
     expect(ar['imACoachSetUpMyProfile'], 'أنا مدرّبة، عايزة أجهّز ملفي');
   });
 
-  test('the number screen button is neutral, and the line quoting it agrees',
-      () {
-    expect(ar['agreeAndSendMeACode'], 'الموافقة وإرسال الرمز');
+  test('the number screen button is in her own words, and the line quoting it agrees', () {
+    expect(ar['agreeAndSendMeACode'], 'موافقة وعايزة الكود');
     expect(
       ar['byTappingAgreeAndSendMeA'] as String,
-      contains('«الموافقة وإرسال الرمز»'),
+      contains('«موافقة وعايزة الكود»'),
     );
   });
 

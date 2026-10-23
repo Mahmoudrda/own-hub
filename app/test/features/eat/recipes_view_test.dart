@@ -46,6 +46,26 @@ RecipesView _recipes({ValueChanged<String>? onOpenRecipe}) => RecipesView(
 );
 
 void main() {
+  testWidgets('a shipped build draws none of the prototype rows', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(
+      _host(
+        RecipesView(
+          showSamples: false,
+          onBack: () {},
+          onOpenWeekPlan: () {},
+          onSelectTab: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Koshari, portioned'), findsNothing);
+    expect(find.text('Cheap'), findsNothing);
+    expect(find.text('Nothing matches that'), findsNothing);
+  });
+
   testWidgets('the filters she thinks in', (tester) async {
     _phone(tester);
     await tester.pumpWidget(_host(_recipes()));
@@ -54,24 +74,22 @@ void main() {
     expect(find.text('High protein'), findsOneWidget);
     expect(find.text('Under 20 min'), findsOneWidget);
     expect(find.text('Cheap'), findsOneWidget);
-    expect(find.text('Ramadan'), findsOneWidget);
+    // No recipe carries a Ramadan tag, so the chip would select nothing and is
+    // not drawn.
+    expect(find.text('Ramadan'), findsNothing);
   });
 
-  testWidgets('every card carries its cost per serving in EGP', (tester) async {
+  testWidgets('every card carries time and protein, and no energy or cost', (
+    tester,
+  ) async {
     _phone(tester);
     await tester.pumpWidget(_host(_recipes()));
     await tester.pumpAndSettle();
 
     expect(find.text('Koshari, portioned'), findsOneWidget);
-    expect(
-      find.text('22 min · 540 kcal · 18 g protein · 14 EGP'),
-      findsOneWidget,
-    );
+    expect(find.text('22 min · 18 g protein'), findsOneWidget);
     expect(find.text('Ful with egg and cumin'), findsOneWidget);
-    expect(
-      find.text('10 min · 310 kcal · 19 g protein · 8 EGP'),
-      findsOneWidget,
-    );
+    expect(find.text('10 min · 19 g protein'), findsOneWidget);
     expect(find.text('Molokhia with chicken'), findsOneWidget);
     expect(find.text('Yoghurt, dates and nuts'), findsOneWidget);
   });

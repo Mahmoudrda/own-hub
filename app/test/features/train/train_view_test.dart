@@ -41,8 +41,10 @@ void main() {
       // Train and the parts this screen opens onto.
       Feature.train: true,
       Feature.workoutLibrary: true,
+      Feature.exerciseLibrary: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
+      Feature.program: true,
     }),
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);
@@ -141,24 +143,31 @@ void main() {
     expect(find.text('Strong at home'), findsOneWidget);
   });
 
-  testWidgets('short sessions sit above the library', (tester) async {
+  testWidgets('short sessions sit above Explore', (tester) async {
     // A ten-minute floor session is what gets done on a bad day, and it counts
-    // the same. If it ever falls below the library this ordering is broken.
+    // the same. If it ever falls below Explore this ordering is broken.
     await tester.pumpWidget(_host(const TrainView()));
     await tester.pumpAndSettle();
 
     final shortHeading = tester.getTopLeft(
       find.text('Short ones that still count'),
     );
-    final libraryHeading = tester.getTopLeft(find.text('All workouts'));
-    expect(shortHeading.dy, lessThan(libraryHeading.dy));
+    final exploreHeading = tester.getTopLeft(find.text('Explore'));
+    expect(shortHeading.dy, lessThan(exploreHeading.dy));
 
-    expect(find.text('Floor only'), findsOneWidget);
-    expect(find.text('Dumbbells'), findsOneWidget);
+    expect(find.text('10 min · Floor only'), findsOneWidget);
+    expect(find.text('20 min · Dumbbells'), findsOneWidget);
     // '124 videos' is gone: `WorkoutVideoRepository` states that the 124
     // titles do not exist yet, so the count sat above tiles that all draw the
     // unreleased placeholder.
     expect(find.text('124 videos'), findsNothing);
+  });
+
+  testWidgets('the kitten has a caption beside it', (tester) async {
+    await tester.pumpWidget(_host(const TrainView()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ready when you are.'), findsOneWidget);
   });
 
   testWidgets('the gentler option is offered, not buried', (tester) async {
@@ -186,15 +195,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('8 min'), findsOneWidget);
-    expect(find.text('Floor only'), findsNothing);
+    expect(find.text('8 min · Before work'), findsOneWidget);
+    expect(find.textContaining('Floor only'), findsNothing);
   });
 
   testWidgets('every way onward fires its own callback', (tester) async {
     var continued = 0;
     var programme = 0;
     var gentler = 0;
-    var searched = 0;
 
     await tester.pumpWidget(
       _host(
@@ -202,7 +210,6 @@ void main() {
           onContinue: () => continued++,
           onSeeProgram: () => programme++,
           onGentlerOption: () => gentler++,
-          onSearch: () => searched++,
         ),
       ),
     );
@@ -210,7 +217,6 @@ void main() {
 
     // Everything above the fold first: scrolling for the last row would move
     // these out from under the finger.
-    await tester.tap(find.byIcon(Icons.search));
     await tester.tap(find.text('Continue · from Sara'));
     await tester.tap(find.text('See the whole program'));
     await tester.pumpAndSettle();
@@ -225,7 +231,6 @@ void main() {
     expect(continued, 1);
     expect(programme, 1);
     expect(gentler, 1);
-    expect(searched, 1);
   });
 
   testWidgets('every string comes from the dictionary, in Arabic too', (

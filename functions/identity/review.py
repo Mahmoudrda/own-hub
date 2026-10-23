@@ -21,7 +21,7 @@ from __future__ import annotations
 import datetime as dt
 import time
 from dataclasses import dataclass
-from typing import Any, Optional, Protocol
+from typing import Any, Callable, Optional, Protocol
 
 from . import config, decisions, dedupe, nid, reasons
 
@@ -174,6 +174,10 @@ class ReviewStore(Protocol):
     def mark_mint_pending(self, flag_id: str) -> None: ...
 
     def clear_mint_pending(self, flag_id: str) -> None: ...
+
+    def clear_mint_pending_for(self, uid: str) -> None:
+        """Drop the mintPending mark from every flag of hers."""
+        ...
 
     def mint_pending_flags(self, limit: int) -> list[tuple[str, str]]:
         """(flag_id, uid) for APPROVED flags whose mint has not landed."""
@@ -522,11 +526,18 @@ def _mint_and_approve(store: ReviewStore, uid: str, attempts: Optional[int] = No
     return False
 
 
-def retry_pending_mints(store: ReviewStore, limit: int = 100) -> int:
+def retry_pending_mints(
+    store: ReviewStore,
+    limit: int = 100,
+    skip: Optional[Callable[[str], bool]] = None,
+) -> int:
     """The hourly job's half of the mint retry: finish every APPROVED flag
-    still marked mintPending, then clear the mark. Returns how many landed."""
+    still marked mintPending, then clear the mark. `skip(uid)` leaves out
+    anyone a reviewer has revoked since. Returns how many landed."""
     done = 0
     for flag_id, uid in store.mint_pending_flags(limit):
+        if uid and skip is not None and skip(uid):
+            continue
         if uid and _mint_and_approve(store, uid, attempts=1):
             store.clear_mint_pending(flag_id)
             done += 1

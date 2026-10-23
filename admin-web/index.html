@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>Own Hub reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <h1>Own Hub reviews</h1>
+    <button class="btn quiet" id="signout" type="button" hidden>Sign out</button>
+  </div>
+  <div class="tabs-wrap">
+  <button class="tabs-more prev" id="tabs-prev" type="button" aria-label="Show earlier sections" hidden>&lsaquo;</button>
+  <nav class="tabs" role="tablist" aria-label="Sections" id="tabs" hidden>
+    <button role="tab" id="tab-queue" aria-controls="panel-queue" aria-selected="true" type="button"><span>Verification</span><span class="tab-badge" id="badge-queue" hidden></span></button>
+    <button role="tab" id="tab-calendar" aria-controls="panel-calendar" aria-selected="false" tabindex="-1" type="button"><span>Calendar</span><span class="tab-badge" id="badge-calendar" hidden></span></button>
+    <button role="tab" id="tab-phones" aria-controls="panel-phones" aria-selected="false" tabindex="-1" type="button"><span>Pre-approved phones</span><span class="tab-badge" id="badge-phones" hidden></span></button>
+    <button role="tab" id="tab-exercises" aria-controls="panel-exercises" aria-selected="false" tabindex="-1" type="button"><span>Exercises</span><span class="tab-badge" id="badge-exercises" hidden></span></button>
+    <button role="tab" id="tab-events" aria-controls="panel-events" aria-selected="false" tabindex="-1" type="button"><span>Events</span><span class="tab-badge" id="badge-events" hidden></span></button>
+    <button role="tab" id="tab-foods" aria-controls="panel-foods" aria-selected="false" tabindex="-1" type="button"><span>Foods</span><span class="tab-badge" id="badge-foods" hidden></span></button>
+    <button role="tab" id="tab-coaches" aria-controls="panel-coaches" aria-selected="false" tabindex="-1" type="button" hidden><span>Coaches</span><span class="tab-badge" id="badge-coaches" hidden></span></button>
+    <button role="tab" id="tab-payments" aria-controls="panel-payments" aria-selected="false" tabindex="-1" type="button" hidden><span>Payments</span><span class="tab-badge" id="badge-payments" hidden></span></button>
+    <button role="tab" id="tab-refunds" aria-controls="panel-refunds" aria-selected="false" tabindex="-1" type="button" hidden><span>Refunds</span><span class="tab-badge" id="badge-refunds" hidden></span></button>
+    <button role="tab" id="tab-payouts" aria-controls="panel-payouts" aria-selected="false" tabindex="-1" type="button" hidden><span>Payouts</span><span class="tab-badge" id="badge-payouts" hidden></span></button>
+    <button role="tab" id="tab-reports" aria-controls="panel-reports" aria-selected="false" tabindex="-1" type="button" hidden><span>Reports</span><span class="tab-badge" id="badge-reports" hidden></span></button>
+    <button role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1" type="button"><span>Settings</span></button>
+  </nav>
+  <button class="tabs-more next" id="tabs-next" type="button" aria-label="Show more sections" hidden>&rsaquo;</button>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+  <div class="notice" id="notice" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <span id="notice-text"></span>
+    <button class="notice-close" id="notice-close" type="button" aria-label="Dismiss this message">&times;</button>
+  </div>
+
+  <section id="booting" class="booting">
+    <div id="booting-art" class="art"></div>
+    <p role="status">Checking your sign-in...</p>
+  </section>
+
+  <section id="login" class="card narrow" hidden>
+    <div id="login-art" class="art"></div>
+    <h2>Sign in</h2>
+    <p class="muted">Use the email and password the owner gave you.</p>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="btn primary wide" id="login-submit" type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <section id="panel-queue" role="tabpanel" aria-labelledby="tab-queue">
+      <div class="panel-head">
+        <h2 id="queue-title">Verification</h2>
+        <p class="about">Women waiting for a person to check their ID, oldest first. Decide on each one here.</p>
+        <p class="muted" id="queue-summary" aria-live="polite"></p>
+      </div>
+      <div class="filters">
+        <input id="search" type="search" placeholder="Search name or number" aria-label="Search by name or number" autocomplete="off">
+        <div class="chips" id="chips" role="group" aria-label="Show">
+          <button class="chip" type="button" data-status="pending" aria-pressed="true">Pending <span class="count"></span></button>
+          <button class="chip" type="button" data-status="scheduled" aria-pressed="false">Call booked <span class="count"></span></button>
+          <button class="chip" type="button" data-status="approved" aria-pressed="false">Approved <span class="count"></span></button>
+        </div>
+      </div>
+      <div class="bulk" id="bulk" hidden>
+        <label class="check"><input type="checkbox" id="select-all"> <span>Select all</span></label>
+        <button class="btn primary" id="approve-selected" type="button">Approve selected</button>
+      </div>
+      <ul class="list" id="list" aria-busy="false"></ul>
+      <div class="empty-state" id="empty" hidden></div>
+    </section>
+
+    <section id="panel-calendar" role="tabpanel" aria-labelledby="tab-calendar" hidden>
+      <div class="panel-head">
+        <h2>Calendar</h2>
+        <p class="about">The verification calls women booked with you, in Cairo time. Set the hours they can book below.</p>
+      </div>
+      <div class="filters">
+        <div class="chips" role="group" aria-label="View">
+          <button class="chip" type="button" data-view="day" aria-pressed="false">Day</button>
+          <button class="chip" type="button" data-view="week" aria-pressed="true">Week</button>
+        </div>
+        <div class="stepper">
+          <button class="btn" id="cal-prev" type="button" aria-label="Previous">&lsaquo;</button>
+          <strong id="cal-title" aria-live="polite"></strong>
+          <button class="btn" id="cal-next" type="button" aria-label="Next">&rsaquo;</button>
+          <button class="btn" id="cal-today" type="button">Today</button>
+        </div>
+      </div>
+      <div id="cal-days" class="days"></div>
+      <div class="card">
+        <h2>My availability</h2>
+        <p class="muted">Times are Cairo time. Members book inside these hours.</p>
+        <div id="avail"></div>
+        <div class="row">
+          <button class="btn" id="avail-add" type="button">Add hours</button>
+          <label class="inline">Slot length
+            <select id="slot-minutes">
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </label>
+          <button class="btn primary" id="avail-save" type="button">Save availability</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-phones" role="tabpanel" aria-labelledby="tab-phones" hidden>
+      <div class="card">
+        <h2>Pre-approved phones</h2>
+        <p class="about">Anyone who signs in with one of these numbers is approved at once. Paste numbers separated by commas or new lines.</p>
+        <label for="phones-input">Numbers to add</label>
+        <textarea id="phones-input" rows="4" placeholder="+201012345678, 01012345679"></textarea>
+        <p class="muted" id="phones-preview" aria-live="polite"></p>
+        <button class="btn primary" id="phones-add" type="button">Add numbers</button>
+      </div>
+      <ul class="list" id="phones-list"></ul>
+      <div class="empty-state" id="phones-empty" hidden></div>
+    </section>
+
+    <section id="panel-exercises" role="tabpanel" aria-labelledby="tab-exercises" hidden>
+      <div id="ex-overview" class="card overview">
+        <div class="overview-top">
+          <div class="overview-text">
+            <h2 id="ex-progress-text">Exercises</h2>
+            <p class="about">The moves members see in their workout plans. Review each one until its checklist is complete.</p>
+            <div class="meter" role="progressbar" id="ex-meter" aria-label="Exercises complete" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="ex-meter-fill"></span></div>
+            <p class="muted" id="ex-progress-sub"></p>
+          </div>
+          <div class="overview-actions">
+            <button class="btn primary big" id="ex-next" type="button">Next to review</button>
+            <button class="btn" id="ex-new" type="button">Add exercise</button>
+          </div>
+        </div>
+        <div class="filters">
+          <div class="chips" id="ex-filters" role="group" aria-label="Show">
+            <button class="chip" type="button" data-filter="tags" aria-pressed="false">Needs tags <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="video" aria-pressed="false">Needs video <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="complete" aria-pressed="false">Complete <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="all" aria-pressed="true">All <span class="count"></span></button>
+          </div>
+          <input type="search" id="ex-search" placeholder="Search by name or muscle" aria-label="Search exercises by name or muscle" autocomplete="off">
+        </div>
+      </div>
+      <div id="ex-form"></div>
+      <ul class="list" id="ex-list" aria-busy="false"></ul>
+      <div class="empty-state" id="ex-empty" hidden></div>
+    </section>
+
+    <section id="panel-events" role="tabpanel" aria-labelledby="tab-events" hidden>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>Events</h2>
+            <p class="about">Published events show to verified women, who can reserve a seat until it is full. A new event stays a draft until you publish it.</p>
+          </div>
+          <button class="btn primary" id="ev-new" type="button">Add event</button>
+        </div>
+        <div class="filters">
+          <div class="chips" id="ev-filters" role="group" aria-label="Show">
+            <button class="chip" type="button" data-filter="all" aria-pressed="true">All <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="draft" aria-pressed="false">Draft <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="published" aria-pressed="false">Published <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="cancelled" aria-pressed="false">Cancelled <span class="count"></span></button>
+          </div>
+          <input type="search" id="ev-search" placeholder="Search events" aria-label="Search events" autocomplete="off">
+        </div>
+      </div>
+      <div id="ev-form"></div>
+      <ul class="list" id="ev-list" aria-busy="false"></ul>
+      <div class="empty-state" id="ev-empty" hidden></div>
+    </section>
+
+    <section id="panel-foods" role="tabpanel" aria-labelledby="tab-foods" hidden>
+      <div class="card">
+        <h2>Foods from the meal check</h2>
+        <p class="about">Meals women confirmed and offered to everyone, most confirmed first. Approve one with names in both languages, a category and its allergens, and every member's phone picks it up within a day.</p>
+        <div class="filters">
+          <div class="chips" id="fd-filters" role="group" aria-label="Show">
+            <button class="chip" type="button" data-filter="waiting" aria-pressed="true">Waiting <span class="count"></span></button>
+            <button class="chip" type="button" data-filter="published" aria-pressed="false">Published <span class="count"></span></button>
+          </div>
+          <input type="search" id="fd-search" placeholder="Search foods" aria-label="Search foods" autocomplete="off">
+        </div>
+      </div>
+      <div id="fd-form"></div>
+      <ul class="list" id="fd-list" aria-busy="false"></ul>
+      <div class="empty-state" id="fd-empty" hidden></div>
+    </section>
+
+    <section id="panel-coaches" role="tabpanel" aria-labelledby="tab-coaches" hidden>
+      <div id="coaches-root"></div>
+    </section>
+
+    <section id="panel-payments" role="tabpanel" aria-labelledby="tab-payments" hidden>
+      <div id="payments-root"></div>
+    </section>
+
+    <section id="panel-refunds" role="tabpanel" aria-labelledby="tab-refunds" hidden>
+      <div id="refunds-root"></div>
+    </section>
+
+    <section id="panel-payouts" role="tabpanel" aria-labelledby="tab-payouts" hidden>
+      <div id="payouts-root"></div>
+    </section>
+
+    <section id="panel-reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
+      <div id="reports-root"></div>
+    </section>
+
+    <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <div class="card">
+        <h2>My settings</h2>
+        <p class="about">The first name members see when they pick who to book a call with.</p>
+        <label for="first-name">First name shown to members</label>
+        <input id="first-name" type="text" autocomplete="given-name" maxlength="40">
+        <label class="switch"><input type="checkbox" id="listed" role="switch"><span class="track"></span><span>List my first name for members</span></label>
+        <button class="btn primary" id="settings-save" type="button">Save settings</button>
+      </div>
+      <div id="coaching-settings" hidden></div>
+    </section>
+  </div>
+</main>
+
+<dialog id="dialog" aria-labelledby="dialog-title" aria-describedby="dialog-body">
+  <form method="dialog" id="dialog-form">
+    <h2 id="dialog-title"></h2>
+    <p id="dialog-body"></p>
+    <div class="actions" id="dialog-actions"></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span id="toast-text"></span>
+  <button class="btn undo" id="toast-undo" type="button">Undo</button>
+  <span class="bar-time" id="toast-bar"></span>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

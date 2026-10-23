@@ -46,23 +46,59 @@
 /// the point of the library being an interface.
 library;
 
+import '../../../app_state/community_foods_state.dart';
 import '../../../l10n/app_l10n.dart';
+import '../data/egyptian_food_pack.dart';
+import '../domain/custom_food.dart';
 import '../domain/food_library.dart';
 import '../domain/item_id.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
 
-/// The foods the Eat screens name, in her language.
-FoodLibrary eatSampleLibrary(AppL10n l10n) {
+/// The foods she typed in herself, as of the last change. Kept here so every
+/// screen that builds the library sees them without being handed the list.
+abstract final class EatCustomFoods {
+  static List<CustomFood> current = const <CustomFood>[];
+}
+
+/// The foods the Eat screens name, in her language: the hand-written samples
+/// first, then the bundled Egyptian dishes once they have loaded, then the
+/// foods other women shared and the owner approved, then the foods she typed
+/// in ([custom], or the ones last saved).
+FoodLibrary eatSampleLibrary(AppL10n l10n, {List<CustomFood>? custom}) {
   return FoodLibrary([
     Food(
       foodId: 'koshari_bowl',
       names: [l10n.koshariBowl, l10n.koshariBowlMedium, 'koshari'],
       popularity: 95,
       sizes: [
-        FoodSize(id: 'S', label: l10n.small, kcal: 380, proteinG: 13),
-        FoodSize(id: 'M', label: l10n.medium, kcal: 540, proteinG: 18),
-        FoodSize(id: 'L', label: l10n.large, kcal: 700, proteinG: 24),
+        FoodSize(
+          id: 'S',
+          label: l10n.small,
+          kcal: 380,
+          proteinG: 13,
+          carbsG: 55,
+          fatG: 10,
+          fiberG: 7,
+        ),
+        FoodSize(
+          id: 'M',
+          label: l10n.medium,
+          kcal: 540,
+          proteinG: 18,
+          carbsG: 91,
+          fatG: 17,
+          fiberG: 11,
+        ),
+        FoodSize(
+          id: 'L',
+          label: l10n.large,
+          kcal: 700,
+          proteinG: 24,
+          carbsG: 136,
+          fatG: 25,
+          fiberG: 17,
+        ),
       ],
     ),
     Food(
@@ -70,22 +106,66 @@ FoodLibrary eatSampleLibrary(AppL10n l10n) {
       names: [l10n.boiledEggs, l10n.twoBoiledEggs, 'eggs'],
       popularity: 88,
       sizes: [
-        FoodSize(id: '1', label: '1', kcal: 78, proteinG: 6),
-        FoodSize(id: '2', label: '2', kcal: 156, proteinG: 13),
-        FoodSize(id: '3', label: '3', kcal: 234, proteinG: 19),
+        FoodSize(
+          id: '1',
+          label: '1',
+          kcal: 78,
+          proteinG: 6,
+          carbsG: 1,
+          fatG: 5,
+          fiberG: 0,
+        ),
+        FoodSize(
+          id: '2',
+          label: '2',
+          kcal: 156,
+          proteinG: 13,
+          carbsG: 1,
+          fatG: 11,
+          fiberG: 0,
+        ),
+        FoodSize(
+          id: '3',
+          label: '3',
+          kcal: 234,
+          proteinG: 19,
+          carbsG: 2,
+          fatG: 16,
+          fiberG: 0,
+        ),
       ],
     ),
     Food(
       foodId: 'ful_baladi',
       names: [l10n.fulAndBaladi, 'ful'],
       popularity: 92,
-      sizes: [FoodSize(id: 'M', label: l10n.medium, kcal: 410, proteinG: 22)],
+      sizes: [
+        FoodSize(
+          id: 'M',
+          label: l10n.medium,
+          kcal: 410,
+          proteinG: 22,
+          carbsG: 40,
+          fatG: 6,
+          fiberG: 11,
+        ),
+      ],
     ),
     Food(
       foodId: 'molokhia_chicken',
       names: [l10n.molokhiaWithChicken, 'molokhia'],
       popularity: 80,
-      sizes: [FoodSize(id: 'M', label: l10n.medium, kcal: 460, proteinG: 34)],
+      sizes: [
+        FoodSize(
+          id: 'M',
+          label: l10n.medium,
+          kcal: 460,
+          proteinG: 34,
+          carbsG: 13,
+          fatG: 28,
+          fiberG: 3,
+        ),
+      ],
     ),
     Food(
       foodId: 'eggs_and_tea',
@@ -111,6 +191,21 @@ FoodLibrary eatSampleLibrary(AppL10n l10n) {
       popularity: 60,
       sizes: [FoodSize(id: 'M', label: l10n.medium, kcal: 600, proteinG: 21)],
     ),
+    ...EgyptianFoodPack.foods(l10n),
+    ...CommunityFoodsState.instance.foodsFor(
+      arabic: l10n.localeName.startsWith('ar'),
+    ),
+    for (final food in custom ?? EatCustomFoods.current) food.toFood(),
+  ]);
+}
+
+/// [base] with the foods she typed in added, skipping any it already holds.
+FoodLibrary withCustomFoods(FoodLibrary base, List<CustomFood> custom) {
+  if (custom.isEmpty) return base;
+  return FoodLibrary([
+    ...base.foods,
+    for (final food in custom)
+      if (base.byId(food.id) == null) food.toFood(),
   ]);
 }
 

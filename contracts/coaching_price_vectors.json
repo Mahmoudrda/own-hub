@@ -1,0 +1,30 @@
+{
+  "formula": "final = (coach * 115 + 50) // 100",
+  "coachMin": 200,
+  "coachMax": 30000,
+  "vectors": [
+    {"coach": 200, "final": 230},
+    {"coach": 201, "final": 231},
+    {"coach": 210, "final": 242},
+    {"coach": 250, "final": 288},
+    {"coach": 299, "final": 344},
+    {"coach": 333, "final": 383},
+    {"coach": 350, "final": 403},
+    {"coach": 499, "final": 574},
+    {"coach": 500, "final": 575},
+    {"coach": 750, "final": 863},
+    {"coach": 999, "final": 1149},
+    {"coach": 1000, "final": 1150},
+    {"coach": 1234, "final": 1419},
+    {"coach": 1499, "final": 1724},
+    {"coach": 1500, "final": 1725},
+    {"coach": 2010, "final": 2312},
+    {"coach": 2999, "final": 3449},
+    {"coach": 4321, "final": 4969},
+    {"coach": 9999, "final": 11499},
+    {"coach": 12345, "final": 14197},
+    {"coach": 29999, "final": 34499},
+    {"coach": 30000, "final": 34500}
+  ],
+  "refused": [0, 1, 199, 30001, -500]
+}

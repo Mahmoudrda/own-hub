@@ -61,50 +61,52 @@ PrescribedMove _move(String id, int order) => PrescribedMove(
   load: const PrescribedLoad.bodyweight(),
 );
 
-Split _fourDaySplit({bool carryApproved = true, String name = 'Upper / lower'}) =>
-    Split(
-      splitId: 's_1',
-      name: name,
-      cycleLength: 4,
-      ownerKind: SplitOwnerKind.coach,
-      carryApproved: carryApproved,
-      updatedAt: DateTime(2026, 9, 1),
-      daySlots: <SplitDaySlot>[
-        SplitDaySlot(
-          dayIndex: 1,
-          kind: DaySlotKind.session,
-          title: 'Full-body strength',
-          minutes: 35,
-          restBetweenSetsSec: 45,
-          moves: <PrescribedMove>[
-            _move('glute_bridge', 1),
-            _move('goblet_squat', 2),
-            _move('box_jump', 3),
-          ],
-          approvedAlternatives: const <ApprovedAlternative>[
-            ApprovedAlternative(
-              exerciseId: 'glute_bridge',
-              forExerciseId: 'goblet_squat',
-            ),
-          ],
-        ),
-        SplitDaySlot(
-          dayIndex: 2,
-          kind: DaySlotKind.session,
-          title: 'Upper body',
-          minutes: 20,
-          moves: <PrescribedMove>[_move('glute_bridge', 1)],
-        ),
-        SplitDaySlot.rest(dayIndex: 3),
-        SplitDaySlot(
-          dayIndex: 4,
-          kind: DaySlotKind.session,
-          title: 'Legs and glutes',
-          minutes: 30,
-          moves: <PrescribedMove>[_move('glute_bridge', 1)],
+Split _fourDaySplit({
+  bool carryApproved = true,
+  String name = 'Upper / lower',
+}) => Split(
+  splitId: 's_1',
+  name: name,
+  cycleLength: 4,
+  ownerKind: SplitOwnerKind.coach,
+  carryApproved: carryApproved,
+  updatedAt: DateTime(2026, 9, 1),
+  daySlots: <SplitDaySlot>[
+    SplitDaySlot(
+      dayIndex: 1,
+      kind: DaySlotKind.session,
+      title: 'Full-body strength',
+      minutes: 35,
+      restBetweenSetsSec: 45,
+      moves: <PrescribedMove>[
+        _move('glute_bridge', 1),
+        _move('goblet_squat', 2),
+        _move('box_jump', 3),
+      ],
+      approvedAlternatives: const <ApprovedAlternative>[
+        ApprovedAlternative(
+          exerciseId: 'glute_bridge',
+          forExerciseId: 'goblet_squat',
         ),
       ],
-    );
+    ),
+    SplitDaySlot(
+      dayIndex: 2,
+      kind: DaySlotKind.session,
+      title: 'Upper body',
+      minutes: 20,
+      moves: <PrescribedMove>[_move('glute_bridge', 1)],
+    ),
+    SplitDaySlot.rest(dayIndex: 3),
+    SplitDaySlot(
+      dayIndex: 4,
+      kind: DaySlotKind.session,
+      title: 'Legs and glutes',
+      minutes: 30,
+      moves: <PrescribedMove>[_move('glute_bridge', 1)],
+    ),
+  ],
+);
 
 ClientConstraints _constraints({
   Set<ContraindicationTag> avoid = const <ContraindicationTag>{},
@@ -161,40 +163,42 @@ void main() {
       }
     });
 
-    test('K19 lists newest-edited first, never by how many women are on it', () async {
-      final repo = InMemorySplitRepository(
-        splits: <Split>[
-          _fourDaySplit(name: 'Popular').withChanges(
-            updatedAt: DateTime(2026, 8, 1),
-          ),
-          Split(
-            splitId: 's_2',
-            name: 'Edited yesterday',
-            cycleLength: 3,
-            ownerKind: SplitOwnerKind.coach,
-            updatedAt: DateTime(2026, 9, 18),
-            daySlots: <SplitDaySlot>[
-              SplitDaySlot.rest(dayIndex: 1),
-              SplitDaySlot.rest(dayIndex: 2),
-              SplitDaySlot.rest(dayIndex: 3),
-            ],
-          ),
-        ],
-      );
-      // The popular one is applied to many women and still sorts second.
-      repo
-        ..serverIncrementAppliedCount('s_1')
-        ..serverIncrementAppliedCount('s_1')
-        ..serverIncrementAppliedCount('s_1');
+    test(
+      'K19 lists newest-edited first, never by how many women are on it',
+      () async {
+        final repo = InMemorySplitRepository(
+          splits: <Split>[
+            _fourDaySplit(name: 'Popular')
+                .withChanges(updatedAt: DateTime(2026, 8, 1)),
+            Split(
+              splitId: 's_2',
+              name: 'Edited yesterday',
+              cycleLength: 3,
+              ownerKind: SplitOwnerKind.coach,
+              updatedAt: DateTime(2026, 9, 18),
+              daySlots: <SplitDaySlot>[
+                SplitDaySlot.rest(dayIndex: 1),
+                SplitDaySlot.rest(dayIndex: 2),
+                SplitDaySlot.rest(dayIndex: 3),
+              ],
+            ),
+          ],
+        );
+        // The popular one is applied to many women and still sorts second.
+        repo
+          ..serverIncrementAppliedCount('s_1')
+          ..serverIncrementAppliedCount('s_1')
+          ..serverIncrementAppliedCount('s_1');
 
-      final listed = await repo.splits();
-      expect(listed.first.splitId, 's_2');
-      expect(
-        listed.last.appliedCount,
-        3,
-        reason: 'displayed on the card, and never a sort key',
-      );
-    });
+        final listed = await repo.splits();
+        expect(listed.first.splitId, 's_2');
+        expect(
+          listed.last.appliedCount,
+          3,
+          reason: 'displayed on the card, and never a sort key',
+        );
+      },
+    );
 
     test('a device may not move appliedCount', () async {
       final repo = InMemorySplitRepository(splits: <Split>[_fourDaySplit()]);
@@ -406,7 +410,10 @@ void main() {
         constraints: _constraints(),
         catalogue: _catalogue,
       );
-      expect(applied.days['2026-09-19']!.workout!.approvedAlternatives, isEmpty);
+      expect(
+        applied.days['2026-09-19']!.workout!.approvedAlternatives,
+        isEmpty,
+      );
     });
   });
 
@@ -531,7 +538,8 @@ void main() {
       expect(
         after.templateRef,
         'coaches/c1/splits/s_1',
-        reason: 'a dangling provenance string breaks nothing, because nothing '
+        reason:
+            'a dangling provenance string breaks nothing, because nothing '
             'reads it',
       );
     });

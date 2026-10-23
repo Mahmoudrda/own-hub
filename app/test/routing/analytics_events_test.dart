@@ -163,7 +163,11 @@ void main() {
     tester,
   ) async {
     await _open(tester, 'C01');
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Skip the tour and join'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create my account'));
     await tester.pumpAndSettle();
     expect(recording.last('signUpStarted'), {'source': 'welcome'});
   });
@@ -185,7 +189,7 @@ void main() {
       'C07 counts sign_up or login, by the phone, after the claim is read',
       () {
         final block = _builderBlock('C07');
-        final claim = block.indexOf('await readVerificationClaim();');
+        final claim = block.indexOf('await readAfterSignIn();');
         final track = block.indexOf('AnalyticsEvent.loggedIn');
         expect(claim, greaterThan(-1));
         expect(track, greaterThan(claim));
@@ -212,6 +216,12 @@ void main() {
     ) async {
       await _open(tester, 'C09b');
       expect(recording.names, isNot(contains('checkConsentGiven')));
+      // The disclosure has to be read to its end before agreeing is live.
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -5000),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('I agree, start the camera'));
       await tester.pumpAndSettle();
       expect(recording.names, contains('checkConsentGiven'));
@@ -302,6 +312,7 @@ void main() {
         'T01',
         'R01',
         'R03',
+        'R15',
         'E01',
         'E07',
         'P01',
@@ -381,8 +392,13 @@ void main() {
       expect(r07.indexOf("_trackSetLogged('move')"), greaterThan(move));
       final set = r07.indexOf('onSetLogged: (handle) {');
       expect(r07.indexOf("_trackSetLogged('set')"), greaterThan(set));
-      final r08 = _builderBlock('R08');
-      expect(r08, contains("_trackSetLogged('set')"));
+      // R08 builds its set screen in `_changeCurrentSet`.
+      expect(_builderBlock('R08'), contains('_changeCurrentSet(context)'));
+      final src = File('lib/routing/app_router.dart').readAsStringSync();
+      final from = src.indexOf('static Widget _changeCurrentSet(');
+      expect(from, greaterThan(-1));
+      final next = src.indexOf('\n  static ', from + 1);
+      expect(src.substring(from, next), contains("_trackSetLogged('set')"));
     });
 
     test('finishing early is counted only with moves left, before the '
@@ -461,7 +477,7 @@ void main() {
       expect(copy.indexOf('openExternalLink('), greaterThan(track));
     });
 
-    test('thirty-one events fire for the launch, and each has a call site', () {
+    test('thirty events fire for the launch, and each has a call site', () {
       final src = [
         for (final f in Directory('lib').listSync(recursive: true))
           if (f is File &&
@@ -483,7 +499,7 @@ void main() {
         for (final e in AnalyticsEvent.values)
           if (!dark.contains(e)) e,
       ];
-      expect(live, hasLength(31));
+      expect(live, hasLength(30));
       for (final e in live) {
         expect(
           src.contains('AnalyticsEvent.${e.name}'),

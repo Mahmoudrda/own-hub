@@ -84,12 +84,11 @@ class ClientConstraints {
 
   /// Everything the move filter must remove, with `none` excluded — a token
   /// that means "nothing to avoid" must never suppress the moves carrying it.
-  Set<ContraindicationTag> get blockedTags => Set.unmodifiable(<
-    ContraindicationTag
-  >{
-    for (final tag in <ContraindicationTag>{...?avoid, ...derivedAvoid})
-      if (tag.restricts) tag,
-  });
+  Set<ContraindicationTag> get blockedTags =>
+      Set.unmodifiable(<ContraindicationTag>{
+        for (final tag in <ContraindicationTag>{...?avoid, ...derivedAvoid})
+          if (tag.restricts) tag,
+      });
 
   @override
   String toString() =>

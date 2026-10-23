@@ -58,7 +58,7 @@ class DemoRefusals {
 Future<T> _neverCompletes<T>() => Completer<T>().future;
 
 /// Home's sample day: one session of three done, a walk to count, breakfast
-/// logged, and the cycle row on.
+/// logged. The cycle row is off: before sign-in the cycle is not named.
 ///
 /// The prototype's day ([InMemoryTodayRepository.defaultDay]) dated today,
 /// without its "Week 3 of 8": that programme does not exist, and the badge
@@ -74,7 +74,7 @@ TodayDay demoDay(DateTime now) {
     walkMinutes: prototype.walkMinutes,
     mealLoggedAt: prototype.mealLoggedAt,
     plates: prototype.plates,
-    showCycleCard: true,
+    showCycleCard: false,
   );
 }
 
@@ -183,6 +183,9 @@ class DemoMealRepository extends InMemoryMealRepository {
   @override
   Future<void> recordPlate(PlateObservation observation) async =>
       refusals.refuse();
+
+  @override
+  Future<void> savePrefs(EatPrefs prefs) async => refusals.refuse();
 
   @override
   Future<void> swapDinner({

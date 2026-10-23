@@ -8,7 +8,8 @@
 /// What it allows: the events in `lib/domain/analytics/analytics_gateway.dart`
 /// (which screens and steps she uses, from closed vocabularies, never her
 /// health, body, name, number or anything she typed) sent to Google Analytics
-/// for Firebase, which may process them outside Egypt. Advertising storage,
+/// for Firebase and PostHog (US), which process them outside Egypt.
+/// Version 2 deliberately requires fresh consent for the additional processor. Advertising storage,
 /// ad user data and ad personalisation are denied always; the advertising ID
 /// and IDFA are never collected (AndroidManifest.xml, Info.plist, Podfile).
 ///
@@ -20,14 +21,17 @@
 /// Info.plist) until `FirebaseBoot` applies her choice.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_boot.dart';
+import 'posthog_analytics.dart';
 
 /// The SharedPreferences key holding her choice. Cleared with everything else
 /// on the phone when she deletes her data.
-const String kAnalyticsAllowedKey = 'own_hub.analytics_allowed';
+const String kAnalyticsAllowedKey = 'own_hub.analytics_allowed_v2';
 
 /// The day she last opened the app while usage statistics were on, as
 /// `yyyy-mm-dd`, so a return after a quiet week can be counted. Only written
@@ -64,6 +68,7 @@ class AnalyticsConsent {
   Future<void> set(bool allowed) async {
     final was = _allowed;
     _allowed = allowed;
+    unawaited(PostHogAnalytics.instance.applyConsent(allowed));
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(kAnalyticsAllowedKey, allowed);
@@ -80,9 +85,11 @@ class AnalyticsConsent {
   /// everything on the phone.
   Future<void> erase() async {
     _allowed = false;
+    unawaited(PostHogAnalytics.instance.applyConsent(false));
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(kAnalyticsAllowedKey);
+      await prefs.remove('own_hub.analytics_allowed');
       await prefs.remove(kAnalyticsLastOpenKey);
     } catch (_) {}
     await FirebaseBoot.applyAnalyticsConsent(false);

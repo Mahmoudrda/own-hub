@@ -89,6 +89,10 @@ void main() {
         'DailyCapState(dayKey: dayKey, pointsToday: 30);',
         'final int currentRun;',
         'expect(decision.outcome, RepairOutcome.missed);',
+        // D37's training streak, by its own names: derived, never a stored
+        // counter, and allowed by decision.
+        'final StreakStatus status = const TrainingStreak().evaluate();',
+        'StreakSettings settings = StreakSettings.startingOn(today);',
       ]) {
         expect(
           banned.hasMatch(allowed),

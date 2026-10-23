@@ -30,6 +30,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_step_bar.dart';
+import '../../../ui/screen_art_strip.dart';
 
 class IntakeStepScaffold extends StatelessWidget {
   const IntakeStepScaffold({
@@ -79,9 +80,9 @@ class IntakeStepScaffold extends StatelessWidget {
 
   final VoidCallback? onContinue;
 
-  /// Leaves the question unanswered and moves on. The preselected default
-  /// stands, and nothing is written. Null draws no Skip: on a screen where
-  /// every answer is already chosen, Skip and Continue are the same button.
+  /// The Skip in the top bar: leaves setup with the preselected answers
+  /// standing. Null draws no Skip, and the X (if [onClose] is given) shows
+  /// instead.
   final VoidCallback? onSkip;
 
   final VoidCallback? onBack;
@@ -95,11 +96,31 @@ class IntakeStepScaffold extends StatelessWidget {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
+      // A setup question has no illustration strip and a tight stack, so the
+      // answers fit the screen at the normal text size. Larger text still
+      // wraps and scrolls.
+      showArt: false,
+      gap: 6,
       appBar: AppTopBar(
         title: titleOverride ?? l10n.countOfTotal('$step', '$total'),
         onBack: onBack,
         actions: [
-          if (onClose != null)
+          // Skip leaves with the answers already chosen. It replaces the X:
+          // both leave setup, and two ways out of one bar is one too many.
+          if (onSkip != null)
+            TextButton(
+              onPressed: onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                minimumSize: const Size(48, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: Text(
+                l10n.skip,
+                style: AppText.label.copyWith(fontWeight: FontWeight.w600),
+              ),
+            )
+          else if (onClose != null)
             IconButton(
               onPressed: onClose,
               iconSize: 24,
@@ -111,14 +132,6 @@ class IntakeStepScaffold extends StatelessWidget {
       ),
       footer: [
         AppButton(continueLabel ?? l10n.continueLabel, onPressed: onContinue),
-        if (onSkip != null)
-          AppButton(
-            l10n.skip,
-            variant: AppButtonVariant.text,
-            height: 44,
-            fontSize: 15,
-            onPressed: onSkip,
-          ),
       ],
       children: [
         AppStepBar(step: step, total: total),
@@ -127,16 +140,29 @@ class IntakeStepScaffold extends StatelessWidget {
             lead!,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
-        Text(
-          title,
-          style: AppText.display.copyWith(color: AppColors.onPrimaryContainer),
+        // The question, with one small drawing beside it. The drawing is
+        // small on purpose: the answers have to fit the screen.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: AppText.headline.copyWith(
+                  fontSize: 22,
+                  height: 1.25,
+                  color: AppColors.onPrimaryContainer,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const ScreenArtInline(size: 44),
+          ],
         ),
         Text(
           subtitle,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
-        // The prototype's 2px shim between the question and the answers.
-        const SizedBox(height: 2),
         ...children,
       ],
     );

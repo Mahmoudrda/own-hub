@@ -46,13 +46,35 @@ String _state(WidgetTester t) {
 /// Words that name something this release has switched off.
 const Map<String, List<String>> darkWords = <String, List<String>>{
   'en': <String>[
-    'coach', 'community', 'follower', 'assistant', 'earnings', 'payment',
-    'subscribe', 'verified', 'verification', 'reviewer', 'group chat',
-    'marketplace', 'premium', 'upgrade', 'pay ',
+    'coach',
+    'community',
+    'follower',
+    'assistant',
+    'earnings',
+    'payment',
+    'subscribe',
+    'verified',
+    'verification',
+    'reviewer',
+    'group chat',
+    'marketplace',
+    'premium',
+    'upgrade',
+    'pay ',
   ],
   'ar': <String>[
-    'مدرب', 'مدرّب', 'المجتمع', 'متابع', 'المساعد', 'الأرباح', 'ادفعي',
-    'اشتراك', 'موثّق', 'التحقق', 'مراجعة', 'السوق',
+    'مدرب',
+    'مدرّب',
+    'المجتمع',
+    'متابع',
+    'المساعد',
+    'الأرباح',
+    'ادفعي',
+    'اشتراك',
+    'موثّق',
+    'التحقق',
+    'مراجعة',
+    'السوق',
   ],
 };
 
@@ -85,21 +107,26 @@ void main() {
           }
         }
 
-        final count =
-            find.semantics.byAction(SemanticsAction.tap).evaluate().length;
+        final count = find.semantics
+            .byAction(SemanticsAction.tap)
+            .evaluate()
+            .length;
         log.writeln('$id\t—\tSCREEN\t$count tappable');
 
         for (var i = 0; i < count; i++) {
           await open(tester, route, locale: Locale(loc));
-          final nodes =
-              find.semantics.byAction(SemanticsAction.tap).evaluate().toList();
+          final nodes = find.semantics
+              .byAction(SemanticsAction.tap)
+              .evaluate()
+              .toList();
           if (i >= nodes.length) break;
           final node = nodes[i];
           final d = node.getSemanticsData();
-          final label = <String>[d.label, d.tooltip, d.hint]
-              .where((s) => s.trim().isNotEmpty)
-              .join(' / ')
-              .replaceAll('\n', ' ');
+          final label = <String>[
+            d.label,
+            d.tooltip,
+            d.hint,
+          ].where((s) => s.trim().isNotEmpty).join(' / ').replaceAll('\n', ' ');
           if (d.flagsCollection.isTextField) {
             log.writeln('$id\t$i\tFIELD\t$label');
             continue;
@@ -109,8 +136,9 @@ void main() {
           String outcome;
           taps++;
           try {
-            tester.semantics
-                .tap(find.semantics.byPredicate((n) => n.id == node.id));
+            tester.semantics.tap(
+              find.semantics.byPredicate((n) => n.id == node.id),
+            );
             await tester.pump();
             await settle(tester);
             final err = tester.takeException();
@@ -140,7 +168,8 @@ void main() {
           }
           await tester.pump(const Duration(seconds: 7));
           tester.takeException();
-          if (outcome.startsWith('EXCEPTION') || outcome.startsWith('NOT-BUILT')) {
+          if (outcome.startsWith('EXCEPTION') ||
+              outcome.startsWith('NOT-BUILT')) {
             hard.add('$id [$label] $outcome');
           }
           if (outcome == 'NO-VISIBLE-EFFECT') {

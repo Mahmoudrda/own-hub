@@ -112,10 +112,22 @@ Future<void> _sweep(WidgetTester t, Locale locale, double scale) async {
 void main() {
   useShippingApp();
 
-  testWidgets('en 1.0x below the fold', (t) => _sweep(t, const Locale('en'), 1.0));
-  testWidgets('ar 1.0x below the fold', (t) => _sweep(t, const Locale('ar'), 1.0));
-  testWidgets('en 1.6x below the fold', (t) => _sweep(t, const Locale('en'), 1.6));
-  testWidgets('ar 1.6x below the fold', (t) => _sweep(t, const Locale('ar'), 1.6));
+  testWidgets(
+    'en 1.0x below the fold',
+    (t) => _sweep(t, const Locale('en'), 1.0),
+  );
+  testWidgets(
+    'ar 1.0x below the fold',
+    (t) => _sweep(t, const Locale('ar'), 1.0),
+  );
+  testWidgets(
+    'en 1.6x below the fold',
+    (t) => _sweep(t, const Locale('en'), 1.6),
+  );
+  testWidgets(
+    'ar 1.6x below the fold',
+    (t) => _sweep(t, const Locale('ar'), 1.6),
+  );
 
   // Back out of a deep flow, one screen at a time.
   for (final loc in <String>['en', 'ar']) {
@@ -138,7 +150,9 @@ void main() {
         nav(t).pop();
         await settle(t);
         final err = t.takeException();
-        back.add(err == null ? topScreen(t) : 'THREW ${'$err'.split('\n').first}');
+        back.add(
+          err == null ? topScreen(t) : 'THREW ${'$err'.split('\n').first}',
+        );
       }
       print('  popped back: ${back.join(" -> ")}');
       expect(
@@ -170,8 +184,16 @@ void main() {
           (c) =>
               c.label.trim().isNotEmpty &&
               !<String>[
-                'Home', 'Train', 'Eat', 'Back', 'Close',
-                'الرئيسية', 'التمرين', 'الأكل', 'رجوع', 'إغلاق',
+                'Home',
+                'Train',
+                'Eat',
+                'Back',
+                'Close',
+                'الرئيسية',
+                'التمرين',
+                'الأكل',
+                'ارجعي',
+                'اقفلي',
               ].contains(c.label.trim()),
           orElse: () => controls.first,
         );
@@ -182,14 +204,18 @@ void main() {
         await tapControl(t, target.label);
         final secondErr = t.takeException();
         if (firstErr != null || secondErr != null) {
-          trouble.add('$id  "${target.label}"  '
-              'first=${firstErr == null ? "ok" : '$firstErr'.split('\n').first}  '
-              'second=${secondErr == null ? "ok" : '$secondErr'.split('\n').first}');
+          trouble.add(
+            '$id  "${target.label}"  '
+            'first=${firstErr == null ? "ok" : '$firstErr'.split('\n').first}  '
+            'second=${secondErr == null ? "ok" : '$secondErr'.split('\n').first}',
+          );
         }
       }
 
-      print('=== R3-12 $loc, double-tapped every screen: '
-          '${trouble.length} threw ===');
+      print(
+        '=== R3-12 $loc, double-tapped every screen: '
+        '${trouble.length} threw ===',
+      );
       for (final x in trouble) {
         print('  $x');
       }

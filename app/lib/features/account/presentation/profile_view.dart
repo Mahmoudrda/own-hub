@@ -42,6 +42,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/honest_notice.dart';
+import '../../../app_state/profile_photo_state.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -49,19 +51,21 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_avatar.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_chip_row.dart';
-import '../../../app_state/kitten_setting.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/sign_in_pill.dart';
 import '../../../ui/app_sheet.dart';
-import '../../../ui/app_toggle.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/profile_photo_crop.dart';
 import '../domain/dietary_profile.dart';
 import 'allergen_labels.dart';
 import '../domain/privacy_settings.dart';
 import '../domain/verification_claim.dart';
 import 'account_view_models.dart';
 import '../../../ui/medical_disclaimer.dart';
+
+enum _PhotoChoice { camera, gallery, remove }
 
 class ProfileView extends StatefulWidget {
   const ProfileView({
@@ -73,15 +77,19 @@ class ProfileView extends StatefulWidget {
     this.onBack,
     this.onOpenCycle,
     this.onOpenCoach,
+    this.onBecomeCoach,
+    this.onOpenCoachSpace,
     this.onOpenTraining,
     this.onOpenLanguage,
     this.onOpenNotifications,
     this.onOpenPrivacy,
     this.onOpenSafetyCentre,
     this.onOpenYourData,
+    this.onSignOut,
     this.onOpenAllScreens,
     this.onOpenAdmin,
     this.onSelectTab,
+    this.onSignIn,
   });
 
   /// G2's port. A02 renders the row; G2 owns the field.
@@ -97,6 +105,12 @@ class ProfileView extends StatefulWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenCycle;
   final VoidCallback? onOpenCoach;
+
+  /// "Coach women on Own Hub": the application. Null hides the row.
+  final VoidCallback? onBecomeCoach;
+
+  /// "My coach space", only for a woman who holds the coach claim.
+  final VoidCallback? onOpenCoachSpace;
 
   /// The four setup questions, reopened — `O01` to `O05`.
   ///
@@ -122,6 +136,10 @@ class ProfileView extends StatefulWidget {
   /// resolve the console at all.
   final VoidCallback? onOpenAdmin;
 
+  /// "Sign in or join", at the top of the page for a woman with no account.
+  /// Null for everyone else.
+  final VoidCallback? onSignIn;
+
   /// Account deletion.
   ///
   /// This was a callback with nothing behind it and a row that rendered anyway,
@@ -135,6 +153,11 @@ class ProfileView extends StatefulWidget {
   /// build and no export to hand her, and the sheet says so in plain words
   /// rather than showing a download button that would produce nothing.
   final VoidCallback? onOpenYourData;
+
+  /// Signs her out on this phone, after she confirms. Her account and
+  /// everything in it stays; she signs in again with her number. On a shared
+  /// phone the only way out used to be deleting everything.
+  final VoidCallback? onSignOut;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -165,6 +188,84 @@ class _ProfileViewState extends State<ProfileView> {
     );
     if (!mounted) return;
     setState(() => _dietary = merged);
+    // A safety setting is never changed in silence: what is hidden now.
+    showHonestNotice(
+      context,
+      allergiesSavedLabel(AppL10n.of(context), merged.allergies),
+    );
+  }
+
+  /// Add, change or remove the photo. Nothing changes unless she finishes.
+  Future<void> _editPhoto() async {
+    final l10n = AppL10n.of(context);
+    final photo = ProfilePhotoState.instance;
+    final choice = await showAppSheet<_PhotoChoice>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(
+          photo.hasPhoto ? l10n.changePhoto : l10n.addAPhoto,
+          style: AppText.titleL,
+        ),
+        Text(
+          l10n.yourPhotoIsKeptOnThisPhone,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        _photoOption(
+          icon: Icons.photo_camera_outlined,
+          title: l10n.takeAPhoto,
+          choice: _PhotoChoice.camera,
+        ),
+        _photoOption(
+          icon: Icons.photo_library_outlined,
+          title: l10n.chooseFromYourPhotos,
+          choice: _PhotoChoice.gallery,
+        ),
+        if (photo.hasPhoto)
+          _photoOption(
+            icon: Icons.delete_outline,
+            title: l10n.removePhoto,
+            choice: _PhotoChoice.remove,
+          ),
+      ],
+    );
+    if (choice == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (choice == _PhotoChoice.remove) {
+      await photo.remove();
+      showHonestNoticeOn(messenger, l10n.yourPhotoWasRemoved);
+      return;
+    }
+    final outcome = await photo.change(
+      choice == _PhotoChoice.camera ? PhotoSource.camera : PhotoSource.gallery,
+      crop: (picture) async =>
+          mounted ? showProfilePhotoCrop(context, picture) : null,
+    );
+    switch (outcome) {
+      case ProfilePhotoOutcome.saved:
+        showHonestNoticeOn(messenger, l10n.yourPhotoIsSet);
+      case ProfilePhotoOutcome.denied:
+        showHonestNoticeOn(messenger, l10n.ownHubCouldNotOpenTheCamera);
+      case ProfilePhotoOutcome.failed:
+        showHonestNoticeOn(messenger, l10n.thatPhotoCouldNotBeUsedPlease);
+      case ProfilePhotoOutcome.cancelled:
+        break;
+    }
+  }
+
+  Widget _photoOption({
+    required IconData icon,
+    required String title,
+    required _PhotoChoice choice,
+  }) {
+    return Builder(
+      builder: (sheet) => AppListItem(
+        leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+        title: title,
+        onTap: () => Navigator.of(sheet).pop(choice),
+      ),
+    );
   }
 
   /// Whether this build has a community at all. Several rows here describe
@@ -197,7 +298,21 @@ class _ProfileViewState extends State<ProfileView> {
       // three tabs live and none of them marked.
       footer: [AppNavBar(activeScreenId: 'A02', onSelect: widget.onSelectTab)],
       children: [
+        if (widget.onSignIn != null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: SignInPill(onTap: widget.onSignIn!),
+          ),
         _header(l10n, view),
+
+        // Her picture, kept on this phone only. Add, change and remove all
+        // happen in one sheet behind this row.
+        _row(
+          icon: Icons.photo_camera_outlined,
+          title: l10n.profilePhoto,
+          subtitle: l10n.yourPhotoIsKeptOnThisPhone,
+          onTap: _editPhoto,
+        ),
 
         // First, because it is the only row that changes what the app gives
         // her: her goal, her days a week, her minutes a session, her equipment
@@ -210,6 +325,17 @@ class _ProfileViewState extends State<ProfileView> {
             onTap: widget.onOpenTraining,
           ),
 
+        // The language chooser lives in the sign-up flow and is a setting all
+        // the same, which is why `AppRouter.ungatedScreens` keeps it
+        // reachable with sign-up dark. Without that this row was the one
+        // control in the product that could strand a woman in a language she
+        // does not read.
+        _row(
+          icon: Icons.language,
+          title: l10n.language,
+          subtitle: l10n.english_imxmn,
+          onTap: widget.onOpenLanguage,
+        ),
         _row(
           icon: Icons.self_improvement,
           title: l10n.myCycle,
@@ -224,6 +350,18 @@ class _ProfileViewState extends State<ProfileView> {
             title: l10n.myCoach,
             onTap: widget.onOpenCoach,
           ),
+        if (widget.onOpenCoachSpace != null)
+          _row(
+            icon: Icons.badge_outlined,
+            title: l10n.myCoachSpace,
+            onTap: widget.onOpenCoachSpace,
+          )
+        else if (widget.onBecomeCoach != null)
+          _row(
+            icon: Icons.volunteer_activism_outlined,
+            title: l10n.coachWomenOnOwnHub,
+            onTap: widget.onBecomeCoach,
+          ),
 
         // D3's row. The one the Eat safety guard has been waiting for.
         _row(
@@ -233,70 +371,21 @@ class _ProfileViewState extends State<ProfileView> {
           onTap: _editDietary,
         ),
 
-        // The language chooser lives in the sign-up flow and is a setting all
-        // the same, which is why `AppRouter.ungatedScreens` keeps it
-        // reachable with sign-up dark. Without that this row was the one
-        // control in the product that could strand a woman in a language she
-        // does not read.
-        _row(
-          icon: Icons.language,
-          title: l10n.language,
-          subtitle: l10n.english_imxmn,
-          onTap: widget.onOpenLanguage,
-        ),
         _row(
           icon: Icons.notifications_none,
           title: l10n.notifications,
           // True only while her notification settings ARE the defaults this
           // sentence describes. Otherwise it is a statement about somebody
           // else's quiet hours.
-          subtitle: view.notifyIsDefault ? l10n.oneADayQuiet10pmTo8am : '',
+          subtitle: view.notifyIsDefault ? l10n.onceADayQuiet10pmTo8am : '',
           onTap: widget.onOpenNotifications,
         ),
-        // The kitten that guides her through onboarding. Off, it is still
-        // there but never moves.
-        AppListItem(
-          leading: const Icon(
-            Icons.pets_outlined,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.movingKitten,
-          subtitle: KittenSetting.instance.moves
-              ? l10n.theKittenShowsYouAroundAndMoves
-              : l10n.theKittenStaysStill,
-          trailing: AppToggle(
-            key: const ValueKey('kitten-moves-toggle'),
-            value: KittenSetting.instance.moves,
-            semanticLabel: l10n.movingKitten,
-            onChanged: _setKittenMoves,
-          ),
-          onTap: () => _setKittenMoves(!KittenSetting.instance.moves),
-        ),
+        // Privacy, the Safety Centre and Your data, one row to open and a
+        // short list behind it.
         _row(
           icon: Icons.lock_outline,
-          title: l10n.privacy,
-          // "Who sees your profile and wins" describes a profile other women
-          // read. With the community dark nobody sees either, so the row
-          // carries no subtitle rather than a promise about a room that is
-          // not open.
-          subtitle: _community ? l10n.whoSeesYourProfileAndWins : '',
-          onTap: widget.onOpenPrivacy,
-        ),
-        _row(
-          icon: Icons.shield_outlined,
-          title: l10n.safetyCentre,
-          // Same rule: reports and blocked members are about members. What is
-          // left on A04 with the community off is the help route and the
-          // emergency line, which are worth keeping and are not a list.
-          subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
-          onTap: widget.onOpenSafetyCentre,
-        ),
-        _row(
-          icon: Icons.delete_outline,
-          title: l10n.yourData,
-          subtitle: l10n.deleteYourAccountAndEverythingInIt,
-          onTap: widget.onOpenYourData,
+          title: l10n.privacyAndData,
+          onTap: _openPrivacyAndData,
         ),
         if (widget.onOpenAdmin != null)
           _row(
@@ -357,9 +446,104 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  void _setKittenMoves(bool moves) {
-    unawaited(KittenSetting.instance.set(moves));
-    setState(() {});
+  /// The three privacy rows, behind one. Each closes the sheet and then opens
+  /// its screen, so back from that screen lands on My profile.
+  Future<void> _openPrivacyAndData() async {
+    final l10n = AppL10n.of(context);
+    final open = await showAppSheet<VoidCallback>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(l10n.privacyAndData, style: AppText.titleL),
+        _sheetRow(
+          icon: Icons.lock_outline,
+          title: l10n.privacy,
+          // "Who sees your profile and wins" describes a profile other women
+          // read. With the community dark nobody sees either, so the row
+          // carries no subtitle rather than a promise about a room that is
+          // not open.
+          subtitle: _community ? l10n.whoSeesYourProfileAndWins : '',
+          onOpen: widget.onOpenPrivacy,
+        ),
+        _sheetRow(
+          icon: Icons.shield_outlined,
+          title: l10n.safetyCentre,
+          // Same rule: reports and blocked members are about members. What is
+          // left on A04 with the community off is the help route and the
+          // emergency line, which are worth keeping and are not a list.
+          subtitle: _community ? l10n.reportsBlockedMembersHelp : '',
+          onOpen: widget.onOpenSafetyCentre,
+        ),
+        if (widget.onSignOut != null)
+          _sheetRow(
+            icon: Icons.logout,
+            title: l10n.signOut,
+            subtitle: '',
+            onOpen: _confirmSignOut,
+          ),
+        _sheetRow(
+          icon: Icons.delete_outline,
+          title: l10n.yourData,
+          subtitle: l10n.deleteYourAccountAndEverythingInIt,
+          onOpen: widget.onOpenYourData,
+        ),
+      ],
+    );
+    if (open == null || !mounted) return;
+    open();
+  }
+
+  /// Asks before signing out, and says what stays. Staying is the filled
+  /// answer: nothing is lost by tapping it by mistake.
+  Future<void> _confirmSignOut() async {
+    final signOut = widget.onSignOut;
+    if (signOut == null) return;
+    final l10n = AppL10n.of(context);
+    final confirmed = await showAppSheet<bool>(
+      context: context,
+      children: [
+        Text(l10n.signOutOnThisPhone, style: AppText.titleL),
+        Text(
+          l10n.yourAccountAndEverythingInItStays,
+          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        AppButton(
+          l10n.staySignedIn,
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        AppButton(
+          l10n.signOut,
+          key: const ValueKey('a02-sign-out'),
+          variant: AppButtonVariant.outlined,
+          height: 48,
+          fontSize: 15,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true || !mounted) return;
+    signOut();
+  }
+
+  Widget _sheetRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback? onOpen,
+  }) {
+    return Builder(
+      builder: (sheet) => AppListItem(
+        leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+        title: title,
+        subtitle: subtitle,
+        trailing: const Icon(
+          Icons.chevron_right,
+          size: 22,
+          color: AppColors.onSurfaceVariant,
+        ),
+        onTap: onOpen == null ? null : () => Navigator.of(sheet).pop(onOpen),
+      ),
+    );
   }
 
   Widget _row({

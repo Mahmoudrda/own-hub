@@ -20,6 +20,9 @@ abstract final class LegalLinks {
   /// `https://…/terms`
   static const String terms = 'https://own-hub.app/terms';
 
+  /// `https://…/coach-terms`, the terms a coach accepts when she applies.
+  static const String coachTerms = 'https://own-hub.app/coach-terms';
+
   /// `https://…/support`
   static const String support = 'https://own-hub.app/support';
 

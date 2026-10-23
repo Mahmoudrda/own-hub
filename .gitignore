@@ -9,6 +9,7 @@ app/ios/Flutter/Flutter.framework
 app/ios/Flutter/Flutter.podspec
 app/ios/Flutter/ephemeral/
 app/android/.gradle/
+app/android/.kotlin/
 app/android/local.properties
 app/android/app/build/
 app/web/build/
@@ -93,3 +94,17 @@ functions/venv
 # AI review working files
 .ai-review/
 !.github/review-kit/**
+.wrangler/
+.claude/launch-pass.lock
+
+# Classifier reports (owner tool output)
+functions/tools/out/
+
+# Reviewer dashboard live config (copy of config.example.js with real values)
+admin-web/config.js
+
+# Firebase CLI hosting cache
+.firebase/
+
+# Tool venv for the meal image generator
+app/tool/.venv/

@@ -217,6 +217,10 @@ REVIEW_NOT_PENDING = "review_not_pending"
 REVIEW_TIME_OUT_OF_RANGE = "review_time_out_of_range"
 """A reviewer tried to book a live review further ahead than
 config.REVIEW_BOOKING_MAX_DAYS. Reviewer-facing only."""
+REVIEW_REVOKED = "review_revoked"
+"""A reviewer took an approval back (the undo); the case is open again."""
+SLOT_UNAVAILABLE = "slot_unavailable"
+"""The slot is taken, outside the reviewer's availability, or out of range."""
 VERIFICATION_IN_PROGRESS = "verification_in_progress"
 """She asked for a woman reviewer while her automatic check was still running.
 Nothing is opened: the running check decides first, and a reviewer request
@@ -227,6 +231,28 @@ REVIEW_CONSENT_MISSING = "review_consent_missing"
 (users/{uid}/consents/review-v{REVIEW_CONSENT_VERSION} does not exist). A
 machine-raised flag has no consent until she taps "Ask for the call".
 Reviewer-facing only."""
+
+# ---------------------------------------------------------- meal photos
+# analyze_meal_photo's refusals. Each is the whole message the app maps to its
+# own words; none says anything about her.
+
+MEAL_SCAN_DAILY_LIMIT = "meal_scan_daily_limit"
+"""Her own scans for today are used up (nutrition.config.MEAL_SCANS_PER_UID_PER_DAY)."""
+MEAL_SCANS_PAUSED = "meal_scans_paused"
+"""The app-wide daily cost cap is reached; scans resume tomorrow."""
+NO_FOOD_SEEN = "no_food_seen"
+"""The model saw no food or drink in the photo."""
+MEAL_UNCLEAR = "meal_unclear"
+"""The model answered, but not with anything usable: malformed or cut-off
+JSON, or no entry with a name and a sensible weight."""
+MEAL_SERVICE_UNAVAILABLE = "meal_service_unavailable"
+"""The model could not be reached or failed. Her scan is not counted."""
+
+COMMUNITY_FOOD_INVALID = "community_food_invalid"
+"""submit_community_food: the name, items, grams or macros are outside what a
+meal can be, or the energy does not add up from the macros."""
+COMMUNITY_FOOD_DAILY_LIMIT = "community_food_daily_limit"
+"""She has offered the most foods allowed for one UTC day."""
 
 
 # ------------------------------------------------- what crosses the wire
@@ -322,3 +348,6 @@ Belt and braces against exactly one thing: somebody, one day, under deadline,
 passing an f-string into a reasons list and putting a sentence about a woman
 into a document support staff can read.
 """
+NOT_VERIFIED = "not_verified"
+"""A member-only callable was asked by an account that has not passed the
+women-only check. Meal scans spend money, so only verified members reach them."""

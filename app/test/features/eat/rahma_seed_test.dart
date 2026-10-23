@@ -27,8 +27,7 @@ import 'package:own_hub/ui/hand/food_marks.dart';
 late RecipeBook _book;
 late Map<String, Object?> _raw;
 
-Recipe _recipe(String id) =>
-    _book.recipes.firstWhere((r) => r.recipeId == id);
+Recipe _recipe(String id) => _book.recipes.firstWhere((r) => r.recipeId == id);
 
 void main() {
   setUpAll(() {
@@ -46,20 +45,36 @@ void main() {
   });
 
   group('the book is the book', () {
-    test('thirty-nine recipes, all of them hers', () {
+    test('thirty-nine of hers and eleven of Own Hub\'s kitchen', () {
       // 41 cards are printed; pages 20 and 21 are the same two recipes with one
       // illustration moved, which is a production error in the book.
-      expect(_book.recipes, hasLength(39));
-      for (final recipe in _book.recipes) {
-        expect(recipe.source, RecipeSource.book, reason: recipe.recipeId);
+      final hers = _book.recipes.where((r) => r.source == RecipeSource.book);
+      expect(hers, hasLength(39));
+      // The eleven are not hers and are never drawn as hers: authored by Own
+      // Hub's kitchen, published on the automated check alone, signed by
+      // nobody.
+      final ours = _book.recipes
+          .where((r) => r.source == RecipeSource.authored)
+          .toList();
+      expect(ours, hasLength(11));
+      for (final recipe in ours) {
+        expect(recipe.isOwnHub, isTrue, reason: recipe.recipeId);
+        expect(recipe.authoredBy, kOwnHubKitchen, reason: recipe.recipeId);
+        expect(recipe.recipeId, startsWith('ownhub_'));
+        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
+        expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+        expect(recipe.verifiedLabel, 'Checked by Own Hub');
+        // The check is a script, never a person: no name, ever.
+        expect(recipe.allergenReviewedBy, isNull, reason: recipe.recipeId);
+        expect(recipe.allergenReviewedAt, isNull, reason: recipe.recipeId);
+        expect(recipe.cookedBy, isNull, reason: recipe.recipeId);
+        expect(recipe.cookedAt, isNull, reason: recipe.recipeId);
       }
+      expect(_book.recipes, hasLength(50));
     });
 
     test('no recipe claims page 21, because page 21 is page 20 again', () {
-      expect(
-        _book.recipes.map((r) => r.sourcePage),
-        isNot(contains(21)),
-      );
+      expect(_book.recipes.map((r) => r.sourcePage), isNot(contains(21)));
     });
 
     test('four sections, character for character', () {
@@ -77,6 +92,18 @@ void main() {
         'WOW I am eating junky healthy food',
         'Eating light to sleep comfy girlie',
       ]);
+    });
+
+    test('every section line and every title also reads in Egyptian Arabic', () {
+      // Her English stays as the book's own title; the Arabic sits under it on
+      // the card and replaces the PS line when the app is in Arabic.
+      for (final section in _book.sections) {
+        expect(section.psLineAr, isNotEmpty, reason: section.sectionId);
+      }
+      for (final recipe in _book.recipes) {
+        expect(recipe.titleAr, isNotEmpty, reason: recipe.recipeId);
+        expect(recipe.titleAr, isNot(contains('—')), reason: recipe.recipeId);
+      }
     });
 
     test('her titles are hers, arabizi and all', () {
@@ -113,9 +140,10 @@ void main() {
         contains('light_tahina'),
       );
       expect(
-        _book.byId('rahma_makrona_bashmel')!.components.map(
-          (c) => c.componentId,
-        ),
+        _book
+            .byId('rahma_makrona_bashmel')!
+            .components
+            .map((c) => c.componentId),
         containsAll(<String>['bechamel', 'mince']),
       );
     });
@@ -143,8 +171,7 @@ void main() {
       expect(_book.letterAr, isNot(contains('عندكوحبي')));
     });
 
-    test('the words that only LOOK glued are left exactly as she wrote them', ()
-    {
+    test('the words that only LOOK glued are left exactly as she wrote them', () {
       // The other half of the rule above, and the more important half. `الفرنمن`
       // and `ونصمعلقة` are single word objects sitting mid-line with normal
       // gaps on both sides of them, so they are hers, in the same class as her
@@ -195,7 +222,10 @@ void main() {
           for (final c in recipe.components) ...c.steps,
           for (final v in recipe.variants) ...v.steps,
         ]) {
-          if (!recipe.bodyAr.contains(step.textAr)) {
+          // The printed page wrapped her lines, and a step joins those soft
+          // breaks, so the slice is compared with whitespace collapsed.
+          String flat(String t) => t.replaceAll(RegExp(r'\s+'), ' ');
+          if (!flat(recipe.bodyAr).contains(flat(step.textAr))) {
             offenders.add('${recipe.recipeId} step ${step.index}');
           }
         }
@@ -205,7 +235,9 @@ void main() {
 
     test('every quantity phrase is a verbatim slice too', () {
       final offenders = <String>[];
-      for (final recipe in _book.recipes) {
+      for (final recipe in _book.recipes.where(
+        (r) => r.source == RecipeSource.book,
+      )) {
         for (final ingredient in recipe.ingredients) {
           if (!recipe.bodyAr.contains(ingredient.qtyTextAr)) {
             offenders.add('${recipe.recipeId}: ${ingredient.qtyTextAr}');
@@ -218,12 +250,22 @@ void main() {
     test('every recipe has something to cook from', () {
       // A card that produced no steps at all would mean the splitter silently
       // dropped it, and the screen would show a title over nothing.
+      //
+      // Two cards are the exception, and the only two: the book prints them as a
+      // list of what goes in and nothing else. Their ingredient lines were
+      // steps, which is how step 1 of a card came to repeat ingredient 1; they
+      // are ingredients now and the card has no method to split.
+      const listOnly = {'rahma_simple_oat_meal', 'rahma_cottage_freshy_salad'};
       for (final recipe in _book.recipes) {
-        expect(
-          recipe.allSteps,
-          isNotEmpty,
-          reason: '${recipe.recipeId} has no steps in any block',
-        );
+        if (listOnly.contains(recipe.recipeId)) {
+          expect(recipe.allSteps, isEmpty, reason: recipe.recipeId);
+        } else {
+          expect(
+            recipe.allSteps,
+            isNotEmpty,
+            reason: '${recipe.recipeId} has no steps in any block',
+          );
+        }
         expect(recipe.ingredients, isNotEmpty, reason: recipe.recipeId);
       }
     });
@@ -260,16 +302,57 @@ void main() {
       // A row now carries the line break and closes up on screen, so the rule
       // this asserts is simply: every row names something, not just an amount.
       const measures = {
-        'معلقه', 'معلقة', 'معالق', 'معلقتين', 'كوباية', 'كوبايتين', 'كيس',
-        'كيسين', 'رشة', 'رشه', 'حبة', 'حبه', 'نص', 'تلت', 'ربع', 'علبة',
-        'علبه', 'شريحة', 'شريحه', 'شرايح', 'قطعة', 'قطعتين', 'نقطة', 'نقطتين',
-        'مسحة', 'فص', 'فصين', 'اتنين', 'خمس', 'واحدة', 'واحد', 'كيلو', 'كيلة',
-        'جرام', 'جم', 'مل', 'صغيرين', 'صغيرة', 'صغيره', 'كبار', 'كبيره',
-        'كبيرة', 'و', 'من', 'او', 'أو',
+        'معلقه',
+        'معلقة',
+        'معالق',
+        'معلقتين',
+        'كوباية',
+        'كوبايتين',
+        'كيس',
+        'كيسين',
+        'رشة',
+        'رشه',
+        'حبة',
+        'حبه',
+        'نص',
+        'تلت',
+        'ربع',
+        'علبة',
+        'علبه',
+        'شريحة',
+        'شريحه',
+        'شرايح',
+        'قطعة',
+        'قطعتين',
+        'نقطة',
+        'نقطتين',
+        'مسحة',
+        'فص',
+        'فصين',
+        'اتنين',
+        'خمس',
+        'واحدة',
+        'واحد',
+        'كيلو',
+        'كيلة',
+        'جرام',
+        'جم',
+        'مل',
+        'صغيرين',
+        'صغيرة',
+        'صغيره',
+        'كبار',
+        'كبيره',
+        'كبيرة',
+        'و',
+        'من',
+        'او',
+        'أو',
       };
       final number = RegExp(r'^[\d½¼/\-]+$');
-      String bare(String word) =>
-          word.replaceAll(RegExp(r'^[وب]'), '').replaceAll(RegExp(r'[،.()+]'), '');
+      String bare(String word) => word
+          .replaceAll(RegExp(r'^[وب]'), '')
+          .replaceAll(RegExp(r'[،.()+]'), '');
 
       final offenders = <String>[];
       for (final recipe in _book.recipes) {
@@ -342,20 +425,23 @@ void main() {
       }
       // Everything else does give measures, and must not be quietly demoted.
       final stated = _book.recipes.where(
-        (r) => r.ingredientsBasis == IngredientsBasis.measures,
+        (r) =>
+            r.source == RecipeSource.book &&
+            r.ingredientsBasis == IngredientsBasis.measures,
       );
       expect(stated, hasLength(33));
 
-      // The method-only card keeps her serving line, which the page does print,
-      // and nothing else.
+      // The method-only card keeps her serving line, which the page does print.
+      // The nouns of its method (the meat, the oil, the vegetables) are rows
+      // too, with our assumed weights, so its figures rest on named rows; the
+      // screen draws none of them but the serving line, because the card
+      // says it has no list. Every one of them says its weight is ours.
       final lahma = _recipe('rahma_lahma_bel_basl');
-      expect(lahma.ingredients, hasLength(1));
-      expect(lahma.ingredients.single.servingSideOnly, isTrue);
-      expect(
-        lahma.ingredients.single.qtyLine,
-        isNot(anyOf(contains('اللحمة'), contains('الزيت'), contains('البصل'))),
-        reason: 'the bare nouns from the steps are not an ingredient list',
-      );
+      expect(lahma.ingredients.where((i) => i.servingSideOnly), hasLength(1));
+      for (final row in lahma.ingredients.where((i) => !i.servingSideOnly)) {
+        expect(row.gramsBasis, GramsBasis.estimated, reason: row.qtyLine);
+        expect(row.gramsNote, isNotEmpty, reason: row.qtyLine);
+      }
     });
 
     test('no en dash or em dash reaches a woman', () {
@@ -382,13 +468,18 @@ void main() {
       // Vacuous on today's seed, in the same deliberate way as the publication
       // gates below it.
       for (final recipe in _book.recipes) {
-        expect(recipe.status, isNot(RecipeStatus.draft), reason: recipe.recipeId);
+        expect(
+          recipe.status,
+          isNot(RecipeStatus.draft),
+          reason: recipe.recipeId,
+        );
       }
       final withDraft = RecipeBook.fromJson({
         'recipes': [
           ...(_raw['recipes']! as List),
           {
-            ...((_raw['recipes']! as List).first as Map).cast<String, Object?>(),
+            ...((_raw['recipes']! as List).first as Map)
+                .cast<String, Object?>(),
             'recipeId': 'half_written',
             'status': 'draft',
           },
@@ -400,19 +491,29 @@ void main() {
       expect(withDraft.recipes, hasLength(_book.recipes.length));
     });
 
-    test('nothing is published until two people have signed it', () {
-      // Vacuously true today and deliberately so: `allergenReviewedBy` has to be
-      // a person, and it must not be the person who authored the row. Writing a
-      // name into that field to make a recipe visible would be forging a
-      // signature on an allergen check.
+    test('nothing is published without a signature or the automated check', () {
+      // `allergenReviewedBy` has to be a person, and it must not be the person
+      // who authored the row. Writing a name into that field to make a recipe
+      // visible would be forging a signature on an allergen check, so a recipe
+      // nobody signed is published on the automated check or not at all.
       for (final recipe in _book.recipes) {
         if (recipe.status != RecipeStatus.published) continue;
-        expect(recipe.allergenReviewedBy, isNotNull, reason: recipe.recipeId);
         expect(
-          recipe.allergenReviewedBy,
-          isNot(recipe.authoredBy),
-          reason: '${recipe.recipeId}: one person cannot review their own work',
+          recipe.allergensKnown,
+          isTrue,
+          reason: '${recipe.recipeId}: neither signed nor auto-checked',
         );
+        if (recipe.allergensReviewed) {
+          expect(
+            recipe.allergenReviewedBy,
+            isNot(recipe.authoredBy),
+            reason:
+                '${recipe.recipeId}: one person cannot review their own work',
+          );
+        } else {
+          expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+          expect(recipe.cookedBy, isNull, reason: recipe.recipeId);
+        }
         for (final ingredient in recipe.ingredients) {
           expect(
             ingredient.foodId,
@@ -477,9 +578,8 @@ void main() {
 
     test('the final set is derived, extended, then reduced by reasons', () {
       for (final recipe in _book.recipes) {
-        final expected =
-            {...recipe.allergensDerived, ...recipe.allergensExtra}
-              ..removeAll(recipe.allergensRemoved.keys);
+        final expected = {...recipe.allergensDerived, ...recipe.allergensExtra}
+          ..removeAll(recipe.allergensRemoved.keys);
         expect(recipe.allergensFinal, expected, reason: recipe.recipeId);
       }
     });
@@ -506,15 +606,28 @@ void main() {
       // from the dictionary, so it reads as the app being careful rather than as
       // Rahma being lovely.
       const risky = {
-        'rahma_chicken_pizza', 'rahma_bbq_burger', 'rahma_hwawshi',
-        'rahma_chicken_lemon', 'rahma_chicken_ranch_salad',
-        'rahma_shrimp_white_pasta', 'rahma_oven_tender_chicken',
-        'rahma_buffalo_sweet_wings', 'rahma_makrona_bashmel',
-        'rahma_kebda_meal', 'rahma_fattah', 'rahma_btates_bel_lahma',
-        'rahma_shakshoka', 'rahma_potato_w_eggs', 'rahma_egg_pizza',
-        'rahma_yummy_egg_sandwich', 'rahma_creamy_cottage_cheese',
-        'rahma_pancakes', 'rahma_crepe', 'rahma_french_toast',
-        'rahma_lazy_cake', 'rahma_bagel',
+        'rahma_chicken_pizza',
+        'rahma_bbq_burger',
+        'rahma_hwawshi',
+        'rahma_chicken_lemon',
+        'rahma_chicken_ranch_salad',
+        'rahma_shrimp_white_pasta',
+        'rahma_oven_tender_chicken',
+        'rahma_buffalo_sweet_wings',
+        'rahma_makrona_bashmel',
+        'rahma_kebda_meal',
+        'rahma_fattah',
+        'rahma_btates_bel_lahma',
+        'rahma_shakshoka',
+        'rahma_potato_w_eggs',
+        'rahma_egg_pizza',
+        'rahma_yummy_egg_sandwich',
+        'rahma_creamy_cottage_cheese',
+        'rahma_pancakes',
+        'rahma_crepe',
+        'rahma_french_toast',
+        'rahma_lazy_cake',
+        'rahma_bagel',
       };
       for (final id in risky) {
         expect(
@@ -702,9 +815,14 @@ void main() {
         File('assets/content/rahma_recipes.json').readAsStringSync(),
       ) as Map).cast<String, Object?>();
       var stripped = 0;
-      for (final recipe in (seed['recipes'] as List).cast<Map<String, Object?>>()) {
+      for (final recipe
+          in (seed['recipes'] as List).cast<Map<String, Object?>>()) {
         final finals = (recipe['allergensFinal'] as List).cast<String>();
-        if (finals.remove('milk')) stripped++;
+        final said = (recipe['allergensDerived'] as List).contains('milk');
+        // Only a recipe whose words say milk is one the tripwire can catch: a
+        // dish that is milky only through a linked food has nothing in its text
+        // for the reader to contradict.
+        if (finals.remove('milk') && said) stripped++;
         recipe['allergensFinal'] = finals;
       }
       expect(stripped, greaterThan(0), reason: 'nothing to mutate');

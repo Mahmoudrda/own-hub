@@ -158,6 +158,28 @@ void main() {
       },
     );
 
+    test('the exercise library columns import, and a second clip must exist', () {
+      const header =
+          'exerciseId,name_en,name_ar,equipment,pattern,contraindicationTags,quiet,floorOnly,videoFile,thumbFile,'
+          'angleVideoFile,primaryMuscles,secondaryMuscles,bodyRegion,place,level,kind\n';
+      final good = _check(
+        '${header}squat,Squat,S,dumbbells,squat,deep_knee_flexion,true,false,squat_front.mp4,squat.webp,'
+        'squat_side.mp4,quads|glutes,adductors,lower_body,both,beginner,strength\n',
+        collection: ContentCollection.exercises,
+        uploaded: const {'squat_front.mp4', 'squat.webp', 'squat_side.mp4'},
+      );
+      expect(good.problems, isEmpty);
+
+      final missing = _check(
+        '${header}squat,Squat,S,dumbbells,squat,deep_knee_flexion,true,false,squat_front.mp4,squat.webp,'
+        'squat_side.mp4,quads,,lower_body,both,beginner,strength\n',
+        collection: ContentCollection.exercises,
+        uploaded: const {'squat_front.mp4', 'squat.webp'},
+      );
+      expect(missing.problems.single.code, ImportProblemCode.missingMedia);
+      expect(missing.problems.single.column, 'angleVideoFile');
+    });
+
     test('an exercise tagged "none" is accepted', () {
       final plan = _check(
         'exerciseId,name_en,name_ar,equipment,pattern,contraindicationTags,quiet,floorOnly,videoFile,thumbFile\n'

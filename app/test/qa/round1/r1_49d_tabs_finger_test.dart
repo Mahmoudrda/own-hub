@@ -44,7 +44,9 @@ void main() {
         if (find.byType(AppNavBar).evaluate().isEmpty) continue;
 
         final ctx = tester.element(find.byType(AppNavBar).first);
-        final barWidget = tester.widget<AppNavBar>(find.byType(AppNavBar).first);
+        final barWidget = tester.widget<AppNavBar>(
+          find.byType(AppNavBar).first,
+        );
         final l10n = AppL10n.of(ctx);
         final tabs =
             barWidget.destinations ?? tabsFor(RoleScope.rolesOf(ctx).active);
@@ -71,7 +73,9 @@ void main() {
           final err = tester.takeException();
           final after = topScreen(tester);
           if (err != null) {
-            dead.add('$id  "$label" @$at  EXCEPTION ${'$err'.split('\n').first}');
+            dead.add(
+              '$id  "$label" @$at  EXCEPTION ${'$err'.split('\n').first}',
+            );
           } else if (after == before && tab.screenId != id) {
             dead.add(
               '$id  "$label" painted at $at, a finger there does nothing '
@@ -102,7 +106,9 @@ void main() {
         print('  $d');
       }
       // ignore: avoid_print
-      print('LABEL NOT PAINTED (${notPainted.length}): ${notPainted.join("; ")}');
+      print(
+        'LABEL NOT PAINTED (${notPainted.length}): ${notPainted.join("; ")}',
+      );
 
       expect(
         dead,

@@ -69,6 +69,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -198,7 +199,7 @@ void main() {
       // without a number because the number is hers.
       expect(
         find.text(
-          'Reach your goal and the week counts, and a week you miss is covered by a rest week once you have earned one.',
+          'Hit your goal and the week counts. If you miss a week, a rest week you\'ve earned covers it.',
         ),
         findsOneWidget,
       );
@@ -249,11 +250,15 @@ void main() {
         reason: 'one log leaves the day-one branch permanently',
       );
 
-      expect(find.text('Your first week'), findsOneWidget);
-      // One of the three steps is done, counted off the same list T07 draws.
-      expect(_rowSubtitle('Your first week', '1 of 3'), findsOneWidget);
+      // One line in the week block now, with its count (§15): one of the
+      // three steps is done, counted off the same list T07 draws.
+      expect(find.text('Your first week: 1 of 3 steps'), findsOneWidget);
 
-      await tester.tap(find.text('Your first week'));
+      // The line sits at the foot of the page now, below the fold.
+      final door = find.byKey(const ValueKey('today-first-week'));
+      await tester.ensureVisible(door);
+      await tester.pumpAndSettle();
+      await tester.tap(door);
       await tester.pumpAndSettle();
       expect(find.text('Finish one set'), findsOneWidget);
     });
@@ -281,27 +286,42 @@ void main() {
   });
 
   group('the two doors that were invisible', () {
-    testWidgets('the week block says it opens something', (tester) async {
-      _phone(tester);
-      await _boot(tester);
-      AppRouter.todayRepository.recordMeal(at: DateTime.now());
-      await tester.pumpAndSettle();
+    for (final scale in [1.0, 2.0]) {
+      testWidgets('the week block says it opens something'
+          '${scale == 1.0 ? '' : ' (text scale $scale)'}', (tester) async {
+        _phone(tester);
+        tester.platformDispatcher.textScaleFactorTestValue = scale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        await _boot(tester);
+        AppRouter.todayRepository.recordMeal(at: DateTime.now());
+        await tester.pumpAndSettle();
 
-      // A 358×159 point paragraph with no chevron, no card and no underline
-      // was the only door to Progress, personal bests, milestones, body, the
-      // rest-week explainer and the tier-slip explainer.
-      expect(
-        find.descendant(
-          of: find.byType(WeekCard),
-          matching: find.byIcon(Icons.chevron_right),
-        ),
-        findsOneWidget,
-      );
+        // A 358×159 point paragraph with no chevron, no card and no underline
+        // was the only door to Progress, personal bests, milestones, body, the
+        // rest-week explainer and the tier-slip explainer.
+        expect(
+          find.descendant(
+            of: find.byType(WeekCard),
+            matching: find.byIcon(Icons.chevron_right),
+          ),
+          findsOneWidget,
+        );
 
-      await tester.tap(find.text('This week, 0 of 3'));
-      await tester.pumpAndSettle();
-      expect(find.text('Your progress'), findsOneWidget);
-    });
+        // Home grows with the tier facts and her training row, so the block can
+        // sit under the bottom bar until it is scrolled into the clear.
+        await tester.ensureVisible(find.text('This week, 0 of 3'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('This week, 0 of 3'));
+        await tester.pumpAndSettle();
+        expect(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.text('Insights'),
+          ),
+          findsOneWidget,
+        );
+      });
+    }
 
     testWidgets(
       'Progress counts her first week instead of saying "All five done"',

@@ -44,7 +44,8 @@ void fillTrainHistory({required int sessions}) {
 
   for (var s = 0; s < sessions; s++) {
     final id = 'live-${s + 1}';
-    final dateKey = '2026-${(s % 12 + 1).toString().padLeft(2, '0')}'
+    final dateKey =
+        '2026-${(s % 12 + 1).toString().padLeft(2, '0')}'
         '-${(s % 28 + 1).toString().padLeft(2, '0')}';
     final sets = <LoggedSet>[
       for (final move in kMoves)
@@ -70,9 +71,8 @@ void fillTrainHistory({required int sessions}) {
         exerciseId: move,
         sets: <LoggedSet>[
           for (var i = 1; i <= kSetsPerMove; i++)
-            LoggedSet(prescribed: _prescribed(move, i)).recording(
-              SetOutcome(weightKg: 12.5 + i, reps: 11 - i),
-            ),
+            LoggedSet(prescribed: _prescribed(move, i))
+                .recording(SetOutcome(weightKg: 12.5 + i, reps: 11 - i)),
         ],
       ));
     }

@@ -18,6 +18,7 @@ import 'debug_analytics_sink.dart';
 import 'firebase_analytics_sink.dart';
 import 'firebase_boot.dart';
 import 'kitten_setting.dart';
+import 'posthog_analytics.dart';
 
 const bool _kAnalyticsDebugSend = bool.fromEnvironment(
   'OWNHUB_ANALYTICS_DEBUG',
@@ -25,25 +26,36 @@ const bool _kAnalyticsDebugSend = bool.fromEnvironment(
 
 /// The sink a build uses.
 ///
-///   * release: Firebase, which itself sends nothing until she allows it;
-///   * debug: the console, so the funnel can be watched, plus Firebase when
-///     started with `OWNHUB_ANALYTICS_DEBUG` to check events in DebugView;
-///   * profile: nothing, or Firebase with `OWNHUB_ANALYTICS_DEBUG`.
+///   * release: Firebase and PostHog, each gated by consent;
+///   * debug: the console, plus consent-gated providers when
+///     started with `OWNHUB_ANALYTICS_DEBUG` to check integration;
+///   * profile: nothing, or consent-gated providers with `OWNHUB_ANALYTICS_DEBUG`.
 AnalyticsSink analyticsSinkFor({
   required bool release,
   required bool debug,
   bool debugSend = _kAnalyticsDebugSend,
 }) {
-  if (release) return const FirebaseAnalyticsSink();
+  if (release) {
+    return TeeAnalyticsSink([
+      const FirebaseAnalyticsSink(),
+      PostHogAnalytics.instance,
+    ]);
+  }
   if (debug) {
     return debugSend
-        ? const TeeAnalyticsSink([
-            DebugPrintAnalyticsSink(),
-            FirebaseAnalyticsSink(),
+        ? TeeAnalyticsSink([
+            const DebugPrintAnalyticsSink(),
+            const FirebaseAnalyticsSink(),
+            PostHogAnalytics.instance,
           ])
         : const DebugPrintAnalyticsSink();
   }
-  return debugSend ? const FirebaseAnalyticsSink() : const NullAnalyticsSink();
+  return debugSend
+      ? TeeAnalyticsSink([
+          const FirebaseAnalyticsSink(),
+          PostHogAnalytics.instance,
+        ])
+      : const NullAnalyticsSink();
 }
 
 abstract final class AnalyticsSession {
@@ -116,22 +128,6 @@ abstract final class AnalyticsSession {
       AppRouter.analytics.setUserProperty(
         AnalyticsUserProperty.appLanguage,
         languageCode,
-      ),
-    );
-  }
-
-  /// She turned the kitten's movement on or off.
-  static void kittenChanged(bool moves) {
-    final word = moves ? 'on' : 'off';
-    unawaited(
-      AppRouter.analytics.track(AnalyticsEvent.kittenToggled, {
-        AnalyticsProp.outcome: AnalyticsValue.token(word),
-      }),
-    );
-    unawaited(
-      AppRouter.analytics.setUserProperty(
-        AnalyticsUserProperty.kittenMoves,
-        word,
       ),
     );
   }

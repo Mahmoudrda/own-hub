@@ -22,14 +22,15 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// The fifteen keys R2-07 says are genuinely non-translatable: unit/format
-/// codes, a CSV literal, an Arabic endonym that must not be "translated" into
+/// The keys R2-07 says are genuinely non-translatable: unit/format codes
+/// (including `percent`, a bare `{percent}%` that keeps the Western sign the
+/// app uses everywhere), a CSV literal, an Arabic endonym that must not be "translated" into
 /// itself a second time, and short mockup ids. Kept as a literal list (not
 /// computed) so a new addition to this set has to be argued for here, in
 /// writing, exactly like `i18n_guard_test.dart`'s Arabic allowlist.
 const Set<String> _knownNonTranslatable = {
   'aa',
-  'arabicText_vqu26',
+  'arabicText_3cakp',
   'csv',
   'n012100',
   'n1',
@@ -43,6 +44,10 @@ const Set<String> _knownNonTranslatable = {
   'n84',
   'n92',
   'nasmCpt',
+  'percent',
+  // Date patterns: only placeholders and spaces, the same in both languages.
+  'monthYear',
+  'dayMonthYear',
 };
 
 Map<String, dynamic> _load(String path) =>
@@ -98,12 +103,14 @@ Set<String> _argNames(String message) {
       j++;
     }
     final ident = message.substring(start, j);
-    final isIdentifier = ident.isNotEmpty && RegExp(r'^[a-zA-Z_]').hasMatch(ident);
+    final isIdentifier =
+        ident.isNotEmpty && RegExp(r'^[a-zA-Z_]').hasMatch(ident);
     var k = j;
     while (k < message.length && message[k] == ' ') {
       k++;
     }
-    final closesHere = k < message.length && (message[k] == ',' || message[k] == '}');
+    final closesHere =
+        k < message.length && (message[k] == ',' || message[k] == '}');
     if (isIdentifier && closesHere) {
       names.add(ident);
     }
@@ -140,102 +147,91 @@ void main() {
     );
   });
 
-  test(
-    'every Arabic value differs from its English counterpart, except the '
-    'fifteen known non-translatables',
-    () {
-      final identical = <String>[];
-      for (final k in enKeys) {
-        if (_knownNonTranslatable.contains(k)) continue;
-        final e = en[k];
-        final a = ar[k];
-        if (e is String && a is String && e == a) identical.add(k);
-      }
-      expect(
-        identical,
-        isEmpty,
-        reason:
-            'Arabic value identical to English (untranslated copy-paste) for '
-            '${identical.length} key(s): ${identical.join(', ')}',
-      );
-    },
-  );
+  test('every Arabic value differs from its English counterpart, except the '
+      'fifteen known non-translatables', () {
+    final identical = <String>[];
+    for (final k in enKeys) {
+      if (_knownNonTranslatable.contains(k)) continue;
+      final e = en[k];
+      final a = ar[k];
+      if (e is String && a is String && e == a) identical.add(k);
+    }
+    expect(
+      identical,
+      isEmpty,
+      reason:
+          'Arabic value identical to English (untranslated copy-paste) for '
+          '${identical.length} key(s): ${identical.join(', ')}',
+    );
+  });
 
-  test(
-    'the fifteen known-non-translatable keys are still exactly the keys that '
-    'are identical across locales (the allowlist above does not rot)',
-    () {
-      // Positive control, matching the idiom `product_rules_test.dart` RULE 7
-      // and `i18n_guard_test.dart`'s own allowlist tests use: an exemption
-      // list is checked from both directions, not just consulted one way.
-      final actuallyIdentical = <String>{
-        for (final k in enKeys)
-          if (en[k] is String && ar[k] is String && en[k] == ar[k]) k,
-      };
-      final stale = _knownNonTranslatable.difference(actuallyIdentical);
-      final undeclared = actuallyIdentical.difference(_knownNonTranslatable);
-      expect(
-        stale,
-        isEmpty,
-        reason:
-            'These keys are allowlisted as non-translatable but are NOT '
-            'identical in the ARBs any more — remove from the allowlist: $stale',
-      );
-      expect(
-        undeclared,
-        isEmpty,
-        reason:
-            'These keys are identical across locales but are NOT on the known '
-            'non-translatable list — either translate them or add them to the '
-            'list with a reason: $undeclared',
-      );
-    },
-  );
+  test('the fifteen known-non-translatable keys are still exactly the keys that '
+      'are identical across locales (the allowlist above does not rot)', () {
+    // Positive control, matching the idiom `product_rules_test.dart` RULE 7
+    // and `i18n_guard_test.dart`'s own allowlist tests use: an exemption
+    // list is checked from both directions, not just consulted one way.
+    final actuallyIdentical = <String>{
+      for (final k in enKeys)
+        if (en[k] is String && ar[k] is String && en[k] == ar[k]) k,
+    };
+    final stale = _knownNonTranslatable.difference(actuallyIdentical);
+    final undeclared = actuallyIdentical.difference(_knownNonTranslatable);
+    expect(
+      stale,
+      isEmpty,
+      reason:
+          'These keys are allowlisted as non-translatable but are NOT '
+          'identical in the ARBs any more — remove from the allowlist: $stale',
+    );
+    expect(
+      undeclared,
+      isEmpty,
+      reason:
+          'These keys are identical across locales but are NOT on the known '
+          'non-translatable list — either translate them or add them to the '
+          'list with a reason: $undeclared',
+    );
+  });
 
-  test(
-    'ICU argument names match between locales for every key (a mismatch '
-    'throws at render time in one language only)',
-    () {
-      final mismatches = <String>[];
-      for (final k in enKeys) {
-        final e = en[k];
-        final a = ar[k];
-        if (e is! String || a is! String) continue;
-        final enArgs = _argNames(e);
-        final arArgs = _argNames(a);
-        if (enArgs.difference(arArgs).isNotEmpty ||
-            arArgs.difference(enArgs).isNotEmpty) {
-          mismatches.add(
-            '$k: en=${enArgs.toList()..sort()} ar=${arArgs.toList()..sort()}',
-          );
-        }
+  test('ICU argument names match between locales for every key (a mismatch '
+      'throws at render time in one language only)', () {
+    final mismatches = <String>[];
+    for (final k in enKeys) {
+      final e = en[k];
+      final a = ar[k];
+      if (e is! String || a is! String) continue;
+      final enArgs = _argNames(e);
+      final arArgs = _argNames(a);
+      if (enArgs.difference(arArgs).isNotEmpty ||
+          arArgs.difference(enArgs).isNotEmpty) {
+        mismatches.add(
+          '$k: en=${enArgs.toList()..sort()} ar=${arArgs.toList()..sort()}',
+        );
       }
-      expect(
-        mismatches,
-        isEmpty,
-        reason:
-            '${mismatches.length} placeholder-argument mismatch(es):\n'
-            '${mismatches.join('\n')}',
-      );
-    },
-  );
+    }
+    expect(
+      mismatches,
+      isEmpty,
+      reason:
+          '${mismatches.length} placeholder-argument mismatch(es):\n'
+          '${mismatches.join('\n')}',
+    );
+  });
 
   test(
     'the argument extractor actually bites: a positive control against '
     'synthetic ICU text, proven before being trusted against 2,270 real keys',
     () {
       expect(_argNames('Hello {name}'), {'name'});
-      expect(
-        _argNames('{count, plural, one{1 dish} other{{count} dishes}}'),
-        {'count'},
-      );
+      expect(_argNames('{count, plural, one{1 dish} other{{count} dishes}}'), {
+        'count',
+      });
       expect(_argNames('{from} to {to}'), {'from', 'to'});
       // No false positive on a case body that happens to start with a Latin
       // word followed by more prose rather than a comma or a close-brace.
-      expect(
-        _argNames('{count, plural, one{About 1 hour in all} other{x}}'),
-        {'count'},
-      );
+      expect(_argNames('{count, plural, one{About 1 hour in all} other{x}}'), {
+        'count',
+      });
       // No false positive on Arabic prose immediately inside a brace.
       expect(_argNames('{count, plural, other{عنصر واحد}}'), {'count'});
       // A genuine mismatch is actually detected.

@@ -193,9 +193,9 @@ class AssessmentForm {
 
   AssessmentForm withBaseline(String measureId, BaselineMeasure measure) {
     final next = <String, BaselineMeasure>{...baseline, measureId: measure};
-    PrescriptionOnlyValidator.assertNoBodyMeasure(
-      <String, Object?>{for (final key in next.keys) key: null},
-    );
+    PrescriptionOnlyValidator.assertNoBodyMeasure(<String, Object?>{
+      for (final key in next.keys) key: null,
+    });
     return AssessmentForm(
       clientUid: clientUid,
       coachUid: coachUid,
@@ -215,7 +215,9 @@ class AssessmentForm {
   /// Deterministic, so a two-step form saved offline and replayed overwrites
   /// itself instead of creating a second assessment.
   String idFor(DateTime takenAt) {
-    final scope = coachUid == null ? 'self_$clientUid' : '${coachUid}_$clientUid';
+    final scope = coachUid == null
+        ? 'self_$clientUid'
+        : '${coachUid}_$clientUid';
     return '${scope}__${takenAt.toIso8601String()}';
   }
 

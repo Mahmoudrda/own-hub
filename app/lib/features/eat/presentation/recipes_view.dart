@@ -17,22 +17,25 @@
 /// glance whose words she is reading, and that is worth more than a consistent
 /// list style.
 ///
-/// ## The book is behind one question
+/// ## The question sits on top of the book, not in front of it
 ///
-/// [RecipesView] renders nothing of Rahma's until `DietaryProfile.asked` is
-/// true. Not as an onboarding flourish: `AppRouter.eatConstraints` returns
-/// `DietaryConstraints.none` for an unasked woman, `none` is a claim that she
-/// was asked and named nothing, and `AllergyGuard` clears every dish
-/// unconditionally against that claim. Shipping allergen-tagged recipes in front
-/// of it would hand a sesame dish to a woman allergic to sesame with no warning
-/// at all. `E10` is the question; this screen is what waits for it.
+/// Before `DietaryProfile.asked` is true the whole book is shown, nothing
+/// hidden, with a compact "What can't you eat?" row at the top that opens `E10`
+/// and each card naming what it contains. Once she has answered, `AllergyGuard`
+/// removes every recipe holding something she named, and every recipe whose
+/// allergens nobody has verified (neither a person's signature nor Own Hub's
+/// automated check). Hiding the book from a woman who has not been asked yet
+/// would not make anyone safer and made the tab look empty.
 library;
 
+import 'package:flutter/foundation.dart' show kReleaseMode, visibleForTesting;
 import 'package:flutter/material.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
+import '../../account/presentation/allergen_labels.dart'
+    show allergenLabelForWire;
 import '../../../theme/app_tokens.dart';
 import '../../../theme/recipe_book_tokens.dart';
 import '../../../ui/app_chip_row.dart';
@@ -42,9 +45,11 @@ import '../../../ui/app_media.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/meal_image.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
 import '../data/seeded_recipe_library.dart';
 import '../domain/allergy_guard.dart';
+import '../domain/meal_images.dart';
 import '../domain/recipe.dart';
 import 'recipe_labels.dart';
 
@@ -63,8 +68,8 @@ class RecipeRow {
   final String recipeId;
   final String title;
 
-  /// "22 min · 540 kcal · 18 g protein · 14 EGP" — time, energy, protein and
-  /// **cost**, which is the one the design insists on.
+  /// "22 min · 18 g protein" — time and protein. Energy and cost are on the
+  /// recipe's own page.
   final String detail;
 
   /// The three figures [detail] states, as numbers the filters can read.
@@ -146,7 +151,10 @@ bool matchesFilter(RecipeRow row, RecipeFilter filter) => switch (filter) {
 /// Read off her own steps rather than off a tag somebody typed: a recipe uses
 /// the oven when one of her steps says so, which cannot drift from the card the
 /// way a hand-maintained tag can.
-bool recipeMatchesFilter(Recipe recipe, RecipeFilter filter) => switch (filter) {
+bool recipeMatchesFilter(
+  Recipe recipe,
+  RecipeFilter filter,
+) => switch (filter) {
   RecipeFilter.highProtein => recipe.dietTags.contains('high_protein'),
   // Hands-on time where the recipe states one, because that is what the chip
   // means. It read `totalMinutes`, which counts a night in the fridge, so
@@ -163,20 +171,40 @@ bool recipeMatchesFilter(Recipe recipe, RecipeFilter filter) => switch (filter) 
   RecipeFilter.cheap =>
     recipe.egpPerServing != null && recipe.egpPerServing! <= kCheapEgp,
   RecipeFilter.ramadan => recipe.dietTags.contains('ramadan'),
-  RecipeFilter.noOven => !recipe.allSteps.any(
-    (s) => s.tool == 'oven' || s.tool == 'air_fryer',
-  ),
+  // The authored tag, not a scan of the steps: most steps carry no tool, so a
+  // scan let oven and air-fryer dishes through.
+  RecipeFilter.noOven => recipe.dietTags.contains('no_oven'),
   RecipeFilter.readyInTheFridge => recipe.allSteps.any(
     (s) => s.tool == 'fridge' || s.tool == 'freezer',
   ),
-  // Reads the contents set, and only for a recipe somebody has signed. An
-  // unsigned recipe is not "nut free", it is unchecked, and offering it under a
-  // "no nuts" chip would be the app making exactly the claim it refuses to make.
+  // Reads the contents set, and only for a recipe whose allergens are known (a
+  // signature or the automated check). An unchecked recipe is not "nut free",
+  // it is unchecked, and offering it under a "no nuts" chip would be the app
+  // making exactly the claim it refuses to make.
   RecipeFilter.noNuts =>
-    recipe.allergensReviewed &&
-    !recipe.allergensFinal.contains('tree_nuts') &&
-    !recipe.allergensFinal.contains('peanuts'),
+    recipe.allergensKnown &&
+        !recipe.allergensFinal.contains('tree_nuts') &&
+        !recipe.allergensFinal.contains('peanuts'),
 };
+
+/// "Contains: Milk, Eggs" for a recipe whose allergens are known and not empty,
+/// else null. An unknown list says nothing here rather than "none".
+@visibleForTesting
+String? containsLine(AppL10n l10n, Recipe recipe) {
+  if (!recipe.allergensKnown || recipe.allergensFinal.isEmpty) return null;
+  final labels = [
+    for (final wire in recipe.allergensFinal.toList()..sort())
+      ?allergenLabelForWire(l10n, wire),
+  ];
+  if (labels.isEmpty) return null;
+  // The dictionary's own list separator, so Arabic gets its comma.
+  final list = labels.skip(1).fold(labels.first, l10n.listItem);
+  return '${l10n.contains}: $list';
+}
+
+/// "22 min · 18 g protein". Energy and cost are on the recipe's own page.
+String _timeAndProtein(AppL10n l10n, int minutes, int proteinG) =>
+    '${l10n.nMin(countLabel(minutes))} · ${l10n.nGProtein(countLabel(proteinG))}';
 
 /// The four the prototype draws.
 ///
@@ -190,7 +218,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'koshari_portioned',
     title: l10n.koshariPortioned,
-    detail: l10n.n22Min540Kcal18GProtein,
+    detail: _timeAndProtein(l10n, 22, 18),
     minutes: 22,
     proteinG: 18,
     egp: 14,
@@ -198,7 +226,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'ful_with_egg_cumin',
     title: l10n.fulWithEggAndCumin,
-    detail: l10n.n10Min310Kcal19GProtein,
+    detail: _timeAndProtein(l10n, 10, 19),
     minutes: 10,
     proteinG: 19,
     egp: 8,
@@ -206,7 +234,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'molokhia_chicken',
     title: l10n.molokhiaWithChicken,
-    detail: l10n.n45Min460Kcal34GProtein,
+    detail: _timeAndProtein(l10n, 45, 34),
     minutes: 45,
     proteinG: 34,
     egp: 26,
@@ -214,7 +242,7 @@ List<RecipeRow> sampleRecipes(AppL10n l10n) => [
   RecipeRow(
     recipeId: 'yoghurt_dates_nuts',
     title: l10n.yoghurtDatesAndNuts,
-    detail: l10n.n3Min280Kcal14GProtein,
+    detail: _timeAndProtein(l10n, 3, 14),
     minutes: 3,
     proteinG: 14,
     egp: 12,
@@ -237,7 +265,12 @@ class RecipesView extends StatefulWidget {
     this.onSelectTab,
     this.pickLabel,
     this.onPick,
+    this.showSamples = !kReleaseMode,
   });
+
+  /// The four prototype rows, with prices nobody set. Drawn in debug and test
+  /// builds only: a shipped build lists Rahma's and Own Hub's recipes alone.
+  final bool showSamples;
 
   /// Pick mode, opened from a day on `E07`: the line that says which day
   /// ("Pick a dinner for Monday"). Null is the ordinary library.
@@ -305,10 +338,38 @@ class _RecipesViewState extends State<RecipesView> {
   /// section.
   RecipeFilter? _bookFilter;
 
+  /// The chips above the app's own rows, in the order they are drawn.
+  static const _topFilters = [
+    RecipeFilter.highProtein,
+    RecipeFilter.underTwentyMinutes,
+    RecipeFilter.cheap,
+    RecipeFilter.ramadan,
+  ];
+
+  /// The chips under her heading, in the order they are drawn.
+  static const _bookFilters = [
+    RecipeFilter.noOven,
+    RecipeFilter.readyInTheFridge,
+    RecipeFilter.noNuts,
+  ];
+
+  static String _filterLabel(AppL10n l10n, RecipeFilter filter) =>
+      switch (filter) {
+        RecipeFilter.highProtein => l10n.highProtein,
+        RecipeFilter.underTwentyMinutes => l10n.under20Min,
+        RecipeFilter.cheap => l10n.cheap,
+        RecipeFilter.ramadan => l10n.ramadan,
+        RecipeFilter.noOven => l10n.noOven,
+        RecipeFilter.readyInTheFridge => l10n.readyInTheFridge,
+        RecipeFilter.noNuts => l10n.noNuts,
+      };
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final all = widget.recipes ?? sampleRecipes(l10n);
+    final all =
+        widget.recipes ??
+        (widget.showSamples ? sampleRecipes(l10n) : const <RecipeRow>[]);
     final filter = _filter;
 
     // The guard runs on the app's own rows too, and it runs **before** any
@@ -328,6 +389,18 @@ class _RecipesViewState extends State<RecipesView> {
         if (guard.allowsAllergens(recipe.allergens)) recipe,
     ];
     final hiddenUnchecked = all.length - safe.length;
+
+    // What a chip is tested against: the rows she can see and the book's recipes
+    // the guard lets through. Counted before any chip is applied.
+    final book = widget.book;
+    final shown = [if (book != null) ...guard.screenRecipes(book.recipes)];
+    final topFilters = [
+      for (final f in _topFilters)
+        if (f == filter ||
+            safe.any((row) => matchesFilter(row, f)) ||
+            shown.any((r) => recipeMatchesFilter(r, f)))
+          f,
+    ];
 
     final recipes = [
       for (final recipe in safe)
@@ -380,6 +453,7 @@ class _RecipesViewState extends State<RecipesView> {
         },
       ),
       body: AppScaffold(
+        staggerGroup: 'e05',
         children: [
           if (widget.pickLabel case final label?)
             Text(
@@ -396,28 +470,49 @@ class _RecipesViewState extends State<RecipesView> {
               autofocus: true,
               onChanged: (value) => setState(() => _query = value),
             ),
+          // Until she has answered, the book is open and this is the way to
+          // answer. After, it is gone and the guard does the work.
+          if (!widget.asked && (book?.recipes.isNotEmpty ?? false))
+            AppListItem(
+              key: const ValueKey('e05-allergy-prompt'),
+              variant: AppCardVariant.filled,
+              leading: const Icon(
+                Icons.help_outline,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.whatCantYouEat,
+              subtitle: l10n.tickAnythingYouAvoidDishesThatContain,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
+            ),
           // The four general filters, which apply to both libraries. The three
           // that only Rahma's recipes can answer live with her book further
           // down, because `grow: false` wraps and seven chips take two lines,
           // which pushed the app's own rows under the bottom bar.
-          AppChipRow(
-            grow: false,
-            items: [
-              l10n.highProtein,
-              l10n.under20Min,
-              l10n.cheap,
-              l10n.ramadan,
-            ],
-            selected: {if (filter != null) filter.index},
-            onTap: (index) => setState(() {
-              final tapped = RecipeFilter.values[index];
-              _filter = _filter == tapped ? null : tapped;
-            }),
-          ),
+          //
+          // A chip that would select nothing is not drawn: "Cheap" with no
+          // price anywhere and "Ramadan" with no tag anywhere were two dead ends
+          // on every visit. The chip she has selected stays, so she can always
+          // take it off.
+          if (topFilters.isNotEmpty)
+            AppChipRow(
+              grow: false,
+              items: [for (final f in topFilters) _filterLabel(l10n, f)],
+              selected: {if (filter != null) topFilters.indexOf(filter)},
+              onTap: (index) => setState(() {
+                final tapped = topFilters[index];
+                _filter = _filter == tapped ? null : tapped;
+              }),
+            ),
           // An empty list has to name its own cause, and the causes are not one
           // sentence. The guard's reason comes first because the guard ran
           // first: a chip cannot be blamed for rows that were already gone.
-          if (recipes.isEmpty)
+          if (recipes.isEmpty && all.isNotEmpty)
             Text(
               _topEmptyLine(l10n, hiddenUnchecked, filter),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
@@ -426,12 +521,16 @@ class _RecipesViewState extends State<RecipesView> {
             AppListItem(
               // The 64×64 thumbnail. No photography exists, so this is the
               // placeholder rather than a broken image.
-              leading: const AppMedia(
-                width: 64,
-                height: 64,
-                kind: AppMediaKind.photo,
-                showPlayButton: false,
-                borderRadius: AppRadius.sm,
+              leading: MealImage(
+                asset: MealImages.assetFor(recipe.recipeId),
+                size: 64,
+                fallback: const AppMedia(
+                  width: 64,
+                  height: 64,
+                  kind: AppMediaKind.photo,
+                  showPlayButton: false,
+                  borderRadius: AppRadius.sm,
+                ),
               ),
               title: recipe.title,
               subtitle: recipe.detail,
@@ -487,7 +586,11 @@ class _RecipesViewState extends State<RecipesView> {
   /// Same discipline as [_emptyLine] below, ordered by cause rather than by
   /// severity. [hiddenUnchecked] is the guard's removal and it comes first,
   /// because it happened first.
-  String _topEmptyLine(AppL10n l10n, int hiddenUnchecked, RecipeFilter? filter) {
+  String _topEmptyLine(
+    AppL10n l10n,
+    int hiddenUnchecked,
+    RecipeFilter? filter,
+  ) {
     // Says whose check is missing, because it is not hers.
     //
     // This read "None of these dishes has been checked FOR WHAT YOU AVOID, so
@@ -511,9 +614,6 @@ class _RecipesViewState extends State<RecipesView> {
     if (_bookFilter == RecipeFilter.noNuts) {
       return l10n.noneOfTheseDishesHasBeenChecked_9ic16;
     }
-    if (filter == RecipeFilter.ramadan) {
-      return l10n.noRecipeCarriesARamadanTagYet;
-    }
     return l10n.nothingMatchesThat;
   }
 
@@ -536,16 +636,14 @@ class _RecipesViewState extends State<RecipesView> {
   /// had one: a chip that falls through to "Nothing matches that" reads as a
   /// fault in the app rather than as an absence in the content.
   String _emptyLine(AppL10n l10n, HiddenRecipes hidden, RecipeFilter? filter) {
-    if (hidden.unsigned > 0) return l10n.noDishHereHasBeenCheckedYet;
+    final anySigned = widget.book?.recipes.any((r) => r.allergensKnown);
+    if (hidden.unsigned > 0 && anySigned != true) {
+      return l10n.noDishHereHasBeenCheckedYet;
+    }
     if (hidden.namedAllergen > 0) {
       return l10n.everythingHereContainsSomethingYouToldUs;
     }
-    // Nobody has priced a recipe in the book, so "Cheap" selects none of them.
-    if (filter == RecipeFilter.cheap) return l10n.noRecipeHasBeenPricedYet;
-    if (filter == RecipeFilter.ramadan) {
-      return l10n.noRecipeCarriesARamadanTagYet;
-    }
-    // "No nuts" fails closed on `allergensReviewed`, and nothing is signed, so
+    // "No nuts" fails closed on `allergensKnown`, so when nothing is verified
     // it correctly selects none. Saying which of those two facts is doing the
     // work is the difference between an honest gap and a broken chip.
     if (_bookFilter == RecipeFilter.noNuts) {
@@ -561,31 +659,6 @@ class _RecipesViewState extends State<RecipesView> {
   List<Widget> _book(AppL10n l10n, RecipeFilter? filter) {
     final book = widget.book;
     if (book == null || book.recipes.isEmpty) return const [];
-
-    // The question comes first, always. See the file note: `none` is a claim,
-    // and showing her an allergen-tagged library against a claim nobody made is
-    // the failure this whole ordering exists to prevent.
-    if (!widget.asked) {
-      return [
-        _BookHeading(title: l10n.rahmasRecipes),
-        AppListItem(
-          variant: AppCardVariant.filled,
-          leading: const Icon(
-            Icons.help_outline,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.isThereAnythingYouCannotEat,
-          subtitle: l10n.tickAnythingYouAvoidDishesThatContain,
-          trailing: const Icon(
-            Icons.chevron_right,
-            size: 22,
-            color: AppColors.onSurfaceVariant,
-          ),
-          onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
-        ),
-      ];
-    }
 
     final guard = AllergyGuard(widget.constraints);
     var hidden = HiddenRecipes.none;
@@ -604,6 +677,15 @@ class _RecipesViewState extends State<RecipesView> {
       ];
     }
     final anyShown = bySection.values.any((rows) => rows.isNotEmpty);
+    // The same test as the top row: a chip no visible recipe satisfies is not
+    // offered, unless it is the one she has on.
+    final visibleToHer = guard.screenRecipes(book.recipes);
+    final bookFilters = [
+      for (final f in _bookFilters)
+        if (f == _bookFilter ||
+            visibleToHer.any((r) => recipeMatchesFilter(r, f)))
+          f,
+    ];
 
     // Said once, at the head of the book, instead of three lines on each of
     // thirty-nine cards. It is also the only place the **consequence** is
@@ -614,8 +696,11 @@ class _RecipesViewState extends State<RecipesView> {
     // Only while there is something to caveat. When the book is empty the empty
     // state below already says this and says it in the past tense, and two
     // sentences about the same fact read as the screen repeating itself.
+    //
+    // And only while none of them has: once some are signed, an unsigned card
+    // carries its own "not checked yet", and this sentence would be false.
     final anyUnsigned =
-        anyShown && book.recipes.any((r) => !r.allergensReviewed);
+        anyShown && book.recipes.every((r) => !r.allergensKnown);
 
     return [
       _BookHeading(title: l10n.rahmasRecipes),
@@ -624,24 +709,45 @@ class _RecipesViewState extends State<RecipesView> {
           l10n.nothingInTheBookHasBeenChecked,
           style: AppText.bodyM.copyWith(color: HandInk.print),
         ),
-      AppChipRow(
-        grow: false,
-        items: [l10n.noOven, l10n.readyInTheFridge, l10n.noNuts],
-        selected: {
-          if (_bookFilter != null)
-            _bookFilter!.index - RecipeFilter.noOven.index,
-        },
-        onTap: (index) => setState(() {
-          final tapped = RecipeFilter.values[RecipeFilter.noOven.index + index];
-          _bookFilter = _bookFilter == tapped ? null : tapped;
-        }),
-      ),
+      if (bookFilters.isNotEmpty)
+        AppChipRow(
+          grow: false,
+          items: [for (final f in bookFilters) _filterLabel(l10n, f)],
+          selected: {
+            if (_bookFilter != null) bookFilters.indexOf(_bookFilter!),
+          },
+          onTap: (index) => setState(() {
+            final tapped = bookFilters[index];
+            _bookFilter = _bookFilter == tapped ? null : tapped;
+          }),
+        ),
       for (final section in book.sections)
-        if (bySection[section.sectionId]!.isNotEmpty) ...[
+        if (bySection[section.sectionId]!.any((r) => !r.isOwnHub)) ...[
           _SectionDivider(section: section),
           for (final recipe in bySection[section.sectionId]!)
-            _RahmaCard(recipe: recipe, onTap: () => _choose(recipe.recipeId)),
+            if (!recipe.isOwnHub)
+              _RahmaCard(
+                recipe: recipe,
+                asked: widget.asked,
+                onTap: () => _choose(recipe.recipeId),
+              ),
         ],
+      // Recipes the Own Hub kitchen wrote sit apart from hers, under their own
+      // heading, so none of them reads as something Rahma wrote.
+      if (bySection.values.any((rows) => rows.any((r) => r.isOwnHub))) ...[
+        _BookHeading(title: l10n.fromTheOwnHubKitchen),
+        for (final section in book.sections)
+          if (bySection[section.sectionId]!.any((r) => r.isOwnHub)) ...[
+            _SectionDivider(section: section),
+            for (final recipe in bySection[section.sectionId]!)
+              if (recipe.isOwnHub)
+                _RahmaCard(
+                  recipe: recipe,
+                  asked: widget.asked,
+                  onTap: () => _choose(recipe.recipeId),
+                ),
+          ],
+      ],
       // The empty state has to name the reason it is empty, and the two reasons
       // are not the same sentence.
       //
@@ -703,6 +809,288 @@ class _RecipesViewState extends State<RecipesView> {
           onTap: () => openScreen(context, 'E11', widget.onOpenLetter),
         ),
     ];
+  }
+}
+
+/// Which meal a recipe is for, read from the section of the book it sits in.
+enum RecipeMeal { breakfast, lunch, dinner, sweets }
+
+/// The meal a recipe belongs to, or null for a section this build does not map.
+RecipeMeal? recipeMealOf(Recipe recipe) => switch (recipe.sectionId) {
+  'salty_fulling_breakfast' => RecipeMeal.breakfast,
+  'sweet_tooth_breakfast' => RecipeMeal.sweets,
+  'lunchy_junky_yum' => RecipeMeal.lunch,
+  'comfy_dinner' => RecipeMeal.dinner,
+  _ => null,
+};
+
+enum _PanelFilter {
+  highProtein,
+  underTwentyMinutes,
+  vegetarian,
+  noNuts,
+  safe,
+  rahma,
+  ownHub,
+}
+
+/// The recipes, laid out for the Eat hub: search, a row for the meal, a row of
+/// filters, then the cards grouped under Breakfast, Lunch, Dinner and Sweets.
+///
+/// It shows every recipe the allergy guard lets through, whether or not she has
+/// answered the allergy question. Before she has, a row at the top opens that
+/// question and each card names what it contains. **"Safe for me" is a chip she
+/// turns on, never a gate**: it keeps only the recipes whose contents are
+/// verified, and until she has said what she avoids it opens the question
+/// instead of claiming anything is safe for her.
+class RecipesPanel extends StatefulWidget {
+  const RecipesPanel({
+    super.key,
+    required this.book,
+    required this.constraints,
+    this.asked = false,
+    this.onOpenRecipe,
+    this.onAnswerAllergies,
+    this.onOpenLetter,
+  });
+
+  final RecipeBook? book;
+  final DietaryConstraints constraints;
+  final bool asked;
+  final ValueChanged<String>? onOpenRecipe;
+  final VoidCallback? onAnswerAllergies;
+  final VoidCallback? onOpenLetter;
+
+  @override
+  State<RecipesPanel> createState() => _RecipesPanelState();
+}
+
+class _RecipesPanelState extends State<RecipesPanel> {
+  String _query = '';
+  RecipeMeal? _meal;
+  final Set<_PanelFilter> _filters = <_PanelFilter>{};
+
+  static const _filterOrder = _PanelFilter.values;
+
+  static String _filterLabel(AppL10n l10n, _PanelFilter filter) =>
+      switch (filter) {
+        _PanelFilter.highProtein => l10n.highProtein,
+        _PanelFilter.underTwentyMinutes => l10n.under20Min,
+        _PanelFilter.vegetarian => l10n.vegetarian,
+        _PanelFilter.noNuts => l10n.noNuts,
+        _PanelFilter.safe => l10n.safeForMe,
+        _PanelFilter.rahma => l10n.rahmasRecipes,
+        _PanelFilter.ownHub => l10n.fromTheOwnHubKitchen,
+      };
+
+  static String _mealLabel(AppL10n l10n, RecipeMeal meal) => switch (meal) {
+    RecipeMeal.breakfast => l10n.breakfast,
+    RecipeMeal.lunch => l10n.lunch,
+    RecipeMeal.dinner => l10n.dinner,
+    RecipeMeal.sweets => l10n.sweets,
+  };
+
+  static bool _passes(Recipe recipe, _PanelFilter filter) => switch (filter) {
+    _PanelFilter.highProtein => recipeMatchesFilter(
+      recipe,
+      RecipeFilter.highProtein,
+    ),
+    _PanelFilter.underTwentyMinutes => recipeMatchesFilter(
+      recipe,
+      RecipeFilter.underTwentyMinutes,
+    ),
+    _PanelFilter.vegetarian => recipe.dietTags.contains('vegetarian'),
+    _PanelFilter.noNuts => recipeMatchesFilter(recipe, RecipeFilter.noNuts),
+    _PanelFilter.safe => recipe.allergensKnown,
+    _PanelFilter.rahma => !recipe.isOwnHub,
+    _PanelFilter.ownHub => recipe.isOwnHub,
+  };
+
+  void _open(String recipeId) {
+    final open = widget.onOpenRecipe;
+    if (open != null) {
+      open(recipeId);
+      return;
+    }
+    openScreen(context, 'E06');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final book = widget.book;
+    if (book == null || book.recipes.isEmpty) {
+      return Text(
+        l10n.nothingMatchesThat,
+        style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+      );
+    }
+    final guard = AllergyGuard(widget.constraints);
+    final visible = guard.screenRecipes(book.recipes);
+    final hidden = guard.hiddenByReason(book.recipes);
+
+    final meals = [
+      for (final meal in RecipeMeal.values)
+        if (meal == _meal || visible.any((r) => recipeMealOf(r) == meal)) meal,
+    ];
+    final filters = [
+      for (final f in _filterOrder)
+        if (_filters.contains(f) ||
+            f == _PanelFilter.safe ||
+            visible.any((r) => _passes(r, f)))
+          f,
+    ];
+
+    final shown = [
+      for (final recipe in visible)
+        if ((_meal == null || recipeMealOf(recipe) == _meal) &&
+            _filters.every((f) => _passes(recipe, f)) &&
+            recipe.matches(_query))
+          recipe,
+    ];
+
+    return Column(
+      key: const ValueKey('hub-recipes'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: kStackGap,
+      children: [
+        if (!widget.asked)
+          AppListItem(
+            key: const ValueKey('e05-allergy-prompt'),
+            variant: AppCardVariant.filled,
+            leading: const Icon(
+              Icons.help_outline,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.whatCantYouEat,
+            subtitle: l10n.tickAnythingYouAvoidDishesThatContain,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
+          ),
+        AppField(
+          key: const ValueKey('hub-recipe-search'),
+          hint: l10n.searchRecipes,
+          onChanged: (value) => setState(() => _query = value),
+        ),
+        Semantics(
+          container: true,
+          label: l10n.recipes,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            child: AppChipRow(
+              key: const ValueKey('hub-recipe-meals'),
+              grow: false,
+              items: [l10n.all, for (final m in meals) _mealLabel(l10n, m)],
+              selected: {_meal == null ? 0 : meals.indexOf(_meal!) + 1},
+              onTap: (index) =>
+                  setState(() => _meal = index == 0 ? null : meals[index - 1]),
+            ),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          child: AppChipRow(
+            key: const ValueKey('hub-recipe-filters'),
+            grow: false,
+            items: [for (final f in filters) _filterLabel(l10n, f)],
+            selected: {
+              for (final (i, f) in filters.indexed)
+                if (_filters.contains(f)) i,
+            },
+            onTap: (index) {
+              final tapped = filters[index];
+              if (tapped == _PanelFilter.safe &&
+                  !widget.asked &&
+                  !_filters.contains(tapped)) {
+                // Nothing can be called safe for her until she has said what she
+                // avoids.
+                openScreen(context, 'E10', widget.onAnswerAllergies);
+                return;
+              }
+              setState(() {
+                if (!_filters.remove(tapped)) _filters.add(tapped);
+              });
+            },
+          ),
+        ),
+        for (final meal in RecipeMeal.values)
+          if (shown.any((r) => recipeMealOf(r) == meal)) ...[
+            _BookHeading(title: _mealLabel(l10n, meal)),
+            for (final recipe in shown)
+              if (recipeMealOf(recipe) == meal)
+                _RahmaCard(
+                  recipe: recipe,
+                  asked: widget.asked,
+                  onTap: () => _open(recipe.recipeId),
+                ),
+          ],
+        // Anything in a section this build does not map still shows.
+        for (final recipe in shown)
+          if (recipeMealOf(recipe) == null)
+            _RahmaCard(
+              recipe: recipe,
+              asked: widget.asked,
+              onTap: () => _open(recipe.recipeId),
+            ),
+        if (shown.isEmpty)
+          Text(
+            _emptyLine(l10n, hidden, visible.isEmpty),
+            key: const ValueKey('hub-recipes-empty'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        if (hidden.unsigned > 0)
+          _HiddenRow(
+            title: dishesHiddenUnchecked(l10n, hidden.unsigned),
+            onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
+          ),
+        if (hidden.namedAllergen > 0)
+          _HiddenRow(
+            title: dishesHiddenByAllergen(l10n, hidden.namedAllergen),
+            onTap: () => openScreen(context, 'E10', widget.onAnswerAllergies),
+          ),
+        if (book.letterAr.isNotEmpty)
+          AppListItem(
+            variant: AppCardVariant.filled,
+            leading: const Icon(
+              Icons.favorite_border,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.aMessageFromRahma,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: () => openScreen(context, 'E11', widget.onOpenLetter),
+          ),
+      ],
+    );
+  }
+
+  /// Why the list is empty, in the order of the causes: the guard ran first.
+  String _emptyLine(AppL10n l10n, HiddenRecipes hidden, bool guardEmptied) {
+    if (guardEmptied) {
+      final anySigned = widget.book?.recipes.any((r) => r.allergensKnown);
+      if (hidden.unsigned > 0 && anySigned != true) {
+        return l10n.noDishHereHasBeenCheckedYet;
+      }
+      if (hidden.namedAllergen > 0) {
+        return l10n.everythingHereContainsSomethingYouToldUs;
+      }
+    }
+    if (_filters.contains(_PanelFilter.noNuts)) {
+      return l10n.noRecipeCanBeCalledNutFree;
+    }
+    return l10n.nothingMatchesThat;
   }
 }
 
@@ -779,23 +1167,44 @@ class _SectionDivider extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FoodMark(markKey: section.markKey, size: 48, ink: BookInk.roseTitle),
+            FoodMark(
+              markKey: section.markKey,
+              size: 48,
+              ink: BookInk.roseTitle,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  BookTitle(
-                    titleEn: section.titleEn,
-                    style: EditorialType.cover.copyWith(
-                      color: BookInk.roseTitle,
+                  if (AppL10n.of(context).localeName == 'ar')
+                    Text(
+                      sectionTitle(AppL10n.of(context), section),
+                      style: EditorialType.cover.copyWith(
+                        color: BookInk.roseTitle,
+                      ),
+                    )
+                  else
+                    BookTitle(
+                      titleEn: section.titleEn,
+                      style: EditorialType.cover.copyWith(
+                        color: BookInk.roseTitle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  BookTitle(
-                    titleEn: section.psLineEn,
-                    style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
-                  ),
+                  if (section.psLineEn.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    if (section.psLineAr != null &&
+                        AppL10n.of(context).localeName == 'ar')
+                      Text(
+                        section.psLineAr!,
+                        style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+                      )
+                    else
+                      BookTitle(
+                        titleEn: section.psLineEn,
+                        style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
+                      ),
+                  ],
                 ],
               ),
             ),
@@ -813,10 +1222,18 @@ class _SectionDivider extends StatelessWidget {
 /// saying so, in the app's printed ink rather than hers: it is the app
 /// speaking, and it must not read as part of the card.
 class _RahmaCard extends StatelessWidget {
-  const _RahmaCard({required this.recipe, required this.onTap});
+  const _RahmaCard({
+    required this.recipe,
+    required this.onTap,
+    required this.asked,
+  });
 
   final Recipe recipe;
   final VoidCallback onTap;
+
+  /// Whether the allergy question has been answered. False adds the contents
+  /// line to the card.
+  final bool asked;
 
   @override
   Widget build(BuildContext context) {
@@ -825,19 +1242,21 @@ class _RahmaCard extends StatelessWidget {
     // work and a day in the fridge, and this card said "1,445 min" — a number
     // that is true, unusable, and reads as a bug. The total still has its say
     // on E06, where there is room for both.
-    final time = handsOnLabel(l10n, recipe.activeMinutes) ??
+    final time =
+        handsOnLabel(l10n, recipe.activeMinutes) ??
         totalTimeLabel(l10n, recipe.totalMinutes);
     final facts = <String>[
       ?time,
       if (recipe.proteinG != null) l10n.nGProtein(countLabel(recipe.proteinG!)),
-      if (recipe.egpPerServing != null)
-        l10n.nEgpAServing(countLabel(recipe.egpPerServing!)),
     ];
+    final contents = asked ? null : containsLine(l10n, recipe);
     return Padding(
       padding: const EdgeInsets.only(bottom: BookMetrics.cardGap),
       child: BookCard(
         cardId: recipe.recipeId,
         markKey: recipe.markKey,
+        imageAsset: recipe.imageAsset,
+        markSize: 64,
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -860,6 +1279,13 @@ class _RahmaCard extends StatelessWidget {
                 style: AppText.bodyM.copyWith(color: BookInk.inkSoft),
               ),
             ],
+            if (recipe.isOwnHub) ...[
+              const SizedBox(height: 6),
+              Text(
+                l10n.fromTheOwnHubKitchen,
+                style: AppText.label.copyWith(color: BookInk.inkSoft),
+              ),
+            ],
             // Three words, not three lines. The full sentence — "Nobody has
             // signed off what is in this dish. Read the label on each product
             // yourself." — is right, and it is still on E06 beside the contents
@@ -871,8 +1297,18 @@ class _RahmaCard extends StatelessWidget {
             if (!recipe.allergensReviewed) ...[
               const SizedBox(height: 8),
               Text(
-                l10n.notCheckedYet,
+                recipe.autoChecked ? l10n.checkedByOwnHub : l10n.notCheckedYet,
                 style: AppText.label.copyWith(color: HandInk.print),
+              ),
+            ],
+            // Before she has answered nothing is hidden, so each card says what
+            // is in it. After, the guard has already removed what she named.
+            if (contents != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                contents,
+                key: ValueKey('contains-${recipe.recipeId}'),
+                style: AppText.label.copyWith(color: BookInk.inkSoft),
               ),
             ],
           ],

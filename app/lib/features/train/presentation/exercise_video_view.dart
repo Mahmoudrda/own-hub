@@ -4,15 +4,19 @@
 /// it returns her to the list. Three cues, not a paragraph, and the quieter
 /// alternative is offered before she has to ask for it.
 ///
-/// **The video does not exist.** None of the 124 demo loops have been produced,
-/// so this renders [AppMedia]'s placeholder and asks a [WorkoutVideoRepository]
-/// for the asset rather than reaching for a URL of its own. When the loops are
-/// published the repository returns one and the screen does not change.
+/// **The footage is the exercise library's.** When the library holds the move
+/// ([clip]), it plays inside the page's own frame, the same way R15 plays it.
+/// A move the library does not hold has no clip, so nothing opens this screen
+/// for it; opened on its own it still renders [AppMedia]'s placeholder and
+/// asks a [WorkoutVideoRepository] for the asset.
 ///
 /// The duration pill has no dictionary key, and correctly so — "0:24" is a value,
 /// not copy. It is formatted by [clockLabel], which keeps Western digits in
 /// Arabic as `P0-A11Y-01` requires.
 library;
+
+import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 
@@ -26,9 +30,14 @@ import '../../../ui/app_pill.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
+import '../data/exercise_media_store.dart';
 import '../domain/clock_label.dart';
+import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
+import 'exercise_clip_frame.dart';
+import 'exercise_clip_player.dart';
 import 'train_widgets.dart';
+import 'exercise_labels.dart';
 
 class ExerciseVideoView extends StatelessWidget {
   const ExerciseVideoView({
@@ -36,14 +45,22 @@ class ExerciseVideoView extends StatelessWidget {
     this.onClose,
     this.onBackToWorkout,
     this.onSwap,
+    this.onOpenHistory,
     this.move,
     this.duration = const Duration(seconds: 24),
     this.videos = const UnreleasedVideoRepository(),
+    this.clip,
+    this.media = const NoExerciseMedia(),
+    this.players,
+    this.canSwap = true,
   });
 
   final VoidCallback? onClose;
   final VoidCallback? onBackToWorkout;
   final VoidCallback? onSwap;
+
+  /// Opens the history of this move. Null draws no button.
+  final VoidCallback? onOpenHistory;
 
   /// The move being demonstrated. Injectable; defaults to the design's.
   final PlannedMove? move;
@@ -53,6 +70,16 @@ class ExerciseVideoView extends StatelessWidget {
 
   /// Where the footage would come from. Returns null for every asset today.
   final WorkoutVideoRepository videos;
+
+  /// The library's row for [move], when it holds one: its clip plays here.
+  final LibraryExercise? clip;
+  final ExerciseMediaStore media;
+
+  /// Makes the player. Null draws the poster alone, as tests do.
+  final ExerciseClipPlayerFactory? players;
+
+  /// False when there is no swap to offer for the move she is on.
+  final bool canSwap;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +96,7 @@ class ExerciseVideoView extends StatelessWidget {
         move ??
         PlannedMove(
           exerciseId: 'goblet_squat',
-          name: l10n.gobletSquat,
+          name: englishMoveNames.gobletSquat,
           prescriptionLabel: l10n.n31012KgSuggested,
           cues: [
             l10n.heelsFlatKneesOutOverYourToes,
@@ -83,12 +110,14 @@ class ExerciseVideoView extends StatelessWidget {
     final source = assetId == null ? null : videos.urlFor(assetId);
 
     return AppScaffold(
+      // A clip is the picture; the header art only stands in without one.
+      showArt: clip == null,
       // Closes rather than goes back: this sits over the day, so the cross
       // returns her to the move list she opened it from.
       appBar: TrainTopBar(onClose: onClose),
       footer: [
         AppButton(l10n.backToTheWorkout, onPressed: onBackToWorkout),
-        if (AppRouter.screenIsOn('R05'))
+        if (AppRouter.screenIsOn('R05') && canSwap)
           AppButton(
             l10n.swapThisMove,
             variant: AppButtonVariant.outlined,
@@ -96,11 +125,35 @@ class ExerciseVideoView extends StatelessWidget {
             fontSize: 15,
             onPressed: onSwap,
           ),
+        if (onOpenHistory != null)
+          AppButton(
+            l10n.history,
+            key: const ValueKey('r04-history'),
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: onOpenHistory,
+          ),
       ],
       children: [
         // `source` is null until the library is produced, so the placeholder is
         // what she actually sees — and it looks deliberate rather than broken.
-        AppMedia(height: 200, showPlayButton: source == null),
+        if (clip case final library?)
+          ExerciseClipFrame(
+            exercise: library,
+            media: media,
+            players: players,
+            tallest: 0.4,
+            maxHeight: 240,
+          )
+        else if (source != null)
+          AppMedia(
+            height: 200,
+            showPlayButton: false,
+            child: _SourceClip(source: source, players: players),
+          )
+        else
+          const AppMedia(height: 200, showPlayButton: false),
         Row(
           children: [
             // The move's name is the page's subject, so it takes the one
@@ -109,7 +162,7 @@ class ExerciseVideoView extends StatelessWidget {
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: MarkerHighlight(
-                  child: Text(shown.name, style: AppText.titleL),
+                  child: MoveName(shown.name, style: AppText.titleL),
                 ),
               ),
             ),
@@ -118,7 +171,14 @@ class ExerciseVideoView extends StatelessWidget {
             // largest text size an unconstrained pill overflows the row.
             Flexible(
               child: AppPill(
-                clockLabel(duration),
+                clockLabel(
+                  clip == null
+                      ? duration
+                      : Duration(
+                          milliseconds: (clip!.clips.first.seconds * 1000)
+                              .round(),
+                        ),
+                ),
                 background: AppColors.surfaceContainer,
                 foreground: AppColors.onSurfaceVariant,
               ),
@@ -150,6 +210,69 @@ class ExerciseVideoView extends StatelessWidget {
           ),
         AppSageNote(l10n.kneesSoreSwapItForAGlute),
       ],
+    );
+  }
+}
+
+/// A clip from the video repository's own source, muted and looping inside the
+/// frame. Draws a plain surface until the clip opens, and keeps it if the clip
+/// cannot be played, so the page never shows a broken player.
+class _SourceClip extends StatefulWidget {
+  const _SourceClip({required this.source, this.players});
+
+  final Uri source;
+  final ExerciseClipPlayerFactory? players;
+
+  @override
+  State<_SourceClip> createState() => _SourceClipState();
+}
+
+class _SourceClipState extends State<_SourceClip> {
+  ExerciseClipPlayer? _player;
+  bool _ready = false;
+  int _generation = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_open());
+  }
+
+  Future<void> _open() async {
+    final generation = ++_generation;
+    if (widget.source.scheme != 'file') return;
+    final player = (widget.players ?? VideoPlayerClipPlayer.new)();
+    final opened = await player.open(File(widget.source.toFilePath()));
+    if (!mounted || generation != _generation || !opened) {
+      unawaited(player.dispose());
+      return;
+    }
+    _player = player;
+    if (!handMotionOff(context)) await player.play();
+    if (mounted && generation == _generation) setState(() => _ready = true);
+  }
+
+  @override
+  void dispose() {
+    _generation++;
+    unawaited(_player?.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final player = _player;
+    if (!_ready || player == null) {
+      return const ColoredBox(color: AppColors.surfaceContainer);
+    }
+    return FittedBox(
+      fit: BoxFit.cover,
+      clipBehavior: Clip.hardEdge,
+      child: SizedBox(
+        width: 100 * player.aspectRatio,
+        height: 100,
+        child: player.view(),
+      ),
     );
   }
 }

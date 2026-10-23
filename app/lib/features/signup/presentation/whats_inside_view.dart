@@ -26,18 +26,39 @@ class WhatsInsideView extends StatelessWidget {
     this.onCreateAccount,
     this.onLookAround,
     this.onBack,
+    this.onSkip,
   });
 
   final VoidCallback? onCreateAccount;
   final VoidCallback? onLookAround;
   final VoidCallback? onBack;
 
+  /// Skip, in the top bar: straight to sign-in. Null draws no Skip.
+  final VoidCallback? onSkip;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      appBar: AppTopBar(onBack: onBack),
+      appBar: AppTopBar(
+        onBack: onBack,
+        actions: [
+          if (onSkip != null)
+            TextButton(
+              onPressed: onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                minimumSize: const Size(48, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: Text(
+                l10n.skip,
+                style: AppText.label.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
+      ),
       footer: [
         AppButton(l10n.createMyAccount, onPressed: onCreateAccount),
         AppButton(
@@ -60,7 +81,7 @@ class WhatsInsideView extends StatelessWidget {
           alignment: AlignmentDirectional.centerStart,
           child: MarkerHighlight(
             drawOn: true,
-            delay: const Duration(milliseconds: 200),
+            delay: HandTiming.medium,
             child: Text(
               l10n.whatsInside,
               textWidthBasis: TextWidthBasis.longestLine,
@@ -81,16 +102,16 @@ class WhatsInsideView extends StatelessWidget {
         _Promise(
           icon: Icons.restaurant,
           title: l10n.foodYouAlreadyCook,
-          body: l10n.koshariFulAndMolokhiaInThePortions,
+          body: l10n.koshariFulAndMolokhiaInThePortions_1am39,
         ),
-        // Tracking her cycle is one of the reasons she installs the app, and
-        // the pitch never said so. Promised only with My cycle on.
+        // Before she signs in this names the daily check-in, never the cycle
+        // behind it. Promised only with that feature on.
         if (AppRouter.featureFlags.isOn(Feature.cycle)) ...[
           const HandRule(seed: 34, height: 8),
           _Promise(
             icon: Icons.water_drop_outlined,
-            title: l10n.yourCycleOnThisPhone,
-            body: l10n.noteYourPeriodAndHowYouFeel,
+            title: l10n.aPlanThatAdjustsToHowYou,
+            body: l10n.sayHowYouFeelTodayOnHarder,
           ),
         ],
         const HandRule(seed: 32, height: 8),
@@ -115,6 +136,8 @@ class WhatsInsideView extends StatelessWidget {
             body: l10n.verifiedWomenCoachesPaidMonthlyInEgyptian,
           ),
         ],
+        // Room under the last promise, so it clears the pinned button.
+        const SizedBox(height: 24),
       ],
     );
   }

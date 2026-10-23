@@ -1,38 +1,30 @@
-/// The recipe book's own colours, measured off the page.
+/// The recipe book's own colours: the app's Linen, Petrol and Pale Pink, laid
+/// out as a page.
 ///
-/// Sampled from a 1175 px render of page 3 of `Rahoma's Recipe Book.pdf`, and
-/// from page 2 for the section divider. Hand-written and deliberately separate
-/// from the generated `app_tokens.dart`, exactly as `hand_tokens.dart` is: a
-/// token regeneration must never be able to wipe this.
+/// Hand-written and deliberately separate from the generated `app_tokens.dart`,
+/// exactly as `hand_tokens.dart` is: a token regeneration must never be able to
+/// wipe this.
 ///
 /// ## This is a theme inside the hand system, not a fork of it
 ///
-/// The two languages are closer than they look. Both are paper, both are rose,
-/// both are drawn by hand. What the book adds is a much darker ink on a much
-/// warmer paper, and the arithmetic is worth stating: the app's own
-/// `AppColors.primary` on `AppColors.surface` measures **5.59:1**. The book's
-/// [ink] on [paper] measures **10.55:1**. Adopting her ink makes this surface
-/// the most readable in the product.
+/// Both are paper, both are drawn by hand. The book sets dark petrol ink
+/// ([ink]) on a white card ([paper]) over a soft pink ground ([bg]), and the
+/// arithmetic is worth stating: the app's own `AppColors.primary` on
+/// `AppColors.surface` measures **6.94:1**, while [ink] on [paper] measures
+/// **11.34:1**. Any text on [bg] is the dark petrol, never the lighter one,
+/// the same ink the cards use, so the page reads as one hand.
 ///
-/// That 5.59 was 4.58 until QA round two darkened seven foreground roles to
-/// clear WCAG on the raised surfaces (R2-41; see the comment at the top of
-/// `6-v2/src/tokens.mjs`). Her ink is still the more readable of the two by
-/// nearly double, and this comparison is re-measured rather than trusted:
-/// `r2_41_app_palette_contrast_test.dart` asserts the app's figure and
-/// `recipe_book_tokens_test.dart` asserts hers.
+/// `r2_41_app_palette_contrast_test.dart` asserts the app's figures and
+/// `recipe_book_tokens_test.dart` asserts the book's.
 ///
-/// ## One colour in the book is wrong and is not shipped
+/// ## The section title
 ///
-/// The divider's huge stacked section title is `#D3737E`, which measures
-/// **2.51:1** on the paper and **1.68:1** on the pink ground it is actually
-/// drawn over. That fails WCAG AA at any size, including the 3:1 allowance for
-/// large text, and it fails it by more on the ground than on the panel. It is
-/// the one thing in her palette that has to change, and
-/// [roseTitle] is the replacement: the same hue and saturation at 55% value,
-/// which clears large-text AA on the pink ground and normal-text AA on the
-/// paper. A designer may prefer a different landing point; the constraint is
-/// 3:1 on [bg] and 4.5:1 on [paper], and `recipe_book_tokens_test.dart`
-/// measures both rather than trusting this comment.
+/// The book's own divider title, `#D3737E`, measured **2.51:1** on the paper and
+/// **1.68:1** on the pink ground it is drawn over, and failed WCAG AA at any
+/// size. It was never shipped. [roseTitle] is the replacement, and in this
+/// palette it is the dark petrol: the constraint is 3:1 on [bg] and 4.5:1 on
+/// [paper], and `recipe_book_tokens_test.dart` measures both rather than
+/// trusting this comment.
 ///
 /// ## There is no dark mode here, and there must not be
 ///
@@ -41,41 +33,44 @@
 /// dark Eat tab inside a light app is worse than no dark mode at all, so this
 /// file has no dark variant and no `Brightness` branch.
 ///
-/// For the day the app gets one, the inversion that works is paper `#1A1114`
-/// with ink `#FBDCD9`, which measures 14.41:1; the pink survives only as the
+/// For the day the app gets one, the inversion that works is dark petrol
+/// paper with ink `#F9DEDC`; the pink survives only as the
 /// clip, a hairline edge and the section titles. Recorded here as a note and
 /// deliberately not wired.
 library;
 
 import 'package:flutter/painting.dart';
 
+import 'app_tokens.dart';
+
 /// The book's palette. Shaped like `HandInk`, on purpose: a reader who knows
 /// one knows the other.
 abstract final class BookInk {
-  /// The deeper pink behind the cards. The ground of every page.
-  static const Color bg = Color(0xFFF5A6AF);
+  /// The soft pink behind the cards. The ground of every page, kept soft so
+  /// the pink is a setting and not a wall.
+  static const Color bg = AppColors.pinkSoft;
 
   /// The card itself, and the divider's inner panel.
-  static const Color paper = Color(0xFFFBDCD9);
+  static const Color paper = AppColors.white;
 
-  /// Titles and body on [paper]. **10.55:1**, and hers exactly.
-  static const Color ink = Color(0xFF610904);
+  /// Titles and body on [paper]. **11.34:1**.
+  static const Color ink = AppColors.petrolDark;
 
-  /// The PS line under a section title. **12.54:1** on [paper].
-  static const Color inkSoft = Color(0xFF4B0009);
+  /// The PS line under a section title. **11.34:1** on [paper].
+  static const Color inkSoft = AppColors.petrolDark;
 
-  /// The wooden clip at the top of each card. Decorative only: it carries no
+  /// The clip at the top of each card. Decorative only: it carries no
   /// information, takes no tap and is excluded from the semantics tree, so it
   /// is never measured for contrast.
-  static const Color clip = Color(0xFFBF9A5E);
+  static const Color clip = AppColors.petrolMuted;
 
   /// The section title. Replaces the book's own `#D3737E`, which is 2.51:1 and
-  /// fails AA at any size. 5.72:1 on [paper], 3.83:1 on [bg].
-  static const Color roseTitle = Color(0xFF7F454C);
+  /// fails AA at any size. 11.34:1 on [paper], 8.91:1 on [bg].
+  static const Color roseTitle = AppColors.petrolDark;
 
-  /// A hairline for a rule or an edge on the paper. Her ink at low alpha rather
+  /// A hairline for a rule or an edge on the paper. The ink at low alpha rather
   /// than a grey, so nothing on this surface is a colour from a different book.
-  static const Color hairline = Color(0x33610904);
+  static const Color hairline = Color(0x33123F50);
 }
 
 /// How much room the card gives her words.

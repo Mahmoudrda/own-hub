@@ -8,15 +8,19 @@
 // R1-01 / R1-06 / R1-11: what a woman sees in her first sixty seconds.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 Future<void> _skipSetup(WidgetTester t, {String loc = 'en'}) async {
   await boot(t, locale: Locale(loc));
-  // O01, O02, O06, O03, O07, O04: one question a screen.
-  for (var i = 0; i < 6; i++) { await tapLabel(t, loc == 'en' ? 'Continue' : 'كمّلي'); }
+  // O01, O02, O06, O03, O04: one question a screen.
+  for (var i = 0; i < 5; i++) {
+    await tapLabel(t, loc == 'en' ? 'Continue' : 'كمّلي');
+  }
   // O05
   await tapLabel(t, loc == 'en' ? 'I will start tomorrow' : 'هبدأ بكرة');
 }

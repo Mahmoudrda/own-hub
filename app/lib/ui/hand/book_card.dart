@@ -30,6 +30,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../theme/hand_tokens.dart';
 import '../../theme/recipe_book_tokens.dart';
+import '../meal_image.dart';
 import 'food_marks.dart';
 import 'hand_geometry.dart';
 import 'hand_surface.dart';
@@ -42,6 +43,7 @@ class BookCard extends StatelessWidget {
     required this.child,
     this.markKey,
     this.markSize = 54,
+    this.imageAsset,
     this.onTap,
     this.padding = BookMetrics.cardPadding,
   });
@@ -55,6 +57,10 @@ class BookCard extends StatelessWidget {
   /// rather than a guessed picture of the wrong dish.
   final String? markKey;
   final double markSize;
+
+  /// A painted picture of the dish, shown in place of the mark. The mark comes
+  /// back if the picture cannot be read.
+  final String? imageAsset;
 
   final VoidCallback? onTap;
   final EdgeInsetsGeometry padding;
@@ -93,12 +99,21 @@ class BookCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (markKey != null) ...[
-                  FoodMark(
-                    markKey: markKey!,
+                if (imageAsset != null) ...[
+                  MealImage(
+                    asset: imageAsset,
                     size: markSize,
-                    ink: BookInk.ink,
+                    fallback: markKey == null
+                        ? SizedBox.square(dimension: markSize)
+                        : FoodMark(
+                            markKey: markKey!,
+                            size: markSize,
+                            ink: BookInk.ink,
+                          ),
                   ),
+                  const SizedBox(width: 10),
+                ] else if (markKey != null) ...[
+                  FoodMark(markKey: markKey!, size: markSize, ink: BookInk.ink),
                   const SizedBox(width: 10),
                 ],
                 Expanded(child: child),

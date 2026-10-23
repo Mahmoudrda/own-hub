@@ -64,9 +64,9 @@ Future<_Stack> _toSetupFromPledge(WidgetTester tester) async {
 
   await _tap(tester, 'I agree, let me in');
   expect(OnboardingState.instance.enteredFromSignup, isTrue);
-  // Through the six questions to O05, on their preselected answers: at home,
+  // Through the five questions to O05, on their preselected answers: at home,
   // so what she has there (O06) is one of them.
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 5; i++) {
     await _tap(tester, 'Continue');
   }
   expect(stack.names.last, _name('O05'));

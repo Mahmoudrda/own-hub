@@ -8,9 +8,11 @@
 // R1-07 / R1-08: the undo bar, measured second by second.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 int get _logged => AppRouter.todayRepository.day.week.sessionsLogged;
@@ -39,13 +41,23 @@ void main() {
     await open(t, appDestinations['T02']!.name, locale: const Locale('en'));
     await tapLabel(t, RegExp("Legs and glutes, today's plan"));
     await t.pump(const Duration(seconds: 2));
-    print('at 2s: sessions=$_logged bar=${find.byType(SnackBar).evaluate().length}');
+    print(
+      'at 2s: sessions=$_logged bar=${find.byType(SnackBar).evaluate().length}',
+    );
     await tapLabel(t, RegExp('Undo'));
-    print('right after Undo: sessions=$_logged bar=${find.byType(SnackBar).evaluate().length}');
-    print('  text: ${paintedText(t).where((e)=>e.toLowerCase().contains("logged")||e.toLowerCase().contains("undo")).join(" | ")}');
+    print(
+      'right after Undo: sessions=$_logged bar=${find.byType(SnackBar).evaluate().length}',
+    );
+    print(
+      '  text: ${paintedText(t).where((e) => e.toLowerCase().contains("logged") || e.toLowerCase().contains("undo")).join(" | ")}',
+    );
     await t.pump(const Duration(seconds: 12));
-    print('12s after Undo: sessions=$_logged bar=${find.byType(SnackBar).evaluate().length}');
-    print('  Home week now: ${AppRouter.todayRepository.day.week.sessionsLogged} of ${AppRouter.todayRepository.day.week.sessionsTarget}');
+    print(
+      '12s after Undo: sessions=$_logged bar=${find.byType(SnackBar).evaluate().length}',
+    );
+    print(
+      '  Home week now: ${AppRouter.todayRepository.day.week.sessionsLogged} of ${AppRouter.todayRepository.day.week.sessionsTarget}',
+    );
     s.dispose();
   });
 
@@ -53,10 +65,20 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     AppRouter.intakeRepository.markSetupDone();
-    for (final id in ['R07','R08','R09','R10','R04','R06','R12','R13','R02']) {
+    for (final id in [
+      'R07',
+      'R08',
+      'R09',
+      'R10',
+      'R04',
+      'R06',
+      'R12',
+      'R13',
+      'R02',
+    ]) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       print('$id PAINTED: ${paintedText(t).join(" | ")}');
-      print('$id TAPPABLE: ${tappables(t).map((e)=>e.label).join(" | ")}');
+      print('$id TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
     }
     s.dispose();
   });

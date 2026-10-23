@@ -83,6 +83,10 @@ void main() {
         );
         expect(button.onPressed, isNull);
 
+        // Scrolled clear of the nav bar first: the raised Log food button sits
+        // over the bottom of the screen, and a tap there is hers, not this one.
+        await tester.ensureVisible(find.text('Work with Sara again'));
+        await tester.pumpAndSettle();
         await tester.tap(
           find.text('Work with Sara again'),
           warnIfMissed: false,

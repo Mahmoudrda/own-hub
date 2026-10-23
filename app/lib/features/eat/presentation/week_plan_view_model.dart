@@ -45,10 +45,17 @@ class DinnerRow {
 /// One section of E08, grouped the way a market trip actually goes.
 @immutable
 class GroceryGroupView {
-  const GroceryGroupView({required this.group, required this.lines});
+  const GroceryGroupView({
+    required this.group,
+    required this.lines,
+    this.recipeId,
+  });
 
   final GroceryGroup group;
   final List<GroceryLine> lines;
+
+  /// Set when the section is one dinner's lines; null for a market group.
+  final String? recipeId;
 
   int get tickedCount => lines.where((l) => l.ticked).length;
 }
@@ -115,6 +122,16 @@ class WeekPlanViewModel {
           DinnerRow(day: day, recipeId: plan?.dinners[day]),
       ],
       groups: [
+        // Her dinners first, a section each, in the order the week runs.
+        for (final recipeId in _recipeIdsIn(plan))
+          GroceryGroupView(
+            group: GroceryGroup.cupboard,
+            recipeId: recipeId,
+            lines: [
+              for (final line in plan!.groceries.values)
+                if (line.recipeId == recipeId) line,
+            ],
+          ),
         for (final group in groupOrder)
           if (_linesIn(plan, group).isNotEmpty)
             GroceryGroupView(group: group, lines: _linesIn(plan, group)),
@@ -131,6 +148,7 @@ class WeekPlanViewModel {
       for (final group in view.groups)
         GroceryGroupView(
           group: group.group,
+          recipeId: group.recipeId,
           lines: [
             for (final line in group.lines)
               if (line.itemKey == itemKey)
@@ -159,6 +177,22 @@ class WeekPlanViewModel {
 
   List<GroceryLine> _linesIn(MealPlan? plan, GroceryGroup group) {
     if (plan == null) return const <GroceryLine>[];
-    return plan.groceries.values.where((l) => l.group == group).toList();
+    return plan.groceries.values
+        .where((l) => l.recipeId == null && l.group == group)
+        .toList();
+  }
+
+  /// The dinners that have lines, in the order the week runs.
+  List<String> _recipeIdsIn(MealPlan? plan) {
+    if (plan == null) return const <String>[];
+    final days = plan.dinners.keys.toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    final onList = {for (final line in plan.groceries.values) ?line.recipeId};
+    final ordered = <String>[];
+    for (final day in days) {
+      final id = plan.dinners[day]!;
+      if (onList.contains(id) && !ordered.contains(id)) ordered.add(id);
+    }
+    return ordered;
   }
 }

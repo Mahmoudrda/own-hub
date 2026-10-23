@@ -51,7 +51,9 @@ String _labelOf(SemanticsNode n) {
   final d = n.getSemanticsData();
   final parts = [d.label, d.tooltip, d.hint].where((s) => s.trim().isNotEmpty);
   final s = parts.join(' / ').replaceAll('\n', ' ');
-  return s.isEmpty ? '(unlabelled)' : (s.length > 60 ? '${s.substring(0, 60)}…' : s);
+  return s.isEmpty
+      ? '(unlabelled)'
+      : (s.length > 60 ? '${s.substring(0, 60)}…' : s);
 }
 
 Future<void> _settle(WidgetTester t) async {
@@ -76,9 +78,23 @@ Future<bool> _open(WidgetTester t, String route) async {
 }
 
 const _skip = {
-  'Home', 'Train', 'Community', 'Eat', 'Today', 'Clients', 'Chats',
-  'Earnings', 'Back', 'رجوع',
+  'Home',
+  'Train',
+  'Community',
+  'Eat',
+  'Insights',
+  'Today',
+  'Clients',
+  'Chats',
+  'Earnings',
+  'Back',
+  'ارجعي',
 };
+
+/// Rows on the old demo coach screens that open a screen coaching no longer
+/// routes (K05 getting paid, K04 offers). Both screens are dark in this
+/// release (payments, the portfolio flag), so no woman can tap them.
+const _retiredDoors = {'K17', 'B06'};
 
 void main() {
   final saved = AppRouter.featureFlags;
@@ -172,7 +188,8 @@ void main() {
           await tester.pump(const Duration(seconds: 6));
           tester.takeException();
           if (outcome.startsWith('EXCEPTION') ||
-              outcome.startsWith('NOT-BUILT')) {
+              (outcome.startsWith('NOT-BUILT') &&
+                  !_retiredDoors.contains(id))) {
             hard.add('$id [$label] $outcome');
           }
           log.writeln('$id\t$i\t$outcome\t$label');

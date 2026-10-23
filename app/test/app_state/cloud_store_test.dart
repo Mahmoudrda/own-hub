@@ -76,7 +76,8 @@ void main() {
       expect(
         file.existsSync(),
         isTrue,
-        reason: 'the rules are a deployment artifact and must be there to '
+        reason:
+            'the rules are a deployment artifact and must be there to '
             'check against — a test that skips them checks nothing',
       );
       rules = _Rules(file.readAsStringSync());
@@ -102,7 +103,8 @@ void main() {
         expect(
           allowed,
           isNotEmpty,
-          reason: 'no hasOnly found for $collection — the parser and the '
+          reason:
+              'no hasOnly found for $collection — the parser and the '
               'rules have drifted apart',
         );
         final written = docs.where((d) => d.collection == collection);
@@ -155,53 +157,57 @@ void main() {
         expect(
           doc.data.keys.toSet().intersection(banned),
           isEmpty,
-          reason: '${doc.collection}/${doc.id} — rule 3 is enforced by the '
+          reason:
+              '${doc.collection}/${doc.id} — rule 3 is enforced by the '
               'field not existing, here as well as in the rules',
         );
       }
     });
 
-    test('a check-in answers only in words the rules know, and never null', () async {
-      CycleAppState.instance.saveCheckIn(
-        const TodayCheckIn(
-          energy: Energy.low,
-          cramps: Cramps.mild,
-          appetite: Appetite.ok,
-          sleep: Sleep.poor,
-          bloating: Bloating.moderate,
-          bleeding: Bleeding.heavy,
-        ),
-      );
-      final doc = CloudDocuments.capture().firstWhere(
-        (d) => d.collection == 'checkins',
-      );
+    test(
+      'a check-in answers only in words the rules know, and never null',
+      () async {
+        CycleAppState.instance.saveCheckIn(
+          const TodayCheckIn(
+            energy: Energy.low,
+            cramps: Cramps.mild,
+            appetite: Appetite.ok,
+            sleep: Sleep.poor,
+            bloating: Bloating.moderate,
+            bleeding: Bleeding.heavy,
+          ),
+        );
+        final doc = CloudDocuments.capture().firstWhere(
+          (d) => d.collection == 'checkins',
+        );
 
-      for (final field in const [
-        'energy',
-        'cramps',
-        'appetite',
-        'sleep',
-        'bloating',
-        'bleeding',
-      ]) {
-        final allowed = rules.valuesFor(field);
-        expect(allowed, isNotEmpty, reason: 'no value list found for $field');
-        expect(allowed, contains(doc.data[field]));
-      }
+        for (final field in const [
+          'energy',
+          'cramps',
+          'appetite',
+          'sleep',
+          'bloating',
+          'bleeding',
+        ]) {
+          final allowed = rules.valuesFor(field);
+          expect(allowed, isNotEmpty, reason: 'no value list found for $field');
+          expect(allowed, contains(doc.data[field]));
+        }
 
-      // A key present and null passes `hasOnly` and then fails
-      // `energy in ['low','ok','high']`, which refuses the whole document. An
-      // unanswered question must be an ABSENT key.
-      CycleAppState.instance.reset();
-      CycleAppState.instance.saveCheckIn(
-        const TodayCheckIn(energy: Energy.high),
-      );
-      final sparse = CloudDocuments.capture().firstWhere(
-        (d) => d.collection == 'checkins',
-      );
-      expect(sparse.data.keys, ['energy']);
-      expect(sparse.data.values, isNot(contains(null)));
-    });
+        // A key present and null passes `hasOnly` and then fails
+        // `energy in ['low','ok','high']`, which refuses the whole document. An
+        // unanswered question must be an ABSENT key.
+        CycleAppState.instance.reset();
+        CycleAppState.instance.saveCheckIn(
+          const TodayCheckIn(energy: Energy.high),
+        );
+        final sparse = CloudDocuments.capture().firstWhere(
+          (d) => d.collection == 'checkins',
+        );
+        expect(sparse.data.keys, ['energy']);
+        expect(sparse.data.values, isNot(contains(null)));
+      },
+    );
 
     test('a finished live session is born with nothing logged', () async {
       _giveHerAFinishedLiveSession();
@@ -253,36 +259,43 @@ void main() {
       expect(period.data['stillBleeding'], isFalse);
     });
 
-    test('the users document touches only the four paths update names', () async {
-      await _fillEverything();
-      final root = CloudDocuments.capture().firstWhere((d) => d.isRoot);
-      final allowed = rules.onlyTouchesForUsers();
+    test(
+      'the users document touches only the four paths update names',
+      () async {
+        await _fillEverything();
+        final root = CloudDocuments.capture().firstWhere((d) => d.isRoot);
+        final allowed = rules.onlyTouchesForUsers();
 
-      expect(allowed, {'profile', 'privacy', 'notify', 'updatedAt'});
-      expect(root.data.keys.toSet().difference(allowed), isEmpty);
-      expect(
-        root.mergeFields!.toSet(),
-        allowed,
-        reason: 'named paths, so sign-up\'s own fields on this document are '
-            'neither deleted nor deep-merged into something hasOnly refuses',
-      );
+        expect(allowed, {'profile', 'privacy', 'notify', 'updatedAt'});
+        expect(root.data.keys.toSet().difference(allowed), isEmpty);
+        expect(
+          root.mergeFields!.toSet(),
+          allowed,
+          reason:
+              'named paths, so sign-up\'s own fields on this document are '
+              'neither deleted nor deep-merged into something hasOnly refuses',
+        );
 
-      // validPrivacy / validNotify, which the app was the only thing checking
-      // until the rules grew a shape for them.
-      final privacy = root.data['privacy']! as Map<String, Object?>;
-      expect(privacy.keys, containsAll(const [
-        'profileVisible',
-        'showBests',
-        'blurFacesDefault',
-        'shareLogsWithCoach',
-      ]));
-      for (final value in privacy.values.take(4)) {
-        expect(value, isA<bool>());
-      }
-      final notify = root.data['notify']! as Map<String, Object?>;
-      expect(notify['quietStart'], inInclusiveRange(0, 1439));
-      expect(notify['quietEnd'], inInclusiveRange(0, 1439));
-    });
+        // validPrivacy / validNotify, which the app was the only thing checking
+        // until the rules grew a shape for them.
+        final privacy = root.data['privacy']! as Map<String, Object?>;
+        expect(
+          privacy.keys,
+          containsAll(const [
+            'profileVisible',
+            'showBests',
+            'blurFacesDefault',
+            'shareLogsWithCoach',
+          ]),
+        );
+        for (final value in privacy.values.take(4)) {
+          expect(value, isA<bool>());
+        }
+        final notify = root.data['notify']! as Map<String, Object?>;
+        expect(notify['quietStart'], inInclusiveRange(0, 1439));
+        expect(notify['quietEnd'], inInclusiveRange(0, 1439));
+      },
+    );
 
     test('nothing computed about her cycle can be stored', () async {
       await AppRouter.cycleRepository.completeSetup(
@@ -319,7 +332,8 @@ void main() {
       expect(
         _whatSheHas(),
         before,
-        reason: 'this is the bug that silently deletes a woman\'s training '
+        reason:
+            'this is the bug that silently deletes a woman\'s training '
             'history — an empty cloud must be indistinguishable from no cloud',
       );
       expect(CloudStore.instance.mergedFromCloud, 0);
@@ -327,7 +341,8 @@ void main() {
       expect(
         cloud.pushed.map((d) => d.collection).toSet(),
         containsAll(const ['sessions', 'meals', 'checkins', 'periods']),
-        reason: 'and the whole of her week goes up, which is the point of '
+        reason:
+            'and the whole of her week goes up, which is the point of '
             'signing in',
       );
     });
@@ -362,72 +377,79 @@ void main() {
       expect(CloudStore.instance.mergedFromCloud, 1);
     });
 
-    test('a record that collides with a local one does not replace it', () async {
-      AppRouter.mealRepository.store.apply(
-        MealWrite.transform(
-          dayId: _dayKey,
-          slot: MealSlot.lunch,
-          tz: WeekKey.fallbackTimezone,
-          libVersion: 1,
-          added: [_koshari],
-        ),
-      );
-
-      final cloud = _FakeCloud()
-        ..stored.add(
-          const CloudDoc(
-            collection: 'meals',
-            id: _dayKey,
-            // An older copy of the same day, from before she logged lunch.
-            data: <String, Object?>{
-              'slots': <String, Object?>{},
-              'totals': <String, Object?>{'kcal': 0, 'protein': 0},
-              'tz': 'Africa/Cairo',
-              'libVersion': 1,
-            },
+    test(
+      'a record that collides with a local one does not replace it',
+      () async {
+        AppRouter.mealRepository.store.apply(
+          MealWrite.transform(
+            dayId: _dayKey,
+            slot: MealSlot.lunch,
+            tz: WeekKey.fallbackTimezone,
+            libVersion: 1,
+            added: [_koshari],
           ),
         );
 
-      CloudStore.instance.transport = cloud;
-      await CloudStore.instance.linkFor(_uid);
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: 'meals',
+              id: _dayKey,
+              // An older copy of the same day, from before she logged lunch.
+              data: <String, Object?>{
+                'slots': <String, Object?>{},
+                'totals': <String, Object?>{'kcal': 0, 'protein': 0},
+                'tz': 'Africa/Cairo',
+                'libVersion': 1,
+              },
+            ),
+          );
 
-      final day = AppRouter.mealRepository.store.days[_dayKey];
-      expect(
-        day?.itemsIn(MealSlot.lunch).single.foodId,
-        'koshari_bowl',
-        reason: 'the local copy is at least as new as the copy made from it',
-      );
-      expect(CloudStore.instance.mergedFromCloud, 0);
-    });
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
 
-    test('a cycle she set up here is not replaced by the one in the cloud', () async {
-      await AppRouter.cycleRepository.completeSetup(
-        mode: CycleMode.symptomsOnly,
-        contextFlags: const {CycleContextFlag.perimenopause},
-      );
+        final day = AppRouter.mealRepository.store.days[_dayKey];
+        expect(
+          day?.itemsIn(MealSlot.lunch).single.foodId,
+          'koshari_bowl',
+          reason: 'the local copy is at least as new as the copy made from it',
+        );
+        expect(CloudStore.instance.mergedFromCloud, 0);
+      },
+    );
 
-      final cloud = _FakeCloud()
-        ..stored.add(
-          const CloudDoc(
-            collection: 'cycle',
-            id: 'current',
-            data: <String, Object?>{
-              'mode': 'datesAndSymptoms',
-              'contextFlags': <Object?>[],
-            },
-          ),
+    test(
+      'a cycle she set up here is not replaced by the one in the cloud',
+      () async {
+        await AppRouter.cycleRepository.completeSetup(
+          mode: CycleMode.symptomsOnly,
+          contextFlags: const {CycleContextFlag.perimenopause},
         );
 
-      CloudStore.instance.transport = cloud;
-      await CloudStore.instance.linkFor(_uid);
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: 'cycle',
+              id: 'current',
+              data: <String, Object?>{
+                'mode': 'datesAndSymptoms',
+                'contextFlags': <Object?>[],
+              },
+            ),
+          );
 
-      expect(
-        AppRouter.cycleRepository.store.cycle?.mode,
-        CycleMode.symptomsOnly,
-        reason: 'Y14 is a decision she made about what this app may show her, '
-            'and a merge must never quietly widen it',
-      );
-    });
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+
+        expect(
+          AppRouter.cycleRepository.store.cycle?.mode,
+          CycleMode.symptomsOnly,
+          reason:
+              'Y14 is a decision she made about what this app may show her, '
+              'and a merge must never quietly widen it',
+        );
+      },
+    );
 
     test('a cycle she never set up here is taken from the cloud', () async {
       expect(AppRouter.cycleRepository.store.cycle, isNull);
@@ -497,29 +519,33 @@ void main() {
       expect(
         AppRouter.todayRepository.noticeSeen(NoticeKind.quietWeek, week),
         isTrue,
-        reason: 'showing "you had a quiet week" again to a woman who has '
+        reason:
+            'showing "you had a quiet week" again to a woman who has '
             'already read it and moved on is the harm P0-WEEK-03 names',
       );
     });
 
-    test('the capture round-trips back into stores that were emptied', () async {
-      await _fillEverything();
-      final before = _whatSheHas();
-      final captured = CloudDocuments.capture();
+    test(
+      'the capture round-trips back into stores that were emptied',
+      () async {
+        await _fillEverything();
+        final before = _whatSheHas();
+        final captured = CloudDocuments.capture();
 
-      await const ThisPhoneWipe().clearPersistence();
-      expect(nothingOfHersRemains, isTrue);
+        await const ThisPhoneWipe().clearPersistence();
+        expect(nothingOfHersRemains, isTrue);
 
-      CloudDocuments.mergeIn(captured);
+        CloudDocuments.mergeIn(captured);
 
-      final after = _whatSheHas();
-      expect(after['sessions'], before['sessions']);
-      expect(after['meals'], before['meals']);
-      expect(after['checkins'], before['checkins']);
-      expect(after['periods'], before['periods']);
-      expect(after['measurements'], before['measurements']);
-      expect(after['cycle'], before['cycle']);
-    });
+        final after = _whatSheHas();
+        expect(after['sessions'], before['sessions']);
+        expect(after['meals'], before['meals']);
+        expect(after['checkins'], before['checkins']);
+        expect(after['periods'], before['periods']);
+        expect(after['measurements'], before['measurements']);
+        expect(after['cycle'], before['cycle']);
+      },
+    );
   });
 
   // =========================================================================
@@ -647,7 +673,8 @@ void main() {
       expect(
         cloud.pushed.length,
         first,
-        reason: 'a document already on Firestore\'s own durable queue is not '
+        reason:
+            'a document already on Firestore\'s own durable queue is not '
             'handed to it again every three seconds',
       );
     });
@@ -697,52 +724,60 @@ void main() {
 
     // N5. Off purges the cloud copy on the server; on again must send the
     // whole history back, not only what changed since.
-    test('backup on, off, on again re-uploads the full health history',
-        () async {
-      await _fillEverything();
-      final cloud = _FakeCloud();
-      CloudStore.instance.transport = cloud;
-      await CloudStore.instance.linkFor(_uid);
-      await _settle();
+    test(
+      'backup on, off, on again re-uploads the full health history',
+      () async {
+        await _fillEverything();
+        final cloud = _FakeCloud();
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+        await _settle();
 
-      bool health(CloudDoc d) =>
-          kHealthCollections.contains(d.collection) || d.isRoot;
-      final firstHealth = cloud.pushed.where(health).map((d) => d.path).toSet();
-      expect(firstHealth, isNotEmpty);
+        bool health(CloudDoc d) =>
+            kHealthCollections.contains(d.collection) || d.isRoot;
+        final firstHealth = cloud.pushed
+            .where(health)
+            .map((d) => d.path)
+            .toSet();
+        expect(firstHealth, isNotEmpty);
 
-      // Off: the server purges; this phone forgets what it had accepted.
-      await HealthBackupPreference.instance.set(false);
-      await CloudStore.instance.forgetHealthUploads();
-      // On again, nothing else changed.
-      await HealthBackupPreference.instance.set(true);
-      final before = cloud.pushed.length;
-      await CloudStore.instance.syncNow();
-      await _settle();
+        // Off: the server purges; this phone forgets what it had accepted.
+        await HealthBackupPreference.instance.set(false);
+        await CloudStore.instance.forgetHealthUploads();
+        // On again, nothing else changed.
+        await HealthBackupPreference.instance.set(true);
+        final before = cloud.pushed.length;
+        await CloudStore.instance.syncNow();
+        await _settle();
 
-      final again =
-          cloud.pushed.sublist(before).where(health).map((d) => d.path).toSet();
-      expect(again, firstHealth);
-    });
-
-    test('forgetting health uploads leaves the rest of the ledger alone',
-        () async {
-      await _fillEverything();
-      final cloud = _FakeCloud();
-      CloudStore.instance.transport = cloud;
-      await CloudStore.instance.linkFor(_uid);
-      await _settle();
-
-      await CloudStore.instance.forgetHealthUploads();
-      final before = cloud.pushed.length;
-      await CloudStore.instance.syncNow();
-      await _settle();
-      expect(
-        cloud.pushed
+        final again = cloud.pushed
             .sublist(before)
-            .where((d) => d.collection == 'sessions'),
-        isEmpty,
-      );
-    });
+            .where(health)
+            .map((d) => d.path)
+            .toSet();
+        expect(again, firstHealth);
+      },
+    );
+
+    test(
+      'forgetting health uploads leaves the rest of the ledger alone',
+      () async {
+        await _fillEverything();
+        final cloud = _FakeCloud();
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+        await _settle();
+
+        await CloudStore.instance.forgetHealthUploads();
+        final before = cloud.pushed.length;
+        await CloudStore.instance.syncNow();
+        await _settle();
+        expect(
+          cloud.pushed.sublist(before).where((d) => d.collection == 'sessions'),
+          isEmpty,
+        );
+      },
+    );
 
     test('deleting her account forgets the link and the ledger', () async {
       await _fillEverything();
@@ -798,7 +833,8 @@ void main() {
       expect(
         PendingAnswers.settled,
         isTrue,
-        reason: 'she is not verified, so the phone is the whole answer and '
+        reason:
+            'she is not verified, so the phone is the whole answer and '
             'Home must say what the phone says',
       );
     });
@@ -823,7 +859,8 @@ void main() {
       expect(
         PendingAnswers.settled,
         isTrue,
-        reason: 'by now she has been shown something, and taking it back is '
+        reason:
+            'by now she has been shown something, and taking it back is '
             'the flicker this exists to prevent',
       );
     });
@@ -842,21 +879,33 @@ void main() {
   group('health data stays on the phone unless she opted in', () {
     setUp(() => HealthBackupPreference.instance.set(false));
 
-    test('the capture holds no health collection and no health profile key',
-        () async {
-      await _fillEverything();
-      final docs = CloudDocuments.capture();
-      for (final doc in docs) {
-        expect(kHealthCollections, isNot(contains(doc.collection)),
-            reason: doc.toString());
-      }
-      final root = docs.firstWhere((d) => d.isRoot);
+    test(
+      'the capture holds no health collection and no health profile key',
+      () async {
+        await _fillEverything();
+        final docs = CloudDocuments.capture();
+        for (final doc in docs) {
+          expect(
+            kHealthCollections,
+            isNot(contains(doc.collection)),
+            reason: doc.toString(),
+          );
+        }
+        final root = docs.firstWhere((d) => d.isRoot);
+        final profile = root.data['profile']! as Map<String, Object?>;
+        // Absent, not null: the rules test for the keys' presence.
+        expect(profile.containsKey('lifeStage'), isFalse);
+        expect(profile.containsKey('allergies'), isFalse);
+        // The rest of her profile still travels.
+        expect(profile.containsKey('goal'), isTrue);
+      },
+    );
+
+    test('Build muscle travels in her profile by its wire name', () async {
+      await AppRouter.intakeRepository.merge(goal: TrainingGoal.buildMuscle);
+      final root = CloudDocuments.capture().firstWhere((d) => d.isRoot);
       final profile = root.data['profile']! as Map<String, Object?>;
-      // Absent, not null: the rules test for the keys' presence.
-      expect(profile.containsKey('lifeStage'), isFalse);
-      expect(profile.containsKey('allergies'), isFalse);
-      // The rest of her profile still travels.
-      expect(profile.containsKey('goal'), isTrue);
+      expect(profile['goal'], 'build_muscle');
     });
 
     // N12. The allergens she chose to eat anyway are allergy data. With the
@@ -904,8 +953,102 @@ void main() {
     // lifeStage key. Folding it as "setup done, life stage none" would give a
     // pregnant, postpartum or injured woman the standard programme without
     // asking. Her other answers come back; setup stays owed so she is asked.
-    test('a cloud profile with no life stage does not mark setup as done',
-        () async {
+    test(
+      'a cloud profile with no life stage does not mark setup as done',
+      () async {
+        AppRouter.intakeRepository.reset();
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: '',
+              id: '',
+              data: <String, Object?>{
+                'profile': <String, Object?>{
+                  'goal': 'stronger',
+                  'days': 4,
+                  'minutes': 30,
+                  'setupDone': true,
+                },
+              },
+            ),
+          );
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+
+        expect(AppRouter.intakeRepository.setupDone, isFalse);
+        expect(
+          AppRouter.intakeRepository.read().days,
+          4,
+          reason: 'her other answers still come back',
+        );
+        expect(
+          AppRouter.dietaryRepository.read().allergies,
+          isNull,
+          reason: 'allergies are unknown, so she is asked again',
+        );
+      },
+    );
+
+    test(
+      'a cloud profile that carries her life stage restores it as done',
+      () async {
+        AppRouter.intakeRepository.reset();
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: '',
+              id: '',
+              data: <String, Object?>{
+                'profile': <String, Object?>{
+                  'goal': 'stronger',
+                  'days': 4,
+                  'minutes': 30,
+                  'lifeStage': 'postpartum',
+                  'setupDone': true,
+                },
+              },
+            ),
+          );
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+
+        expect(AppRouter.intakeRepository.setupDone, isTrue);
+        expect(
+          AppRouter.intakeRepository.read().lifeStage,
+          LifeStage.postpartum,
+        );
+      },
+    );
+
+    test(
+      'a cloud profile with Build muscle comes back as Build muscle',
+      () async {
+        AppRouter.intakeRepository.reset();
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: '',
+              id: '',
+              data: <String, Object?>{
+                'profile': <String, Object?>{
+                  'goal': 'build_muscle',
+                  'lifeStage': 'none',
+                  'setupDone': true,
+                },
+              },
+            ),
+          );
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+
+        expect(
+          AppRouter.intakeRepository.read().goal,
+          TrainingGoal.buildMuscle,
+        );
+      },
+    );
+
+    test('a cloud goal no build knows reads as the default goal', () async {
       AppRouter.intakeRepository.reset();
       final cloud = _FakeCloud()
         ..stored.add(
@@ -914,9 +1057,8 @@ void main() {
             id: '',
             data: <String, Object?>{
               'profile': <String, Object?>{
-                'goal': 'stronger',
-                'days': 4,
-                'minutes': 30,
+                'goal': 'bulk_up_fast',
+                'lifeStage': 'none',
                 'setupDone': true,
               },
             },
@@ -925,65 +1067,37 @@ void main() {
       CloudStore.instance.transport = cloud;
       await CloudStore.instance.linkFor(_uid);
 
-      expect(AppRouter.intakeRepository.setupDone, isFalse);
-      expect(AppRouter.intakeRepository.read().days, 4,
-          reason: 'her other answers still come back');
-      expect(AppRouter.dietaryRepository.read().allergies, isNull,
-          reason: 'allergies are unknown, so she is asked again');
+      expect(AppRouter.intakeRepository.read().goal, Intake.defaults.goal);
     });
 
-    test('a cloud profile that carries her life stage restores it as done',
-        () async {
-      AppRouter.intakeRepository.reset();
-      final cloud = _FakeCloud()
-        ..stored.add(
-          const CloudDoc(
-            collection: '',
-            id: '',
-            data: <String, Object?>{
-              'profile': <String, Object?>{
-                'goal': 'stronger',
-                'days': 4,
-                'minutes': 30,
-                'lifeStage': 'postpartum',
-                'setupDone': true,
-              },
-            },
-          ),
+    test(
+      'a health document from the cloud is not folded into the phone',
+      () async {
+        final cloud = _FakeCloud()
+          ..stored.add(
+            const CloudDoc(
+              collection: 'periods',
+              id: '2026-08-01',
+              data: <String, Object?>{'start': '2026-08-01'},
+            ),
+          );
+        CloudStore.instance.transport = cloud;
+        await CloudStore.instance.linkFor(_uid);
+        expect(CloudStore.instance.mergedFromCloud, 0);
+        expect(
+          cloud.pushed.where((d) => kHealthCollections.contains(d.collection)),
+          isEmpty,
         );
-      CloudStore.instance.transport = cloud;
-      await CloudStore.instance.linkFor(_uid);
-
-      expect(AppRouter.intakeRepository.setupDone, isTrue);
-      expect(
-          AppRouter.intakeRepository.read().lifeStage, LifeStage.postpartum);
-    });
-
-    test('a health document from the cloud is not folded into the phone',
-        () async {
-      final cloud = _FakeCloud()
-        ..stored.add(
-          const CloudDoc(
-            collection: 'periods',
-            id: '2026-08-01',
-            data: <String, Object?>{'start': '2026-08-01'},
-          ),
-        );
-      CloudStore.instance.transport = cloud;
-      await CloudStore.instance.linkFor(_uid);
-      expect(CloudStore.instance.mergedFromCloud, 0);
-      expect(
-        cloud.pushed.where((d) => kHealthCollections.contains(d.collection)),
-        isEmpty,
-      );
-    });
+      },
+    );
   });
 }
 
-List<Map<String, Object?>> _mealItems(List<CloudDoc> docs) => <Map<String, Object?>>[
+List<Map<String, Object?>> _mealItems(
+  List<CloudDoc> docs,
+) => <Map<String, Object?>>[
   for (final doc in docs.where((d) => d.collection == 'meals'))
-    for (final slot
-        in (doc.data['slots']! as Map<String, Object?>).values)
+    for (final slot in (doc.data['slots']! as Map<String, Object?>).values)
       for (final item in slot! as List<Object?>) item! as Map<String, Object?>,
 ];
 
@@ -1105,10 +1219,8 @@ class _Rules {
     return body == null ? const <String>{} : _quoted(body.group(1)!);
   }
 
-  static Set<String> _quoted(String list) => RegExp("'([^']*)'")
-      .allMatches(list)
-      .map((m) => m.group(1)!)
-      .toSet();
+  static Set<String> _quoted(String list) =>
+      RegExp("'([^']*)'").allMatches(list).map((m) => m.group(1)!).toSet();
 }
 
 // ---------------------------------------------------------------- fixtures --
@@ -1141,8 +1253,11 @@ Future<void> _fillEverything() async {
       added: [_koshari],
     ),
   );
-  AppRouter.mealRepository.store.plans[WeekKey.of(DateTime(2026, 9, 1)).id] =
-      const MealPlan(weekId: '2026-W36', dinners: {PlanDay.mon: 'molokhia'});
+  AppRouter.mealRepository.store.plans[WeekKey.of(DateTime(2026, 9, 1))
+      .id] = const MealPlan(
+    weekId: '2026-W36',
+    dinners: {PlanDay.mon: 'molokhia'},
+  );
   CycleAppState.instance.saveCheckIn(
     const TodayCheckIn(energy: Energy.low, cramps: Cramps.mild),
   );

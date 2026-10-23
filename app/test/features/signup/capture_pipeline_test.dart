@@ -53,7 +53,10 @@ void main() {
     test('reads a progressive JPEG too', () {
       // SOF2. Phone encoders emit both, and a parser that only knew SOF0 would
       // silently report "not a JPEG" for half the devices in the field.
-      expect(jpegLongEdge(_jpeg(width: 1600, height: 1200, marker: 0xC2)), 1600);
+      expect(
+        jpegLongEdge(_jpeg(width: 1600, height: 1200, marker: 0xC2)),
+        1600,
+      );
     });
 
     test('is not fooled by a marker-shaped byte inside a segment', () {
@@ -100,11 +103,12 @@ void main() {
   group('frame quality', () {
     /// A flat grey field. No edges anywhere, which is what an out-of-focus
     /// frame and a blank wall have in common.
-    LumaAt flat(int value) => (x, y) => value;
+    LumaAt flat(int value) =>
+        (x, y) => value;
 
     /// A hard black and white checker, the sharpest thing a luma plane can be.
-    LumaAt checker(int size) => (x, y) =>
-        ((x ~/ size) + (y ~/ size)).isEven ? 20 : 235;
+    LumaAt checker(int size) =>
+        (x, y) => ((x ~/ size) + (y ~/ size)).isEven ? 20 : 235;
 
     FrameQuality measure(LumaAt luma) => measureFrame(
       luma: luma,
@@ -141,18 +145,20 @@ void main() {
       expect(CardFrameGate.advise(dim), CaptureAdvice.tooDark);
     });
 
-    test('a reflection across the card is reported as glare, not as framing',
-        () {
-      // Bright and detailed, so contrast and sharpness both pass, but a fifth
-      // of the frame is blown out. Without the glare arm this reads as a
-      // perfectly framed card and the print under the reflection is gone.
-      final glared = measure((x, y) {
-        if (x > 150 && x < 230) return 255;
-        return ((x ~/ 8) + (y ~/ 8)).isEven ? 60 : 200;
-      });
-      expect(glared.glare, greaterThan(CardFrameGate.maxGlare));
-      expect(CardFrameGate.advise(glared), CaptureAdvice.glare);
-    });
+    test(
+      'a reflection across the card is reported as glare, not as framing',
+      () {
+        // Bright and detailed, so contrast and sharpness both pass, but a fifth
+        // of the frame is blown out. Without the glare arm this reads as a
+        // perfectly framed card and the print under the reflection is gone.
+        final glared = measure((x, y) {
+          if (x > 150 && x < 230) return 255;
+          return ((x ~/ 8) + (y ~/ 8)).isEven ? 60 : 200;
+        });
+        expect(glared.glare, greaterThan(CardFrameGate.maxGlare));
+        expect(CardFrameGate.advise(glared), CaptureAdvice.glare);
+      },
+    );
 
     test('a lit but featureless frame reads as too far away', () {
       // Bright, gently varying, no print: the guide rectangle is looking at a

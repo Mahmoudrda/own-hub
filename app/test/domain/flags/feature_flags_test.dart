@@ -43,17 +43,19 @@ void main() {
       // accountRequired, signUp and verification left this list on
       // 2026-10-02: their back end (functions/) exists and the owner ships
       // them at launch. The test above asserts they are on.
+      // The coach app and the marketplace ship with the first coaching
+      // release: applications, portfolios, joining without payment, chat.
+      expect(FeatureFlags.shipped.isOn(Feature.coachApp), isTrue);
+      expect(FeatureFlags.shipped.isOn(Feature.marketplace), isTrue);
       for (final f in [
         Feature.community,
         Feature.communityPosts,
         Feature.communityVideo,
         Feature.communityVoiceNotes,
         Feature.communityFollowerCounts,
-        Feature.coachApp,
         Feature.coachPlanning,
         Feature.coachPortfolio,
         Feature.coachedLife,
-        Feature.marketplace,
         Feature.payments,
         Feature.assistant,
       ]) {
@@ -74,17 +76,19 @@ void main() {
       expect(FeatureFlags.shipped.isOn(Feature.adminConsole), isFalse);
     });
 
-    test('an account is required, with sign-up and verification, at launch',
-        () {
-      // Recorded so the position is a decision rather than an accident. The
-      // owner decided (2026-10-02) that sign-up and verification are live at
-      // launch, so the whole-app gate is closed in the shipped build. It
-      // used to read "no account is required, because there are no accounts
-      // yet"; the back end now exists (functions/, deployed before release).
-      expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isTrue);
-      expect(FeatureFlags.shipped.isOn(Feature.signUp), isTrue);
-      expect(FeatureFlags.shipped.isOn(Feature.verification), isTrue);
-    });
+    test(
+      'an account is required, with sign-up and verification, at launch',
+      () {
+        // Recorded so the position is a decision rather than an accident. The
+        // owner decided (2026-10-02) that sign-up and verification are live at
+        // launch, so the whole-app gate is closed in the shipped build. It
+        // used to read "no account is required, because there are no accounts
+        // yet"; the back end now exists (functions/, deployed before release).
+        expect(FeatureFlags.shipped.isOn(Feature.accountRequired), isTrue);
+        expect(FeatureFlags.shipped.isOn(Feature.signUp), isTrue);
+        expect(FeatureFlags.shipped.isOn(Feature.verification), isTrue);
+      },
+    );
 
     test('the exploring shape still turns everything on', () {
       // The crawler, the journeys and the sweep use this, so a screen that is
@@ -167,7 +171,11 @@ void main() {
         var steps = 0;
         for (Feature? c = f; c != null; c = c.parent) {
           steps++;
-          expect(steps, lessThan(10), reason: 'cycle in ${f.name} parent chain');
+          expect(
+            steps,
+            lessThan(10),
+            reason: 'cycle in ${f.name} parent chain',
+          );
         }
       }
     });

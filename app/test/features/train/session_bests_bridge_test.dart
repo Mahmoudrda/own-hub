@@ -369,4 +369,72 @@ void main() {
       }
     });
   });
+
+  group('taking a session back', () {
+    test('a discarded workout is not measured again as her best', () async {
+      final wired = _wired();
+      final bridge = SessionBestsBridge(ledger: wired.ledger);
+
+      Future<TrainSession> lift(double kg, {EndedReason? ended}) async {
+        final session = await wired.repository.startSession(_day);
+        await wired.repository.flushMove(
+          sessionId: session.id,
+          exerciseId: 'goblet_squat',
+          sets: [_logged(_squatSet, SetOutcome(weightKg: kg, reps: 8))],
+        );
+        return wired.repository.finishSession(
+          sessionId: session.id,
+          durationSec: 900,
+          reason: ended ?? EndedReason.finished,
+        );
+      }
+
+      await lift(30);
+      final heaviest = await lift(40);
+      await lift(35, ended: EndedReason.abandoned);
+      expect(wired.ledger.bests['goblet_squat']!.loadKg, 40);
+
+      bridge.forget(
+        heaviest.id,
+        flushes: wired.repository.flushes,
+        sessionById: wired.repository.sessionById,
+      );
+
+      expect(
+        wired.ledger.bests['goblet_squat']!.loadKg,
+        30,
+        reason: 'the 35 kg was in a workout she discarded',
+      );
+    });
+
+    test('a finished workout she kept is measured again', () async {
+      final wired = _wired();
+      final bridge = SessionBestsBridge(ledger: wired.ledger);
+
+      Future<TrainSession> lift(double kg) async {
+        final session = await wired.repository.startSession(_day);
+        await wired.repository.flushMove(
+          sessionId: session.id,
+          exerciseId: 'goblet_squat',
+          sets: [_logged(_squatSet, SetOutcome(weightKg: kg, reps: 8))],
+        );
+        return wired.repository.finishSession(
+          sessionId: session.id,
+          durationSec: 900,
+        );
+      }
+
+      await lift(30);
+      final heaviest = await lift(40);
+      await lift(35);
+
+      bridge.forget(
+        heaviest.id,
+        flushes: wired.repository.flushes,
+        sessionById: wired.repository.sessionById,
+      );
+
+      expect(wired.ledger.bests['goblet_squat']!.loadKg, 35);
+    });
+  });
 }

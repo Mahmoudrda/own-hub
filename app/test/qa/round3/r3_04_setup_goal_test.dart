@@ -24,36 +24,37 @@ void main() {
   useShippingApp();
 
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('O03 offers 2, 3 and 4 and nothing else, $loc', (t) async {
-      phone(t);
-      final s = t.ensureSemantics();
-      await open(t, appDestinations['O03']!.name, locale: Locale(loc));
+    testWidgets(
+      'O03 offers the three splits, 3, 4 and 5, and nothing else, $loc',
+      (t) async {
+        phone(t);
+        final s = t.ensureSemantics();
+        await open(t, appDestinations['O03']!.name, locale: Locale(loc));
 
-      // The days row is the first AppChipRow on the screen; read every chip
-      // label that is a bare number, in paint order.
-      final numbers = paintedText(t)
-          .where((e) => RegExp(r'^\s*\d+\s*$').hasMatch(e))
-          .toList();
-      print('=== R3-04 O03 $loc: numeric chips = ${numbers.join(", ")} ===');
-      print('  all painted: ${paintedText(t).join(" | ")}');
-      expect(
-        numbers.contains('5'),
-        isFalse,
-        reason: 'O03 still offers a 5 and the goal domain refuses it',
-      );
-      for (final n in <String>['2', '3', '4']) {
-        expect(
-          numbers.contains(n),
-          isTrue,
-          reason: 'O03 no longer offers $n days a week',
-        );
-      }
-      expect(Intake.allowedDays, <int>[2, 3, 4]);
-      s.dispose();
-    });
+        // The days row is the first AppChipRow on the screen; read every chip
+        // label that is a bare number, in paint order.
+        final numbers = paintedText(t)
+            .where((e) => RegExp(r'^\s*\d+\s*$').hasMatch(e))
+            .toList();
+        print('=== R3-04 O03 $loc: numeric chips = ${numbers.join(", ")} ===');
+        print('  all painted: ${paintedText(t).join(" | ")}');
+        for (final n in <String>['3', '4', '5']) {
+          expect(
+            numbers.contains(n),
+            isTrue,
+            reason: 'O03 no longer offers $n days a week',
+          );
+        }
+        for (final gone in <String>['1-2', '6', '7', '8']) {
+          expect(numbers.contains(gone), isFalse, reason: 'O03 offers $gone');
+        }
+        expect(Intake.allowedDays, <int>[2, 3, 4, 5, 6, 7]);
+        s.dispose();
+      },
+    );
   }
 
-  for (final days in <int>[2, 3, 4]) {
+  for (final days in <int>[3, 4, 5]) {
     for (final loc in <String>['en', 'ar']) {
       testWidgets('she taps $days on O03 and it reaches her week, $loc', (
         t,
@@ -116,15 +117,17 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await open(t, appDestinations['O03']!.name, locale: const Locale('en'));
-    for (final n in <int>[4, 2, 3]) {
+    for (final n in <int>[4, 5, 3]) {
       await t.tapAt(t.getRect(find.text('$n').first).center);
       await settle(t);
     }
     await tapControl(t, RegExp('Continue'));
     OnboardingState.instance.finish();
-    print('=== R3-04 changed her mind 4 -> 2 -> 3 ===');
-    print('  intake=${AppRouter.intakeRepository.read().days} '
-        'goal=${AppRouter.progressStore.goal.sessionsTarget}');
+    print('=== R3-04 changed her mind 4 -> 5 -> 3 ===');
+    print(
+      '  intake=${AppRouter.intakeRepository.read().days} '
+      'goal=${AppRouter.progressStore.goal.sessionsTarget}',
+    );
     expect(AppRouter.intakeRepository.read().days, 3);
     expect(AppRouter.progressStore.goal.sessionsTarget, 3);
     s.dispose();

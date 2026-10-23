@@ -112,7 +112,11 @@ void main() {
 
       expect(auth.lastPhoneNumber, '+201001234567');
       expect(auth.lastTimeout, const Duration(seconds: 30));
-      expect(auth.lastResendToken, isNull, reason: 'a first send is not a resend');
+      expect(
+        auth.lastResendToken,
+        isNull,
+        reason: 'a first send is not a resend',
+      );
     });
 
     test('a bad number never reaches Firebase', () async {
@@ -240,7 +244,9 @@ void main() {
 
     test('a wrong code is an invalid code, and she stays on C07', () async {
       final auth = _MockFirebaseAuth()
-        ..signInThrows = FirebaseAuthException(code: 'invalid-verification-code');
+        ..signInThrows = FirebaseAuthException(
+          code: 'invalid-verification-code',
+        );
       final repository = FirebaseAuthRepository(auth: auth);
       addTearDown(repository.dispose);
 
@@ -254,6 +260,28 @@ void main() {
         throwsA(_failure(AuthFailure.invalidCode)),
       );
       expect(repository.current, isA<AuthAwaitingCode>());
+    });
+
+    test('a sign-in that never answers is a connection problem, not a '
+        'spinner, and the code can be sent again', () async {
+      final auth = _MockFirebaseAuth()..signInHangs = Completer<void>();
+      final repository = FirebaseAuthRepository(
+        auth: auth,
+        signInLimit: const Duration(milliseconds: 50),
+      );
+      addTearDown(repository.dispose);
+
+      final send = repository.sendCode('01001234567');
+      await pumpEventQueue();
+      auth.fireCodeSent('verification-id', null);
+      await send;
+
+      await expectLater(
+        repository.confirmCode('417293'),
+        throwsA(_failure(AuthFailure.network)),
+      );
+      expect(repository.current, isA<AuthAwaitingCode>());
+      expect(signInTimeout, const Duration(seconds: 30));
     });
 
     test('fewer than six digits never reaches Firebase', () async {
@@ -273,18 +301,21 @@ void main() {
       expect(auth.signInCalls, 0);
     });
 
-    test('with nothing sent it reads as expired, not as a wrong code', () async {
-      // We hold no message to check against, so telling her the code is wrong
-      // would send her back to the boxes forever. Expired asks for the one
-      // thing that helps: send it again.
-      final repository = FirebaseAuthRepository(auth: _MockFirebaseAuth());
-      addTearDown(repository.dispose);
+    test(
+      'with nothing sent it reads as expired, not as a wrong code',
+      () async {
+        // We hold no message to check against, so telling her the code is wrong
+        // would send her back to the boxes forever. Expired asks for the one
+        // thing that helps: send it again.
+        final repository = FirebaseAuthRepository(auth: _MockFirebaseAuth());
+        addTearDown(repository.dispose);
 
-      await expectLater(
-        repository.confirmCode('417293'),
-        throwsA(_failure(AuthFailure.codeExpired)),
-      );
-    });
+        await expectLater(
+          repository.confirmCode('417293'),
+          throwsA(_failure(AuthFailure.codeExpired)),
+        );
+      },
+    );
   });
 
   group('Android reads the message itself', () {
@@ -547,6 +578,9 @@ class _MockFirebaseAuth implements FirebaseAuth {
   Object? verifyThrows;
   Object? signInThrows;
 
+  /// When set, `signInWithCredential` does not answer until it completes.
+  Completer<void>? signInHangs;
+
   User? _currentUser;
   PhoneVerificationCompleted? _onCompleted;
   PhoneVerificationFailed? _onFailed;
@@ -613,6 +647,7 @@ class _MockFirebaseAuth implements FirebaseAuth {
 
     final thrown = signInThrows;
     if (thrown != null) throw thrown;
+    await signInHangs?.future;
 
     final user = _MockUser('uid-1');
     fireUser(user);
@@ -623,8 +658,7 @@ class _MockFirebaseAuth implements FirebaseAuth {
   Future<void> signOut() async => fireUser(null);
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _MockUser implements User {
@@ -634,8 +668,7 @@ class _MockUser implements User {
   final String uid;
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _MockUserCredential implements UserCredential {
@@ -645,6 +678,5 @@ class _MockUserCredential implements UserCredential {
   final User? user;
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

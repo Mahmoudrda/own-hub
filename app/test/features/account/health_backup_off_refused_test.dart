@@ -50,6 +50,9 @@ Future<AppL10n> _turnOff(WidgetTester tester, Object failure) async {
   );
   await tester.tap(find.byKey(const ValueKey('health-backup-toggle')));
   await tester.pumpAndSettle();
+  // Turning it off deletes the account copy, so it is asked first.
+  await tester.tap(find.byKey(const ValueKey('a03-backup-off')));
+  await tester.pumpAndSettle();
   expect(pref.enabled, isFalse, reason: 'off on this phone whatever happens');
   return AppL10n.of(tester.element(find.byType(PrivacyView)));
 }

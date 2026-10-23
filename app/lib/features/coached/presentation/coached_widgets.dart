@@ -492,7 +492,7 @@ class ChatBubble extends StatelessWidget implements HandSeedName {
                         Text(
                           voiceDuration!,
                           style: AppText.bodyM.copyWith(
-                            color: AppColors.onSurfaceVariant,
+                            color: AppColors.onPrimaryContainer,
                           ),
                         ),
                       ],

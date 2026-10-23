@@ -60,7 +60,7 @@ void main() {
       expect(find.text('A ladies-only gym'), findsOneWidget);
       expect(find.text('Both'), findsOneWidget);
       expect(find.text('Quiet moves, floor, nothing to carry'), findsOneWidget);
-      expect(find.text('2 of 6'), findsOneWidget);
+      expect(find.text('2 of 5'), findsOneWidget);
     });
 
     testWidgets('what she has at home is not asked here', (tester) async {
@@ -76,7 +76,7 @@ void main() {
   });
 
   group('the walk follows her answer', () {
-    testWidgets('a ladies-only gym is one question shorter, counted as she '
+    testWidgets('a gym, or both, is one question shorter, counted as she '
         'taps', (tester) async {
       // She is not asked about dumbbells in a living room she does not train
       // in, and the count drops on this screen rather than one screen later.
@@ -84,17 +84,24 @@ void main() {
         _host(PlaceView(repository: InMemoryIntakeRepository())),
       );
       await tester.pumpAndSettle();
-      expect(_bar(tester), (2, 6));
+      expect(_bar(tester), (2, 5));
 
       await tester.tap(find.text('A ladies-only gym'));
       await tester.pumpAndSettle();
-      expect(find.text('2 of 5'), findsOneWidget);
-      expect(_bar(tester), (2, 5));
+      expect(find.text('2 of 4'), findsOneWidget);
+      expect(_bar(tester), (2, 4));
 
+      // Both is not "at home": what she has at home is asked only when she
+      // trains at home alone.
       await tester.tap(find.text('Both'));
       await tester.pumpAndSettle();
-      expect(find.text('2 of 6'), findsOneWidget);
-      expect(_bar(tester), (2, 6));
+      expect(find.text('2 of 4'), findsOneWidget);
+      expect(_bar(tester), (2, 4));
+
+      await tester.tap(find.text('At home'));
+      await tester.pumpAndSettle();
+      expect(find.text('2 of 5'), findsOneWidget);
+      expect(_bar(tester), (2, 5));
     });
   });
 
@@ -162,7 +169,7 @@ void main() {
 
       expect(_placeSelected(tester, 'A ladies-only gym'), isTrue);
       expect(_placeSelected(tester, 'At home'), isFalse);
-      expect(find.text('2 of 5'), findsOneWidget);
+      expect(find.text('2 of 4'), findsOneWidget);
     });
   });
 
@@ -178,7 +185,7 @@ void main() {
 
       expect(find.text('هتتمرّني فين؟'), findsOneWidget);
       expect(find.text('في البيت'), findsOneWidget);
-      expect(find.text('2 من 6'), findsOneWidget);
+      expect(find.text('2 من 5'), findsOneWidget);
       expect(find.text('Where will you train?'), findsNothing);
       expect(find.text('At home'), findsNothing);
     });

@@ -110,7 +110,10 @@ class FixedRelationshipStages implements RelationshipStagePort {
 /// today, and a single `_` would parse ambiguously the day a provider widens
 /// that alphabet. The storage rules split on this id to decide who may read a
 /// voice note.
-String relationshipIdFor({required String coachUid, required String clientUid}) {
+String relationshipIdFor({
+  required String coachUid,
+  required String clientUid,
+}) {
   if (coachUid.isEmpty || clientUid.isEmpty) {
     throw ArgumentError('A relationship id needs both parties.');
   }

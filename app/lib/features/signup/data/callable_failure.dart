@@ -15,6 +15,11 @@ import 'package:cloud_functions/cloud_functions.dart';
 import '../../../app_state/crash_reports.dart';
 import '../domain/review_request.dart';
 
+/// How long a consent record's callable is waited for. Without it the plugin
+/// default (60 s) applies and a poor connection leaves her on a spinner for a
+/// minute over a call that carries a few bytes.
+const Duration kConsentCallTimeout = Duration(seconds: 20);
+
 /// [error] in the domain's words.
 ///
 /// A status that means a bug on the server side (`internal`, `not-found` and

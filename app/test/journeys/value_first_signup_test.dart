@@ -2,8 +2,8 @@
 //
 // A new woman taps "Show me around" on C01 and takes the tour (C04): the real
 // screens with a sample week, nothing asked and nothing kept. "Join Own Hub"
-// or "Make it mine" then starts sign-up the value-first way: three short
-// questions about her week (O03, O07 and O04, one a screen), her week (O05)
+// or "Make it mine" then starts sign-up the value-first way: two short
+// questions about her week (O03 with days and minutes, then O04), her week (O05)
 // saved, and only then her number (C06). "Skip the tour and join" on C01 is
 // the same start without the tour. After the check, C13 is the root of the
 // stack and "Start day 1" lands her on day one over Home.
@@ -22,6 +22,7 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/signup/domain/legal_acceptance.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
+import 'package:own_hub/features/signup/presentation/founder_welcome_view.dart';
 import 'package:own_hub/features/signup/presentation/checking_view.dart';
 import 'package:own_hub/features/signup/presentation/code_view.dart';
 import 'package:own_hub/features/signup/presentation/role_view.dart';
@@ -45,6 +46,13 @@ class _Stack extends NavigatorObserver {
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
       names.remove(route.settings.name ?? '?');
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    final at = names.lastIndexOf(oldRoute?.settings.name ?? '?');
+    if (at >= 0) names.removeAt(at);
+    names.add(newRoute?.settings.name ?? '?');
+  }
 }
 
 /// Every event, in order, as the gateway hands it to a sink.
@@ -85,6 +93,13 @@ Future<(_Stack, GlobalKey<NavigatorState>)> _open(
   return (stack, navigator);
 }
 
+/// C01's More sheet, then the pitch (C03), whose button starts her week.
+Future<void> _skipTourAndJoin(WidgetTester tester) async {
+  await _tap(tester, 'More');
+  await _tap(tester, 'Skip the tour and join');
+  await _tap(tester, 'Create my account');
+}
+
 Future<void> _tap(WidgetTester tester, String label) async {
   final target = find.text(label).last;
   await tester.ensureVisible(target);
@@ -113,6 +128,7 @@ final FeatureFlags _launch = FeatureFlags.allOff.with_(<Feature, bool>{
   Feature.lockScreenNudge: true,
   Feature.train: true,
   Feature.recordFromMemory: true,
+  Feature.program: true,
   Feature.exerciseVideo: true,
   Feature.exerciseSwap: true,
   Feature.followAlong: true,
@@ -167,7 +183,7 @@ void main() {
   });
 
   group('before sign-up', () {
-    testWidgets('C01, three questions, her week, then her number', (
+    testWidgets('C01, two questions, her week, then her number', (
       tester,
     ) async {
       expect(
@@ -177,20 +193,25 @@ void main() {
       );
       final (stack, _) = await _open(tester, 'C01');
 
-      // Each of the three is the first part of joining, has every answer
-      // preselected, and has no Home to close to before she has an account.
+      // Each of the two is the first part of joining, has every answer
+      // preselected, and has no Home to close to before she has an account:
+      // its Skip, in the top bar, goes to the life-stage question and then to
+      // sign-in instead.
       void expectYourWeek(String id) {
         expect(stack.names.last, _name(id));
         expect(find.text('1 of 3 · Your week'), findsOneWidget, reason: id);
-        expect(find.text('Skip'), findsNothing, reason: id);
+        // The life-stage question has no Skip: Skip never bypasses it.
+        expect(
+          find.text('Skip'),
+          id == 'O04' ? findsNothing : findsOneWidget,
+          reason: id,
+        );
         expect(find.byIcon(Icons.close), findsNothing, reason: id);
       }
 
-      await _tap(tester, 'Skip the tour and join');
+      await _skipTourAndJoin(tester);
       expectYourWeek('O03');
       await _tap(tester, '4');
-      await _tap(tester, 'Continue');
-      expectYourWeek('O07');
       await _tap(tester, 'Continue');
       expectYourWeek('O04');
       await _tap(tester, 'A knee, back or shoulder');
@@ -201,10 +222,15 @@ void main() {
 
       await _tap(tester, 'Save my week and join');
 
+      // Saving her plan needs an account, so Rahma's welcome comes first and
+      // its button goes on to her number.
+      expect(find.byType(FounderWelcomeView), findsOneWidget);
+      await _tap(tester, 'Continue to sign up');
+
       expect(stack.names, [
         _name('C01'),
+        _name('C03'),
         _name('O03'),
-        _name('O07'),
         _name('O04'),
         _name('O05'),
         _name('C06'),
@@ -232,22 +258,42 @@ void main() {
       );
     });
 
+    testWidgets('Skip on her week goes straight to sign-in, with the defaults, '
+        'and never past the terms', (tester) async {
+      final (stack, _) = await _open(tester, 'C01');
+      await _skipTourAndJoin(tester);
+      expect(stack.names.last, _name('O03'));
+
+      await _tap(tester, 'Skip');
+
+      // Skip goes to the safety question first, then on to sign-in.
+      expect(stack.names.last, _name('O04'));
+      await _tap(tester, 'Continue');
+
+      expect(stack.names.last, _name('C06'));
+      expect(AppRouter.intakeRepository.read(), Intake.defaults);
+      expect(AppRouter.intakeRepository.setupDone, isTrue);
+      // Nothing was accepted by skipping: C06 still asks for her tap.
+      expect(await PendingLegalAcceptance.read(), isNull);
+      expect(find.text('Agree and send me a code'), findsOneWidget);
+    });
+
     testWidgets('a week already saved opens straight on O05', (tester) async {
       AppRouter.intakeRepository.markSetupDone();
       final (stack, _) = await _open(tester, 'C01');
 
-      await _tap(tester, 'Skip the tour and join');
+      await _skipTourAndJoin(tester);
       expect(stack.names.last, _name('O05'));
       expect(find.text('Save my week and join'), findsOneWidget);
     });
 
     testWidgets('the funnel is reported in order', (tester) async {
       await _open(tester, 'C01');
-      await _tap(tester, 'Skip the tour and join');
+      await _skipTourAndJoin(tester);
       await _tap(tester, 'Continue'); // O03
-      await _tap(tester, 'Continue'); // O07
       await _tap(tester, 'See my week'); // O04
       await _tap(tester, 'Save my week and join');
+      await _tap(tester, 'Continue to sign up'); // Rahma's welcome
 
       final funnel = [
         for (var i = 0; i < recording.events.length; i++)
@@ -261,7 +307,6 @@ void main() {
           'C01',
           'signUpStarted',
           'O03',
-          'O07',
           'O04',
           'O05',
           'intakeCompleted',
@@ -274,15 +319,15 @@ void main() {
   group('her week, kept on this phone before she joins', () {
     testWidgets('no week saved, nothing to delete', (tester) async {
       await _open(tester, 'C01');
+      await _tap(tester, 'More');
       expect(find.text('Delete what I saved on this phone'), findsNothing);
     });
 
     testWidgets('C01 deletes it, after asking once', (tester) async {
       await _open(tester, 'C01');
-      await _tap(tester, 'Skip the tour and join');
+      await _skipTourAndJoin(tester);
       await _tap(tester, '4');
       await _tap(tester, 'Continue'); // O03
-      await _tap(tester, 'Continue'); // O07
       await _tap(tester, 'A knee, back or shoulder');
       await _tap(tester, 'See my week');
       await _tap(tester, 'Save my week and join');
@@ -291,6 +336,7 @@ void main() {
 
       // She stops at her number and comes back to the front door.
       final (stack, _) = await _open(tester, 'C01');
+      await _tap(tester, 'More');
       expect(find.text('Delete what I saved on this phone'), findsOneWidget);
 
       await _tap(tester, 'Delete what I saved on this phone');
@@ -303,6 +349,7 @@ void main() {
         reason: 'keeping it keeps it',
       );
 
+      await _tap(tester, 'More');
       await _tap(tester, 'Delete what I saved on this phone');
       await _tap(tester, 'Delete it');
       expect(AppRouter.intakeRepository.setupDone, isFalse);
@@ -311,10 +358,13 @@ void main() {
       expect(OnboardingState.instance.beforeSignup, isFalse);
       expect(stack.names, [_name('C01')]);
       expect(find.text('Deleted from this phone.'), findsOneWidget);
+      await _tap(tester, 'More');
       expect(find.text('Delete what I saved on this phone'), findsNothing);
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
 
       // And the next start asks her week again.
-      await _tap(tester, 'Skip the tour and join');
+      await _skipTourAndJoin(tester);
       expect(stack.names.last, _name('O03'));
     });
   });
@@ -360,11 +410,11 @@ void main() {
 
       await _tap(tester, 'Count it');
       expect(find.text('Join to make this yours'), findsOneWidget);
-      expect(
-        stack.names,
-        [_name('C01'), _name('C04'), '?'],
-        reason: 'the sheet, over the tour, and no screen behind it',
-      );
+      expect(stack.names, [
+        _name('C01'),
+        _name('C04'),
+        '?',
+      ], reason: 'the sheet, over the tour, and no screen behind it');
 
       await _tap(tester, 'Join Own Hub');
       expect(stack.names, [_name('C01'), _name('C04'), _name('O03')]);
@@ -378,7 +428,7 @@ void main() {
       for (var i = 0; i < 7; i++) {
         await _tap(tester, 'Next');
       }
-      expect(find.text('That is Own Hub'), findsOneWidget);
+      expect(find.text('That\'s Own Hub'), findsOneWidget);
 
       await _tap(tester, 'Make it mine');
       expect(stack.names, [_name('C01'), _name('C04'), _name('O05')]);
@@ -459,9 +509,9 @@ void main() {
       expect(stack.names.last, _name('C09b'));
       expect(AppRouter.lastSignupRole, SignupRole.trainee);
       expect(OnboardingState.instance.beforeSignup, isFalse);
-      // C09's promise and C09b's disclosure on one screen.
+      // C09b's own title and disclosure; C09's promise is not repeated.
       expect(find.text('3 of 3 · Quick check'), findsOneWidget);
-      expect(find.text('One check, then you are in'), findsOneWidget);
+      expect(find.text('One check, then you are in'), findsNothing);
       expect(find.text('Before the camera opens'), findsOneWidget);
       expect(find.text('I agree, start the camera'), findsOneWidget);
       expect(find.text('I wear niqab, check me another way'), findsOneWidget);
@@ -533,11 +583,9 @@ void main() {
       final (stack, _) = await _open(tester, 'C13');
 
       await _tap(tester, 'Start day 1');
-      // The same three questions, without the sign-up count: she has joined.
+      // The same two questions, without the sign-up count: she has joined.
       expect(stack.names.last, _name('O03'));
       expect(find.text('1 of 3 · Your week'), findsNothing);
-      await _tap(tester, 'Continue');
-      expect(stack.names.last, _name('O07'));
       await _tap(tester, 'Continue');
       expect(stack.names.last, _name('O04'));
       expect(find.text('Anything we should train around?'), findsOneWidget);

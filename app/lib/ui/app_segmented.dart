@@ -115,10 +115,10 @@ class _Segment extends StatelessWidget {
     // layout mirrors in Arabic.
     return Row(
       children: [
-        const SizedBox(
+        SizedBox(
           width: 1,
           height: 26,
-          child: ColoredBox(color: Color(0x669C838A)),
+          child: ColoredBox(color: AppColors.outline.withValues(alpha: 0.4)),
         ),
         Expanded(child: seg),
       ],

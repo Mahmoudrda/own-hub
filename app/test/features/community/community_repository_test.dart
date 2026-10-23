@@ -160,37 +160,41 @@ void main() {
   });
 
   group('P0-COM-01 — the feed is groups and follows, and nothing else', () {
-    test('her groups and the women she follows appear; nobody else does',
-        () async {
-      final repo = InMemoryCommunityRepository(
-        store: _store(
-          posts: <CommunityPost>[
-            _post(id: 'p-followed', author: _habiba),
-            _post(id: 'p-group', author: _nada, groupId: 'beginners'),
-            _post(id: 'p-stranger', author: _stranger),
-          ],
-        ),
-      );
+    test(
+      'her groups and the women she follows appear; nobody else does',
+      () async {
+        final repo = InMemoryCommunityRepository(
+          store: _store(
+            posts: <CommunityPost>[
+              _post(id: 'p-followed', author: _habiba),
+              _post(id: 'p-group', author: _nada, groupId: 'beginners'),
+              _post(id: 'p-stranger', author: _stranger),
+            ],
+          ),
+        );
 
-      final page = await repo.feed();
+        final page = await repo.feed();
 
-      expect(
-        page.posts.map((p) => p.postId),
-        containsAll(<String>['p-followed', 'p-group']),
-      );
-      expect(
-        page.posts.map((p) => p.postId),
-        isNot(contains('p-stranger')),
-        reason: 'there is no public timeline anywhere in the tab',
-      );
-    });
+        expect(
+          page.posts.map((p) => p.postId),
+          containsAll(<String>['p-followed', 'p-group']),
+        );
+        expect(
+          page.posts.map((p) => p.postId),
+          isNot(contains('p-stranger')),
+          reason: 'there is no public timeline anywhere in the tab',
+        );
+      },
+    );
 
     test('her own post is always hers to see', () async {
       // She does not follow herself. Without an explicit rule her post would
       // drop out of her own feed the instant it published, so P0-COM-12's
       // "her own feed shows it" would hold only while it was still queued.
       final repo = InMemoryCommunityRepository(
-        store: _store(posts: <CommunityPost>[_post(id: 'p-mine', author: _me)]),
+        store: _store(
+          posts: <CommunityPost>[_post(id: 'p-mine', author: _me)],
+        ),
       );
 
       expect(
@@ -203,16 +207,8 @@ void main() {
       final repo = InMemoryCommunityRepository(
         store: _store(
           posts: <CommunityPost>[
-            _post(
-              id: 'older',
-              author: _habiba,
-              at: DateTime(2026, 9, 17, 8),
-            ),
-            _post(
-              id: 'newer',
-              author: _habiba,
-              at: DateTime(2026, 9, 19, 9),
-            ),
+            _post(id: 'older', author: _habiba, at: DateTime(2026, 9, 17, 8)),
+            _post(id: 'newer', author: _habiba, at: DateTime(2026, 9, 19, 9)),
           ],
         ),
       );
@@ -285,8 +281,7 @@ void main() {
       expect(repo.likeDocCount('p-19'), 1);
     });
 
-    test('the like document is named after her, not after the event',
-        () async {
+    test('the like document is named after her, not after the event', () async {
       final repo = InMemoryCommunityRepository(
         store: _store(
           posts: <CommunityPost>[_post(id: 'p-19', author: _habiba)],
@@ -364,7 +359,8 @@ void main() {
       expect(
         repo.documentWrites,
         isEmpty,
-        reason: 'nothing may point at a missing object in another woman\'s feed',
+        reason:
+            'nothing may point at a missing object in another woman\'s feed',
       );
       expect(repo.mediaObjectUploads, isEmpty);
 
@@ -433,17 +429,19 @@ void main() {
       }
     });
 
-    test('an unblocked woman is unaffected — the guard is not vacuous',
-        () async {
-      final repo = InMemoryCommunityRepository(
-        store: _store(
-          posts: <CommunityPost>[_post(id: 'p-habiba', author: _habiba)],
-        ),
-      );
+    test(
+      'an unblocked woman is unaffected — the guard is not vacuous',
+      () async {
+        final repo = InMemoryCommunityRepository(
+          store: _store(
+            posts: <CommunityPost>[_post(id: 'p-habiba', author: _habiba)],
+          ),
+        );
 
-      expect(await repo.post('p-habiba'), isNotNull);
-      await expectLater(repo.like('p-habiba'), completes);
-    });
+        expect(await repo.post('p-habiba'), isNotNull);
+        await expectLater(repo.like('p-habiba'), completes);
+      },
+    );
   });
 
   group('P0-COM-15 — a story expires after 24 hours', () {

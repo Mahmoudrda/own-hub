@@ -60,6 +60,10 @@ const int _egyptianMobileDigits = 10;
 /// given up on reading the message by itself.
 const Duration _sendTimeout = Duration(seconds: 60);
 
+/// How long the exchange of her code for a session may take before she is
+/// told the connection is the problem, rather than left on a spinner.
+const Duration signInTimeout = Duration(seconds: 30);
+
 /// How long Android may go on listening for the message on her behalf.
 ///
 /// Firebase's own default. It is not a deadline for her: when it lapses,
@@ -119,7 +123,7 @@ class FirebaseAuthRepository implements AuthRepository {
   /// [auth] is for tests, which pass a stand-in so nothing reaches the network.
   /// In the app it is left null and resolved from [FirebaseBoot], which may
   /// legitimately have nothing to give.
-  FirebaseAuthRepository({FirebaseAuth? auth})
+  FirebaseAuthRepository({FirebaseAuth? auth, this.signInLimit = signInTimeout})
     : _auth = auth ?? _resolveAuth() {
     final firebase = _auth;
     if (firebase == null) return;
@@ -151,6 +155,9 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   final FirebaseAuth? _auth;
+
+  /// How long the exchange of her code may take. Shortened in tests.
+  final Duration signInLimit;
   final _controller = StreamController<AuthState>.broadcast();
   StreamSubscription<User?>? _authSubscription;
 
@@ -355,9 +362,12 @@ class FirebaseAuthRepository implements AuthRepository {
 
     final UserCredential result;
     try {
-      result = await auth.signInWithCredential(credential);
+      result = await auth.signInWithCredential(credential).timeout(signInLimit);
     } on FirebaseAuthException catch (error) {
       throw AuthException(_failureOf(error));
+    } on TimeoutException {
+      // The code is still good: she can press Continue again.
+      throw const AuthException(AuthFailure.network);
     } catch (_) {
       throw const AuthException(AuthFailure.unknown);
     }

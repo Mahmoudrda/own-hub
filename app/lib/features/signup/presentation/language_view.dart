@@ -39,6 +39,7 @@ class LanguageView extends StatefulWidget {
     required this.preference,
     this.onContinue,
     this.onBack,
+    this.onSkip,
   });
 
   final LocalePreference preference;
@@ -48,6 +49,9 @@ class LanguageView extends StatefulWidget {
   /// screen. Set when she opens it from her profile to change the language,
   /// which is a visit rather than a step.
   final VoidCallback? onBack;
+
+  /// Skip, in the top bar: straight to sign-in. Null draws no Skip.
+  final VoidCallback? onSkip;
 
   @override
   State<LanguageView> createState() => _LanguageViewState();
@@ -81,7 +85,24 @@ class _LanguageViewState extends State<LanguageView> {
     final selected = _effective;
 
     return AppScaffold(
-      appBar: AppTopBar(onBack: widget.onBack),
+      appBar: AppTopBar(
+        onBack: widget.onBack,
+        actions: [
+          if (widget.onSkip != null)
+            TextButton(
+              onPressed: widget.onSkip,
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                minimumSize: const Size(48, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: Text(
+                l10n.skip,
+                style: AppText.label.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
+      ),
       footer: [AppButton(l10n.continueLabel, onPressed: widget.onContinue)],
       children: [
         // Both headings, always. See the note at the top of this file.
@@ -103,7 +124,7 @@ class _LanguageViewState extends State<LanguageView> {
         const SizedBox(height: 8),
         AppListItem(
           title: 'العربية',
-          subtitle: l10n.arabicText_vqu26,
+          subtitle: l10n.arabicText_3cakp,
           padding: const EdgeInsets.all(16),
           variant: selected == AppLanguage.arabic
               ? AppCardVariant.selected
@@ -154,6 +175,11 @@ Future<void> applyLanguage(
   if (!context.mounted) return;
   LocaleScope.maybeOf(context)?.value = language.locale;
 }
+
+/// The name of the language the small switch button changes to, written in
+/// that language: "العربية" while English is on, "English" while Arabic is.
+String languageSwitchLabel({required bool isEnglish}) =>
+    isEnglish ? 'العربية' : 'English';
 
 /// "English · العربية" as two chips, for the welcome screen.
 ///

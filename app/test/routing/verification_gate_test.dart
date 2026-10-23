@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/features/signup/domain/server_verification.dart';
 
+import 'package:own_hub/app_state/guest_session.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
 import 'package:own_hub/features/signup/presentation/look_around_view.dart';
@@ -109,6 +110,9 @@ void main() {
       for (final entry in appDestinations.entries) {
         final flow = entry.value.flow;
         if (AppRouter.openBeforeVerification.contains(flow)) continue;
+        // Guest mode: the browsing screens are open to a woman with no
+        // account. `guest_mode_test.dart` pins that list.
+        if (GuestSession.screens.contains(entry.key)) continue;
         final landed = _resolved(entry.value.name);
         if (landed != appRoutes['C01']!.name) {
           open.add('${entry.key} ($flow) landed on $landed');
@@ -129,8 +133,6 @@ void main() {
       // adds a flow to `openBeforeVerification` fails here with her words
       // rather than only in the sweep above.
       for (final id in const [
-        'R01', // Train
-        'E01', // Eat
         'P01', // Progress
         'Y03', // My cycle
         'M01', // Community
@@ -138,7 +140,6 @@ void main() {
         'K07', // The coach's own desk
         'G01', // Life as a coached client
         'X01', // The assistant
-        'T01', // Home
       ]) {
         expect(
           _resolved(appDestinations[id]!.name),
@@ -164,7 +165,7 @@ void main() {
       }
     });
 
-    testWidgets('a deep link into Train opens the front door instead', (
+    testWidgets('a deep link into Progress opens the front door instead', (
       tester,
     ) async {
       // The form the refusal actually has to take. `onGenerateRoute` returning
@@ -174,7 +175,7 @@ void main() {
         MaterialApp(
           onGenerateRoute: AppRouter.onGenerateRoute,
           onUnknownRoute: AppRouter.onUnknownRoute,
-          initialRoute: appDestinations['R01']!.name,
+          initialRoute: appDestinations['P01']!.name,
           localizationsDelegates: AppL10n.localizationsDelegates,
           supportedLocales: AppL10n.supportedLocales,
         ),
@@ -186,10 +187,10 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('with the tour open, a deep link into Home is still the '
+    testWidgets('with the tour open, a deep link into Progress is still the '
         'front door', (tester) async {
-      // The tour draws the real Home with a sample week. Drawing it is not
-      // opening it: the route behind the gate answers exactly as before.
+      // The tour draws the real Progress with a sample week. Drawing it is
+      // not opening it: the route behind the gate answers exactly as before.
       tester.view.physicalSize = const Size(1170, 2532);
       tester.view.devicePixelRatio = 3.0;
       addTearDown(tester.view.reset);
@@ -209,7 +210,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(LookAroundView), findsOneWidget);
 
-      navigator.currentState!.pushNamed(appDestinations['T01']!.name);
+      navigator.currentState!.pushNamed(appDestinations['P01']!.name);
       await tester.pumpAndSettle();
 
       expect(names.last, appDestinations['C01']!.name);

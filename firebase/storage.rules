@@ -21,6 +21,13 @@
 //     notices the "gap" and adds `users/{uid}/photos/**`, they will have moved
 //     a woman's body photographs onto a server, silently, while fixing what
 //     looked like an oversight. It is not an oversight.
+//     ONE NAMED EXCEPTION, owner decision for private coaching: a coach's
+//     application carries before-and-after photos of other women (with their
+//     written consent) and screenshots of their messages. They live in
+//     coach-docs/{uid}/transformations and /testimonials, and only the coach
+//     and the woman reviewer can read them. The publisher is a man and the
+//     admin claim is deliberately NOT given read access to those two folders.
+//     Nothing else of this kind exists on the server.
 //   * **ID card and selfie images have no long-lived path.** Rule 7 says they
 //     are deleted once the check completes, and the cheapest way to keep that
 //     promise is to give them nowhere durable to live. The verification
@@ -45,11 +52,11 @@ service firebase.storage {
     // Server-set custom claim, exactly as token.verified and token.coachV are.
     // A client cannot grant itself admin.
     function isAdmin() {
-      return signedIn() && request.auth.token.admin == true;
+      return signedIn() && request.auth.token.get('admin', false) == true;
     }
 
     function isImage() {
-      return request.resource.contentType.matches('image/.*');
+      return request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
     }
 
     function isVideo() {
@@ -68,32 +75,67 @@ service firebase.storage {
       return signedIn() && request.auth.uid == uid;
     }
 
-    // The two dormant features, off here as in firestore.rules (APL-16).
-    // Nothing in the first release writes to user-media or coach-docs, and
-    // with these false nothing can: a verified account calling the API
-    // directly is refused. Deleting her own file stays open. Each moves with
-    // its app flag (`Feature.community`, `Feature.coachApp`) and with the
-    // functions of the same name in firestore.rules, in the same release.
+    // The dormant features, off here as in firestore.rules (APL-16). With a
+    // switch false a verified account calling the API directly is refused.
+    // Deleting her own file stays open. The coach portfolio paths (coach-docs,
+    // coach-public) follow coachPortfolioLive(), payment-proofs follows
+    // coachPaymentsLive(), and each moves with the functions of the same name
+    // in firestore.rules, in the same release.
     function communityLive() {
       return false;
     }
 
-    function coachLive() {
+    function coachPortfolioLive() {
+      return true;
+    }
+
+    function coachPaymentsLive() {
       return false;
     }
 
     // ------------------------------------------------ the content library
     //
     // Exercise demonstrations, recipe photographs, programme artwork. Uploaded
-    // in bulk from Z10, read by every signed-in member.
+    // in bulk from Z10.
+    //
+    // Exercise demonstrations are public so a signed-out visitor can browse
+    // Train. Nothing else under content/ is: this is the only open path.
+    match /content/exercises/{docId}/{file} {
+      allow read: if true;
+      allow write: if isAdmin()
+                   && (isImage() || isVideo())
+                   && request.resource.size < 200 * 1024 * 1024;
+      allow delete: if isAdmin();
+    }
+
+    // Event pictures and clips, written from the dashboard's Events tab and
+    // read by verified members (events are a verified-only surface). A picture
+    // is webp or jpeg up to 1 MiB, a clip is mp4 up to 10 MiB.
+    match /content/events/{eventId}/{file} {
+      allow read: if signedIn()
+                  && (request.auth.token.get('verified', false) == true || isAdmin());
+      allow write: if isAdmin()
+                   && ((request.resource.contentType in ['image/webp', 'image/jpeg']
+                        && request.resource.size <= 1024 * 1024)
+                       || (request.resource.contentType == 'video/mp4'
+                           && request.resource.size <= 10 * 1024 * 1024));
+      allow delete: if isAdmin();
+    }
+
+    // Every other content path is read by every signed-in member.
     //
     // The size ceiling is a guard against an accidental upload of the wrong
     // file, not a quality setting: these are short demonstration clips, and a
     // 200 MB video would be unwatchable on Egyptian mobile data long before it
     // was a storage problem.
+    //
+    // Events are carved out: matches combine, so without `!= 'events'` this
+    // block would let any signed-in account read event media and let the
+    // admin write past the event limits.
     match /content/{collection}/{docId}/{file} {
-      allow read: if signedIn();
+      allow read: if signedIn() && collection != 'events';
       allow write: if isAdmin()
+                   && collection != 'events'
                    && (isImage() || isVideo())
                    && request.resource.size < 200 * 1024 * 1024;
       allow delete: if isAdmin();
@@ -133,7 +175,7 @@ service firebase.storage {
     // depend on a claim she might lose (the same exception as posts).
     match /user-media/{uid}/{allPaths=**} {
       allow read:   if isOwner(uid);
-      allow create, update: if (communityLive() || coachLive())
+      allow create, update: if communityLive()
                     && isOwner(uid)
                     && request.auth.token.get('verified', false) == true
                     && ((isImage() && request.resource.size < 10 * 1024 * 1024)
@@ -141,20 +183,75 @@ service firebase.storage {
       allow delete: if isOwner(uid);
     }
 
-    // ------------------------------------------------ coach certificates
+    // ------------------------------------------------ coach application files
     //
-    // C5. K02: a coach's certificate scans, under coach-docs/{coachUid}/
-    // (coach_credentials.dart builds exactly this path). A PDF or an image up
-    // to 10 MB, written by her. Read by her and by an admin reviewing the
-    // credential; never by clients or other coaches.
-    match /coach-docs/{uid}/{allPaths=**} {
-      allow read:   if isOwner(uid) || isAdmin();
-      allow create, update: if coachLive()
+    // A coach's application files, under coach-docs/{coachUid}/{folder}/{file}.
+    // Six folders and no others (gallery holds portfolio photos). Written by her while the coach service is
+    // live and her account is verified: an image up to 10 MB (jpeg, png or
+    // webp), or a PDF for education and certificates only.
+    //
+    // Who reads what. Her profile photo, education and certificates: she, the
+    // admin and a woman reviewer. Testimonials and before-and-after photos
+    // show other women (with consent) and their private messages: she and a
+    // woman reviewer ONLY, never the admin claim. See the named exception in
+    // the header. Deleting her own file stays open to her.
+    function isWomanReviewer() {
+      return signedIn() && request.auth.token.get('womanReviewer', false) == true;
+    }
+
+    function isFinance() {
+      return signedIn() && request.auth.token.get('finance', false) == true;
+    }
+
+    function isCoachImage() {
+      return request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp'];
+    }
+
+    match /coach-docs/{uid}/{folder}/{file} {
+      allow read: if coachPortfolioLive()
+                  && isOwner(uid)
+                  && folder in ['photo', 'education', 'certificates',
+                                'testimonials', 'transformations', 'gallery'];
+      allow read: if coachPortfolioLive()
+                  && (isAdmin() || isWomanReviewer())
+                  && folder in ['photo', 'education', 'certificates'];
+      allow read: if coachPortfolioLive()
+                  && isWomanReviewer()
+                  && folder in ['testimonials', 'transformations', 'gallery'];
+      allow create, update: if coachPortfolioLive()
                     && isOwner(uid)
                     && request.auth.token.get('verified', false) == true
-                    && (isImage() || isPdf())
-                    && request.resource.size < 10 * 1024 * 1024;
+                    && folder in ['photo', 'education', 'certificates',
+                                  'testimonials', 'transformations', 'gallery']
+                    && (isCoachImage()
+                        || (isPdf() && folder in ['education', 'certificates']))
+                    && request.resource.size <= 10 * 1024 * 1024;
       allow delete: if isOwner(uid);
+    }
+
+    // What the public coach page shows (her photo, checked and resized by the
+    // service). Verified members read it; only the service writes it.
+    match /coach-public/{uid}/{file} {
+      allow read: if coachPortfolioLive()
+                  && request.auth != null
+                  && request.auth.token.get('verified', false) == true;
+      allow write: if false;
+    }
+
+    // Approved portfolio photos, re-encoded by the service. Verified members
+    // read; nothing writes from a client.
+    match /coach-public/{uid}/media/{file} {
+      allow read: if coachPortfolioLive()
+                  && request.auth != null
+                  && request.auth.token.get('verified', false) == true;
+      allow write: if false;
+    }
+
+    // A member's screenshot of her transfer. The service writes it and deletes
+    // it after the decision; staff with the finance claim, or the admin, read it.
+    match /payment-proofs/{uid}/{file} {
+      allow read: if coachPaymentsLive() && (isAdmin() || isFinance());
+      allow write: if false;
     }
 
     // ------------------------------------------------------------- default

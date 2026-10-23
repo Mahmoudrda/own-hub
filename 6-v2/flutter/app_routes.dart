@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 192 screens across 17 flows.
+/// 196 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -32,7 +32,6 @@ const Map<String, AppRoute> appRoutes = {
   'O04': AppRoute(name: '/onboarding/o04', flow: 'onboarding', title: "Life stage"),
   'O05': AppRoute(name: '/onboarding/o05', flow: 'onboarding', title: "Your starting program"),
   'O06': AppRoute(name: '/onboarding/o06', flow: 'onboarding', title: "What you have at home"),
-  'O07': AppRoute(name: '/onboarding/o07', flow: 'onboarding', title: "Minutes a session"),
   'T01': AppRoute(name: '/today/t01', flow: 'today', title: "Today"),
   'T02': AppRoute(name: '/today/t02', flow: 'today', title: "I already did it"),
   'T03': AppRoute(name: '/today/t03', flow: 'today', title: "From the lock screen"),
@@ -55,6 +54,8 @@ const Map<String, AppRoute> appRoutes = {
   'R11': AppRoute(name: '/train/r11', flow: 'train', title: "Workout library"),
   'R12': AppRoute(name: '/train/r12', flow: 'train', title: "Logged from memory"),
   'R13': AppRoute(name: '/train/r13', flow: 'train', title: "Move logged"),
+  'R14': AppRoute(name: '/train/r14', flow: 'train', title: "Exercise library"),
+  'R15': AppRoute(name: '/train/r15', flow: 'train', title: "Exercise demo"),
   'E01': AppRoute(name: '/eat/e01', flow: 'eat', title: "Eat"),
   'E02': AppRoute(name: '/eat/e02', flow: 'eat', title: "Type it"),
   'E03': AppRoute(name: '/eat/e03', flow: 'eat', title: "Say it"),
@@ -66,11 +67,14 @@ const Map<String, AppRoute> appRoutes = {
   'E09': AppRoute(name: '/eat/e09', flow: 'eat', title: "Eat, day one"),
   'E10': AppRoute(name: '/eat/e10', flow: 'eat', title: "What you cannot eat"),
   'E11': AppRoute(name: '/eat/e11', flow: 'eat', title: "A message from Rahma"),
+  'E12': AppRoute(name: '/eat/e12', flow: 'eat', title: "Snap your meal"),
+  'E13': AppRoute(name: '/eat/e13', flow: 'eat', title: "Check your meal"),
   'P01': AppRoute(name: '/progress/p01', flow: 'progress', title: "Your progress"),
   'P02': AppRoute(name: '/progress/p02', flow: 'progress', title: "Milestones"),
   'P03': AppRoute(name: '/progress/p03', flow: 'progress', title: "Personal bests"),
   'P04': AppRoute(name: '/progress/p04', flow: 'progress', title: "Body, privately"),
   'P05': AppRoute(name: '/progress/p05', flow: 'progress', title: "Your progress card"),
+  'P06': AppRoute(name: '/progress/p06', flow: 'progress', title: "Your muscles"),
   'Y01': AppRoute(name: '/cycle/y01', flow: 'cycle', title: "Set up My cycle"),
   'Y02': AppRoute(name: '/cycle/y02', flow: 'cycle', title: "Dates and preferences"),
   'Y03': AppRoute(name: '/cycle/y03', flow: 'cycle', title: "My cycle today"),

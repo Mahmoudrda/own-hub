@@ -7,7 +7,7 @@
 /// > uses against `streak`. A widget cannot render a calorie countdown because
 /// > nothing computes one.
 ///
-/// So this type holds exactly three numbers and offers exactly one ratio. There
+/// So this type holds her running totals and offers exactly one ratio. There
 /// is no arithmetic here that subtracts kcal from anything, and no second type
 /// that could hold the result of one. A screen that wanted a countdown would
 /// have to add a field, which is a visible change in a diff — the same shape of
@@ -51,6 +51,9 @@ class DayTotals {
     required this.kcalSoFar,
     required this.proteinSoFar,
     required this.proteinTargetG,
+    this.carbsSoFar,
+    this.fatSoFar,
+    this.fiberSoFar,
   });
 
   /// A day with nothing logged. Not an error state and not an empty screen —
@@ -71,6 +74,18 @@ class DayTotals {
   /// supplied from outside and is currently unowned.
   final int proteinTargetG;
 
+  /// Carbs, fat and fibre eaten so far, in grams, over the items that carry
+  /// them. Null when no item today does: a food from the pack without them,
+  /// or a meal logged before they existed, adds nothing rather than a zero.
+  /// There is no target for any of them, and nothing here could hold one.
+  final int? carbsSoFar;
+  final int? fatSoFar;
+  final int? fiberSoFar;
+
+  /// True when any item today carries carbs, fat or fibre.
+  bool get hasMoreMacros =>
+      carbsSoFar != null || fatSoFar != null || fiberSoFar != null;
+
   /// Recomputes the totals from the item list, which is the source of truth.
   ///
   /// G5 §4.5: **`totals` is a cache, not truth.** Two devices reconnecting can
@@ -87,14 +102,24 @@ class DayTotals {
   }) {
     var kcal = 0;
     var protein = 0;
+    int? carbs;
+    int? fat;
+    int? fiber;
+    int? add(int? sum, int? value) => value == null ? sum : (sum ?? 0) + value;
     for (final item in items) {
       kcal += item.kcal;
       protein += item.proteinG;
+      carbs = add(carbs, item.carbsG);
+      fat = add(fat, item.fatG);
+      fiber = add(fiber, item.fiberG);
     }
     return DayTotals(
       kcalSoFar: kcal,
       proteinSoFar: protein,
       proteinTargetG: proteinTargetG,
+      carbsSoFar: carbs,
+      fatSoFar: fat,
+      fiberSoFar: fiber,
     );
   }
 
@@ -121,12 +146,23 @@ class DayTotals {
       other is DayTotals &&
       other.kcalSoFar == kcalSoFar &&
       other.proteinSoFar == proteinSoFar &&
-      other.proteinTargetG == proteinTargetG;
+      other.proteinTargetG == proteinTargetG &&
+      other.carbsSoFar == carbsSoFar &&
+      other.fatSoFar == fatSoFar &&
+      other.fiberSoFar == fiberSoFar;
 
   @override
-  int get hashCode => Object.hash(kcalSoFar, proteinSoFar, proteinTargetG);
+  int get hashCode => Object.hash(
+    kcalSoFar,
+    proteinSoFar,
+    proteinTargetG,
+    carbsSoFar,
+    fatSoFar,
+    fiberSoFar,
+  );
 
   @override
   String toString() =>
-      'DayTotals(kcal: $kcalSoFar, protein: $proteinSoFar/$proteinTargetG g)';
+      'DayTotals(kcal: $kcalSoFar, protein: $proteinSoFar/$proteinTargetG g, '
+      'carbs: $carbsSoFar, fat: $fatSoFar, fibre: $fiberSoFar)';
 }

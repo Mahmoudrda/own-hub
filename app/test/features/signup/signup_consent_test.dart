@@ -85,6 +85,14 @@ String _builderBlock(String id) {
       .join('\n');
 }
 
+Future<void> _readConsentToEnd(WidgetTester tester) async {
+  await tester.drag(
+    find.byType(SingleChildScrollView).first,
+    const Offset(0, -5000),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   final saved = AppRouter.featureFlags;
 
@@ -170,6 +178,7 @@ void main() {
       final store = AppRouter.identityCheck.consent;
       expect(await store.current('me'), isNull);
 
+      await _readConsentToEnd(tester);
       await tester.tap(find.text('I agree, start the camera'));
       await tester.pumpAndSettle();
 
@@ -238,11 +247,14 @@ void main() {
       }
     });
 
-    test('and an unmintable session sends her to a reviewer, not to a lens', () {
-      // `C11` with no challenge is a camera open for frames the server has no
-      // question to match, which is two minutes of her time spent on nothing.
-      expect(_builderBlock('C10b'), contains("goTo(context, 'C15')"));
-    });
+    test(
+      'and an unmintable session sends her to a reviewer, not to a lens',
+      () {
+        // `C11` with no challenge is a camera open for frames the server has no
+        // question to match, which is two minutes of her time spent on nothing.
+        expect(_builderBlock('C10b'), contains("goTo(context, 'C15')"));
+      },
+    );
 
     testWidgets('the card steps run with no session at all', (tester) async {
       AppRouter.consentRecorded = true;
@@ -294,7 +306,8 @@ void main() {
 
     testWidgets('opening it submits the automatic path', (tester) async {
       final repository =
-          AppRouter.identityCheck.verification as ProviderVerificationRepository;
+          AppRouter.identityCheck.verification
+              as ProviderVerificationRepository;
       expect(repository.current, isA<VerificationNotStarted>());
 
       await _open(tester, 'C12');
@@ -322,9 +335,12 @@ void main() {
       expect(find.byType(IdCaptureView), findsOneWidget);
     });
 
-    test('a retake lifts the submit guard, or the second attempt never runs', () {
-      expect(_builderBlock('C12'), contains('_automaticSubmitted = false'));
-      expect(_builderBlock('C12'), contains("goTo(context, 'C10')"));
-    });
+    test(
+      'a retake lifts the submit guard, or the second attempt never runs',
+      () {
+        expect(_builderBlock('C12'), contains('_automaticSubmitted = false'));
+        expect(_builderBlock('C12'), contains("goTo(context, 'C10')"));
+      },
+    );
   });
 }

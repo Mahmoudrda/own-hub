@@ -83,7 +83,7 @@ void main() {
     // to everybody. So the first set a woman was ever asked to do cited a
     // Tuesday she had not trained.
 
-    testWidgets('a woman with no logged history is told there is none', (
+    testWidgets('a woman with no logged history is told nothing about one', (
       tester,
     ) async {
       await tester.pumpWidget(_host(const MidSetView()));
@@ -91,13 +91,9 @@ void main() {
 
       expect(find.textContaining('Last Tuesday'), findsNothing);
       expect(find.textContaining('Last time'), findsNothing);
-      expect(
-        find.text(
-          'No history for this move yet. What you do today is what the next '
-          'one is measured against.',
-        ),
-        findsOneWidget,
-      );
+      // An empty note is not worth a line mid-set: nothing is said at all.
+      expect(find.textContaining('No history'), findsNothing);
+      expect(find.textContaining('So we added'), findsNothing);
     });
 
     testWidgets('and a woman who has one is told what she lifted', (
@@ -124,6 +120,54 @@ void main() {
 
       expect(find.text('Last time: 12 kg × 10.'), findsOneWidget);
       expect(find.textContaining('added'), findsNothing);
+    });
+
+    testWidgets('her last result stays in view beside the load advice', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const MidSetView(
+            progressionLine: 'Stay at 12 kg until every set is done.',
+            lastLogged: SetOutcome(weightKg: 20, reps: 12),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Stay at 12 kg until every set is done.'),
+        findsOneWidget,
+      );
+      expect(find.text('Last time: 20 kg × 12.'), findsOneWidget);
+    });
+
+    testWidgets('and is not said twice when the advice already says it', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const MidSetView(
+            progressionLine: 'Last time you did 20 kg × 12. Stay there.',
+            lastLogged: SetOutcome(weightKg: 20, reps: 12),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('r07-last-time')), findsNothing);
+    });
+
+    testWidgets('with no history there is no last-time line at all', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(const MidSetView(progressionLine: 'Start light.')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('r07-last-time')), findsNothing);
+      expect(find.textContaining('Last time'), findsNothing);
     });
 
     testWidgets('a bodyweight move is never announced as zero kilos', (
@@ -373,12 +417,7 @@ void main() {
 
     expect(find.text('الحركة 2 من 5'), findsNothing);
     expect(find.text('تمام · 12 كجم × 10'), findsOneWidget);
-    expect(
-      find.text(
-        'لسه مفيش سجل للحركة دي. اللي هتعمليه النهارده هو اللي هنقيس عليه المرة الجاية.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.textContaining('لسه مفيش سجل'), findsNothing);
     expect(find.text('خلّصت الـ 3 مجموعات'), findsOneWidget);
     expect(find.text('Done · 12 kg × 10'), findsNothing);
   });
@@ -397,4 +436,35 @@ void main() {
       reason: 'the button she taps between breaths must never be clipped',
     );
   });
+
+  for (final locale in const [Locale('en'), Locale('ar')]) {
+    testWidgets('the move note row and its sheet fit at text scale 2.0 in '
+        '${locale.languageCode}', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _host(const MidSetView(), locale: locale, textScale: 2),
+      );
+      await tester.pumpAndSettle();
+      final row = find.byKey(const ValueKey('r07-note'));
+      expect(row, findsOneWidget);
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
+      expect(
+        tester.getSemantics(row),
+        matchesSemantics(
+          isButton: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
+          label: AppL10n.of(tester.element(row)).addNote,
+        ),
+      );
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('r07-note-field')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r07-note-save')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    });
+  }
 }

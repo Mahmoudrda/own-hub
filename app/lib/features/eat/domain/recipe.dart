@@ -6,9 +6,13 @@
 ///
 /// ## Two kinds, and the difference is visible on screen
 ///
-/// [RecipeSource.book] and [RecipeSource.authored] are **Rahma's**. Her card,
-/// her Egyptian colloquial, her name. Every one of them is written by her and
-/// cooked before it publishes.
+/// [RecipeSource.book] and [RecipeSource.authored] are **recipes with a person
+/// behind them**, and which person is on the row: [Recipe.authoredBy]. A book
+/// card is Rahma's, in her Egyptian colloquial, with her name. An authored one
+/// may be Own Hub's kitchen's ([kOwnHubKitchen]): written in the app's neutral
+/// voice, in English and Egyptian Arabic, never drawn as hers. A book card
+/// publishes once Rahma has signed it. One of Own Hub's kitchen publishes on the
+/// automated check ([RecipeVerification]) and carries no person's name.
 ///
 /// [RecipeSource.assembly] is **not a recipe and is not presented as one**: a
 /// named combination of verified `foods` rows with stated portions and no
@@ -44,12 +48,19 @@ library;
 
 import 'package:meta/meta.dart';
 
+import 'meal_images.dart';
+
+/// The `authoredBy` of a recipe Own Hub's kitchen wrote, and of the structured
+/// record behind every book card. Never Rahma: a card written here is not hers.
+const String kOwnHubKitchen = 'ownhub_kitchen';
+
 /// Who wrote it, and therefore how it is drawn.
 enum RecipeSource {
   /// From `Rahoma's Recipe Book.pdf`. [Recipe.sourcePage] says which page.
   book,
 
-  /// Written by Rahma afterwards, in the same voice, through the same gate.
+  /// Written afterwards through the same gate: by Rahma, in her voice, or by
+  /// Own Hub's kitchen ([kOwnHubKitchen]), in English and Egyptian Arabic.
   authored,
 
   /// A combination of verified foods. Not hers, not on her card. See the file
@@ -74,8 +85,10 @@ enum RecipeStatus {
   review,
   published;
 
-  static RecipeStatus fromWire(String wire) =>
-      values.firstWhere((v) => v.name == wire, orElse: () => RecipeStatus.draft);
+  static RecipeStatus fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    orElse: () => RecipeStatus.draft,
+  );
 }
 
 /// Whether the four macro fields were summed or withheld.
@@ -88,8 +101,10 @@ enum MacroBasis {
   computed,
   withheld;
 
-  static MacroBasis fromWire(String wire) =>
-      values.firstWhere((v) => v.name == wire, orElse: () => MacroBasis.withheld);
+  static MacroBasis fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    orElse: () => MacroBasis.withheld,
+  );
 }
 
 /// Where a gram figure came from.
@@ -110,8 +125,10 @@ enum GramsBasis {
   /// [RecipeStatus.published].
   unknown;
 
-  static GramsBasis fromWire(String wire) =>
-      values.firstWhere((v) => v.name == wire, orElse: () => GramsBasis.unknown);
+  static GramsBasis fromWire(String wire) => values.firstWhere(
+    (v) => v.name == wire,
+    orElse: () => GramsBasis.unknown,
+  );
 }
 
 /// What the page actually gives by way of an ingredient list.
@@ -163,12 +180,14 @@ class RecipeIngredient {
     this.optional = false,
     this.servingSideOnly = false,
     this.brandHint,
+    this.qtyTextEn,
   });
 
   factory RecipeIngredient.fromJson(Map<String, Object?> json) =>
       RecipeIngredient(
         ingredientRef: json['ingredientRef']! as String,
         qtyTextAr: json['qtyTextAr']! as String,
+        qtyTextEn: json['qtyTextEn'] as String?,
         gramsBasis: GramsBasis.fromWire(json['gramsBasis'] as String? ?? ''),
         foodId: json['foodId'] as String?,
         grams: json['grams'] as int?,
@@ -199,6 +218,15 @@ class RecipeIngredient {
   /// and the stored string stays the verbatim slice the substring test checks.
   String get qtyLine => qtyTextAr.replaceAll('\n', ' ');
 
+  /// The same phrase in English, on a recipe Own Hub wrote. Null on a book card:
+  /// her words are never translated.
+  final String? qtyTextEn;
+
+  /// The phrase in the language she reads, falling back to [qtyLine] where
+  /// there is no English.
+  String qtyLineFor({required bool arabic}) =>
+      arabic ? qtyLine : (qtyTextEn ?? qtyLine);
+
   final int? grams;
   final GramsBasis gramsBasis;
   final String? gramsNote;
@@ -227,11 +255,13 @@ class RecipeStep {
     this.tempC,
     this.tool,
     this.isTimer = false,
+    this.textEn,
   });
 
   factory RecipeStep.fromJson(Map<String, Object?> json) => RecipeStep(
     index: json['index']! as int,
     textAr: json['textAr']! as String,
+    textEn: json['textEn'] as String?,
     usesRefs: ((json['usesRefs'] as List?) ?? const []).cast<String>(),
     minutes: json['minutes'] as int?,
     tempC: json['tempC'] as int?,
@@ -244,6 +274,13 @@ class RecipeStep {
 
   /// Her sentence. A test asserts this is a substring of [Recipe.bodyAr].
   final String textAr;
+
+  /// The same step in English, on a recipe Own Hub wrote. Null on a book card.
+  final String? textEn;
+
+  /// The step in the language she reads, falling back to [textAr].
+  String textFor({required bool arabic}) =>
+      arabic ? textAr : (textEn ?? textAr);
 
   final int? minutes;
   final int? tempC;
@@ -350,6 +387,69 @@ class RecipeSection {
   final String markKey;
 }
 
+/// Recipe id to the painted dish that truly is its main dish. Only exact
+/// matches belong here; a recipe with no such dish keeps the drawn mark.
+const Map<String, String> kRecipeDishPicture = {
+  'rahma_shakshoka': 'shakshuka',
+  'rahma_fattah': 'fattah_chicken',
+  'rahma_hwawshi': 'hawawshi',
+  'rahma_fool_wa_ta3mya': 'ful_taameya_breakfast',
+  'ownhub_light_mahshi_peppers': 'mahshi_peppers',
+};
+
+/// The record Own Hub's automated check leaves on a recipe it has verified.
+///
+/// This is a script's statement, never a person's: it says the ingredients all
+/// resolve in the food pack, the allergens were derived from the foods and a
+/// keyword scan, the figures were recomputed from the grams and the method has
+/// steps. It carries no name, and a recipe that has only this still has a null
+/// [Recipe.allergenReviewedBy] and [Recipe.cookedBy].
+@immutable
+class RecipeVerification {
+  const RecipeVerification({
+    required this.method,
+    required this.checkedAt,
+    required this.allergensDerived,
+    this.macroDeltaPct,
+  });
+
+  factory RecipeVerification.fromJson(Map<String, Object?> json) =>
+      RecipeVerification(
+        method: json['method'] as String? ?? '',
+        checkedAt: DateTime.tryParse(json['checkedAt'] as String? ?? ''),
+        macroDeltaPct: (json['macroDeltaPct'] as num?)?.toDouble(),
+        allergensDerived: _tags(json['allergensDerived']),
+      );
+
+  /// The only method this build trusts. A record by any other method is kept
+  /// but counts for nothing.
+  static const String autoCheckMethod = 'ownhub-auto-check-v1';
+
+  final String method;
+  final DateTime? checkedAt;
+
+  /// The largest gap, in percent, between the stated figures and the ones
+  /// recomputed from the ingredients.
+  final double? macroDeltaPct;
+
+  /// What the check derived: the foods' allergens plus the keyword scan.
+  final Set<String> allergensDerived;
+
+  bool get isAutoCheck => method == autoCheckMethod;
+}
+
+/// Who stands behind what is said about a recipe's allergens.
+enum RecipeCheck {
+  /// A person signed it: `allergenReviewedBy` is set.
+  signed,
+
+  /// Only Own Hub's automated check. No person has looked at the dish.
+  autoChecked,
+
+  /// Nothing. Unknown, and therefore unsafe for a woman with an allergy.
+  unchecked,
+}
+
 @immutable
 class Recipe {
   const Recipe({
@@ -396,6 +496,8 @@ class Recipe {
     this.cookedAt,
     this.markKey,
     this.photoPath,
+    this.verification,
+    this.reviewNotes = const [],
   });
 
   factory Recipe.fromJson(Map<String, Object?> json) => Recipe(
@@ -435,10 +537,9 @@ class Recipe {
     egpPricedAt: DateTime.tryParse(json['egpPricedAt'] as String? ?? ''),
     allergensDerived: _tags(json['allergensDerived']),
     allergensExtra: _tags(json['allergensExtra']),
-    allergensRemoved:
-        ((json['allergensRemoved'] as Map?) ?? const {})
-            .cast<String, Object?>()
-            .map((k, v) => MapEntry(k, v as String? ?? '')),
+    allergensRemoved: ((json['allergensRemoved'] as Map?) ?? const {})
+        .cast<String, Object?>()
+        .map((k, v) => MapEntry(k, v as String? ?? '')),
     allergensFinal: _tags(json['allergensFinal']),
     advisories: _tags(json['advisories']),
     dietTags: _tags(json['dietTags']),
@@ -454,13 +555,29 @@ class Recipe {
     markKey: json['markKey'] as String?,
     photoPath: _photoPath(json['photoPath']),
     tier: RecipeTier.fromWire(json['tier'] as String? ?? ''),
-    brandHints:
-        ((json['brandHints'] as Map?) ?? const {})
-            .cast<String, Object?>()
-            .map((k, v) => MapEntry(k, v as String? ?? '')),
+    brandHints: ((json['brandHints'] as Map?) ?? const {})
+        .cast<String, Object?>()
+        .map((k, v) => MapEntry(k, v as String? ?? '')),
+    reviewNotes: ((json['reviewNotes'] as List?) ?? const []).cast<String>(),
+    verification: switch (json['verification']) {
+      final Map<dynamic, dynamic> v => RecipeVerification.fromJson(
+        v.cast<String, Object?>(),
+      ),
+      _ => null,
+    },
   );
 
   final String recipeId;
+
+  /// The painted picture: the recipe's own when it has one, else the painted
+  /// picture of its main dish where [kRecipeDishPicture] names one, else null
+  /// and the screen keeps its drawn mark.
+  String? get imageAsset =>
+      MealImages.assetFor(recipeId) ??
+      switch (kRecipeDishPicture[recipeId]) {
+        final foodId? => MealImages.assetFor(foodId),
+        null => null,
+      };
   final RecipeSource source;
   final String sectionId;
   final int orderInSection;
@@ -541,15 +658,16 @@ class Recipe {
   final int? sourcePage;
   final String authoredBy;
 
-  /// Must be non-null and different from [authoredBy] to publish. Two people,
-  /// enforced in `firestore.rules` rather than in Dart, so a bug here cannot
-  /// bypass it.
+  /// A person's signature on the allergens. Null on a recipe only the automated
+  /// check has verified; it is never filled in for one. When set it must differ
+  /// from [authoredBy]. Two people, enforced in `firestore.rules` as well as in
+  /// Dart, so a bug here cannot bypass it.
   final String? allergenReviewedBy;
   final DateTime? allergenReviewedAt;
 
-  /// Who actually cooked it. Non-null or an authored recipe does not publish:
-  /// times, temperatures, quantities and doneness all come out of a real
-  /// kitchen or they are guesses wearing a recipe's clothes.
+  /// Who actually cooked it. Null until a person has: times, temperatures,
+  /// quantities and doneness come out of a real kitchen, and the automated
+  /// check does not stand in for that.
   final String? cookedBy;
   final DateTime? cookedAt;
 
@@ -565,13 +683,66 @@ class Recipe {
   /// ingredientRef, or her quantity phrase, to the brand she names.
   final Map<String, String> brandHints;
 
+  /// What Own Hub's automated check recorded, or null. Never a person's name.
+  final RecipeVerification? verification;
+
+  /// What a reviewer should know before signing: which amounts are ours, what
+  /// the figures leave out. English, for the dashboard; never drawn to a woman.
+  final List<String> reviewNotes;
+
+  /// Written by Own Hub's kitchen rather than taken from Rahma's book. It reads
+  /// in the app's language and is never drawn as her card.
+  bool get isOwnHub =>
+      source == RecipeSource.authored && authoredBy == kOwnHubKitchen;
+
   /// True when a person has signed what is in this dish.
   ///
-  /// Read by `AllergyGuard`: an unsigned recipe is never returned to a woman
-  /// who has declared an allergy, and carries a visible note for everyone else.
-  /// It is never silently presented as fine.
+  /// This is about people only. Whether the allergen list may be relied on at
+  /// all is [allergensKnown], which also counts the automated check.
   bool get allergensReviewed =>
       allergenReviewedBy != null && allergenReviewedBy!.isNotEmpty;
+
+  /// True when Own Hub's automated check verified this recipe and its record
+  /// holds up: the right method, a date, and nothing derived that the recorded
+  /// allergens leave out. A record that disagrees with the recipe it sits on
+  /// counts for nothing, and so does any record on a recipe Own Hub did not
+  /// write: Rahma's book cards need her signature, never a script's.
+  bool get autoChecked {
+    final v = verification;
+    return source == RecipeSource.authored &&
+        v != null &&
+        v.isAutoCheck &&
+        v.checkedAt != null &&
+        allergensFinal.containsAll(v.allergensDerived);
+  }
+
+  /// Whether the allergens of this dish are known: a person signed them, or
+  /// the automated check verified them.
+  ///
+  /// Read by `AllergyGuard`: a recipe whose allergens are not known is never
+  /// returned to a woman who has declared an allergy, because unknown is unsafe,
+  /// never safe by default. For everyone else it stays in the list and carries
+  /// a visible note.
+  bool get allergensKnown => allergensReviewed || autoChecked;
+
+  /// Who stands behind its allergen list. A person's signature wins.
+  RecipeCheck get check => allergensReviewed
+      ? RecipeCheck.signed
+      : autoChecked
+      ? RecipeCheck.autoChecked
+      : RecipeCheck.unchecked;
+
+  /// The words that say whose check this is, or null when nobody's.
+  ///
+  /// A book card that a person signed reads "From Rahma's book". Rahma's name
+  /// goes only on her own cards. A recipe that only the automated check has
+  /// verified reads "Checked by Own Hub", never anything with a person's name.
+  String? get verifiedLabel => switch (check) {
+    RecipeCheck.signed =>
+      source == RecipeSource.book ? "From Rahma's book" : null,
+    RecipeCheck.autoChecked => 'Checked by Own Hub',
+    RecipeCheck.unchecked => null,
+  };
 
   /// Everything the woman actually cooks from, in the order the card prints it.
   ///
@@ -601,9 +772,7 @@ class Recipe {
 /// A photo uploaded to the content library, or null. Only a path under
 /// `content/recipes/` is taken: anything else is not a place the app reads.
 String? _photoPath(Object? raw) =>
-    raw is String &&
-        raw.startsWith('content/recipes/') &&
-        !raw.contains('..')
+    raw is String && raw.startsWith('content/recipes/') && !raw.contains('..')
     ? raw
     : null;
 
@@ -618,5 +787,6 @@ List<RecipeStep> _steps(Object? raw) => [
 ];
 
 Set<String> _tags(Object? raw) => {
-  for (final t in (raw as List?) ?? const []) (t as String).trim().toLowerCase(),
+  for (final t in (raw as List?) ?? const [])
+    (t as String).trim().toLowerCase(),
 };

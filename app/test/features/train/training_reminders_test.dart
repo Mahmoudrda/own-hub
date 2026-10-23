@@ -1,6 +1,6 @@
 // R1-P19: a reason to come back that she chose herself.
 //
-// Training reminders are offered once, on R10, after a session she finished.
+// Training reminders are offered once, on Home (T01) as one line, after a session she finished.
 // She picks her days (her week's count, spread, preselected) and a time;
 // permission is asked only when she taps "Remind me", and her days are kept
 // only once the phone agreed. A refusal is answered on the sheet with the way
@@ -12,9 +12,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/ui/app_toggle.dart';
 import 'package:own_hub/app_state/app_snapshot.dart';
 import 'package:own_hub/app_state/reminder_scheduler.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/features/today/domain/today_repository.dart';
+import 'package:own_hub/features/train/domain/notification_plan.dart';
 import 'package:own_hub/features/train/domain/training_reminders.dart';
 import 'package:own_hub/features/train/presentation/reminder_sheet.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -26,7 +29,9 @@ class _Fake implements ReminderScheduler {
 
   ReminderPermission permission;
   int asked = 0;
-  final List<(TrainingReminders, ReminderText)> scheduled = [];
+  final List<(List<PlannedNotification>, ReminderText)> applied = [];
+  final List<PlannedNotification> rests = [];
+  int restCancelled = 0;
   int cancelled = 0;
 
   @override
@@ -36,8 +41,17 @@ class _Fake implements ReminderScheduler {
   }
 
   @override
-  Future<void> schedule(TrainingReminders reminders, ReminderText text) async =>
-      scheduled.add((reminders, text));
+  Future<void> apply(List<PlannedNotification> plan, ReminderText text) async =>
+      applied.add((plan, text));
+
+  @override
+  Future<void> scheduleRest(
+    PlannedNotification rest,
+    ReminderText text,
+  ) async => rests.add(rest);
+
+  @override
+  Future<void> cancelRest() async => restCancelled++;
 
   @override
   Future<void> cancel() async => cancelled++;
@@ -72,12 +86,26 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
   await tester.pumpAndSettle();
 }
 
-final _offer = find.byKey(const ValueKey('r10-reminder-offer'));
-final _choose = find.byKey(const ValueKey('r10-reminder-choose'));
-final _notNow = find.byKey(const ValueKey('r10-reminder-not-now'));
+final _offer = find.byKey(const ValueKey('today-reminder-offer'));
+final _choose = _offer;
+final _notNow = find.byKey(const ValueKey('today-reminder-not-now'));
 final _save = find.byKey(const ValueKey('reminder-save'));
 final _off = find.byKey(const ValueKey('reminder-off'));
 final _a01Row = find.byKey(const ValueKey('a01-reminders'));
+final _explainerYes = find.byKey(const ValueKey('explainer-yes'));
+final _a01Toggle = find.descendant(
+  of: _a01Row,
+  matching: find.byType(AppToggle),
+);
+
+/// R10's "Choose my days": the soft explainer first, then the days sheet.
+Future<void> _chooseDays(WidgetTester tester) async {
+  await _tap(tester, _choose);
+  await _tap(tester, _explainerYes);
+}
+
+Iterable<PlannedNotification> _weekly(List<PlannedNotification> plan) =>
+    plan.where((p) => p.kind == PlanKind.training);
 
 Finder _day(int weekday) => find.byKey(ValueKey('reminder-day-$weekday'));
 
@@ -88,12 +116,15 @@ void main() {
   setUp(() {
     AppRouter.featureFlags = FeatureFlags.everything;
     ReminderState.instance.reset();
+    // Home offers reminders after a session she finished: one is logged.
+    AppRouter.todayRepository.reset(day: InMemoryTodayRepository.defaultDay());
     fake = _Fake(ReminderPermission.granted);
     AppRouter.reminderScheduler = fake;
   });
 
   tearDown(() {
     AppRouter.featureFlags = savedFlags;
+    AppRouter.todayRepository.reset();
     ReminderState.instance.reset();
     AppRouter.reminderScheduler = null;
   });
@@ -111,9 +142,8 @@ void main() {
         expect(suggestedReminderDays(n), hasLength(n));
       }
       expect(
-        TrainingReminders(
-          weekdays: {DateTime.thursday, DateTime.saturday},
-        ).orderedWeekdays,
+        TrainingReminders(weekdays: {DateTime.thursday, DateTime.saturday})
+            .orderedWeekdays,
         [DateTime.saturday, DateTime.thursday],
       );
     });
@@ -130,7 +160,12 @@ void main() {
         DateTime(2026, 10, 13, 9, 30),
       );
       expect(
-        nextReminderAt(tuesday, weekday: DateTime.saturday, hour: 18, minute: 0),
+        nextReminderAt(
+          tuesday,
+          weekday: DateTime.saturday,
+          hour: 18,
+          minute: 0,
+        ),
         DateTime(2026, 10, 10, 18),
       );
     });
@@ -142,14 +177,24 @@ void main() {
         minute: 15,
       );
       expect(TrainingReminders.fromJson(kept.toJson()), kept);
-      expect(TrainingReminders.fromJson({'weekdays': [], 'hour': 7, 'minute': 0}),
-          isNull);
       expect(
-        TrainingReminders.fromJson({'weekdays': [9], 'hour': 7, 'minute': 0}),
+        TrainingReminders.fromJson({'weekdays': [], 'hour': 7, 'minute': 0}),
         isNull,
       );
       expect(
-        TrainingReminders.fromJson({'weekdays': [1], 'hour': 25, 'minute': 0}),
+        TrainingReminders.fromJson({
+          'weekdays': [9],
+          'hour': 7,
+          'minute': 0,
+        }),
+        isNull,
+      );
+      expect(
+        TrainingReminders.fromJson({
+          'weekdays': [1],
+          'hour': 25,
+          'minute': 0,
+        }),
         isNull,
       );
       expect(TrainingReminders.fromJson('nonsense'), isNull);
@@ -168,16 +213,19 @@ void main() {
       expect(ReminderState.instance.offered, isTrue);
       expect(
         ReminderState.instance.schedule,
-        TrainingReminders(weekdays: {DateTime.monday, DateTime.friday}, hour: 20),
+        TrainingReminders(
+          weekdays: {DateTime.monday, DateTime.friday},
+          hour: 20,
+        ),
       );
     });
   });
 
-  group('R10', () {
+  group('Home reminder offer', () {
     testWidgets('offers them once, and asks for nothing until she taps', (
       tester,
     ) async {
-      await _open(tester, 'R10');
+      await _open(tester, 'T01');
       expect(_offer, findsOneWidget);
       expect(fake.asked, 0);
       expect(find.text('A reminder on your training days?'), findsOneWidget);
@@ -186,22 +234,22 @@ void main() {
     testWidgets('"Not now" is an answer: the offer is not made again', (
       tester,
     ) async {
-      await _open(tester, 'R10');
+      await _open(tester, 'T01');
       await _tap(tester, _notNow);
       expect(_offer, findsNothing);
       expect(ReminderState.instance.offered, isTrue);
       expect(ReminderState.instance.schedule, isNull);
       expect(fake.asked, 0);
 
-      await _open(tester, 'R10');
+      await _open(tester, 'T01');
       expect(_offer, findsNothing);
     });
 
     testWidgets('her days, preselected from her week, are set once allowed', (
       tester,
     ) async {
-      await _open(tester, 'R10');
-      await _tap(tester, _choose);
+      await _open(tester, 'T01');
+      await _chooseDays(tester);
 
       final target = AppRouter.todayRepository.day.week.sessionsTarget;
       final suggested = suggestedReminderDays(target);
@@ -218,7 +266,11 @@ void main() {
               .descendant(of: _day(day), matching: find.byType(Semantics))
               .first,
         );
-        expect(chip.properties.selected, suggested.contains(day), reason: '$day');
+        expect(
+          chip.properties.selected,
+          suggested.contains(day),
+          reason: '$day',
+        );
       }
 
       // She moves one day.
@@ -229,20 +281,27 @@ void main() {
       await _tap(tester, _save);
 
       expect(fake.asked, 1);
-      expect(fake.scheduled, hasLength(1));
-      final (reminders, text) = fake.scheduled.single;
-      expect(reminders.weekdays, {...suggested}..remove(dropped)..add(added));
+      expect(fake.applied, hasLength(1));
+      final (plan, text) = fake.applied.single;
+      final reminders = ReminderState.instance.schedule!;
+      expect(
+        reminders.weekdays,
+        {...suggested}
+          ..remove(dropped)
+          ..add(added),
+      );
       expect(reminders.hour, TrainingReminders.defaultHour);
+      expect({for (final p in _weekly(plan)) p.at.weekday}, reminders.weekdays);
       expect(text.body, 'Your session is ready when you are.');
-      expect(ReminderState.instance.schedule, reminders);
+      expect(ReminderState.instance.permissionGranted, isTrue);
       expect(find.byType(ReminderSheet), findsNothing);
       expect(_offer, findsNothing);
       expect(find.text('Reminders are on.'), findsOneWidget);
     });
 
     testWidgets('no day, no reminder', (tester) async {
-      await _open(tester, 'R10');
-      await _tap(tester, _choose);
+      await _open(tester, 'T01');
+      await _chooseDays(tester);
       for (final day in suggestedReminderDays(
         AppRouter.todayRepository.day.week.sessionsTarget,
       )) {
@@ -251,19 +310,19 @@ void main() {
       expect(find.text('Pick at least one day.'), findsOneWidget);
       await _tap(tester, _save);
       expect(fake.asked, 0);
-      expect(fake.scheduled, isEmpty);
+      expect(fake.applied, isEmpty);
     });
 
     testWidgets('refused, nothing is kept and Settings is offered', (
       tester,
     ) async {
       fake.permission = ReminderPermission.denied;
-      await _open(tester, 'R10');
-      await _tap(tester, _choose);
+      await _open(tester, 'T01');
+      await _chooseDays(tester);
       await _tap(tester, _save);
 
       expect(fake.asked, 1);
-      expect(fake.scheduled, isEmpty);
+      expect(fake.applied, isEmpty);
       expect(ReminderState.instance.schedule, isNull);
       expect(find.byType(ReminderSheet), findsOneWidget);
       expect(
@@ -278,19 +337,22 @@ void main() {
 
     testWidgets('a phone that cannot show them says so', (tester) async {
       fake.permission = ReminderPermission.unavailable;
-      await _open(tester, 'R10');
-      await _tap(tester, _choose);
+      await _open(tester, 'T01');
+      await _chooseDays(tester);
       await _tap(tester, _save);
-      expect(find.text('Reminders cannot be set on this phone.'), findsOneWidget);
+      expect(
+        find.text('Reminders can\'t be set on this phone.'),
+        findsOneWidget,
+      );
       expect(ReminderState.instance.schedule, isNull);
     });
 
     testWidgets('the sheet reads in Arabic', (tester) async {
-      await _open(tester, 'R10', locale: const Locale('ar'));
+      await _open(tester, 'T01', locale: const Locale('ar'));
       expect(find.text('عايزة تذكير في أيام تمرينك؟'), findsOneWidget);
-      await _tap(tester, _choose);
+      await _chooseDays(tester);
       expect(find.text('تذكيرات التمرين'), findsOneWidget);
-      expect(find.text('فكّريني'), findsOneWidget);
+      expect(find.text('فكّرني'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -301,8 +363,13 @@ void main() {
     ) async {
       await _open(tester, 'A01');
       expect(_a01Row, findsOneWidget);
-      expect(find.text('Reminders are off.'), findsOneWidget);
+      expect(tester.widget<AppToggle>(_a01Toggle).value, isFalse);
       await _tap(tester, _a01Row);
+      expect(
+        find.byKey(const ValueKey('notification-explainer')),
+        findsOneWidget,
+      );
+      await _tap(tester, _explainerYes);
       expect(find.byType(ReminderSheet), findsOneWidget);
       // Off, so there is nothing to turn off.
       expect(_off, findsNothing);
@@ -311,12 +378,9 @@ void main() {
     testWidgets('she can change her days or turn them off', (tester) async {
       ReminderState.instance
         ..offered = true
-        ..schedule = TrainingReminders(
-          weekdays: {DateTime.saturday},
-          hour: 7,
-        );
+        ..schedule = TrainingReminders(weekdays: {DateTime.saturday}, hour: 7);
       await _open(tester, 'A01');
-      expect(find.text('Reminders are on.'), findsOneWidget);
+      expect(tester.widget<AppToggle>(_a01Toggle).value, isTrue);
       await _tap(tester, _a01Row);
 
       // Her own days, not the suggestion.
@@ -331,9 +395,14 @@ void main() {
       expect(saturday.properties.selected, isTrue);
 
       await _tap(tester, _off);
-      expect(fake.cancelled, 1);
+      // Her days and "Trained today?" are gone; nothing else is touched.
+      expect(_weekly(fake.applied.last.$1), isEmpty);
+      expect(
+        fake.applied.last.$1.where((p) => p.kind == PlanKind.didYouTrain),
+        isEmpty,
+      );
       expect(ReminderState.instance.schedule, isNull);
-      expect(find.text('Reminders are off.'), findsWidgets);
+      expect(tester.widget<AppToggle>(_a01Toggle).value, isFalse);
     });
 
     testWidgets('no Train, no reminders row', (tester) async {
@@ -361,19 +430,18 @@ void main() {
   test('re-set at launch only when she has them', () async {
     final en = lookupAppL10n(const Locale('en'));
     await AppRouter.reapplyTrainingReminders(en);
-    expect(fake.scheduled, isEmpty);
+    expect(fake.applied, isEmpty);
     ReminderState.instance.schedule = TrainingReminders(
       weekdays: {DateTime.sunday},
     );
     await AppRouter.reapplyTrainingReminders(en);
-    expect(fake.scheduled, hasLength(1));
+    expect(fake.applied, hasLength(1));
     expect(fake.asked, 0);
   });
 
   test('ids are a fixed block, one a weekday', () {
-    expect(
-      {for (var d = 1; d <= 7; d++) reminderNotificationId(d)},
-      hasLength(7),
-    );
+    expect({
+      for (var d = 1; d <= 7; d++) reminderNotificationId(d),
+    }, hasLength(7));
   });
 }

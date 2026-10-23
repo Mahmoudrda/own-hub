@@ -1,4 +1,7 @@
-/// P01 — Your progress.
+/// P01 — Insights, the tab root: her body map, her week, her bests and her
+/// last seven days of food in one scroll, with a way into each detail screen.
+///
+/// (Formerly "Your progress".)
 ///
 /// Matches `6-v2/src/screens-progress.mjs` → `P01`. The design note names the
 /// three numbers and what each is for: *"the tier is how steady she is lately,
@@ -50,8 +53,11 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
+import '../../../domain/rewards/personal_best_detector.dart' show PersonalBest;
 import '../../../domain/rewards/stated_figure.dart';
+import '../../../domain/rewards/training_streak.dart';
 import '../../../domain/rewards/tier_policy.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -60,13 +66,22 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
+import '../../../ui/app_progress.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
 import '../../today/domain/today_day.dart' show FirstWeekArc;
 import '../../today/presentation/today_cards.dart'
     show firstWeekDone, offeredFirstWeekSteps, openScreen;
+import '../../today/presentation/streak_sheet.dart' show trainingStreakLine;
+import '../../eat/domain/daily_targets.dart';
+import '../domain/milestone.dart';
+import '../domain/muscle_report.dart';
+import '../domain/nutrition_insights.dart';
+import 'milestones_view.dart' show milestoneTitle;
+import 'progress_insights_sections.dart';
 import 'progress_view_model.dart';
 import 'progress_widgets.dart';
 
@@ -78,13 +93,36 @@ class ProgressView extends StatelessWidget {
     this.onBack,
     this.onOpenMilestones,
     this.onOpenBests,
+    this.onOpenRecentSessions,
     this.onOpenBody,
     this.onOpenShare,
+    this.onOpenMuscles,
     this.onOpenFirstWeek,
     this.onOpenRestWeek,
     this.onOpenTierSlip,
     this.onSelectTab,
+    this.trainingStreak,
+    this.onOpenStreak,
+    this.nextMilestone,
+    this.muscleReport,
+    this.bests = const <PersonalBest>[],
+    this.nutrition,
+    this.onOpenCycle,
   });
+
+  /// Her sets by muscle, for the body map. Null draws the map empty, with
+  /// what will appear on it.
+  final MuscleReport? muscleReport;
+
+  /// Her personal bests, newest first.
+  final List<PersonalBest> bests;
+
+  /// Her last seven days of food against her targets. Null shows the food
+  /// section empty.
+  final NutritionWeek? nutrition;
+
+  /// Cycle patterns, Y10. Offered only while that screen is on.
+  final VoidCallback? onOpenCycle;
 
   /// Her progress, already computed. The screen does no arithmetic.
   final ProgressSummary summary;
@@ -109,10 +147,16 @@ class ProgressView extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onOpenMilestones;
   final VoidCallback? onOpenBests;
+
+  /// Her last finished sessions, to fix a set. Null draws no row.
+  final VoidCallback? onOpenRecentSessions;
   final VoidCallback? onOpenBody;
 
   /// P05, her progress card.
   final VoidCallback? onOpenShare;
+
+  /// P06, her muscles on a body she can turn.
+  final VoidCallback? onOpenMuscles;
   final VoidCallback? onOpenFirstWeek;
 
   /// "What a rest week covers" → T04. This is T04's only inbound edge in the
@@ -124,13 +168,77 @@ class ProgressView extends StatelessWidget {
 
   final ValueChanged<String>? onSelectTab;
 
+  /// Her training streak (D37), or null when it is off. No kitten here: the
+  /// mascot never appears on Progress.
+  final StreakStatus? trainingStreak;
+  final VoidCallback? onOpenStreak;
+
+  /// What a rest week covers and what happens if a tier slips, one tap
+  /// behind "How weeks count". Each row closes the sheet, then opens its
+  /// screen.
+  Future<void> _openHowWeeksCount(BuildContext context, AppL10n l10n) async {
+    final open = await showAppSheet<VoidCallback>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(l10n.howWeeksCount, style: AppText.titleL),
+        if (AppRouter.screenIsOn('T04'))
+          Builder(
+            builder: (sheet) => AppListItem(
+              leading: const Icon(
+                Icons.spa,
+                size: 22,
+                color: AppColors.tertiary,
+              ),
+              title: l10n.whatARestWeekCovers,
+              subtitle: l10n.aMissedWeekRepairedWithoutAsking,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () =>
+                  Navigator.of(sheet)
+                      .pop(() => openScreen(context, 'T04', onOpenRestWeek)),
+            ),
+          ),
+        if (AppRouter.screenIsOn('T05'))
+          Builder(
+            builder: (sheet) => AppListItem(
+              leading: const Icon(
+                Icons.info_outline,
+                size: 22,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.ifATierSlips,
+              subtitle: l10n.oneCountedWeekBringsItBack,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () =>
+                  Navigator.of(sheet)
+                      .pop(() => openScreen(context, 'T05', onOpenTierSlip)),
+            ),
+          ),
+      ],
+    );
+    if (open == null || !context.mounted) return;
+    open();
+  }
+
+  /// The milestone nearest to done, with how far along she is (§15, goal
+  /// gradient). Null when every one is earned or none can be named.
+  final MilestoneStanding? nextMilestone;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppTopBar(title: l10n.yourProgress, onBack: onBack),
+      appBar: AppTopBar(title: l10n.insights, onBack: onBack),
       bottomNavigationBar: AppNavBar(
         activeScreenId: 'P01',
         onSelect: (id) {
@@ -144,9 +252,86 @@ class ProgressView extends StatelessWidget {
       ),
       body: AppScaffold(
         children: [
+          InsightsBodyMap(
+            report: muscleReport ?? MuscleReport.empty(AppClock.now()),
+            onOpen: AppRouter.screenIsOn('P06')
+                ? () => openScreen(context, 'P06', onOpenMuscles)
+                : null,
+          ),
           ..._tierCard(l10n),
           ..._nextTierCard(l10n),
           _weekCard(l10n),
+          // Her muscles, straight under her week: the one place in Progress
+          // that shows what the sets were for.
+          if (AppRouter.screenIsOn('P06'))
+            AppListItem(
+              key: const ValueKey('p01-muscles'),
+              variant: AppCardVariant.tonal,
+              leading: const Icon(
+                Icons.accessibility_new,
+                size: 26,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.yourMuscles,
+              subtitle: l10n.whatYouTrainedOnABodyMap,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              onTap: () => openScreen(context, 'P06', onOpenMuscles),
+            ),
+          if (trainingStreak case final streakStatus?)
+            AppListItem(
+              key: const ValueKey('p01TrainingStreak'),
+              leading: const Icon(
+                Icons.local_florist_outlined,
+                size: 22,
+                color: AppColors.tertiary,
+              ),
+              // The line already names the streak, so it is the title and
+              // her best sits under it.
+              title: trainingStreakLine(l10n, streakStatus),
+              subtitle: streakStatus.best > 0
+                  ? l10n.daysPluralOneYourBest1Day(streakStatus.best)
+                  : '',
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: onOpenStreak,
+            ),
+          if (AppRouter.screenIsOn('P03'))
+            InsightsBests(
+              bests: bests,
+              onOpen: () => openScreen(context, 'P03', onOpenBests),
+            ),
+          if (onOpenRecentSessions != null)
+            AppListItem(
+              key: const ValueKey('p01-recent-sessions'),
+              leading: const Icon(
+                Icons.history,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              title: l10n.recentSessions,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: onOpenRecentSessions,
+            ),
+          InsightsFood(
+            week:
+                nutrition ??
+                NutritionWeek.empty(AppClock.now(), DailyTargets.compute()),
+          ),
+          ?_nextMilestone(l10n),
           if (AppRouter.screenIsOn('P05'))
             AppListItem(
               leading: const Icon(
@@ -161,9 +346,25 @@ class ProgressView extends StatelessWidget {
                 size: 22,
                 color: AppColors.onSurfaceVariant,
               ),
-              variant: AppCardVariant.tonal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               onTap: () => openScreen(context, 'P05', onOpenShare),
+            ),
+          if (AppRouter.screenIsOn('Y10'))
+            AppListItem(
+              key: const ValueKey('p01-cycle-patterns'),
+              leading: const Icon(
+                Icons.insights,
+                size: 22,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.yourPatterns,
+              trailing: const Icon(
+                Icons.chevron_right,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              onTap: () => openScreen(context, 'Y10', onOpenCycle),
             ),
           // Below her week, quieter: a rule, then the rest of the record.
           const HandRule(seed: 37, height: 18),
@@ -188,42 +389,58 @@ class ProgressView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               onTap: () => openScreen(context, 'T07', onOpenFirstWeek),
             ),
-          if (AppRouter.screenIsOn('T04'))
+          // The rest week and the tier policy, behind one row.
+          if (AppRouter.screenIsOn('T04') || AppRouter.screenIsOn('T05'))
             AppListItem(
+              key: const ValueKey('p01-how-weeks-count'),
               leading: const Icon(
                 Icons.spa,
                 size: 22,
                 color: AppColors.tertiary,
               ),
-              title: l10n.whatARestWeekCovers,
-              subtitle: l10n.aMissedWeekRepairedWithoutAsking,
+              title: l10n.howWeeksCount,
               trailing: const Icon(
                 Icons.chevron_right,
                 size: 22,
                 color: AppColors.onSurfaceVariant,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              onTap: () => openScreen(context, 'T04', onOpenRestWeek),
-            ),
-          if (AppRouter.screenIsOn('T05'))
-            AppListItem(
-              leading: const Icon(
-                Icons.info_outline,
-                size: 22,
-                color: AppColors.primaryDim,
-              ),
-              title: l10n.ifATierSlips,
-              subtitle: l10n.oneCountedWeekBringsItBack,
-              trailing: const Icon(
-                Icons.chevron_right,
-                size: 22,
-                color: AppColors.onSurfaceVariant,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              onTap: () => openScreen(context, 'T05', onOpenTierSlip),
+              onTap: () => _openHowWeeksCount(context, l10n),
             ),
         ],
       ),
+    );
+  }
+
+  /// The milestone nearest to done: its name, how far along, and a bar.
+  Widget? _nextMilestone(AppL10n l10n) {
+    final standing = nextMilestone;
+    if (standing == null || standing.earned) return null;
+    final title = milestoneTitle(l10n, standing.milestone.id);
+    if (title == null) return null;
+    return Column(
+      key: const ValueKey('p01-next-milestone'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          l10n.nextMilestone,
+          style: AppText.label.copyWith(color: AppColors.onSurfaceVariant),
+        ),
+        const SizedBox(height: 4),
+        AppSplitRow(
+          start: Text(title, style: AppText.titleS),
+          end: Text(
+            l10n.countOfTotal(
+              countLabel(standing.shown),
+              countLabel(standing.milestone.target),
+            ),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        ),
+        const SizedBox(height: 6),
+        AppProgressBar(percent: standing.percent, height: 5),
+      ],
     );
   }
 
@@ -467,6 +684,7 @@ class ProgressView extends StatelessWidget {
           label: l10n.body,
           // True for every woman: nobody else can read it.
           meta: l10n.private,
+          hint: l10n.opensYourPrivateMeasurements,
           onTap: () => openScreen(context, 'P04', onOpenBody),
         ),
     ];
@@ -485,11 +703,13 @@ class ProgressView extends StatelessWidget {
               children: [
                 for (var i = 0; i < entries.length; i++) ...[
                   if (i > 0)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: SizedBox(
                         width: 1,
-                        child: ColoredBox(color: Color(0x669C838A)),
+                        child: ColoredBox(
+                          color: AppColors.outline.withValues(alpha: 0.4),
+                        ),
                       ),
                     ),
                   Expanded(child: entries[i]),
@@ -545,40 +765,47 @@ class _IndexEntry extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.meta,
+    this.hint,
   });
 
   final IconData icon;
   final String label;
   final String? meta;
+
+  /// What a screen reader adds after the name.
+  final String? hint;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return HandPressable(
-      onTap: onTap,
-      builder: (context, _) => ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 44),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          // The icon sits above the name rather than beside it, so a third of
-          // the column is enough for "Milestones" without breaking the word.
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: AppColors.primaryDim),
-              const SizedBox(height: 4),
-              Text(label, style: AppText.titleS),
-              if (meta != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  meta!,
-                  style: AppText.bodyM.copyWith(
-                    color: AppColors.onSurfaceVariant,
+    return Semantics(
+      hint: hint,
+      child: HandPressable(
+        onTap: onTap,
+        builder: (context, _) => ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            // The icon sits above the name rather than beside it, so a third of
+            // the column is enough for "Milestones" without breaking the word.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: AppColors.primaryDim),
+                const SizedBox(height: 4),
+                Text(label, style: AppText.titleS),
+                if (meta != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    meta!,
+                    style: AppText.bodyM.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

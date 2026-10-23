@@ -40,6 +40,7 @@ library;
 
 import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
+import '../domain/recipe.dart' show RecipeSection;
 
 /// "39 dishes are hidden because nobody has checked what is in them yet."
 ///
@@ -76,3 +77,16 @@ String? totalTimeLabel(AppL10n l10n, int? totalMinutes) {
   }
   return l10n.countPluralOneAbout1HourIn((totalMinutes / 60).round());
 }
+
+/// A section of Rahma's book, named in the language on screen. Her own Arabic
+/// title wins where the book carries one.
+String sectionTitle(AppL10n l10n, RecipeSection section) =>
+    section.titleAr != null && l10n.localeName == 'ar'
+    ? section.titleAr!
+    : switch (section.sectionId) {
+        'sweet_tooth_breakfast' => l10n.sweetToothBreakfast,
+        'salty_fulling_breakfast' => l10n.saltyFullingBreakfast,
+        'lunchy_junky_yum' => l10n.lunchyJunkyYum,
+        'comfy_dinner' => l10n.comfyDinner,
+        _ => section.titleEn,
+      };

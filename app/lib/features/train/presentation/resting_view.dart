@@ -44,12 +44,22 @@
 /// So the clock ends itself, but it only ever navigates *from the top*: a tick
 /// that reaches zero behind another screen stops and says nothing. The tap path
 /// is untouched, because a tap can only come from the screen she is looking at.
+///
+/// # Her rest, her length
+///
+/// Fifteen seconds less, fifteen more and skip sit under the ready button. The
+/// new total is handed to [RestingView.onTotalChanged] so the next rest after
+/// this move starts there. The ring and the deadline given to
+/// [RestingView.onBackgrounded] both come from the clock those buttons change,
+/// so the alert at the end of a rest she shortened or stretched is for the
+/// time she chose.
 library;
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
@@ -60,7 +70,12 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_undo_bar.dart';
 import '../../../ui/hand/hand.dart';
 import '../domain/clock_label.dart';
+import '../domain/live_best.dart';
+import '../domain/rest_adjust.dart';
 import '../domain/weight_label.dart';
+import 'end_workout_sheet.dart';
+import 'live_best_chip.dart';
+import 'rest_adjust_row.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart';
 
@@ -70,8 +85,11 @@ class RestingView extends StatefulWidget {
     this.onClose,
     this.onPause,
     this.onReady,
-    this.onAddThirtySeconds,
+    this.onTotalChanged,
     this.onUndo,
+    this.onBackgrounded,
+    this.onAlertCancel,
+    this.clock,
     this.handle,
     this.remaining = const Duration(seconds: 38),
     this.total = const Duration(seconds: 60),
@@ -80,7 +98,20 @@ class RestingView extends StatefulWidget {
     this.upNextPrescription,
     this.moveNumber,
     this.moveCount,
+    this.sets,
+    this.end,
+    this.liveBest,
   });
+
+  /// A personal best the set she just saved set, drawn as a small chip under
+  /// the saved bar. Null draws nothing.
+  final LiveBest? liveBest;
+
+  /// The way to end the workout from here. Null draws no control.
+  final SessionEnd? end;
+
+  /// Sets of today's session behind her, for the bar under the title.
+  final ({int done, int total})? sets;
 
   /// Which move of how many, for the bar at the top.
   ///
@@ -98,12 +129,26 @@ class RestingView extends StatefulWidget {
   /// has to mean something.
   final VoidCallback? onReady;
 
-  /// Told that she asked for longer. The extra thirty seconds are applied here
-  /// regardless — this is a notification, not a permission.
-  final VoidCallback? onAddThirtySeconds;
+  /// Told the new total whenever she makes the rest shorter or longer, so it
+  /// can be kept as this move's rest. The change is applied here regardless:
+  /// this is a notification, not a permission.
+  final ValueChanged<Duration>? onTotalChanged;
 
   /// Runs only when the undo actually landed inside the window.
   final VoidCallback? onUndo;
+
+  /// The app went to the background with the clock running. Told when the
+  /// rest will be over, so one "Rest is over" can be left for her.
+  final ValueChanged<DateTime>? onBackgrounded;
+
+  /// That alert is no longer wanted: she is back, skipped, asked for longer,
+  /// or left.
+  final VoidCallback? onAlertCancel;
+
+  /// The wall clock. A phone's timers stop when its screen is off, so the rest
+  /// is measured against a deadline on this and not by counting ticks while
+  /// the app is away.
+  final DateTime Function()? clock;
 
   /// The log made on R07. Null once the window has closed, at which point the
   /// bar states what was saved without offering an action that would do nothing.
@@ -127,22 +172,53 @@ class RestingView extends StatefulWidget {
   State<RestingView> createState() => _RestingViewState();
 }
 
-class _RestingViewState extends State<RestingView> {
+class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
   Timer? _tick;
-  late Duration _remaining = widget.remaining;
-  late Duration _total = widget.total;
+
+  /// When the rest ends, held only while the app is in the background.
+  DateTime? _deadline;
+
+  /// She moved on (tapped through, or it ran out): nothing more to announce.
+  bool _ended = false;
+
+  DateTime _now() => (widget.clock ?? DateTime.now)();
+
+  /// The clock, held where only the ring listens to it. A tick used to call
+  /// `setState` on the whole screen every second, rebuilding the app bar, the
+  /// footer and the up-next card to change one number.
+  late final ValueNotifier<({Duration remaining, Duration total})> _clock =
+      ValueNotifier((remaining: widget.remaining, total: widget.total));
+  bool _paused = false;
+
+  Duration get _remaining => _clock.value.remaining;
+  Duration get _total => _clock.value.total;
+  set _remaining(Duration value) =>
+      _clock.value = (remaining: value, total: _total);
+
+  void _togglePause() {
+    setState(() => _paused = !_paused);
+    if (_paused) {
+      _stop();
+    } else if (widget.autoStart) {
+      _start();
+    }
+    widget.onPause?.call();
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.autoStart) _start();
   }
 
   @override
   void didUpdateWidget(covariant RestingView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.remaining != oldWidget.remaining) _remaining = widget.remaining;
-    if (widget.total != oldWidget.total) _total = widget.total;
+    if (widget.remaining != oldWidget.remaining ||
+        widget.total != oldWidget.total) {
+      _clock.value = (remaining: widget.remaining, total: widget.total);
+    }
     if (widget.autoStart != oldWidget.autoStart) {
       if (widget.autoStart) {
         _start();
@@ -154,7 +230,10 @@ class _RestingViewState extends State<RestingView> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    widget.onAlertCancel?.call();
     _stop();
+    _clock.dispose();
     super.dispose();
   }
 
@@ -174,16 +253,20 @@ class _RestingViewState extends State<RestingView> {
       if (!mounted) return;
       final next = _remaining - const Duration(seconds: 1);
       if (next <= Duration.zero) {
-        setState(() => _remaining = Duration.zero);
+        _remaining = Duration.zero;
         _stop();
         // Rest is over and she was not asked to say so. This is the whole
         // promise of the screen — but only when this screen is still the one
         // in front of her. Behind another route, the rest simply ends.
-        if (!_isOnTop) return;
+        if (!_isOnTop || _ended) return;
+        _ended = true;
+        // One light buzz as the rest ends with the phone in her hand. Not
+        // when she comes back late: the notification already told her.
+        unawaited(AppHaptics.play(HapticMoment.actionDone));
         widget.onReady?.call();
         return;
       }
-      setState(() => _remaining = next);
+      _remaining = next;
     });
   }
 
@@ -192,29 +275,86 @@ class _RestingViewState extends State<RestingView> {
     _tick = null;
   }
 
-  void _addThirtySeconds() {
-    setState(() {
-      _remaining += const Duration(seconds: 30);
-      // The ring reads remaining against total, so total grows with it.
-      // Otherwise asking for longer would drive the fraction past full and the
-      // ring would appear to run backwards.
-      _total += const Duration(seconds: 30);
-    });
-    // She may have asked for longer after it already ran out.
-    if (widget.autoStart && _tick == null) _start();
-    widget.onAddThirtySeconds?.call();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        _leftForeground();
+      case AppLifecycleState.resumed:
+        _backInForeground();
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
+  /// Only a rest that is actually counting down in front of her is announced:
+  /// not one she paused, one she has tapped past, or one behind another
+  /// screen.
+  void _leftForeground() {
+    if (_deadline != null || _ended || _paused || _tick == null) return;
+    if (!_isOnTop) return;
+    final deadline = _now().add(_remaining);
+    _deadline = deadline;
+    _stop();
+    widget.onBackgrounded?.call(deadline);
+  }
+
+  void _backInForeground() {
+    final deadline = _deadline;
+    if (deadline == null) return;
+    _deadline = null;
+    widget.onAlertCancel?.call();
+    final left = deadline.difference(_now());
+    if (left > Duration.zero) {
+      // Whole seconds, rounded up, so the ring never reads 0:00 with rest left.
+      _remaining = Duration(seconds: (left.inMilliseconds / 1000).ceil());
+      if (widget.autoStart && !_paused) _start();
+      return;
+    }
+    _remaining = Duration.zero;
+    if (_isOnTop && !_ended) {
+      _ended = true;
+      widget.onReady?.call();
+    }
+  }
+
+  void _ready() {
+    _ended = true;
+    widget.onAlertCancel?.call();
+    widget.onReady?.call();
+  }
+
+  /// Moves the rest by [delta], held between the floor and the ceiling.
+  ///
+  /// The ring reads remaining against total, so both move together; otherwise
+  /// the fraction would run past full and the ring would appear to go
+  /// backwards. A shorter rest never ends the rest here: the control is off
+  /// when it would, and the clock itself ends it.
+  void _adjust(Duration delta) {
+    final total = _total;
+    final next = clampRest(total + delta);
+    final change = next - total;
+    if (change == Duration.zero) return;
+    final left = _remaining + change;
+    _clock.value = (
+      remaining: left < const Duration(seconds: 1)
+          ? const Duration(seconds: 1)
+          : left,
+      total: next,
+    );
+    // She may have asked for longer after it already ran out. A rest she
+    // paused stays paused.
+    _ended = false;
+    widget.onAlertCancel?.call();
+    if (widget.autoStart && !_paused && _tick == null) _start();
+    widget.onTotalChanged?.call(next);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-
-    final elapsed = _total.inSeconds == 0
-        ? 0.0
-        : ((_total.inSeconds - _remaining.inSeconds) / _total.inSeconds).clamp(
-            0.0,
-            1.0,
-          );
 
     return AppScaffold(
       // Deliberately a scrolling body, with fixed gaps around the ring rather
@@ -222,58 +362,95 @@ class _RestingViewState extends State<RestingView> {
       // inside the non-scrolling scaffold, whose IntrinsicHeight cannot hold a
       // 210px ring plus the up-next card plus the footer on a short viewport —
       // it overflows, and an overflow here hides the rest timer she is watching.
+      footerScrollsWhenLarge: true,
       appBar: TrainTopBar(
         title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
         onClose: widget.onClose,
+        sets: widget.sets,
         actions: [
+          // Her rest, held. The clock stops where it is and starts again
+          // from there; the icon said pause for every woman and paused
+          // nothing.
           IconButton(
-            onPressed: widget.onPause,
+            onPressed: _togglePause,
             iconSize: 24,
             color: AppColors.onSurfaceVariant,
-            tooltip: l10n.pause,
-            icon: const Icon(Icons.pause),
+            tooltip: _paused ? l10n.resume : l10n.pause,
+            icon: Icon(_paused ? Icons.play_arrow : Icons.pause),
           ),
+          if (widget.end case final end?) SessionEndButton(end: end),
         ],
       ),
       footer: [
-        AppButton(l10n.imReadyNextSet, onPressed: widget.onReady),
         AppButton(
-          l10n.add30Seconds,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          // Bound to the handler, not to the callback. The router passes no
-          // onAddThirtySeconds, so binding to it left the button disabled —
-          // which is exactly why "Add 30 seconds" added nothing.
-          onPressed: _addThirtySeconds,
+          l10n.imReadyNextSet,
+          onPressed: widget.onReady == null ? null : _ready,
+        ),
+        // Bound to the handlers here, not to optional callbacks: the router
+        // passes none, and a control bound to one stayed disabled.
+        RestAdjustRow(
+          clock: _clock,
+          onShorter: () => _adjust(-kRestStep),
+          onLonger: () => _adjust(kRestStep),
+          onSkip: widget.onReady == null ? null : _ready,
         ),
       ],
       children: [
-        AppUndoBar(
+        AppLiveUndoBar(
           // The handle is the truth: R07 and R08 both pass one, and it already
           // names her numbers. The fallback is the standalone-preview state of
           // this screen, so it reproduces the mockup's set rather than invent
           // a claim about a set that was never logged.
+          //
+          // Live: Undo goes when the five seconds do, so it is never a button
+          // that does nothing for the rest of the minute.
+          handle: widget.handle,
           message:
               widget.handle?.describe ??
               l10n.setSetnumberSavedWeightKgReps(2, weightLabel(12), 10),
           undoLabel: l10n.undo,
-          onUndo: widget.handle == null
-              ? null
-              : () {
-                  // False when she was a moment late. Nothing is rolled back,
-                  // because by then the write has already been made.
-                  if (widget.handle!.undo()) widget.onUndo?.call();
-                },
+          onUndo: widget.onUndo,
         ),
+        if (widget.liveBest case final best?) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: LiveBestChip(
+              key: const ValueKey('r09-new-best'),
+              best: best,
+            ),
+          ),
+        ],
         const SizedBox(height: 24),
         Center(
-          child: AppRingStat(
-            fraction: elapsed,
-            big: clockLabel(_remaining),
-            small: l10n.rest,
-            size: 210,
-            thickness: 14,
+          // The only part of the screen that changes each second.
+          child: ValueListenableBuilder<({Duration remaining, Duration total})>(
+            valueListenable: _clock,
+            builder: (context, clock, _) {
+              // The arc is the rest she has left: full as it starts, giving
+              // way second by second. A second's step is eased into a glide,
+              // and with motion off it simply moves.
+              final left = clock.total.inSeconds == 0
+                  ? 0.0
+                  : (clock.remaining.inSeconds / clock.total.inSeconds).clamp(
+                      0.0,
+                      1.0,
+                    );
+              return TweenAnimationBuilder<double>(
+                tween: Tween<double>(end: left),
+                duration: handMotionOff(context)
+                    ? Duration.zero
+                    : const Duration(seconds: 1),
+                curve: Curves.linear,
+                builder: (context, value, _) => AppRingStat(
+                  fraction: value,
+                  big: clockLabel(clock.remaining),
+                  small: l10n.rest,
+                  size: 210,
+                  thickness: 14,
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: 4),
@@ -323,7 +500,18 @@ class _RestingViewState extends State<RestingView> {
                   ),
                   if (widget.upNextPrescription != null) ...[
                     const SizedBox(width: 12),
-                    Text(widget.upNextPrescription!, style: AppText.titleM),
+                    // Flexible: a prescription such as "3 × 8 each side" is
+                    // longer than the card has room for beside a long move
+                    // name, and it wraps rather than running off the edge.
+                    Flexible(
+                      child: Text(
+                        l10n.localeName == 'ar'
+                            ? '\u2068${widget.upNextPrescription!}\u2069'
+                            : widget.upNextPrescription!,
+                        textAlign: TextAlign.end,
+                        style: AppText.titleM,
+                      ),
+                    ),
                   ],
                 ],
               ),

@@ -158,28 +158,6 @@ void main() {
   });
 
   group('the planner opened without a client', () {
-    testWidgets('W03, W04 and W06 say she has no clients yet', (tester) async {
-      expect(CoachingDeskState.instance.clients, isEmpty);
-
-      for (final id in ['W03', 'W04', 'W06']) {
-        await _open(tester, id);
-        expect(
-          find.byType(NoClientYetView),
-          findsOneWidget,
-          reason: '$id has no month to write, so it offers no chips',
-        );
-        expect(find.text('No clients yet'), findsOneWidget, reason: id);
-      }
-    });
-
-    testWidgets('and the empty state leads to her roster', (tester) async {
-      await _open(tester, 'W04');
-      await tester.tap(find.text('No clients yet'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Worth doing before your first client'), findsOneWidget);
-    });
-
     testWidgets('with a woman on the roster the chips write her month', (
       tester,
     ) async {

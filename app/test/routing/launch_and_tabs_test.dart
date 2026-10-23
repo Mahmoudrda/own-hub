@@ -91,6 +91,12 @@ void main() {
     late GlobalKey<NavigatorState> navigator;
     late _Stack observed;
 
+    // The tabs are proved for a member. A guest tapping a tab that needs an
+    // account is asked to sign in instead (`guest_mode_test.dart`).
+    final savedFlags = AppRouter.featureFlags;
+    setUp(() => AppRouter.featureFlags = FeatureFlags.everything);
+    tearDown(() => AppRouter.featureFlags = savedFlags);
+
     Future<void> pumpAt(WidgetTester tester, String first) async {
       navigator = GlobalKey<NavigatorState>();
       observed = _Stack();
@@ -151,7 +157,7 @@ void main() {
       await pumpAt(tester, 'T01');
       AppRouter.goToTab(top(tester), 'R01');
       await tester.pumpAndSettle();
-      AppRouter.goTo(top(tester), 'R11');
+      AppRouter.goTo(top(tester), 'R02');
       await tester.pumpAndSettle();
 
       AppRouter.goToTab(top(tester), 'T01');

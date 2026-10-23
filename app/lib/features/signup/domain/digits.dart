@@ -30,3 +30,28 @@ String asciiDigits(String input) {
   }
   return buffer.toString();
 }
+
+/// A number as typed on a Western or Arabic keyboard: Arabic-Indic and Persian
+/// digits fold onto `0`-`9`, and a comma or the Arabic decimal separator
+/// (U+066B) reads as the decimal point. Null when it is not a number.
+double? parseLocalNumber(String raw) {
+  const int ascii0 = 0x30;
+  const int arabicIndic0 = 0x0660;
+  const int extendedArabicIndic0 = 0x06F0;
+  const int arabicDecimal = 0x066B;
+
+  final buffer = StringBuffer();
+  for (final rune in raw.trim().runes) {
+    if (rune >= arabicIndic0 && rune <= arabicIndic0 + 9) {
+      buffer.writeCharCode(ascii0 + rune - arabicIndic0);
+    } else if (rune >= extendedArabicIndic0 &&
+        rune <= extendedArabicIndic0 + 9) {
+      buffer.writeCharCode(ascii0 + rune - extendedArabicIndic0);
+    } else if (rune == arabicDecimal || rune == 0x2C) {
+      buffer.write('.');
+    } else {
+      buffer.writeCharCode(rune);
+    }
+  }
+  return double.tryParse(buffer.toString());
+}

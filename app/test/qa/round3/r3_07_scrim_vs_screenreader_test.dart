@@ -37,19 +37,22 @@ Set<RenderObject> _absorbers(WidgetTester t) {
     if (ro is RenderBox && ro.hasSize) out.add(ro);
   }
 
-  for (final el in find
-      .byWidgetPredicate(
-        (w) =>
-            w is GestureDetector &&
-            w.behavior == HitTestBehavior.opaque &&
-            w.onTap != null,
-      )
-      .evaluate()) {
+  for (final el
+      in find
+          .byWidgetPredicate(
+            (w) =>
+                w is GestureDetector &&
+                w.behavior == HitTestBehavior.opaque &&
+                w.onTap != null,
+          )
+          .evaluate()) {
     final ro = el.renderObject;
     // >= 600 rather than >= 800 on purpose: the fix moved these scrims inside
     // `Scaffold.body`, so a scrim that used to be 844 tall is now about 784.
     // A detector written against the old geometry sees none of them.
-    if (ro is RenderBox && ro.hasSize && ro.size.width >= 380 &&
+    if (ro is RenderBox &&
+        ro.hasSize &&
+        ro.size.width >= 380 &&
         ro.size.height >= 600) {
       take(el);
     }
@@ -101,14 +104,15 @@ void main() {
 
         // A GestureDetector with opaque behaviour filling the window.
         var scrims = 0;
-        for (final el in find
-            .byWidgetPredicate(
-              (w) =>
-                  w is GestureDetector &&
-                  w.behavior == HitTestBehavior.opaque &&
-                  w.onTap != null,
-            )
-            .evaluate()) {
+        for (final el
+            in find
+                .byWidgetPredicate(
+                  (w) =>
+                      w is GestureDetector &&
+                      w.behavior == HitTestBehavior.opaque &&
+                      w.onTap != null,
+                )
+                .evaluate()) {
           final ro = el.renderObject;
           if (ro is! RenderBox || !ro.hasSize) continue;
           if (ro.size.width >= 380 && ro.size.height >= 600) scrims++;
@@ -151,8 +155,10 @@ void main() {
             only.add((label: node.label, rect: node.rect));
           }
         }
-        report.add('$id: ${only.length} control(s) a screen reader can reach '
-            'and a finger cannot');
+        report.add(
+          '$id: ${only.length} control(s) a screen reader can reach '
+          'and a finger cannot',
+        );
         for (final o in only) {
           report.add('    "${o.label}"  @${o.rect.center}');
         }
@@ -173,8 +179,10 @@ void main() {
     await open(t, appDestinations['T02']!.name, locale: const Locale('en'));
     print('=== R3-07 T02 walk-through ===');
     print('  landed on ${topScreen(t)}');
-    print('  reader can activate: '
-        '${tappables(t).map((e) => e.label).join(" // ")}');
+    print(
+      '  reader can activate: '
+      '${tappables(t).map((e) => e.label).join(" // ")}',
+    );
 
     for (final name in <String>['Start, everything', 'Lunch']) {
       await open(t, appDestinations['T02']!.name, locale: const Locale('en'));
@@ -236,11 +244,15 @@ void main() {
           final byFinger = topScreen(t);
 
           final mark = byReader == byFinger ? '  ' : '!!';
-          print('  $mark "$name"  reader($activated): $start -> $byReader   '
-              'finger: $start -> $byFinger');
+          print(
+            '  $mark "$name"  reader($activated): $start -> $byReader   '
+            'finger: $start -> $byFinger',
+          );
           if (byReader != byFinger) {
-            diverged.add('$id $loc "$name": reader -> $byReader, '
-                'finger -> $byFinger');
+            diverged.add(
+              '$id $loc "$name": reader -> $byReader, '
+              'finger -> $byFinger',
+            );
           }
         }
       }

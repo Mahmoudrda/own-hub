@@ -63,7 +63,9 @@ void main() {
       print('  $t');
     }
     // ignore: avoid_print
-    print('DID NOT LAND ON ITSELF (${unresolved.length}): ${unresolved.join(" ")}');
+    print(
+      'DID NOT LAND ON ITSELF (${unresolved.length}): ${unresolved.join(" ")}',
+    );
 
     expect(threw, isEmpty, reason: 'a route threw on open');
     expect(

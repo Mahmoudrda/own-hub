@@ -47,15 +47,49 @@ void main() {
   setUp(() => AppRouter.featureFlags = FeatureFlags.everything);
   tearDown(() => AppRouter.featureFlags = savedFlags);
 
-  group('a woman sees her four destinations', () {
-    testWidgets('all four, labelled', (tester) async {
+  group('a woman sees her five destinations', () {
+    testWidgets('all five, labelled, in order', (tester) async {
       await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'R01')));
       await tester.pumpAndSettle();
 
-      for (final label in ['Home', 'Train', 'Community', 'Eat']) {
+      for (final label in ['Home', 'Train', 'Eat', 'Community', 'Insights']) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(traineeTabs.length, 4);
+      expect(traineeTabs.length, 5);
+      expect(
+        [for (final t in traineeTabs) t.screenId],
+        ['T01', 'R01', 'E01', 'M01', 'P01'],
+      );
+      // Left to right in the order of the list.
+      final xs = [
+        for (final label in ['Home', 'Train', 'Eat', 'Community', 'Insights'])
+          tester.getCenter(find.text(label)).dx,
+      ];
+      expect(xs, [...xs]..sort());
+    });
+
+    testWidgets('Events takes the community\'s slot while it is dark', (
+      tester,
+    ) async {
+      AppRouter.featureFlags = FeatureFlags.everything.with_({
+        Feature.community: false,
+      });
+      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'T01')));
+      await tester.pumpAndSettle();
+
+      expect(
+        [for (final t in tabsFor(AppRole.trainee)) t.screenId],
+        ['T01', 'R01', 'E01', 'T09', 'P01'],
+      );
+      expect(find.text('Events'), findsOneWidget);
+      expect(find.text('Community'), findsNothing);
+    });
+
+    testWidgets('there is no floating Log food button', (tester) async {
+      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'T01')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('nav-log-food')), findsNothing);
+      expect(find.text('Log food'), findsNothing);
     });
 
     testWidgets('Coaching is not one of them', (tester) async {
@@ -84,6 +118,7 @@ void main() {
       // English is a very visible way to bypass the dictionary.
       expect(find.text('التمرين'), findsOneWidget);
       expect(find.text('المجتمع'), findsOneWidget);
+      expect(find.text('إحصائياتك'), findsOneWidget);
       expect(find.text('Train'), findsNothing);
     });
   });
@@ -160,6 +195,10 @@ void main() {
       await tester.tap(find.text('Eat'));
       await tester.pumpAndSettle();
       expect(selected, ['E01']);
+
+      await tester.tap(find.text('Insights'));
+      await tester.pumpAndSettle();
+      expect(selected, ['E01', 'P01']);
     });
 
     testWidgets('reports its selected state to assistive technology', (
@@ -236,10 +275,52 @@ void main() {
     });
   });
 
+  group('the Eat tab', () {
+    testWidgets('is a normal tab that wears a quiet chip until it is open', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'T01')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('nav-tab-emphasis')), findsOneWidget);
+      expect(traineeTabs.where((t) => t.emphasis).map((t) => t.screenId), [
+        'E01',
+      ]);
+
+      // Open, it takes the marker like every other tab and the chip goes.
+      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'E01')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('nav-tab-emphasis')), findsNothing);
+    });
+
+    testWidgets('a coach does not get it', (tester) async {
+      await tester.pumpWidget(
+        _host(const AppNavBar(activeScreenId: 'K07', destinations: coachTabs)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('nav-tab-emphasis')), findsNothing);
+    });
+
+    testWidgets('in Arabic at the largest text size five tabs fit', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const AppNavBar(activeScreenId: 'T01'),
+          locale: const Locale('ar'),
+          textScale: 2.0,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('الأكل'), findsOneWidget);
+      expect(find.text('إحصائياتك'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('survives the largest system text size in Arabic', (
     tester,
   ) async {
-    // Four labels across a phone width, and Arabic labels are longer.
+    // Five labels across a phone width, and Arabic labels are longer.
     await tester.pumpWidget(
       _host(
         const AppNavBar(activeScreenId: 'T01'),

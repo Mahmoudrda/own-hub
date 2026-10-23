@@ -165,7 +165,7 @@ class _StartHereNote extends StatelessWidget {
           bend: -0.3,
           seed: 27,
           drawOn: true,
-          delay: Duration(milliseconds: 400),
+          delay: HandTiming.long,
         ),
         const SizedBox(width: 4),
         Flexible(child: HandNote(l10n.startWithACover, size: 19)),

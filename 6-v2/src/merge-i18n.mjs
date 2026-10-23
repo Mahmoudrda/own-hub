@@ -1,6 +1,5 @@
 // Builds i18n/ar.json from the Arabic sources in i18n/msa/ (the folder keeps
-// its old name; the app's Arabic is polished Egyptian since 2026-10-12, with
-// legal and consent wording still in Modern Standard Arabic),
+// its old name). Arabic is Egyptian everywhere, including legal and consent (owner decision 14 Oct 2026),
 // then reports what the current screens still need.
 import fs from 'node:fs';
 import path from 'node:path';

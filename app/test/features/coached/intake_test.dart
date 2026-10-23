@@ -96,7 +96,10 @@ void main() {
       // A month later, from My Profile — the identical call.
       await profile.save(allergies: {AllergenTag.treeNuts, AllergenTag.milk});
 
-      expect(profile.read().allergies, {AllergenTag.treeNuts, AllergenTag.milk});
+      expect(profile.read().allergies, {
+        AllergenTag.treeNuts,
+        AllergenTag.milk,
+      });
     });
 
     test('a merge touches only the fields it names', () async {

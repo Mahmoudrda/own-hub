@@ -167,10 +167,6 @@ class _CheckInViewState extends State<CheckInView> {
       ],
       children: [
         Text(l10n.howAreYouFeeling, style: AppText.titleL),
-        Text(
-          l10n.howAreYouFeelingToday,
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
         _Group(
           label: l10n.energy,
           items: [l10n.low, l10n.okay, l10n.high],
@@ -178,25 +174,12 @@ class _CheckInViewState extends State<CheckInView> {
           onTap: (i) =>
               setState(() => _draft = _draft.copyWith(energy: _energies[i])),
         ),
-        _Group(
-          label: l10n.cramps,
-          items: [l10n.none, l10n.mild, l10n.moderate, l10n.severe],
-          selectedIndex: _indexIn(_cramps, _draft.cramps),
-          onTap: (i) =>
-              setState(() => _draft = _draft.copyWith(cramps: _cramps[i])),
-        ),
-        _Group(
-          label: l10n.appetite,
-          items: [l10n.lessHungry, l10n.usual, l10n.moreHungry],
-          selectedIndex: _indexIn(_appetites, _draft.appetite),
-          onTap: (i) =>
-              setState(() => _draft = _draft.copyWith(appetite: _appetites[i])),
-        ),
-        // "More to log: sleep, bloating, bleeding". Closed by default, as the
-        // design draws it: three taps are the sheet, and the rest is there for
-        // the day she wants it.
+        // Energy and Save are the sheet. Cramps, appetite, sleep, bloating and
+        // bleeding are behind one disclosure for the day she wants them. A
+        // severe or heavy chip still reaches the gate from in here, and its
+        // note stays on screen when the group is closed again.
         AppButton(
-          l10n.moreToNoteSleepBloatingBleeding,
+          l10n.crampsAppetiteSleepAndMore,
           variant: AppButtonVariant.text,
           height: 44,
           fontSize: 15,
@@ -204,6 +187,22 @@ class _CheckInViewState extends State<CheckInView> {
           onPressed: () => setState(() => _showMore = !_showMore),
         ),
         if (_showMore) ...[
+          _Group(
+            label: l10n.cramps,
+            wrap: true,
+            items: [l10n.none, l10n.mild, l10n.moderate, l10n.severe],
+            selectedIndex: _indexIn(_cramps, _draft.cramps),
+            onTap: (i) =>
+                setState(() => _draft = _draft.copyWith(cramps: _cramps[i])),
+          ),
+          _Group(
+            label: l10n.appetite,
+            items: [l10n.lessHungry, l10n.usual, l10n.moreHungry],
+            selectedIndex: _indexIn(_appetites, _draft.appetite),
+            onTap: (i) => setState(
+              () => _draft = _draft.copyWith(appetite: _appetites[i]),
+            ),
+          ),
           _Group(
             label: l10n.sleep,
             items: [l10n.poor, l10n.good],
@@ -213,6 +212,7 @@ class _CheckInViewState extends State<CheckInView> {
           ),
           _Group(
             label: l10n.bloating,
+            wrap: true,
             items: [l10n.none, l10n.mild, l10n.moderate, l10n.severe],
             selectedIndex: _indexIn(_bloatings, _draft.bloating),
             onTap: (i) => setState(
@@ -247,12 +247,17 @@ class _Group extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onTap,
+    this.wrap = false,
   });
 
   final String label;
   final List<String> items;
   final int? selectedIndex;
   final ValueChanged<int> onTap;
+
+  /// Chips take their own widths and wrap, so a long label is never broken
+  /// mid-word in a row of four.
+  final bool wrap;
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +269,12 @@ class _Group extends StatelessWidget {
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
-        AppChipRow(items: items, selected: {?selectedIndex}, onTap: onTap),
+        AppChipRow(
+          items: items,
+          selected: {?selectedIndex},
+          onTap: onTap,
+          grow: !wrap,
+        ),
       ],
     );
   }

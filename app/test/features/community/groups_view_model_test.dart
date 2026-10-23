@@ -81,7 +81,10 @@ void main() {
 
     test('a lapsed mute is not a mute', () {
       final row = GroupRowModel.from(
-        _group(joined: true, mutedUntil: _now.subtract(const Duration(days: 1))),
+        _group(
+          joined: true,
+          mutedUntil: _now.subtract(const Duration(days: 1)),
+        ),
         now: _now,
       );
 

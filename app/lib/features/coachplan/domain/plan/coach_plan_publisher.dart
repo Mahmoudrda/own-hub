@@ -283,7 +283,8 @@ class CoachPlanPublisher {
     );
     if (!gate.allowed) {
       return PublishOutcome.refused(switch (gate.reason!) {
-        PublishBlockReason.clearanceWithheld => PublishRefusal.clearanceWithheld,
+        PublishBlockReason.clearanceWithheld =>
+          PublishRefusal.clearanceWithheld,
         PublishBlockReason.clearanceUnrecorded =>
           PublishRefusal.clearanceUnrecorded,
       });

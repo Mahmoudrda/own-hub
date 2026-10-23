@@ -59,11 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBFiXxpUqVDeK_SnJxgZ2A59p0m6xv9NsA',
-    appId: '1:681714989950:ios:0e2cab381dd5cd91fbd12f',
+    appId: '1:681714989950:ios:02417d9df27fbcf2fbd12f',
     messagingSenderId: '681714989950',
     projectId: 'own-hub',
     storageBucket: 'own-hub.firebasestorage.app',
-    iosClientId: '681714989950-ig46eu1jg345idchla73e8f8v0s9gr86.apps.googleusercontent.com',
-    iosBundleId: 'com.ownhub.app',
+    iosClientId: '681714989950-deq8mmf6lfmk9ou7vugq02eev2louetd.apps.googleusercontent.com',
+    iosBundleId: 'com.ownhub.fitness',
   );
 }

@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_tokens.dart';
 import '../theme/screen_art.dart';
 import 'hand/hand.dart';
+import 'language_switch.dart' show AppChrome;
 import 'screen_art_strip.dart';
 import 'screen_scope.dart';
 
@@ -39,6 +40,10 @@ class AppScaffold extends StatelessWidget {
     this.backgroundColor,
     this.scrollable = true,
     this.footerScrollsWhenLarge = false,
+    this.staggerGroup,
+    this.showArt = true,
+    this.gap = kStackGap,
+    this.showChrome = true,
   });
 
   /// The body. Laid out in a column with [kStackGap] between each child, exactly
@@ -72,23 +77,53 @@ class AppScaffold extends StatelessWidget {
   /// does not leave the body a sliver of the screen.
   final bool footerScrollsWhenLarge;
 
+  /// Names this screen's list when its first rows should ease in, once per
+  /// visit: 40 ms apart, at most eight, none under reduced motion. Null
+  /// leaves the body as it is.
+  final String? staggerGroup;
+
+  /// Whether this screen's illustration strip is drawn. A setup question turns
+  /// it off so the answers fit the screen without scrolling.
+  final bool showArt;
+
+  /// Vertical gap between the body's children.
+  final double gap;
+
+  /// Whether a screen with no top bar of its own gets a slim row with her
+  /// picture and the language switch above its body. Not drawn when a bar
+  /// is present (an [AppTopBar] carries them itself), off the router, on the
+  /// no-chrome screens, or under a strip that already has them.
+  final bool showChrome;
+
   @override
   Widget build(BuildContext context) {
     // This screen's illustrations, from the one table that holds them all.
     // Empty outside the router, and for the screens that draw their own hero.
-    final art = ScreenArt.headerFor(ScreenScope.of(context));
+    final art = showArt
+        ? ScreenArt.headerFor(ScreenScope.of(context))
+        : const <String>[];
     final footerInBody =
         footerScrollsWhenLarge &&
         footer.isNotEmpty &&
         MediaQuery.textScalerOf(context).scale(1) > 1.3;
     final body = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: _withGaps([
+      children: _withGaps(gap, [
         if (art.isNotEmpty) const ScreenArtStrip(),
-        ...children,
+        if (staggerGroup case final group?)
+          for (var i = 0; i < children.length; i++)
+            StaggerIn(index: i, group: group, child: children[i])
+        else
+          ...children,
         if (footerInBody) ...[const SizedBox(height: 6), ...footer],
       ]),
     );
+
+    final chromeRow =
+        showChrome &&
+        appBar == null &&
+        !(Scaffold.maybeOf(context)?.hasAppBar ?? false) &&
+        AppChrome.shownFor(context);
 
     // The page is paper, top to bottom — under the top bar as well — so the
     // Scaffold itself is transparent and the grain is laid beneath it.
@@ -100,6 +135,11 @@ class AppScaffold extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
+              if (chromeRow)
+                const Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: AppChrome(),
+                ),
               Expanded(
                 child: Padding(
                   padding: kBodyPadding,
@@ -125,7 +165,7 @@ class AppScaffold extends StatelessWidget {
                   padding: kFooterPadding,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: _withGaps(footer),
+                    children: _withGaps(kStackGap, footer),
                   ),
                 ),
             ],
@@ -135,10 +175,10 @@ class AppScaffold extends StatelessWidget {
     );
   }
 
-  static List<Widget> _withGaps(List<Widget> items) {
+  static List<Widget> _withGaps(double gap, List<Widget> items) {
     final out = <Widget>[];
     for (var i = 0; i < items.length; i++) {
-      if (i > 0) out.add(const SizedBox(height: kStackGap));
+      if (i > 0) out.add(SizedBox(height: gap));
       out.add(items[i]);
     }
     return out;
@@ -165,6 +205,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.onBack,
     this.actions = const [],
     this.leadingIcon = Icons.arrow_back,
+    this.showChrome = true,
   });
 
   final String title;
@@ -180,11 +221,28 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// with the old default, so every existing caller is unchanged.
   final IconData leadingIcon;
 
+  /// Whether her picture and the language switch end the bar. They draw only
+  /// on a routed screen that is not in the no-chrome list; pass false for a
+  /// bar that must stay bare.
+  final bool showChrome;
+
   @override
   Size get preferredSize => const Size.fromHeight(64);
 
+  /// What the chrome (switch, picture) and the back arrow take of the bar's
+  /// width, and the least the actions keep, so a wide action row scales down
+  /// instead of pushing the chrome off the screen.
+  static const double _chromeAndBackWidth = 210;
+  static const double _leastActionsWidth = 72;
+
   @override
   Widget build(BuildContext context) {
+    final actionsMax = showChrome && AppChrome.shownFor(context)
+        ? (MediaQuery.sizeOf(context).width - _chromeAndBackWidth - 64).clamp(
+            _leastActionsWidth,
+            220.0,
+          )
+        : 220.0;
     return AppBar(
       toolbarHeight: 64,
       backgroundColor: Colors.transparent,
@@ -221,20 +279,21 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
             ),
       // Scaled down rather than overflowing: at the largest text size a
       // button in the bar can be wider than the room beside the title.
-      actions: actions.isEmpty
-          ? const []
-          : [
-              // A fixed cap rather than a share of the screen: it must hold
-              // even where no screen size is known, and 220 leaves the title
-              // room on the narrowest phone.
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 220),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Row(mainAxisSize: MainAxisSize.min, children: actions),
-                ),
-              ),
-            ],
+      actions: [
+        if (actions.isNotEmpty)
+          // A fixed cap rather than a share of the screen: it must hold
+          // even where no screen size is known, and 220 leaves the title
+          // room on the narrowest phone.
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: actionsMax),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(mainAxisSize: MainAxisSize.min, children: actions),
+            ),
+          ),
+        // Outside the scaled-down box above, so its targets keep their size.
+        if (showChrome) const AppChrome(routedOnly: true),
+      ],
     );
   }
 }

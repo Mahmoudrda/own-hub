@@ -8,20 +8,35 @@
 // R1-28 to R1-36: My cycle, including the severe branch.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 void main() {
   useShippingApp();
-  for (final id in ['Y01','Y02','Y03','Y04','Y05','Y06','Y07','Y08','Y09','Y10','Y12','Y13']) {
+  for (final id in [
+    'Y01',
+    'Y02',
+    'Y03',
+    'Y04',
+    'Y05',
+    'Y06',
+    'Y07',
+    'Y08',
+    'Y09',
+    'Y10',
+    'Y12',
+    'Y13',
+  ]) {
     testWidgets('$id as opened', (t) async {
       phone(t);
       final s = t.ensureSemantics();
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       print('$id PAINTED: ${paintedText(t).join(" | ")}');
-      print('$id TAPPABLE: ${tappables(t).map((e)=>e.label).join(" | ")}');
+      print('$id TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
       s.dispose();
     });
   }
@@ -29,7 +44,7 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     await open(t, appDestinations['Y01']!.name, locale: const Locale('en'));
-    print('Y01 choices: ${tappables(t).map((e)=>e.label).join(" | ")}');
+    print('Y01 choices: ${tappables(t).map((e) => e.label).join(" | ")}');
     s.dispose();
   });
 }

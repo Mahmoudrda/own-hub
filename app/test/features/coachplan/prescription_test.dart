@@ -73,10 +73,7 @@ final _session = DraftWorkout(
     ),
   ],
   approvedAlternatives: <ApprovedAlternative>[
-    ApprovedAlternative(
-      exerciseId: 'box_squat',
-      forExerciseId: 'goblet_squat',
-    ),
+    ApprovedAlternative(exerciseId: 'box_squat', forExerciseId: 'goblet_squat'),
   ],
 );
 
@@ -137,7 +134,8 @@ void main() {
       expect(
         load.toWire().containsKey('value'),
         isFalse,
-        reason: '"0 kg" reads as zero kilograms, which is a number nobody meant',
+        reason:
+            '"0 kg" reads as zero kilograms, which is a number nobody meant',
       );
     });
 
@@ -265,7 +263,8 @@ void main() {
         expect(
           payload.contains(banned),
           isFalse,
-          reason: 'the session she is in is hers, and this request cannot '
+          reason:
+              'the session she is in is hers, and this request cannot '
               'reach into it — found "$banned"',
         );
       }
@@ -273,35 +272,38 @@ void main() {
   });
 
   group('no actual, no weight, nothing ranked — across the whole feature', () {
-    test('a result-shaped key is refused at any depth, and its path is named', () {
-      final wire = <String, Object?>{
-        'days': <String, Object?>{
-          '2026-09-16': <String, Object?>{
-            'workout': <String, Object?>{
-              'moves': <Object?>[
-                <String, Object?>{'exerciseId': 'a'},
-                <String, Object?>{'exerciseId': 'b'},
-                <String, Object?>{'exerciseId': 'c', 'actualReps': 9},
-              ],
+    test(
+      'a result-shaped key is refused at any depth, and its path is named',
+      () {
+        final wire = <String, Object?>{
+          'days': <String, Object?>{
+            '2026-09-16': <String, Object?>{
+              'workout': <String, Object?>{
+                'moves': <Object?>[
+                  <String, Object?>{'exerciseId': 'a'},
+                  <String, Object?>{'exerciseId': 'b'},
+                  <String, Object?>{'exerciseId': 'c', 'actualReps': 9},
+                ],
+              },
             },
           },
-        },
-      };
+        };
 
-      expect(
-        () => PrescriptionOnlyValidator.assertPrescriptionOnly(wire),
-        throwsA(
-          isA<ActualFieldInPrescription>()
-              .having((e) => e.key, 'key', 'actualReps')
-              .having(
-                (e) => e.path,
-                'path',
-                'days.2026-09-16.workout.moves[2]',
-              ),
-        ),
-      );
-      expect(PrescriptionOnlyValidator.isPrescriptionOnly(wire), isFalse);
-    });
+        expect(
+          () => PrescriptionOnlyValidator.assertPrescriptionOnly(wire),
+          throwsA(
+            isA<ActualFieldInPrescription>()
+                .having((e) => e.key, 'key', 'actualReps')
+                .having(
+                  (e) => e.path,
+                  'path',
+                  'days.2026-09-16.workout.moves[2]',
+                ),
+          ),
+        );
+        expect(PrescriptionOnlyValidator.isPrescriptionOnly(wire), isFalse);
+      },
+    );
 
     test('every banned key is banned, one at a time', () {
       for (final key in kForbiddenResultKeys) {
@@ -328,10 +330,9 @@ void main() {
       // Keys, not a substring search over the blob: `bodyweight` is a *load
       // kind* and must stay sayable, while a `weight` key must not exist.
       expect(
-        _keysAtEveryDepth(gateway.requests.single.payload).intersection(<String>{
-          ...kForbiddenResultKeys,
-          ...kForbiddenBodyMeasureKeys,
-        }),
+        _keysAtEveryDepth(gateway.requests.single.payload).intersection(
+          <String>{...kForbiddenResultKeys, ...kForbiddenBodyMeasureKeys},
+        ),
         isEmpty,
       );
       expect(
@@ -377,7 +378,8 @@ void main() {
       expect(
         offenders,
         isEmpty,
-        reason: 'K19 sorts splits by when they were edited; W01 orders work by '
+        reason:
+            'K19 sorts splits by when they were edited; W01 orders work by '
             'how long somebody has waited. Neither is a ranking of women.',
       );
     });

@@ -4,7 +4,7 @@
 /// place a woman sees the app before she has an account. It used to be a
 /// browse page with two previews of workouts that did not exist. It is now a
 /// short tour of the **real** screens, Home, today's workout, the workout
-/// player, Rahma's recipes, the week's dinners, My cycle and Progress, each
+/// player, Rahma's recipes, the week's dinners, the daily check-in and Progress, each
 /// drawn by the product's own widget with a sample week in it.
 ///
 /// ## What keeps it a tour
@@ -54,6 +54,7 @@ class LookAroundView extends StatefulWidget {
     this.onJoin,
     this.onLeave,
     this.onSignIn,
+    this.onSkip,
     this.waiting = false,
     this.setupDone = false,
     this.openJoinPrompt = false,
@@ -72,6 +73,9 @@ class LookAroundView extends StatefulWidget {
 
   /// "I already have an account", on the end card.
   final VoidCallback? onSignIn;
+
+  /// Skip, in the bar of every stop: straight to sign-in. Null draws none.
+  final VoidCallback? onSkip;
 
   /// She is already signed up and waiting on her check (`C14` opened this).
   /// The join button reads "Back to my check" and [onJoin] takes her there.
@@ -260,6 +264,7 @@ class _LookAroundViewState extends State<LookAroundView> {
                   joinLabel: _joinLabel(l10n),
                   onJoin: _joinFrom(DemoJoinSource.bar),
                   onLeave: widget.onLeave,
+                  onSkip: widget.onSkip,
                 ),
                 if (stop != null)
                   Padding(
@@ -272,10 +277,13 @@ class _LookAroundViewState extends State<LookAroundView> {
                         maxHeight:
                             constraints.maxHeight *
                             (MediaQuery.textScalerOf(context).scale(1) > 1.3
-                                ? 0.28
+                                ? 0.34
                                 : 0.4),
                       ),
                       child: SingleChildScrollView(
+                        // Room over the kitten, so the card's float and a
+                        // larger heading never press it against the edge.
+                        padding: const EdgeInsets.only(top: 4),
                         child: DemoCoachCard(
                           number: stop.index + 1,
                           total: DemoStop.values.length,

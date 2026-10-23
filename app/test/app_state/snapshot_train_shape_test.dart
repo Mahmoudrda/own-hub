@@ -45,7 +45,8 @@ Map<String, Object?> _writtenTrain() =>
         as Map<String, Object?>;
 
 List<Object?> _flushSets(Map<String, Object?> train, int index) =>
-    ((train['flushes']! as List<Object?>)[index] as Map<String, Object?>)['sets']!
+    ((train['flushes']! as List<Object?>)[index]
+            as Map<String, Object?>)['sets']!
         as List<Object?>;
 
 PrescribedSet _p(
@@ -92,32 +93,28 @@ void main() {
             sessionId: 'live-1',
             exerciseId: 'goblet_squat',
             sets: <LoggedSet>[
-              LoggedSet(
-                prescribed: prescriptions[0],
-              ).recording(const SetOutcome(weightKg: 12.5, reps: 10)),
+              LoggedSet(prescribed: prescriptions[0])
+                  .recording(const SetOutcome(weightKg: 12.5, reps: 10)),
               // A set she explicitly skipped. Not an absence, and the one
               // outcome field that is false by default.
-              LoggedSet(
-                prescribed: prescriptions[1],
-              ).recording(const SetOutcome.skipped()),
+              LoggedSet(prescribed: prescriptions[1])
+                  .recording(const SetOutcome.skipped()),
             ],
           ),
           (
             sessionId: 'live-1',
             exerciseId: 'hip_bridge',
             sets: <LoggedSet>[
-              LoggedSet(
-                prescribed: prescriptions[2],
-              ).recording(const SetOutcome(reps: 14)),
+              LoggedSet(prescribed: prescriptions[2])
+                  .recording(const SetOutcome(reps: 14)),
             ],
           ),
           (
             sessionId: 'live-1',
             exerciseId: 'side_plank',
             sets: <LoggedSet>[
-              LoggedSet(
-                prescribed: prescriptions[3],
-              ).recording(const SetOutcome(holdSeconds: 42)),
+              LoggedSet(prescribed: prescriptions[3])
+                  .recording(const SetOutcome(holdSeconds: 42)),
             ],
           ),
         ],
@@ -146,7 +143,11 @@ void main() {
       expect(squat[1].outcome?.isLogged, isFalse);
 
       final bridge = flushes[1].sets.single;
-      expect(bridge.prescribed.weightKg, isNull, reason: 'bodyweight, not 0 kg');
+      expect(
+        bridge.prescribed.weightKg,
+        isNull,
+        reason: 'bodyweight, not 0 kg',
+      );
       expect(bridge.prescribed.reps, 12);
       expect(bridge.outcome?.reps, 14);
       expect(bridge.outcome?.weightKg, isNull);
@@ -209,16 +210,16 @@ void main() {
             sessionId: 'live-1',
             exerciseId: 'leg_press',
             sets: <LoggedSet>[
-              LoggedSet(
-                prescribed: swappedIn,
-              ).recording(const SetOutcome(weightKg: 32.5, reps: 12)),
+              LoggedSet(prescribed: swappedIn)
+                  .recording(const SetOutcome(weightKg: 32.5, reps: 12)),
             ],
           ),
         ],
         sessionCounter: 1,
       );
 
-      final row = _flushSets(_writtenTrain(), 0).single! as Map<String, Object?>;
+      final row =
+          _flushSets(_writtenTrain(), 0).single! as Map<String, Object?>;
       expect(
         row['prescribed'],
         isA<Map<String, Object?>>(),
@@ -252,21 +253,24 @@ void main() {
             sessionId: 'live-1',
             exerciseId: 'goblet_squat',
             sets: <LoggedSet>[
-              LoggedSet(
-                prescribed: flushed,
-              ).recording(const SetOutcome(weightKg: 14, reps: 9)),
+              LoggedSet(prescribed: flushed)
+                  .recording(const SetOutcome(weightKg: 14, reps: 9)),
             ],
           ),
         ],
         sessionCounter: 1,
       );
 
-      final row = _flushSets(_writtenTrain(), 0).single! as Map<String, Object?>;
+      final row =
+          _flushSets(_writtenTrain(), 0).single! as Map<String, Object?>;
       expect(row['prescribed'], isA<Map<String, Object?>>());
 
       _roundTrip();
       final repository = AppRouter.trainRepository;
-      expect(repository.sessionById('live-1')!.sets.single.prescribed.weightKg, 12.5);
+      expect(
+        repository.sessionById('live-1')!.sets.single.prescribed.weightKg,
+        12.5,
+      );
       expect(repository.flushes.single.sets.single.prescribed.weightKg, 14);
     });
 
@@ -275,8 +279,8 @@ void main() {
       // is the one row that did not survive the write. Her outcome is the half
       // nothing else on the phone holds, so it is kept.
       fillTrainHistory(sessions: 1);
-      final document = jsonDecode(jsonEncode(AppSnapshot.capture()))
-          as Map<String, Object?>;
+      final document =
+          jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
       (document['train']! as Map<String, Object?>)['sessions'] = 'not a list';
       AppRouter.trainRepository.reset();
 
@@ -291,7 +295,8 @@ void main() {
       expect(
         set.prescribed.reps,
         isNull,
-        reason: 'this document no longer says what she was asked for, so it '
+        reason:
+            'this document no longer says what she was asked for, so it '
             'says nothing rather than guessing',
       );
     });
@@ -304,9 +309,8 @@ void main() {
             sessionId: 'live-99',
             exerciseId: 'goblet_squat',
             sets: <LoggedSet>[
-              LoggedSet(
-                prescribed: orphan,
-              ).recording(const SetOutcome(weightKg: 12.5, reps: 10)),
+              LoggedSet(prescribed: orphan)
+                  .recording(const SetOutcome(weightKg: 12.5, reps: 10)),
             ],
           ),
         ],

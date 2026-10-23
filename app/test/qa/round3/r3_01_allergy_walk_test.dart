@@ -33,9 +33,9 @@ bool _looksLikeDish(String label) =>
     label.contains('جم بروتين');
 
 RecipeBook _book() => RecipeBook.fromJson(
-  (jsonDecode(File('assets/content/rahma_recipes.json').readAsStringSync())
-          as Map)
-      .cast<String, Object?>(),
+  (jsonDecode(
+    File('assets/content/rahma_recipes.json').readAsStringSync(),
+  ) as Map).cast<String, Object?>(),
 );
 
 /// The four rows the prototype draws, by the name a woman reads.
@@ -54,10 +54,11 @@ void main() {
       phone(t);
       final s = t.ensureSemantics();
       final rows = <String>[];
+      final book = _book();
 
       for (final tag in AllergenTag.values) {
         wipe();
-        EatAppState.instance.seedRecipeBook(_book());
+        EatAppState.instance.seedRecipeBook(book);
         await AppRouter.dietaryRepository.save(allergies: <AllergenTag>{tag});
         final ok = await open(
           t,
@@ -78,12 +79,24 @@ void main() {
           'nutDishPainted=${nut.length}  '
           'paintedLines=${painted.length}  taps=${taps.length}',
         );
+        // The one dish a woman who named an allergen may be offered is a recipe
+        // whose allergens are known (a person's signature or Own Hub's
+        // automated check) and whose contents do not hold it. The prototype
+        // rows are unchecked and are never among them.
+        final safeTitles = {
+          for (final r in book.recipes)
+            if (r.allergensKnown && !r.allergensFinal.contains(tag.wireName))
+              r.titleEn,
+        };
+        final offered = dishes
+            .where((d) => !safeTitles.any(d.contains))
+            .toList();
         expect(
-          dishes,
+          offered,
           isEmpty,
           reason:
               'E05 offered a dish to a woman who declared ${tag.name} '
-              'and nothing in this build has been checked for it',
+              'that is unchecked, or contains it',
         );
         expect(ok, isTrue, reason: 'E05 threw with ${tag.name} declared');
       }
@@ -148,15 +161,15 @@ void main() {
   // The reference point: no allergy declared. If the prototype rows are gone
   // here too, the fix took the tab away from everybody.
   for (final loc in <String>['en', 'ar']) {
-    testWidgets('E05 with nothing declared still has its rows, $loc', (t) async {
+    testWidgets('E05 with nothing declared still has its rows, $loc', (
+      t,
+    ) async {
       phone(t);
       final s = t.ensureSemantics();
       EatAppState.instance.seedRecipeBook(_book());
       await open(t, appDestinations['E05']!.name, locale: Locale(loc));
       final taps = tappables(t).map((e) => e.label).toList();
-      final dishes = taps
-          .where(_looksLikeDish)
-          .toList();
+      final dishes = taps.where(_looksLikeDish).toList();
       print('=== R3-01 E05 UNASKED, $loc: ${dishes.length} dish rows ===');
       for (final d in dishes) {
         print('  | $d');

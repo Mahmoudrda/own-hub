@@ -44,7 +44,8 @@ import '../../../domain/format/number_label.dart';
 
 @immutable
 class FollowerCount {
-  const FollowerCount(this.value) : assert(value >= 0, 'a count is not negative');
+  const FollowerCount(this.value)
+    : assert(value >= 0, 'a count is not negative');
 
   /// Nobody at all. Distinct from "unknown" — see [FollowerCount.unknown].
   static const FollowerCount none = FollowerCount(0);

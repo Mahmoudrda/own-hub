@@ -22,16 +22,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/exercise_library_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
+import 'package:own_hub/features/train/domain/exercise_library.dart';
 import 'package:own_hub/features/train/domain/set_history.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/workout_day_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+
+import '../helpers/exercise_library_fixture.dart';
 
 /// The women R11 invented and credited as instructors, in both languages.
 ///
@@ -66,15 +70,32 @@ void main() {
     AppRouter.trainRepository.reset();
   });
 
-  group('R11 — the row she taps is the session she gets', () {
+  group('Explore — the row she taps is the session she gets', () {
     testWidgets('tapping the library row opens that row, not another one', (
       tester,
     ) async {
-      await _open(tester, 'R11');
+      // Explore lists a session only when every move in it has a clip.
+      final day = sampleWorkoutDay(lookupAppL10n(const Locale('en')));
+      ExerciseLibraryState.instance.library = ExerciseLibrary.parse({
+        'version': 1,
+        'schema': 1,
+        'exercises': [
+          for (final id in {for (final m in day.moves) m.exerciseId})
+            exerciseRow(id),
+        ],
+      })!;
+      ExerciseLibraryState.instance.media = FakeExerciseMedia();
+      addTearDown(ExerciseLibraryState.instance.reset);
+      await _open(tester, 'R01');
 
-      // The library offers what the app has, by name.
+      // Explore offers what the app has, by name.
       final row = find.text('Legs and glutes');
-      expect(row, findsOneWidget, reason: 'the library has a row to tap');
+      await tester.scrollUntilVisible(
+        row,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(row, findsOneWidget, reason: 'Explore has a row to tap');
 
       await tester.tap(row);
       await tester.pumpAndSettle();
@@ -200,8 +221,9 @@ void main() {
       expect(find.textContaining('Last time'), findsNothing);
       expect(
         find.textContaining('No history for this move yet'),
-        findsOneWidget,
-        reason: 'the true thing to say when there is no last time',
+        findsNothing,
+        reason:
+            'with no last time there is nothing to say, so no line is drawn',
       );
     });
 

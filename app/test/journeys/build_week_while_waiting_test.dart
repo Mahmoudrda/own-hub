@@ -2,8 +2,8 @@
 //
 // She signed in with an account she already had, or took the niqab path
 // before building one, so C14 has no week on it. "Build your week while we
-// check" opens the short "Your week" (O03, O07 and O04, one question a
-// screen) and its result (O05), which ends in "Save my week" and lands back
+// check" opens the short "Your week" (O03, days and minutes, then O04, one
+// question a screen) and its result (O05), which ends in "Save my week" and lands back
 // on C14 with her week on it. Day one is behind the gate, so nothing on the
 // way offers it.
 
@@ -51,6 +51,7 @@ void main() {
       Feature.lockScreenNudge: true,
       Feature.train: true,
       Feature.recordFromMemory: true,
+      Feature.program: true,
       Feature.exerciseVideo: true,
       Feature.exerciseSwap: true,
       Feature.followAlong: true,
@@ -111,23 +112,20 @@ void main() {
 
     await _tap(tester, find.text('Build your week while we check'));
     expect(_showing(tester), 'O03');
-    // The short week: three questions on the bar, no count in the title (she
-    // has an account, so it is not "1 of 3 · Your week" either) and no Skip.
-    expect(_bar(tester), (1, 3));
-    expect(find.textContaining('1 of 6'), findsNothing);
-    expect(find.text('1 of 3'), findsNothing);
-    expect(find.text('1 of 3 · Your week'), findsNothing);
-    expect(find.text('Skip'), findsNothing);
-
-    await _tap(tester, find.text('Continue'));
-    expect(_showing(tester), 'O07');
-    expect(_bar(tester), (2, 3));
-    expect(find.text('Skip'), findsNothing);
+    // The short week: two questions on the bar, no count in the title (she
+    // has an account, so it is not "1 of 2 · Your week" either), and a Skip in
+    // the top bar that returns her to the wait with the defaults.
+    expect(_bar(tester), (1, 2));
+    expect(find.textContaining('1 of 5'), findsNothing);
+    expect(find.text('1 of 2'), findsNothing);
+    expect(find.text('1 of 2 · Your week'), findsNothing);
+    expect(find.text('Skip'), findsOneWidget);
 
     await _tap(tester, find.text('Continue'));
     expect(_showing(tester), 'O04');
-    expect(_bar(tester), (3, 3));
+    expect(_bar(tester), (2, 2));
     expect(find.text('Anything we should train around?'), findsOneWidget);
+    // Skip never bypasses the life-stage question.
     expect(find.text('Skip'), findsNothing);
 
     await _tap(tester, find.text('See my week'));

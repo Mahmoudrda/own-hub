@@ -53,10 +53,14 @@ void main() {
   tearDown(AppRouter.trainRepository.reset);
 
   test('snapshot encode and decode against the shape the app writes', () {
-    print('=== R6-01 real snapshot cost by history (host; a budget Android is '
-        '4-6x slower) ===');
-    print('${"sessions".padRight(10)}${"document".padRight(12)}'
-        '${"train".padRight(12)}${"decode".padRight(11)}encode');
+    print(
+      '=== R6-01 real snapshot cost by history (host; a budget Android is '
+      '4-6x slower) ===',
+    );
+    print(
+      '${"sessions".padRight(10)}${"document".padRight(12)}'
+      '${"train".padRight(12)}${"decode".padRight(11)}encode',
+    );
 
     // 4 sessions a week: ~200 a year, ~400 in two, ~800 in four.
     for (final sessions in <int>[13, 52, 200, 400, 800]) {
@@ -75,12 +79,14 @@ void main() {
       final encode = _median(9, () => jsonEncode(parsed));
 
       final weeks = (sessions / 4).round();
-      print('${sessions.toString().padRight(10)}'
-          '${"${mb.toStringAsFixed(2)} MB".padRight(12)}'
-          '${"${(trainBytes / (1024 * 1024)).toStringAsFixed(2)} MB".padRight(12)}'
-          '${"${decode.toStringAsFixed(1)} ms".padRight(11)}'
-          '${encode.toStringAsFixed(1)} ms'
-          '   (~$weeks weeks of training)');
+      print(
+        '${sessions.toString().padRight(10)}'
+        '${"${mb.toStringAsFixed(2)} MB".padRight(12)}'
+        '${"${(trainBytes / (1024 * 1024)).toStringAsFixed(2)} MB".padRight(12)}'
+        '${"${decode.toStringAsFixed(1)} ms".padRight(11)}'
+        '${encode.toStringAsFixed(1)} ms'
+        '   (~$weeks weeks of training)',
+      );
     }
   });
 
@@ -88,23 +94,27 @@ void main() {
     fillTrainHistory(sessions: 400);
     final captured = AppSnapshot.capture();
     final total = jsonEncode(captured).length;
-    print('=== R6-01 section sizes at 400 sessions (total '
-        '${(total / 1024).round()} KB) ===');
+    print(
+      '=== R6-01 section sizes at 400 sessions (total '
+      '${(total / 1024).round()} KB) ===',
+    );
     final rows = <MapEntry<String, int>>[
       for (final entry in captured.entries)
         MapEntry(entry.key, jsonEncode(entry.value).length),
     ]..sort((a, b) => b.value.compareTo(a.value));
     for (final row in rows) {
-      print('  ${row.key.padRight(10)}${"${(row.value / 1024).round()} KB"
-          .padLeft(8)}'
-          '  ${(100 * row.value / total).toStringAsFixed(1)}%');
+      print(
+        '  ${row.key.padRight(10)}${"${(row.value / 1024).round()} KB".padLeft(8)}'
+        '  ${(100 * row.value / total).toStringAsFixed(1)}%',
+      );
     }
 
     final train = Map<String, Object?>.from(captured['train']! as Map);
     for (final key in <String>['sessions', 'flushes', 'swaps', 'counter']) {
       final bytes = jsonEncode(train[key]).length;
-      print('  train.${key.padRight(10)}${"${(bytes / 1024).round()} KB"
-          .padLeft(8)}');
+      print(
+        '  train.${key.padRight(10)}${"${(bytes / 1024).round()} KB".padLeft(8)}',
+      );
     }
     print('  per session: ${(total / 400 / 1024).toStringAsFixed(2)} KB');
   });

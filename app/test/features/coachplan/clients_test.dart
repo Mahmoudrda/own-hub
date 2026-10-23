@@ -110,7 +110,10 @@ void main() {
       final later = <CoachClient>[
         _client('nour', reviewDueAt: _now.add(const Duration(days: 1))),
       ];
-      expect(ClientQueue.matching(later, QueueFilter.reviewsDue, now: _now), isEmpty);
+      expect(
+        ClientQueue.matching(later, QueueFilter.reviewsDue, now: _now),
+        isEmpty,
+      );
     });
 
     test('an unread message counts as waiting even with no timestamp', () {
@@ -126,7 +129,10 @@ void main() {
 
     test('waiting time is measured against a clock that is passed in', () {
       expect(
-        _client('nour', waiting: const Duration(hours: 19)).queue.waitingFor(_now),
+        _client(
+          'nour',
+          waiting: const Duration(hours: 19),
+        ).queue.waitingFor(_now),
         const Duration(hours: 19),
       );
       expect(_client('yasmin').queue.waitingFor(_now), isNull);
@@ -139,7 +145,8 @@ void main() {
       expect(
         repo.hasLoaded,
         isFalse,
-        reason: 'rendering the day-one empty state over a coach\'s real book '
+        reason:
+            'rendering the day-one empty state over a coach\'s real book '
             'would be a lie at the worst possible moment',
       );
 
@@ -170,18 +177,21 @@ void main() {
       expect(ClientQueue.placesLeft(64), 0);
     });
 
-    test('the listener stays bounded, so W01 stays one query forever', () async {
-      final repo = InMemoryCoachClientRepository(
-        clients: <CoachClient>[
-          for (var i = 0; i < kClientCap; i++)
-            _client('u$i', waiting: Duration(minutes: kClientCap - i)),
-        ],
-      );
-      final clients = await repo.clients();
-      expect(clients, hasLength(60));
-      expect(repo.queries, 1);
-      expect(clients.first.clientUid, 'u0', reason: 'longest waiting first');
-    });
+    test(
+      'the listener stays bounded, so W01 stays one query forever',
+      () async {
+        final repo = InMemoryCoachClientRepository(
+          clients: <CoachClient>[
+            for (var i = 0; i < kClientCap; i++)
+              _client('u$i', waiting: Duration(minutes: kClientCap - i)),
+          ],
+        );
+        final clients = await repo.clients();
+        expect(clients, hasLength(60));
+        expect(repo.queries, 1);
+        expect(clients.first.clientUid, 'u0', reason: 'longest waiting first');
+      },
+    );
   });
 
   group('rule 11 — it orders work, it does not rank women', () {

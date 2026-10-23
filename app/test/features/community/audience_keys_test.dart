@@ -94,13 +94,12 @@ void main() {
     });
 
     test('duplicates are collapsed rather than paid for twice', () {
-      final chunks = chunkAudienceKeys(<String>[
-        'a:w-1',
-        'a:w-1',
-        'g:g-1',
-      ]);
+      final chunks = chunkAudienceKeys(<String>['a:w-1', 'a:w-1', 'g:g-1']);
 
-      expect(<String>[for (final c in chunks) ...c], <String>['a:w-1', 'g:g-1']);
+      expect(
+        <String>[for (final c in chunks) ...c],
+        <String>['a:w-1', 'g:g-1'],
+      );
     });
 
     test('no keys means no queries at all', () {
@@ -119,9 +118,10 @@ void main() {
     test('the drop-detector would bite', () {
       // Positive control for the "nobody is dropped" assertion above: if the
       // chunker silently truncated, this is the shape that would catch it.
-      final truncating = chunkAudienceKeys(
-        herKeys(),
-      ).take(1).expand((c) => c).toList();
+      final truncating = chunkAudienceKeys(herKeys())
+          .take(1)
+          .expand((c) => c)
+          .toList();
 
       expect(
         truncating.length,

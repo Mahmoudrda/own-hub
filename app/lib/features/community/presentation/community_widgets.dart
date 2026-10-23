@@ -108,7 +108,8 @@ class FollowPill extends StatelessWidget {
       // the action, a flat tint once she follows.
       child: HandSurface(
         seed: handSeed(['follow', following, height]),
-        fill: following ? AppColors.surfaceContainer : AppColors.primary,
+        fill: following ? AppColors.surfaceContainer : AppColors.actionPrimary,
+        pressedFill: following ? null : AppColors.actionPressed,
         radius: 4,
         looseCorner: 12,
         onTap: onTap,
@@ -123,7 +124,9 @@ class FollowPill extends StatelessWidget {
               Text(
                 following ? followingLabel : followLabel,
                 style: AppText.label.copyWith(
-                  color: following ? AppColors.onSurface : AppColors.onPrimary,
+                  color: following
+                      ? AppColors.onSurface
+                      : AppColors.onActionPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -133,7 +136,7 @@ class FollowPill extends StatelessWidget {
                 const Icon(
                   Icons.cloud_queue,
                   size: 14,
-                  color: AppColors.onPrimary,
+                  color: AppColors.onActionPrimary,
                 ),
               ],
             ],

@@ -1,10 +1,11 @@
-// The owner's sessions through the REAL router: R11 lists only what suits her
+// The owner's sessions through the REAL router: Explore on R01 lists only what suits her
 // life stage, tapping one opens it on R03, and the bundled session stays what
 // day one and an empty library show.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/exercise_library_state.dart';
 import 'package:own_hub/app_state/workout_library_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
@@ -13,6 +14,8 @@ import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+
+import '../../helpers/exercise_library_fixture.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -38,7 +41,7 @@ AuthoredSession _session(String id, String title, Set<LifeStage> stages) =>
       lifeStages: stages,
       moves: const [
         AuthoredMove(
-          exerciseId: 'side_lying_leg_lift',
+          exerciseId: 'glute_bridge',
           nameEn: 'Side-lying leg lift',
           nameAr: 'raf3',
           sets: 2,
@@ -49,6 +52,9 @@ AuthoredSession _session(String id, String title, Set<LifeStage> stages) =>
       ],
     );
 
+Future<void> _scrollTo(WidgetTester tester, Finder finder) => tester
+    .scrollUntilVisible(finder, 300, scrollable: find.byType(Scrollable).first);
+
 Future<void> _as(LifeStage stage) =>
     AppRouter.intakeRepository.merge(lifeStage: stage);
 
@@ -57,6 +63,9 @@ void main() {
   setUp(() {
     AppRouter.featureFlags = FeatureFlags.everything;
     WorkoutLibraryState.instance.reset();
+    ExerciseLibraryState.instance.reset();
+    ExerciseLibraryState.instance.media = FakeExerciseMedia();
+    ExerciseLibraryState.instance.library = sampleExerciseLibrary();
     WorkoutLibraryState.instance.library = WorkoutLibrary(
       version: 1,
       programmes: [
@@ -78,6 +87,7 @@ void main() {
   tearDown(() async {
     AppRouter.featureFlags = savedFlags;
     WorkoutLibraryState.instance.reset();
+    ExerciseLibraryState.instance.reset();
     await _as(LifeStage.none);
   });
 
@@ -86,9 +96,9 @@ void main() {
   ) async {
     _phone(tester);
     await _as(LifeStage.none);
-    await tester.pumpWidget(_app('R11'));
+    await tester.pumpWidget(_app('R01'));
     await tester.pumpAndSettle();
-    // R11's quiet and no-equipment filters start on; these sessions are both.
+    await _scrollTo(tester, find.text('Everyday strength'));
     expect(find.text('Everyday strength'), findsOneWidget);
     expect(find.text('Gentle pregnancy session'), findsNothing);
   });
@@ -97,12 +107,16 @@ void main() {
       'doctor card on R03', (tester) async {
     _phone(tester);
     await _as(LifeStage.pregnant);
-    await tester.pumpWidget(_app('R11'));
+    await tester.pumpWidget(_app('R01'));
     await tester.pumpAndSettle();
-    expect(find.text('Everyday strength'), findsNothing);
     final row = find.text('Gentle pregnancy session');
+    await _scrollTo(tester, row);
+    expect(find.text('Everyday strength'), findsNothing);
     expect(row, findsOneWidget);
 
+    // Clear of the edge before the tap.
+    await Scrollable.ensureVisible(tester.element(row), alignment: 0.3);
+    await tester.pumpAndSettle();
     await tester.tap(row);
     await tester.pumpAndSettle();
     expect(find.text('Gentle pregnancy session'), findsWidgets);

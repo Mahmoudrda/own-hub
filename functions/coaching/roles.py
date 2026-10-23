@@ -32,15 +32,20 @@ def held_for(choice) -> Optional[list]:
     return list(held) if held is not None else None
 
 
-def record(db, uid: str, data: dict, *, live: bool, timestamp) -> dict:
+def record(
+    db, uid: str, data: dict, *, live: bool, timestamp, coach_v: Optional[str] = None
+) -> dict:
     """Writes `users/{uid}.roles` from `{role}`. A coach role while the coach
-    app is closed is refused and nothing is written."""
+    app is closed, or without the server-minted coach claim, is refused and
+    nothing is written."""
     choice = data.get("role")
     held = held_for(choice)
     if held is None:
         raise errors.CoachingError(errors.INVALID, errors.BAD_REQUEST)
     if "coach" in held and not live:
         raise errors.CoachingError(errors.PRECONDITION, errors.COACH_APP_CLOSED)
+    if "coach" in held and coach_v != "active":
+        raise errors.CoachingError(errors.PERMISSION, errors.NOT_A_COACH)
     roles = {"held": held, "chosen": choice, "at": timestamp}
     assert set(roles) <= set(FIELDS)
     db.collection("users").document(uid).set({"roles": roles}, merge=True)

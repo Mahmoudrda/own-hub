@@ -18,6 +18,7 @@ class HandSurface extends StatelessWidget {
     required this.child,
     required this.seed,
     this.fill,
+    this.pressedFill,
     this.frame,
     this.frameWidth = HandStroke.fine,
     this.level = HandLevel.crafted,
@@ -34,12 +35,17 @@ class HandSurface extends StatelessWidget {
     this.onLongPress,
     this.pressScale = 0.985,
     this.pressable = false,
+    this.springPress = false,
     this.semanticsButton = false,
+    this.haptic = false,
   });
 
   final Widget child;
   final int seed;
   final Color? fill;
+
+  /// The fill a press settles on. Null keeps [fill] while pressed.
+  final Color? pressedFill;
   final Color? frame;
   final double frameWidth;
   final HandLevel level;
@@ -65,8 +71,15 @@ class HandSurface extends StatelessWidget {
   /// still a button, and says so.
   final bool pressable;
 
+  /// Press on the spring and shrink to [pressScale] even when an offset
+  /// outline is also closing.
+  final bool springPress;
+
   /// Announce this surface as a button to a screen reader.
   final bool semanticsButton;
+
+  /// A light tap when the press lands, for a primary action.
+  final bool haptic;
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +98,9 @@ class HandSurface extends StatelessWidget {
         child: CustomPaint(
           painter: SurfacePainter(
             seed: seed,
-            fill: fill,
+            fill: pressedFill == null || fill == null
+                ? fill
+                : Color.lerp(fill, pressedFill, pressed.clamp(0.0, 1.0)),
             frame: frame,
             frameWidth: frameWidth,
             level: level,
@@ -112,7 +127,9 @@ class HandSurface extends StatelessWidget {
     final pressableChild = HandPressable(
       onTap: onTap,
       onLongPress: onLongPress,
-      scale: offsetOutline == null ? pressScale : 1,
+      scale: offsetOutline == null || springPress ? pressScale : 1,
+      spring: springPress,
+      haptic: haptic,
       borderRadius: BorderRadius.circular(radius),
       builder: (_, pressed) => paint(pressed),
     );

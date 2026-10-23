@@ -46,51 +46,45 @@
 /// reported rather than faked.
 library;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import '../domain/flags/feature_flags.dart';
 import '../domain/rewards/weekly_goal_service.dart';
+import '../domain/clock/app_clock.dart';
 import '../features/onboarding/domain/intake.dart';
 import '../features/today/domain/today_day.dart';
+import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
 import 'app_changes.dart';
+import 'honest_notice.dart';
+import 'guest_session.dart';
+import 'pledge.dart';
+import 'rewards_state.dart';
 import 'role_state.dart';
 
 /// Every setup screen. The order she meets them in is [setupWalk].
-const List<String> kSetupScreenIds = [
-  'O01',
-  'O02',
-  'O06',
-  'O03',
-  'O07',
-  'O04',
-  'O05',
-];
+const List<String> kSetupScreenIds = ['O01', 'O02', 'O06', 'O03', 'O04', 'O05'];
 
 /// The questions she is asked, one a screen, in order.
 ///
 /// The full walk is her goal, where she trains, what she has at home (only
-/// when home is part of it), days a week, minutes a session and what to train
+/// when she trains at home), days and minutes together, and what to train
 /// around. The short "Your week" ([OnboardingState.shortSetup]) is the last
-/// three. `O05`, her week read back, follows either and is not a question.
+/// two. `O05`, her week read back, follows either and is not a question.
 List<String> setupWalk(Intake intake, {required bool short}) => short
-    ? const ['O03', 'O07', 'O04']
+    ? const ['O03', 'O04']
     : [
         'O01',
         'O02',
-        if (intake.place != TrainingPlace.ladiesGym) 'O06',
+        if (intake.place == TrainingPlace.home) 'O06',
         'O03',
-        'O07',
         'O04',
       ];
 
 /// Where [screenId] sits in the walk she is on: "2 of 6", and the bar.
 ({int step, int total}) setupProgress(String screenId, Intake intake) {
-  final walk = setupWalk(
-    intake,
-    short: OnboardingState.instance.shortSetup,
-  );
+  final walk = setupWalk(intake, short: OnboardingState.instance.shortSetup);
   final at = walk.indexOf(screenId);
   return (step: at < 0 ? 1 : at + 1, total: walk.length);
 }
@@ -127,6 +121,30 @@ class OnboardingState {
   /// to `C14`: day one is behind the gate. Cleared whenever she leaves setup.
   bool whileWaiting = false;
 
+  /// True when she reopened her answers from her profile (`A02`, "Your
+  /// training"). `O05` then saves her changes and goes back, instead of
+  /// offering to start day one to a woman already in her programme. Cleared
+  /// whenever she leaves setup.
+  bool editingFromProfile = false;
+
+  /// True once she tapped Skip on a question before the life-stage question
+  /// (`O04`). Skip never bypasses `O04`: it keeps the preselected answers for
+  /// the questions she skipped and goes to `O04`, which has no Skip. Once she
+  /// answers it, [skipSetup] takes her where Skip would have gone. Cleared by
+  /// [finish].
+  bool skippingSetup = false;
+
+  /// True once she finished building her week before she had an account
+  /// ([beforeSignup]), until an account is claimed on this phone or she signs
+  /// out. Kept on the phone with her answers.
+  ///
+  /// It is what tells a change of account apart: the answers on the phone are
+  /// either the ones the woman signing in just gave, which stay, or the
+  /// previous woman's, which go (`ThisPhoneWipe.keepsSignUp`). [beforeSignup]
+  /// itself cannot say, because it is cleared when her code is accepted, in
+  /// no fixed order with the sign-in that triggers the claim.
+  bool weekBuiltSignedOut = false;
+
   /// True once she said "Not now" to "Track my cycle" on day-one Home.
   ///
   /// Kept on the phone beside her setup answers (`app_snapshot.dart`) and
@@ -142,9 +160,12 @@ class OnboardingState {
   /// True while the four questions are still owed to her.
   ///
   /// With no account required, whenever setup is not done. With an account
-  /// required, only once she is verified: before that `C16` hands her to
-  /// `O01` at the end of registration. A verified woman whose setup is not
-  /// done is one who came back on a new phone with the health backup off
+  /// required, once she is verified, and also for a guest with no account, who
+  /// opens on Home with the questions on top (Skip leaves them, and marks
+  /// setup done). A woman signed in with her check open is not asked at
+  /// launch: `C16` hands her to `O01` at the end of registration.
+  ///
+  /// A verified woman whose setup is not done is one who came back on a new phone with the health backup off
   /// (N2): her life stage did not travel, so she is asked again at launch
   /// rather than given the standard programme.
   ///
@@ -155,7 +176,32 @@ class OnboardingState {
       !(AppRouter.featureFlags.isOn(Feature.coachApp) &&
           RoleState.instance.coachOnly) &&
       (!AppRouter.featureFlags.isOn(Feature.accountRequired) ||
-          AppRouter.isVerified);
+          AppRouter.isVerified ||
+          (AppRouter.signedInUid == null && !GuestSession.phoneHasOwner));
+
+  /// Where Skip ends once the life-stage question (`O04`) is answered: the
+  /// preselected answers stand and she goes on to where the walk would have
+  /// ended. Never past the legal acceptance or the women-only check, which sit
+  /// after sign-in.
+  void skipSetup(BuildContext context, {required VoidCallback toSignIn}) {
+    if (beforeSignup) {
+      finish();
+      toSignIn();
+      return;
+    }
+    if (whileWaiting) {
+      finish();
+      // whileWaiting is only set by C14's own button, so C14 is in the stack.
+      Navigator.of(context)
+          .popUntil(ModalRoute.withName(appRoutes['C14']!.name));
+      return;
+    }
+    if (shortSetupAfterSignup) {
+      leaveSetupToHome(context);
+      return;
+    }
+    leaveSetup(context);
+  }
 
   /// Records that the walk is over and applies what she answered.
   ///
@@ -168,12 +214,20 @@ class OnboardingState {
   /// same walk a month later: it re-applies whatever is stored rather than
   /// doing anything a second time.
   void finish() {
+    if (beforeSignup) weekBuiltSignedOut = true;
+    skippingSetup = false;
     shortSetupAfterSignup = false;
     whileWaiting = false;
+    editingFromProfile = false;
     AppRouter.intakeRepository.markSetupDone();
     _applyWeeklyTarget(AppRouter.intakeRepository.read().days);
     AppChanges.bump();
   }
+
+  /// Applies her stored days a week to the weekly target again, touching no
+  /// flag. For a wipe that kept her answers and reset her week around them.
+  void reapplyWeeklyTarget() =>
+      _applyWeeklyTarget(AppRouter.intakeRepository.read().days);
 
   /// Her days a week become the weekly session target. Her number, unclamped.
   ///
@@ -193,19 +247,38 @@ class OnboardingState {
     final decision = _goals.setTarget(AppRouter.progressStore.goal, days);
     if (!decision.accepted) return;
     AppRouter.progressStore.goal = decision.goal;
+    // The week she is in follows her answer too. With no week document yet,
+    // the new target is this week's. A lower target than the week started
+    // with can count it there and then, and that pays the week once (D41); a
+    // higher one waits for next week, because a week that has begun keeps the
+    // target it started with.
+    RewardsState.instance.retargetCurrentWeek(
+      decision.goal.sessionsTarget,
+      progress: AppRouter.progressStore,
+    );
+    // The target this week is actually measured against: the week document's
+    // when there is one, so Home, R10 and the week's credit agree.
+    final weekTarget =
+        AppRouter.weekFromStore(AppClock.now())?.sessionsTarget ??
+        decision.goal.sessionsTarget;
 
     // Home keeps its own copy of the week so it can draw offline, and that copy
     // is what "This week, 0 of 3" is read from. Updated through the repository's
     // own `restore`, carrying its two sets of memory back in untouched, because
     // nothing else in Today may be disturbed by a setup answer.
     final today = AppRouter.todayRepository;
+    // With a week document, Today reads both numbers from it — one source.
+    if (AppRouter.weekFromStore(AppClock.now()) != null) {
+      today.refresh();
+      return;
+    }
     final day = today.day;
-    if (day.week.sessionsTarget == decision.goal.sessionsTarget) return;
+    if (day.week.sessionsTarget == weekTarget) return;
     today.restore(
       day: day.copyWith(
         week: WeekProgress(
           sessionsLogged: day.week.sessionsLogged,
-          sessionsTarget: decision.goal.sessionsTarget,
+          sessionsTarget: weekTarget,
           repairedByRestWeek: day.week.repairedByRestWeek,
         ),
       ),
@@ -255,7 +328,15 @@ class OnboardingState {
     finish();
     enteredFromSignup = false;
     final navigator = Navigator.of(context);
+    // Agreed to the rules on the way in: said once she is Home, where it
+    // covers nothing she has to tap next, and only when nothing opens over it.
+    final thanks = PledgeState.instance.thankOnArrival && then == null
+        ? AppL10n.of(context).thanksForAgreeingTheRulesAreIn
+        : null;
+    PledgeState.instance.thankOnArrival = false;
+    final messenger = ScaffoldMessenger.maybeOf(context);
     navigator.pushNamedAndRemoveUntil(appRoutes[home]!.name, (_) => false);
     if (then != null) navigator.pushNamed(appRoutes[then]!.name);
+    if (thanks != null) showHonestNoticeOn(messenger, thanks);
   }
 }

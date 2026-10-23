@@ -21,11 +21,7 @@ void main() {
     final labels = [
       for (final p in SignupPhase.values) signupPhaseLabel(l10n, p),
     ];
-    expect(labels, [
-      '1 من 3 · أسبوعك',
-      '2 من 3 · رقمك',
-      '3 من 3 · تحقق سريع',
-    ]);
+    expect(labels, ['1 من 3 · أسبوعك', '2 من 3 · رقمك', '3 من 3 · تحقق سريع']);
     for (final label in labels) {
       expect(label, isNot(matches(RegExp('[٠-٩]'))));
     }

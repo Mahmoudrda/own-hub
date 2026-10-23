@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 
 import main
-from identity import decisions, store
+from identity import approvals, decisions, store
 from tests.test_entrypoints import body, inner, request, stubbed  # noqa: F401
 
 
@@ -24,6 +24,7 @@ def recorded(monkeypatch, stubbed):
             log["access"].append((reviewer_uid, flag_id, action))
 
     monkeypatch.setattr(main.store, "FirestoreReviewStore", _Review)
+    monkeypatch.setattr(approvals, "revoked_since_approval", lambda uid: False)
     monkeypatch.setattr(main.logs, "warn", lambda event, **f: log["warn"].append(event))
     return log
 
@@ -219,3 +220,28 @@ def test_the_phone_secret_reads_its_own_resource(monkeypatch):
     monkeypatch.setattr(store, "_reviewer_phone_cache", None)
     assert store._real_store_reviewer_phones() == frozenset({REVIEW_PHONE})
     assert asked == ["projects/own-hub/secrets/store-reviewer-phones/versions/latest"]
+
+
+def test_a_listed_number_asking_for_a_woman_reviewer_is_approved(monkeypatch, recorded):
+    # Choosing the woman reviewer instead of the camera must not leave a store
+    # review account waiting on a person.
+    monkeypatch.setattr(main.store, "store_reviewer_phones", lambda: frozenset({REVIEW_PHONE}))
+    answer = inner("request_review")(
+        request({"path": "declined"}, uid="uid-new", token=_phone(REVIEW_PHONE))
+    )
+    assert answer == {"state": "approved"}
+    assert recorded["minted"] == ["uid-new"]
+    assert recorded["verification"] == ["uid-new"]
+    assert recorded["access"] == [("uid-new", "store-review", "reviewerBypass")]
+
+
+def test_an_unlisted_number_asking_for_a_woman_reviewer_gets_a_real_review(monkeypatch, recorded):
+    monkeypatch.setattr(main.store, "store_reviewer_phones", lambda: frozenset({REVIEW_PHONE}))
+    monkeypatch.setattr(
+        main, "_review_call", lambda fn, st, uid, path: main.review.RequestResult("pending")
+    )
+    answer = inner("request_review")(
+        request({"path": "declined"}, uid="uid-2", token=_phone("+201234567890"))
+    )
+    assert answer == {"state": "pending"}
+    assert recorded["minted"] == [] and recorded["access"] == []

@@ -21,6 +21,7 @@ import 'package:own_hub/features/signup/presentation/code_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_code_field.dart';
+import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 Widget _host(
   Widget child, {
@@ -316,7 +317,7 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text('ابعتوا الكود تاني بعد 0:30'), findsOneWidget);
+      expect(find.text('اطلبي الكود تاني بعد 0:30'), findsOneWidget);
       await tester.pump(CodeView.resendWait);
     });
   });
@@ -353,6 +354,35 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  group('the kitten', () {
+    setUp(Kitten.resetPlayed);
+
+    testWidgets('thinks, held still, only while the code is being checked', (
+      tester,
+    ) async {
+      final repository = FakeAuthRepository(codeToAccept: '417293');
+      final gate = Completer<void>();
+      await tester.pumpWidget(
+        _host(CodeView(repository: repository, onConfirmed: () => gate.future)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(Kitten), findsNothing);
+
+      await tester.enterText(find.byType(TextField), '417293');
+      await tester.pump();
+      expect(find.byType(Kitten), findsOneWidget);
+      final kitten = tester.widget<Kitten>(find.byType(Kitten));
+      expect(kitten.pose, KittenPose.think);
+      expect(kitten.size, 32);
+      expect(kitten.holdStill, isTrue);
+      expect(Kitten.budgetUsed, 0);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(Kitten), findsNothing);
+    });
   });
 }
 

@@ -62,6 +62,18 @@ const Map<String, String> _arabicAllowed = {
       'ta-marbuta variants, so "كُشري", "كشري" and "كشرى" are one dish. Egyptian '
       'women type Arabic with and without diacritics, and a match that depended '
       'on exact orthography would fail on most real input.',
+  'lib/features/private_coaching/domain/chat_screen.dart':
+      'The coaching chat\'s safety screen, the twin of functions/coaching/'
+      'chat.py. Holds the Arabic names of transfer wallets ("فودافون كاش", '
+      '"انستاباي") and a short list of insults, plus the same letter folding '
+      'as the food matcher, so a message that moves payment off the platform '
+      'is caught in either interface language. Matching data for input, '
+      'never shown to anybody.',
+  'lib/features/train/domain/notification_voice.dart':
+      'The notification picker\'s lock-screen guard. Holds Arabic words that '
+      'must never reach a lock screen (weight, pregnancy, guilt words), '
+      'matched against the values filled into a line, such as a food she '
+      'logs. Matching data, never shown to anybody.',
 };
 
 List<File> _sourceFiles() => Directory('lib')
@@ -108,15 +120,16 @@ void main() {
   test('the Arabic allowlist stays small', () {
     // If this needs raising, the reason belongs in the map above, in writing.
     //
-    // Three, in two categories. One screen: the language chooser, which must
-    // show both languages before she has picked either. Two domain files: the
-    // Eat parser and its normaliser, which hold Arabic as *input-matching
-    // grammar* rather than as copy and render nothing at all.
+    // Five, in two categories. One screen: the language chooser, which must
+    // show both languages before she has picked either. Four domain files:
+    // the Eat parser, its normaliser, the coaching chat's safety screen and
+    // the notification picker's lock-screen guard, which hold Arabic as
+    // *matching data* rather than as copy and render nothing at all.
     //
     // A fourth entry should be argued for, not assumed — and an entry for
     // anything under `presentation/` should be refused, because that is where
     // copy lives.
-    expect(_arabicAllowed.length, lessThanOrEqualTo(3));
+    expect(_arabicAllowed.length, lessThanOrEqualTo(5));
 
     for (final path in _arabicAllowed.keys) {
       expect(

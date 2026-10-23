@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/guest_session.dart';
 import 'package:own_hub/app_state/widget_links.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -59,6 +60,8 @@ void main() {
 
     test('an unverified tap lands on the front door, not the screen', () {
       for (final id in WidgetLinks.destinations) {
+        // Guest mode: Home, the workout day and Eat open for browsing.
+        if (GuestSession.screens.contains(id)) continue;
         final name = WidgetLinks.routeFor(_link(id))!;
         final route = AppRouter.onGenerateRoute(RouteSettings(name: name));
         expect(route?.settings.name, appRoutes['C01']!.name, reason: id);

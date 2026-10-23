@@ -38,7 +38,7 @@ class WidgetLinks {
   /// The screens a widget may open: Today, the workout, Progress and Eat.
   static const Set<String> destinations = {'T01', 'R03', 'P01', 'E01'};
 
-  /// Set by `main()` on iOS. Off, [start] does nothing, so a widget test that
+  /// Set by `main()` on iOS and Android. Off, [start] does nothing, so a widget test that
   /// pumps the app opens no platform channel.
   static bool enabled = false;
 

@@ -291,10 +291,12 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
   ),
   DeletionRow(
     number: 24,
-    path: 'Storage user-media/{uid}/** and coach-docs/{uid}/**',
+    path: 'Storage user-media/{uid}/**, coach-docs/{uid}/**, coach-public/{uid}/** and payment-proofs/{uid}/**',
     owner: 'media groups',
     method: DeletionMethod.prefixDelete,
-    note: 'her media, and a coach\'s certificate scans; exports are row 25',
+    note:
+        'her media, and a coach\'s application files (certificates, education, '
+        'feedback, transformations, photo); exports are row 25',
   ),
   DeletionRow(
     number: 25,
@@ -528,6 +530,89 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     owner: 'G12, called by G7',
     method: DeletionMethod.groupHook,
     note: 'the invite codes she shared as a coach',
+  ),
+  DeletionRow(
+    number: 50,
+    path: 'verificationBookings where uid == {uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'the review slots she booked',
+  ),
+  DeletionRow(
+    number: 51,
+    path:
+        'verificationReviewers/{uid} and verificationBookings where '
+        'reviewerId == {uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'her reviewer record and the bookings made with her as reviewer',
+  ),
+  DeletionRow(
+    number: 52,
+    path: 'verificationPreapproved/{E.164 phone of her Auth account}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'the pre-approval saved against her phone number',
+  ),
+  DeletionRow(
+    number: 53,
+    path: 'events/{eventId}/attendees/{uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'her reserved seats; each event gets the seat back',
+  ),
+  DeletionRow(
+    number: 54,
+    path: 'communityFoodCandidates/{key}/by/{HMAC of her uid}',
+    owner: 'G7',
+    method: DeletionMethod.groupHook,
+    note: 'her confirmation marker on shared foods; the count stays',
+  ),
+  DeletionRow(
+    number: 55,
+    path: 'coachApplications/{uid}',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'her application to coach, whatever its status (purge_group_hook)',
+  ),
+  DeletionRow(
+    number: 56,
+    path: 'coachPrivate/{uid}/** (prices, ledger, payouts)',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note: 'a coach\'s own prices and payout details; no money record exists while payments are off',
+  ),
+  DeletionRow(
+    number: 57,
+    path:
+        'coaches/{uid}/packages/**, coaches/{uid}/drafts/** and '
+        'coaches/{uid}/media/**',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note:
+        'a coach\'s packages, unfinished plan drafts and portfolio media '
+        'records, deleted with her coach page; the files are row 24',
+  ),
+  DeletionRow(
+    number: 58,
+    path:
+        'subscriptions where clientUid or coachUid == uid, with '
+        'private/terms and sessions',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note:
+        'a coaching she joined or gave, with the intake form and health '
+        'answers; an open one is ended first, so the coach\'s place is freed',
+  ),
+  DeletionRow(
+    number: 59,
+    path: 'receipts and paymentProofs where clientUid or coachUid == uid',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.pseudonymised,
+    note:
+        'NOT deleted, pseudonymised. A payment record stays for the books '
+        'with her uid replaced by a token and her typed names emptied. None '
+        'exists while payments are off',
   ),
 ];
 

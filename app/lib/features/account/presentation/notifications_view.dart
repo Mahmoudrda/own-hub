@@ -30,48 +30,39 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_toggle.dart';
+import '../../train/domain/notification_plan.dart';
 import '../domain/notifications.dart';
 import 'account_view_models.dart';
+import 'extras_rows.dart';
 
-/// Kind → the sentence A01 draws for it, or null when none is authored.
-///
-/// Each kind below names the string it is waiting for. Returning null is not a
-/// gap in this file — it is the dictionary gap, made visible and countable.
+/// Kind → the sentence A01 draws for it.
 class NotificationCopy {
   const NotificationCopy._();
 
-  static String? titleFor(NotificationKind kind, AppL10n l10n) {
+  static String titleFor(NotificationKind kind, AppL10n l10n) {
     return switch (kind) {
-      // Awaiting `{coach} replied to your review` — the shipped string names
-      // Sara, who is one woman's coach and nobody else's.
-      NotificationKind.coachReply => null,
-      // Awaiting `{group} reached {count} sessions`.
-      NotificationKind.groupMilestone => null,
-      // Awaiting `{name} and {count} others liked your best`.
-      NotificationKind.reaction => null,
-      // The four slot strings now exist — `mealNudgeHeading` in
-      // `today_cards.dart` picks one from the hour, which is what T03 draws.
-      // What this switch cannot do is reach them: it is handed a [kind] and no
-      // notification, so it has no `createdAt` to read the slot from, and a
-      // meal nudge listed under the wrong meal is the defect T03 just had.
-      // Closing this means giving `titleFor` the row rather than its kind.
-      NotificationKind.mealNudge => null,
-      // Awaiting G7 Q11's MVP event set and its copy.
-      NotificationKind.weekClosed => null,
-      NotificationKind.tierChanged => null,
-      NotificationKind.verificationDecided => null,
+      NotificationKind.coachReply => l10n.yourCoachRepliedToYourReview,
+      NotificationKind.groupMilestone => l10n.yourGroupReachedANewMilestone,
+      NotificationKind.reaction => l10n.yourBestGotAFewLikes,
+      NotificationKind.mealNudge => l10n.aGentleNudgeToLogYourMeal,
+      NotificationKind.weekClosed => l10n.yourWeekIsWrappedUpSeeHow,
+      NotificationKind.tierChanged => l10n.yourLevelHasChanged,
+      NotificationKind.verificationDecided =>
+        l10n.thereIsAnUpdateOnYourVerification,
     };
   }
 
-  static bool hasAuthoredCopy(NotificationKind kind, AppL10n l10n) =>
-      titleFor(kind, l10n) != null;
+  static bool hasAuthoredCopy(NotificationKind kind, AppL10n l10n) => true;
 }
 
 class NotificationsView extends StatelessWidget {
@@ -80,13 +71,27 @@ class NotificationsView extends StatelessWidget {
     this.notifications = const <AppNotification>[],
     this.permission = NotificationPermission.initial,
     this.onBack,
-    this.onOpenSettings,
     this.onRequestPermission,
     this.onOpenOsSettings,
     this.onSelectTab,
     this.remindersOn = false,
     this.onOpenReminders,
+    this.prefs,
+    this.onPrefsChanged,
+    this.followUpsOn,
+    this.onFollowUpsChanged,
   });
+
+  /// The switches under the reminders row, or null before the phone has
+  /// agreed to show notifications: there is nothing to switch until then.
+  final NotificationPrefs? prefs;
+  final ValueChanged<NotificationPrefs>? onPrefsChanged;
+
+  /// Whether the follow-ups on Home are on, or null when this build has none.
+  /// They are in the app, not notifications, so this row does not wait for the
+  /// phone's permission.
+  final bool? followUpsOn;
+  final ValueChanged<bool>? onFollowUpsChanged;
 
   /// Whether her training reminders are set.
   final bool remindersOn;
@@ -102,15 +107,6 @@ class NotificationsView extends StatelessWidget {
   final NotificationPermission permission;
 
   final VoidCallback? onBack;
-
-  /// The gear in the app bar, which the prototype sends to A02.
-  ///
-  /// The router used to send it to `A03`, the privacy centre. A gear on a
-  /// notifications screen does not mean "privacy" to anybody, and it carried no
-  /// label or tooltip, so a screen reader announced it as "button" and a
-  /// sighted woman had no way to guess. It is labelled, and it goes where the
-  /// line above always said it goes.
-  final VoidCallback? onOpenSettings;
 
   /// Offers the OS prompt. Never called on open — G7 §3.1: the product prompts
   /// after her first log, not at launch.
@@ -132,24 +128,15 @@ class NotificationsView extends StatelessWidget {
     );
 
     return AppScaffold(
-      appBar: AppTopBar(
-        title: l10n.notifications,
-        onBack: onBack,
-        actions: [
-          IconButton(
-            onPressed: onOpenSettings,
-            iconSize: 24,
-            color: AppColors.onSurface,
-            tooltip: l10n.settings,
-            icon: const Icon(Icons.settings),
-          ),
-        ],
-      ),
+      appBar: AppTopBar(title: l10n.notifications, onBack: onBack),
       // Its own id: A01 is not a tab, and claiming Home was the active one left
       // the Home tab drawn and unresponsive. See `profile_view.dart`.
       footer: [AppNavBar(activeScreenId: 'A01', onSelect: onSelectTab)],
       children: [
-        // Where she changes or stops the reminders she chose on R10.
+        Text(l10n.remindersAndExtras, style: AppText.titleM),
+        // One ask, not two: the switch is her reminders, and turning it on
+        // asks the phone for permission first when it has not been given.
+        // Where she changes her days and her time, or stops them (R10).
         if (onOpenReminders != null)
           AppListItem(
             key: const ValueKey('a01-reminders'),
@@ -159,15 +146,84 @@ class NotificationsView extends StatelessWidget {
               color: AppColors.primaryDim,
             ),
             title: l10n.trainingReminders,
-            subtitle: remindersOn ? l10n.remindersAreOn : l10n.remindersAreOff,
-            trailing: const Icon(
-              Icons.chevron_right,
-              size: 22,
-              color: AppColors.onSurfaceVariant,
+            subtitle: l10n.aFewGentleRemindersTurnAnyOf,
+            trailing: AppToggle(
+              value: remindersOn,
+              semanticLabel: l10n.trainingReminders,
+              onChanged: (_) => view.showsPermissionPrompt && !remindersOn
+                  ? (onRequestPermission ?? onOpenReminders)?.call()
+                  : onOpenReminders?.call(),
             ),
             onTap: onOpenReminders,
           ),
-        if (view.showsPermissionPrompt)
+        if (onOpenReminders != null && prefs != null) ...[
+          _switchRow(
+            key: 'a01-log-nudge',
+            icon: Icons.edit_note,
+            title: l10n.remindMeToAddASessionI,
+            value: prefs!.logNudge,
+            onChanged: (on) =>
+                onPrefsChanged?.call(prefs!.copyWith(logNudge: on)),
+          ),
+          _switchRow(
+            key: 'a01-check-ins',
+            icon: Icons.favorite_border,
+            title: l10n.gentleCheckInsWhenIveBeenAway,
+            value: prefs!.checkIns,
+            onChanged: (on) =>
+                onPrefsChanged?.call(prefs!.copyWith(checkIns: on)),
+          ),
+          _switchRow(
+            key: 'a01-rest-alert',
+            icon: Icons.timer_outlined,
+            title: l10n.restTimerAlert,
+            value: prefs!.restAlert,
+            onChanged: (on) =>
+                onPrefsChanged?.call(prefs!.copyWith(restAlert: on)),
+          ),
+          // Off cancels the nudges still to come.
+          _switchRow(
+            key: 'a01-nudges',
+            icon: Icons.wb_twilight_outlined,
+            title: l10n.friendlyNudges,
+            subtitle: l10n.atMostOneADayAndNever,
+            value: prefs!.nudges,
+            onChanged: (on) =>
+                onPrefsChanged?.call(prefs!.copyWith(nudges: on)),
+          ),
+          // Off cancels the tips still to come.
+          _switchRow(
+            key: 'a01-tips',
+            icon: Icons.lightbulb_outline,
+            title: l10n.gettingStartedTips,
+            value: prefs!.tips,
+            onChanged: (on) => onPrefsChanged?.call(prefs!.copyWith(tips: on)),
+          ),
+          // Off cancels the event notes still to come. Only while events
+          // are on: with them off there is nothing for this to switch.
+          if (AppRouter.featureFlags.isOn(Feature.events))
+            _switchRow(
+              key: 'a01-events',
+              icon: Icons.event_outlined,
+              title: l10n.eventReminders,
+              subtitle: l10n.aNoteBeforeEventsYouCanJoin,
+              value: prefs!.events,
+              onChanged: (on) =>
+                  onPrefsChanged?.call(prefs!.copyWith(events: on)),
+            ),
+        ],
+        if (followUpsOn != null && onFollowUpsChanged != null)
+          _switchRow(
+            key: 'a01-follow-ups',
+            icon: Icons.chat_bubble_outline,
+            title: l10n.followUpsOnHome,
+            subtitle: l10n.howYouFeelAfterASessionYour,
+            value: followUpsOn!,
+            onChanged: onFollowUpsChanged!,
+          ),
+        // The moving kitten and her streak, moved here from My profile.
+        const ExtrasRows(),
+        if (onOpenReminders == null && view.showsPermissionPrompt)
           AppListItem(
             leading: const Icon(
               Icons.notifications_active_outlined,
@@ -189,8 +245,8 @@ class NotificationsView extends StatelessWidget {
               color: AppColors.onSurfaceVariant,
             ),
             onTap: onRequestPermission,
-          )
-        else if (view.showsSettingsDeepLink)
+          ),
+        if (view.showsSettingsDeepLink)
           AppListItem(
             leading: const Icon(
               Icons.settings_outlined,
@@ -201,13 +257,13 @@ class NotificationsView extends StatelessWidget {
             onTap: onOpenOsSettings,
           ),
 
-        if (view.isEmpty)
+        if (view.isEmpty && onOpenReminders == null)
           AppEmptyState(
             icon: Icons.notifications_none,
             title: l10n.notifications,
-            body: l10n.oneNudgeADayAtMostAt,
+            body: l10n.aFewGentleRemindersTurnAnyOf,
           )
-        else ...[
+        else if (!view.isEmpty) ...[
           for (final row in view.rows)
             AppListItem(
               leading: const Icon(
@@ -215,13 +271,30 @@ class NotificationsView extends StatelessWidget {
                 size: 24,
                 color: AppColors.primaryDim,
               ),
-              title: NotificationCopy.titleFor(row.kind, l10n)!,
+              title: NotificationCopy.titleFor(row.kind, l10n),
             ),
           // The rule about them stopping is stated where she would go to turn
           // them off.
-          AppSageNote(l10n.oneNudgeADayAtMostAt),
+          if (onOpenReminders == null)
+            AppSageNote(l10n.aFewGentleRemindersTurnAnyOf),
         ],
       ],
     );
   }
 }
+
+Widget _switchRow({
+  required String key,
+  required IconData icon,
+  required String title,
+  required bool value,
+  required ValueChanged<bool> onChanged,
+  String subtitle = '',
+}) => AppListItem(
+  key: ValueKey(key),
+  leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+  title: title,
+  subtitle: subtitle,
+  trailing: AppToggle(value: value, semanticLabel: title, onChanged: onChanged),
+  onTap: () => onChanged(!value),
+);

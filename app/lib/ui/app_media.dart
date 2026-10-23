@@ -7,10 +7,12 @@
 /// deliberate rather than broken. When a real thumbnail is available it goes in
 /// [child] and the placeholder never renders.
 ///
-/// Video is the product's largest content cost and its delivery is settled:
-/// Cloudflare R2 behind a CDN with public, content-addressed immutable URLs. A
-/// widget that quietly reached for Firebase Storage instead would be a ~$708/month
-/// mistake, which is why loading belongs in the data layer and not here.
+/// Video is the product's largest content cost, which is why loading belongs in
+/// the data layer and not here. The follow-along library is planned for
+/// Cloudflare R2 behind a CDN (D2). The exercise library's short demo clips
+/// are the exception D42 records: R15 puts a real clip in [child], downloaded
+/// once by `exercise_media_store.dart` and played from the phone, and the
+/// frame around it stays this one, so the clip reads as part of the page.
 library;
 
 import 'package:flutter/material.dart';
@@ -32,6 +34,7 @@ class AppMedia extends StatelessWidget implements HandSeedName {
     this.kind = AppMediaKind.video,
     this.borderRadius = AppRadius.md,
     this.showPlayButton = true,
+    this.playOverChild = false,
     this.badge,
     this.child,
   });
@@ -41,6 +44,9 @@ class AppMedia extends StatelessWidget implements HandSeedName {
   final AppMediaKind kind;
   final double borderRadius;
   final bool showPlayButton;
+
+  /// The same ringed play mark over a real [child]: a paused clip.
+  final bool playOverChild;
 
   /// A short overlay label — a duration, a count.
   final String? badge;
@@ -71,7 +77,8 @@ class AppMedia extends StatelessWidget implements HandSeedName {
             alignment: Alignment.center,
             children: [
               if (child != null) Positioned.fill(child: child!),
-              if (child == null && showPlayButton)
+              if ((child == null && showPlayButton) ||
+                  (child != null && playOverChild))
                 CustomPaint(
                   foregroundPainter: LoopPainter(
                     seed: seed,

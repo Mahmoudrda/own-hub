@@ -69,8 +69,13 @@ void main() {
     test('the flows that need a back end are dark', () {
       // 'signup' left this list on 2026-10-02: sign-up ships at launch, and
       // the test below asserts its flow is on.
-      for (final flow in ['admin', 'community', 'coach', 'coachplan',
-                          'coachbrand', 'coached', 'coaching', 'assistant']) {
+      for (final flow in [
+        'admin',
+        'community',
+        'coachbrand',
+        'coached',
+        'assistant',
+      ]) {
         final f = AppRouter.featureForFlow(flow);
         expect(f, isNotNull, reason: flow);
         expect(
@@ -95,8 +100,9 @@ void main() {
     String idFor(String flow) =>
         appRoutes.entries.firstWhere((e) => e.value.flow == flow).key;
 
-    testWidgets('a community route renders FeatureOff while community is off',
-        (tester) async {
+    testWidgets('a community route renders FeatureOff while community is off', (
+      tester,
+    ) async {
       AppRouter.featureFlags = FeatureFlags.allOff;
       final id = idFor('community');
       final route = AppRouter.onGenerateRoute(
@@ -117,10 +123,12 @@ void main() {
       expect(find.byType(NotBuiltYet), findsNothing);
     });
 
-    testWidgets('switching the feature on stops the gate intercepting',
-        (tester) async {
-      AppRouter.featureFlags =
-          FeatureFlags.allOff.with_({Feature.community: true});
+    testWidgets('switching the feature on stops the gate intercepting', (
+      tester,
+    ) async {
+      AppRouter.featureFlags = FeatureFlags.allOff.with_({
+        Feature.community: true,
+      });
       final id = idFor('community');
       final route = AppRouter.onGenerateRoute(
         RouteSettings(name: appRoutes[id]!.name),

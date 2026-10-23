@@ -100,8 +100,8 @@ def test_the_consent_sentence_is_plain():
     ) in _page("waitlist")
     # The brand name is isolated left to right inside the Arabic sentence.
     assert (
-        "سنراسلك مرة واحدة: بدعوة مبكرة إن كنتِ من أول 100، أو يوم افتتاح "
-        "<bdi>Own Hub</bdi>. ثم نحذف بيانات التواصل الخاصة بك."
+        "هنراسلك مرة واحدة: بدعوة بدري لو كنتِ من أول 100، أو يوم افتتاح "
+        "<bdi>Own Hub</bdi>. وبعدين هنمسح بيانات التواصل بتاعتك."
     ) in _page("ar", "waitlist")
 
 
@@ -253,7 +253,7 @@ def test_the_home_page_offers_the_tour_in_both_languages():
 def test_the_home_page_does_not_say_she_reads_the_support_mailbox():
     # The support page says the publisher reads it himself.
     assert "when she reads" not in _page()
-    assert "the hours messages are read" in _page()
+    assert "when messages get read" in _page()
 
 
 def _build_with(tmp_path, **values):
@@ -596,11 +596,13 @@ def test_the_home_pages_promise_only_what_this_version_does():
     for claim in ("video call", "gym", "marketplace", "ai assistant", "artificial intelligence",
                   "join the community", "book a coach", "chat with"):
         assert claim not in en, claim
-    assert "there is no community and no coaching" in " ".join(en.split())
+    flat = " ".join(en.split())
+    assert "coaching with own hub-reviewed coaches is available, free for now" in flat
+    assert "no community or assistant" in flat
 
 
 def test_before_launch_the_waitlist_is_the_first_thing_on_the_home_page():
-    for lang, offer in (("en", "The first 100 women on the list"), ("ar", "أول 100 امرأة في القائمة")):
+    for lang, offer in (("en", "The first 100 women on the list"), ("ar", "أول 100 ست في القايمة")):
         html = _home(_SITE, lang)
         form = html.index('class="waitlist"')
         assert html.index('<h1>') < html.index(offer) < form < html.index('id="inside"')
@@ -618,3 +620,59 @@ def test_the_launch_is_free_and_nothing_promises_a_paid_plan():
             assert not re.search(r"\bPro\b", text), (lang, page)
     assert "Free, all of it." in _home(_SITE, "en")
     assert "مجاني بالكامل" in _home(_SITE, "ar")
+
+
+def test_the_policy_does_not_promise_a_phone_backup_forgets_the_profile_photo():
+    # The photo is deleted from the phone; a backup of the whole phone made
+    # earlier can still hold it, and the policy says so.
+    for folder, needle in (
+        (_SITE, "a copy made earlier stays in that backup"),
+        (os.path.join(_SITE, "ar"), "أي نسخة اتعملت قبل كده بتفضل في النسخة الاحتياطية دي"),
+    ):
+        with open(os.path.join(folder, "privacy.html"), encoding="utf-8") as f:
+            text = " ".join(f.read().split())
+        assert needle in text, folder
+
+
+# ------------------------------------------- Hairline line drawings
+
+
+def _figures(html):
+    return re.findall(r'<span class="hl hl-([a-z]+)[^"]*" data-hairline="\1"><svg ([^>]*)>', html)
+
+
+def test_every_line_drawing_is_decoration_only():
+    seen = 0
+    for rel, path in _outputs(_SITE).items():
+        if not rel.endswith(".html"):
+            continue
+        html = open(path, encoding="utf-8").read()
+        assert html.count('data-hairline="') == len(_figures(html)), rel
+        for name, attrs in _figures(html):
+            assert 'aria-hidden="true"' in attrs and 'focusable="false"' in attrs, (rel, name)
+            seen += 1
+    assert seen > 0
+
+
+def test_both_home_pages_carry_the_same_drawings():
+    en = [name for name, _ in _figures(_home(_SITE, "en"))]
+    ar = [name for name, _ in _figures(_home(_SITE, "ar"))]
+    assert en == ar and "lockers" in en, (en, ar)
+    for lang in ("en", "ar"):
+        assert len(_figures(_page(*(("ar",) if lang == "ar" else ()), "404"))) == 1
+
+
+def test_the_drawings_draw_in_and_stay_still_when_motion_is_reduced():
+    css = open(os.path.join(_SITE, "assets", "site.css"), encoding="utf-8").read()
+    assert "@keyframes hl-draw" in css and "stroke-dashoffset" in css
+    assert re.search(r"\.hl \[pathLength\] \{\s*animation: hl-draw", css)
+    reduced = re.findall(r"@media \(prefers-reduced-motion: reduce\) \{(.*?)\n\}", css, re.S)
+    assert any("animation-duration: 0.001ms" in block for block in reduced)
+    assert any(".hl [pathLength]" in block and "animation: none" in block for block in reduced)
+
+
+def test_the_hairline_licence_and_credit_are_kept():
+    licence = open(os.path.join(_SITE, "_build", "hairline", "LICENSE"), encoding="utf-8").read()
+    assert "MIT License" in licence and "Lucas Marques" in licence
+    for prefix in ((), ("ar",)):
+        assert 'href="https://github.com/lucasmarkes/hairline"' in _page(*prefix, "support")

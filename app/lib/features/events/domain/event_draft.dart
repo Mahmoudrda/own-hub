@@ -19,7 +19,11 @@ enum EventField {
   endsAt,
   link,
   placeName,
+  locationAddress,
+  locationUrl,
   capacity,
+  imageFiles,
+  videoFiles,
 }
 
 enum EventProblem {
@@ -40,6 +44,19 @@ enum EventProblem {
 
   /// Not a whole number above zero.
   badCapacity,
+
+  /// Fewer seats than are already reserved, or no limit at all while seats are
+  /// reserved.
+  capacityBelowSeats,
+
+  /// Not a Google Maps link.
+  badMapsLink,
+
+  /// More pictures or clips than an event may carry.
+  tooMany,
+
+  /// A file name the rules would refuse.
+  badFile,
 }
 
 /// The limits in `validEvent`, in one place.
@@ -48,6 +65,7 @@ abstract final class EventLimits {
   static const int description = 2000;
   static const int link = 500;
   static const int placeName = 120;
+  static const int locationAddress = 300;
   static const int capacity = 100000;
 }
 
@@ -63,8 +81,13 @@ class EventDraft {
     this.mode = EventMode.online,
     this.link = '',
     this.placeName = '',
+    this.locationAddress = '',
+    this.locationUrl = '',
     this.capacity = '',
+    this.seatsTaken = 0,
     this.coverFile,
+    this.imageFiles = const [],
+    this.videoFiles = const [],
   });
 
   /// The form opened on a stored event.
@@ -78,8 +101,13 @@ class EventDraft {
     mode: event.mode,
     link: event.link ?? '',
     placeName: event.placeName ?? '',
+    locationAddress: event.locationAddress ?? '',
+    locationUrl: event.locationUrl ?? '',
     capacity: event.capacity?.toString() ?? '',
+    seatsTaken: event.seatsTaken,
     coverFile: event.coverFile,
+    imageFiles: event.imageFiles,
+    videoFiles: event.videoFiles,
   );
 
   final String titleEn;
@@ -93,10 +121,17 @@ class EventDraft {
   final EventMode mode;
   final String link;
   final String placeName;
+  final String locationAddress;
+  final String locationUrl;
   final String capacity;
-  final String? coverFile;
 
-  static final RegExp _https = RegExp(r'^https://[^ ]{3,500}$');
+  /// Seats already reserved, kept by the server. The form can only read it.
+  final int seatsTaken;
+  final String? coverFile;
+  final List<String> imageFiles;
+  final List<String> videoFiles;
+
+  static final RegExp _https = RegExp(r'^https://\S{3,500}$');
   static final RegExp _whole = RegExp(r'^\d+$');
 
   /// Every problem, by field. Empty means [toEvent] will succeed.
@@ -151,14 +186,53 @@ class EventDraft {
           EventLimits.placeName,
           required: true,
         );
+        text(
+          EventField.locationAddress,
+          locationAddress,
+          EventLimits.locationAddress,
+        );
+        final u = locationUrl.trim();
+        if (u.isNotEmpty && !isAllowedMapsUrl(u)) {
+          out[EventField.locationUrl] = EventProblem.badMapsLink;
+        }
     }
+
+    void files(
+      EventField field,
+      List<String> names,
+      int max,
+      bool Function(String) allowed,
+    ) {
+      if (names.length > max) {
+        out[field] = EventProblem.tooMany;
+      } else if (!names.every(allowed)) {
+        out[field] = EventProblem.badFile;
+      }
+    }
+
+    files(
+      EventField.imageFiles,
+      imageFiles,
+      EventMediaLimits.pictures,
+      isEventPictureName,
+    );
+    files(
+      EventField.videoFiles,
+      videoFiles,
+      EventMediaLimits.clips,
+      isEventClipName,
+    );
 
     final c = capacity.trim();
     if (c.isNotEmpty) {
       final n = _whole.hasMatch(c) ? int.tryParse(c) : null;
       if (n == null || n < 1 || n > EventLimits.capacity) {
         out[EventField.capacity] = EventProblem.badCapacity;
+      } else if (n < seatsTaken) {
+        out[EventField.capacity] = EventProblem.capacityBelowSeats;
       }
+    } else if (seatsTaken > 0) {
+      out[EventField.capacity] = EventProblem.capacityBelowSeats;
     }
     return out;
   }
@@ -167,6 +241,8 @@ class EventDraft {
   HubEvent? toEvent({required String id, required EventStatus status}) {
     if (problems().isNotEmpty) return null;
     final c = capacity.trim();
+    final address = locationAddress.trim();
+    final maps = locationUrl.trim();
     return HubEvent(
       id: id,
       titleEn: titleEn.trim(),
@@ -178,8 +254,14 @@ class EventDraft {
       mode: mode,
       link: mode == EventMode.online ? link.trim() : null,
       placeName: mode == EventMode.place ? placeName.trim() : null,
+      locationAddress: mode == EventMode.place && address.isNotEmpty
+          ? address
+          : null,
+      locationUrl: mode == EventMode.place && maps.isNotEmpty ? maps : null,
       capacity: c.isEmpty ? null : int.parse(c),
       coverFile: coverFile,
+      imageFiles: imageFiles,
+      videoFiles: videoFiles,
       status: status,
     );
   }

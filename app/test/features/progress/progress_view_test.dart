@@ -11,6 +11,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/progress/domain/milestone.dart';
+import 'package:own_hub/domain/rewards/training_streak.dart';
 
 import 'package:own_hub/domain/rewards/rewards.dart';
 import 'package:own_hub/domain/rewards/tier_policy.dart';
@@ -508,39 +510,50 @@ void main() {
   });
 
   group('P0-NAV-01 — P01 is the door to T04 and T05', () {
-    testWidgets('all three onward rows are present and wired', (tester) async {
-      _phone(tester);
-      var restWeek = 0;
-      var tierSlip = 0;
-      var firstWeek = 0;
+    testWidgets(
+      'the onward rows are present and wired, and T05 stays hidden (D43)',
+      (tester) async {
+        _phone(tester);
+        var restWeek = 0;
+        var tierSlip = 0;
+        var firstWeek = 0;
 
-      await tester.pumpWidget(
-        _host(
-          ProgressView(
-            summary: _hers(),
-            onOpenRestWeek: () => restWeek++,
-            onOpenTierSlip: () => tierSlip++,
-            onOpenFirstWeek: () => firstWeek++,
+        await tester.pumpWidget(
+          _host(
+            ProgressView(
+              summary: _hers(),
+              onOpenRestWeek: () => restWeek++,
+              onOpenTierSlip: () => tierSlip++,
+              onOpenFirstWeek: () => firstWeek++,
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      for (final row in [
-        'What a rest week covers',
-        'If a tier slips',
-        'Your first week',
-      ]) {
-        await tester.ensureVisible(find.text(row));
+        );
         await tester.pumpAndSettle();
-        await tester.tap(find.text(row));
-      }
-      await tester.pump();
 
-      expect(restWeek, 1, reason: "T04's only inbound edge in the design");
-      expect(tierSlip, 1, reason: "T05's only inbound edge in the design");
-      expect(firstWeek, 1);
-    });
+        // "If a tier slips" opens T05, which is hidden for launch (D43): the
+        // row is not drawn, so there is nothing that leads to it.
+        expect(find.text('If a tier slips'), findsNothing);
+
+        // The rest week sits one tap behind "How weeks count".
+        expect(find.text('What a rest week covers'), findsNothing);
+        await tester.ensureVisible(find.text('How weeks count'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('How weeks count'));
+        await tester.pumpAndSettle();
+        expect(find.text('If a tier slips'), findsNothing);
+        await tester.tap(find.text('What a rest week covers'));
+        await tester.pumpAndSettle();
+
+        await tester.ensureVisible(find.text('Your first week'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Your first week'));
+        await tester.pump();
+
+        expect(restWeek, 1, reason: "T04's only inbound edge in the design");
+        expect(tierSlip, 0, reason: 'T05 is hidden, so nothing opens it');
+        expect(firstWeek, 1);
+      },
+    );
 
     testWidgets('the three tiles open P02, P03 and P04', (tester) async {
       _phone(tester);
@@ -560,9 +573,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Milestones'));
-      await tester.tap(find.text('Bests'));
-      await tester.tap(find.text('Body'));
+      // Insights is one long scroll: bring each tile into view first.
+      for (final label in ['Milestones', 'Bests', 'Body']) {
+        await tester.ensureVisible(find.text(label));
+        await tester.pump();
+        await tester.tap(find.text(label));
+      }
       await tester.pump();
 
       expect(milestones, 1);
@@ -608,5 +624,43 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
+  });
+
+  testWidgets('D37 and §15: the streak row and the next milestone', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        ProgressView(
+          summary: _hers(),
+          trainingStreak: const StreakStatus(enabled: true, days: 4, best: 9),
+          nextMilestone: const MilestoneStanding(
+            milestone: Milestone(
+              id: 'ten_sessions',
+              measure: MilestoneMeasure.sessions,
+              target: 10,
+            ),
+            progress: 7,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('p01TrainingStreak')), findsOneWidget);
+    // The line names the streak, so it is the row's title; her best sits
+    // under it rather than repeating "Training streak" twice.
+    expect(find.text('Training streak: 4 days'), findsOneWidget);
+    expect(find.text('Your best: 9 days'), findsOneWidget);
+    expect(find.text('Training streak'), findsNothing);
+    expect(find.byKey(const ValueKey('p01-next-milestone')), findsOneWidget);
+    expect(find.text('7 of 10'), findsOneWidget);
+  });
+
+  testWidgets('no streak row when it is off, and never the kitten', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(ProgressView(summary: _hers())));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('p01TrainingStreak')), findsNothing);
   });
 }

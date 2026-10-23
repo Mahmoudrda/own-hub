@@ -117,26 +117,90 @@ List<String> _hitsIn(String source, RegExp pattern) {
   return out;
 }
 
+/// What rule 3 still bans after D37: a bare streak, the day-run spellings a
+/// counter would use, and the words a loss state would need.
+final RegExp _rule3Banned = RegExp(
+  r'\b(streak|dayStreak|daysInARow|consecutiveDays|currentStreak|'
+  r'longestStreak|missedDays|daysMissed|streakLost|lostStreak|brokenStreak|'
+  r'streakBroken|streakAtRisk)\b',
+  caseSensitive: false,
+);
+
+/// The ARB keys D37 allows to mention a streak. Exact keys, not a pattern.
+const Set<String> kStreakCopyKeys = <String>{
+  'trainingStreak',
+  'trainingStreakDaysDays',
+  'daysPluralOneTrainingStreak1Day',
+  'showMyTrainingStreak',
+  // Where to turn it back on, after she turns it off (no loss, no judgement).
+  'streakHiddenTurnItBackOnIn',
+};
+
+/// Every string D37 added, whether or not it says "streak". All of them are
+/// held to the loss check, in both languages' English source.
+const Set<String> kD37CopyKeys = <String>{
+  ...kStreakCopyKeys,
+  'daysDays',
+  'yourBestDaysDays',
+  'daysPluralOneYourBest1Day',
+  'day1StartsWithYourNextSession',
+  'pausedUntilDate',
+  'pausedUntilYouComeBack',
+  'restDaysCountWhileYourWeekGoal',
+  'pauseForAWeek',
+  'pauseForTwoWeeks',
+  'pauseUntilIComeBack',
+  'resumeNow',
+  'keptOnThisPhoneTurnItOff',
+  'yourWeeksCountAndSoDoThe',
+};
+
+/// Loss language, banned from every streak string.
+final RegExp _lossWords = RegExp(
+  r"\b(lose|lost|losing|break|breaks|broke|broken|miss|missed|risk|save|"
+  r"alive|don't|do not|keep it going)\b",
+  caseSensitive: false,
+);
+
 void main() {
   test('RULE 3 — nothing in the source can hold or render a daily streak', () {
-    // Weeks are the only unit. A rest week repairs a missed week automatically,
-    // which is incompatible with a consecutive-day counter existing at all.
-    final banned = RegExp(
-      r'\b(streak|dayStreak|daysInARow|consecutiveDays|currentStreak|longestStreak)\b',
-      caseSensitive: false,
+    // Weeks are the unit of reward. D37 (13 October 2026) admits exactly one
+    // day-based thing: a training streak she controls, named as such
+    // (`TrainingStreak`, `trainingStreak`, `StreakStatus`). Everything a bare
+    // streak counter, a missed-day tally or a loss would need is still banned:
+    // a field called `streak`, a count of missed days, a streak "at risk".
+    expect(
+      _hits(_rule3Banned),
+      isEmpty,
+      reason:
+          'Rule 3 and D37: the only day-based mechanic is the training '
+          'streak she controls. No bare streak counter, no missed days, no '
+          'loss state.',
+    );
+  });
+
+  test('RULE 3 — the D37 names pass and a bare counter still fails', () {
+    expect(
+      _hitsIn('final StreakStatus? trainingStreak = null;', _rule3Banned),
+      isEmpty,
+      reason: 'the training streak D37 allows, by its own names',
     );
     expect(
-      _hits(banned),
+      _hitsIn('class TrainingStreak { const TrainingStreak(); }', _rule3Banned),
       isEmpty,
-      reason: 'Rule 3: weeks, not days. No streak may exist in any form.',
     );
+    expect(_hitsIn('int streak = 0;', _rule3Banned), hasLength(1));
+    expect(_hitsIn('final missedDays = 2;', _rule3Banned), hasLength(1));
+    expect(_hitsIn('bool streakAtRisk = true;', _rule3Banned), hasLength(1));
   });
 
   test('RULE 3 — the deny-list exemption cannot hide a real streak', () {
     // Without this, the exemption added for `kForbiddenStreakKeys` would be a
     // hole: name any declaration "Forbidden" and hide a field inside it.
-    final banned = RegExp(r'\b(streak|dayStreak|currentStreak)\b',
-        caseSensitive: false);
+    final banned = RegExp(
+      r'\b(streak|dayStreak|currentStreak)\b',
+      caseSensitive: false,
+    );
 
     const denyList = '''
 const Set<String> kForbiddenStreakKeys = <String>{
@@ -168,20 +232,45 @@ int currentStreak = 0;
     expect(_hitsIn(nearMiss, banned), hasLength(1));
   });
 
-  test('RULE 3 — no user-facing copy mentions a streak', () {
-    // Rule 3 is not only structural; the word must not reach a screen either.
+  test('RULE 3 — only the D37 copy mentions a streak, and never a loss', () {
+    // Rule 3 is not only structural; the word must not reach a screen either,
+    // except in the few strings D37 names — and those may never say she could
+    // lose, break, miss or save anything.
     final arb = jsonDecode(
       File('lib/l10n/app_en.arb').readAsStringSync(),
     ) as Map<String, dynamic>;
     final offenders = <String>[];
     arb.forEach((key, value) {
       if (key.startsWith('@')) return;
-      if (value is String &&
-          RegExp('streak', caseSensitive: false).hasMatch(value)) {
-        offenders.add('$key = "$value"');
+      if (value is! String) return;
+      if (!RegExp('streak', caseSensitive: false).hasMatch(value)) return;
+      if (!kStreakCopyKeys.contains(key)) {
+        offenders.add('$key = "$value" (not a D37 string)');
+      } else if (_lossWords.hasMatch(value)) {
+        offenders.add('$key = "$value" (loss language)');
       }
     });
-    expect(offenders, isEmpty, reason: 'Rule 3: no streak language in the UI.');
+    expect(
+      offenders,
+      isEmpty,
+      reason: 'Rule 3 and D37: streak copy is the named list, and never loss.',
+    );
+    // The list is not a wildcard: every key on it exists, and none of the
+    // D37 strings — the pauses, the rule, the switch — speaks of loss.
+    for (final key in kD37CopyKeys) {
+      expect(arb.containsKey(key), isTrue, reason: '$key is not in the ARB');
+      expect(
+        _lossWords.hasMatch(arb[key] as String),
+        isFalse,
+        reason: '$key = "${arb[key]}" (loss language)',
+      );
+    }
+  });
+
+  test('RULE 3 — the loss check catches loss language', () {
+    expect(_lossWords.hasMatch("Don't lose your streak"), isTrue);
+    expect(_lossWords.hasMatch('Your streak is at risk'), isTrue);
+    expect(_lossWords.hasMatch('Show my training streak'), isFalse);
   });
 
   test('the running total is never a countdown', () {
@@ -387,9 +476,9 @@ int currentStreak = 0;
     final banned = RegExp(
       r'(sk-ant-|ANTHROPIC_API_KEY\s*=\s*.|AIza[0-9A-Za-z_\-]{30,})',
     );
-    final offenders = _hits(
-      banned,
-    ).where((hit) => !hit.contains('lib/firebase_options.dart')).toList();
+    final offenders = _hits(banned)
+        .where((hit) => !hit.contains('lib/firebase_options.dart'))
+        .toList();
     expect(
       offenders,
       isEmpty,
@@ -405,7 +494,8 @@ int currentStreak = 0;
     expect(
       file.existsSync(),
       isTrue,
-      reason: 'The exempted file must exist, or the exemption is stale and '
+      reason:
+          'The exempted file must exist, or the exemption is stale and '
           'should be deleted rather than left pointing at nothing.',
     );
     final source = file.readAsStringSync();
@@ -413,14 +503,16 @@ int currentStreak = 0;
     expect(
       source.contains('DefaultFirebaseOptions'),
       isTrue,
-      reason: 'The exempted path must be the FlutterFire generated file. If it '
+      reason:
+          'The exempted path must be the FlutterFire generated file. If it '
           'is something else, the exemption is being reused for a file it was '
           'never reasoned about.',
     );
     expect(
       RegExp(r'sk-ant-|ANTHROPIC_API_KEY').hasMatch(source),
       isFalse,
-      reason: 'An Anthropic key is a secret wherever it is written, and the '
+      reason:
+          'An Anthropic key is a secret wherever it is written, and the '
           'generated file has no reason to contain one.',
     );
 
@@ -438,7 +530,8 @@ int currentStreak = 0;
     expect(
       misplaced,
       isEmpty,
-      reason: 'A Google API key in the generated file that is not the Firebase '
+      reason:
+          'A Google API key in the generated file that is not the Firebase '
           'apiKey field is not covered by the reasoning for this exemption.',
     );
   });

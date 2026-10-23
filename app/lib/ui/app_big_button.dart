@@ -21,6 +21,7 @@ class AppBigButton extends StatelessWidget {
     required this.subtitle,
     this.onPressed,
     this.sage = false,
+    this.haptic = false,
   });
 
   final String label;
@@ -33,15 +34,19 @@ class AppBigButton extends StatelessWidget {
   /// Sage rather than pink, for a restorative action.
   final bool sage;
 
+  /// Off by default: screens play their own tap when an action finishes.
+  final bool haptic;
+
   @override
   Widget build(BuildContext context) {
-    const onColour = Color(0xFFFFFFFF);
+    final onColour = sage ? AppColors.onTertiary : AppColors.onActionPrimary;
 
     // The largest printed block in the product, set off-register like every
     // primary action, and pushed into the page by the tap that logs the set.
     return HandSurface(
       seed: handSeed(['big', label]),
-      fill: sage ? AppColors.tertiary : AppColors.primary,
+      fill: sage ? AppColors.tertiary : AppColors.actionPrimary,
+      pressedFill: sage ? null : AppColors.actionPressed,
       offsetOutline: sage
           ? AppColors.onTertiaryContainer
           : AppColors.primaryDim,
@@ -52,6 +57,7 @@ class AppBigButton extends StatelessWidget {
       onTap: onPressed,
       pressable: true,
       semanticsButton: true,
+      haptic: haptic,
       child: Container(
         // The prototype's 84 is a floor, not a fixed height: at the largest
         // system text size two lines need more room, and a clipped primary

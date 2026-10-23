@@ -60,6 +60,9 @@ def test_ttl_policies_are_declared_for_the_expiring_collections():
         # The console: every read of it, a year; error counts, 90 days.
         ("adminAccessLog", "expireAt"),
         ("opsErrors", "expireAt"),
+        ("verificationBookings", "expireAt"),
+        # Meal-photo repeat answers: 30 days.
+        ("scanCache", "expiresAt"),
     }
 
 
@@ -84,4 +87,8 @@ def test_every_entry_says_why_and_every_override_exempts():
         assert index.get("_why")
     for override in spec["fieldOverrides"]:
         assert override.get("_why")
-        assert override["indexes"] == []
+        # Every override exempts a field, except the ones that switch on a
+        # collection-group index a query needs; those hold nothing sensitive.
+        if override["indexes"]:
+            assert override["collectionGroup"] == "ledger"
+            assert {"queryScope": "COLLECTION_GROUP", "order": "ASCENDING"} in override["indexes"]

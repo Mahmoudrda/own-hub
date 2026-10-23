@@ -118,17 +118,28 @@ void main() {
     });
 
     test('ties break on the name, never on anything about her', () {
-      final a = _row(uid: 'x', name: 'Zeinab', pounds: 1800, reviewCount: 500, ratingAverage: 5.0);
-      final b = _row(uid: 'y', name: 'Amal', pounds: 1800, reviewCount: 5, ratingAverage: 3.0);
-      final sorted = CoachDirectory.filter(
-        [a, b],
-        const DirectoryQuery(order: DirectoryOrder.priceLowFirst),
+      final a = _row(
+        uid: 'x',
+        name: 'Zeinab',
+        pounds: 1800,
+        reviewCount: 500,
+        ratingAverage: 5.0,
       );
-      expect(
-        sorted.map((r) => r.displayName),
-        ['Amal', 'Zeinab'],
-        reason: 'same price, so alphabetical — not "better rated first"',
+      final b = _row(
+        uid: 'y',
+        name: 'Amal',
+        pounds: 1800,
+        reviewCount: 5,
+        ratingAverage: 3.0,
       );
+      final sorted = CoachDirectory.filter([
+        a,
+        b,
+      ], const DirectoryQuery(order: DirectoryOrder.priceLowFirst));
+      expect(sorted.map((r) => r.displayName), [
+        'Amal',
+        'Zeinab',
+      ], reason: 'same price, so alphabetical — not "better rated first"');
     });
   });
 
@@ -183,16 +194,19 @@ void main() {
       // Unknown is unknown. Showing her inside a price band would be stating a
       // figure on her behalf.
       final unpriced = _row(uid: 'c4', name: 'Salma', pounds: null);
-      final result = CoachDirectory.filter(
-        [..._all, unpriced],
-        DirectoryQuery(maxPrice: const Money.pounds(2000)),
-      );
+      final result = CoachDirectory.filter([
+        ..._all,
+        unpriced,
+      ], DirectoryQuery(maxPrice: const Money.pounds(2000)));
       expect(result.map((r) => r.coachUid), isNot(contains('c4')));
     });
 
     test('a coach with no places is out of the list by default', () {
       final full = _row(uid: 'c5', name: 'Yara', accepting: false);
-      final result = CoachDirectory.filter([..._all, full], const DirectoryQuery());
+      final result = CoachDirectory.filter([
+        ..._all,
+        full,
+      ], const DirectoryQuery());
       expect(result.map((r) => r.coachUid), isNot(contains('c5')));
     });
 
@@ -204,9 +218,7 @@ void main() {
     test('a query nothing matches returns an empty list, not an error', () {
       final result = CoachDirectory.filter(
         _all,
-        const DirectoryQuery(
-          specialties: {CoachingSpecialty.pregnancy},
-        ),
+        const DirectoryQuery(specialties: {CoachingSpecialty.pregnancy}),
       );
       expect(result, isEmpty);
     });
@@ -215,19 +227,19 @@ void main() {
   group('ordering', () {
     test('cheapest first, and the unpriced go last', () {
       final unpriced = _row(uid: 'c4', name: 'Aya', pounds: null);
-      final result = CoachDirectory.filter(
-        [..._all, unpriced],
-        const DirectoryQuery(order: DirectoryOrder.priceLowFirst),
-      );
+      final result = CoachDirectory.filter([
+        ..._all,
+        unpriced,
+      ], const DirectoryQuery(order: DirectoryOrder.priceLowFirst));
       expect(result.map((r) => r.coachUid), ['c2', 'c1', 'c3', 'c4']);
     });
 
     test('dearest first reverses only the priced rows', () {
       final unpriced = _row(uid: 'c4', name: 'Aya', pounds: null);
-      final result = CoachDirectory.filter(
-        [..._all, unpriced],
-        const DirectoryQuery(order: DirectoryOrder.priceHighFirst),
-      );
+      final result = CoachDirectory.filter([
+        ..._all,
+        unpriced,
+      ], const DirectoryQuery(order: DirectoryOrder.priceHighFirst));
       expect(result.map((r) => r.coachUid), ['c3', 'c1', 'c2', 'c4']);
     });
 
@@ -235,10 +247,10 @@ void main() {
       // Treating "we have not measured her" as a number is how an unmeasured
       // coach ends up at one end of a list for a reason nobody intended.
       final unmeasured = _row(uid: 'c4', name: 'Aya', replyMins: null);
-      final result = CoachDirectory.filter(
-        [..._all, unmeasured],
-        const DirectoryQuery(order: DirectoryOrder.replySpeed),
-      );
+      final result = CoachDirectory.filter([
+        ..._all,
+        unmeasured,
+      ], const DirectoryQuery(order: DirectoryOrder.replySpeed));
       expect(result.map((r) => r.coachUid), ['c3', 'c1', 'c2', 'c4']);
     });
 
@@ -246,7 +258,10 @@ void main() {
       final result = CoachDirectory.filter(
         _all,
         const DirectoryQuery(
-          specialties: {CoachingSpecialty.postpartum, CoachingSpecialty.strength},
+          specialties: {
+            CoachingSpecialty.postpartum,
+            CoachingSpecialty.strength,
+          },
           acceptingOnly: false,
         ),
       );

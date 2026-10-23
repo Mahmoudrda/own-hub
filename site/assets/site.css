@@ -61,24 +61,24 @@
 /* ---------- Tokens (the app's, by name) ---------- */
 :root {
   color-scheme: light;
-  --paper: #FFF8F9;          /* surface */
+  --paper: #FCF8F2;          /* surface */
   --paper-raised: #FFFFFF;   /* surfaceLowest */
-  --paper-low: #FFF1F4;      /* surfaceLow */
-  --paper-sunk: #FBEAEF;     /* surfaceContainer */
-  --ink: #241A1E;            /* ink / onSurface */
-  --ink-soft: #6B5C61;       /* onSurfaceVariant */
-  --rose: #A24661;           /* primary */
-  --rose-deep: #9A3F57;      /* primaryDim */
-  --rose-ink: #4A1C2E;       /* onPrimaryContainer */
-  --rose-container: #FFD9E3; /* primaryContainer, the hand's marker */
-  --rose-soft: #F8E1E7;      /* primarySoft */
-  --rose-fill: #F2B6C6;      /* ArtTones.rose fill */
+  --paper-low: #F8F2EA;      /* surfaceLow */
+  --paper-sunk: #F4EDE3;     /* surfaceContainer */
+  --ink: #123F50;            /* ink / onSurface */
+  --ink-soft: #4E6068;       /* onSurfaceVariant */
+  --rose: #1A5D74;           /* primary */
+  --rose-deep: #123F50;      /* primaryDim */
+  --rose-ink: #123F50;       /* onPrimaryContainer */
+  --rose-container: #F4BEBB; /* primaryContainer, the hand's marker */
+  --rose-soft: #F9DEDC;      /* primarySoft */
+  --rose-fill: #F4BEBB;      /* ArtTones.rose fill */
   --sage: #4C6E55;           /* tertiary */
   --sage-wash: #DDEDE1;      /* tertiaryContainer */
-  --pencil: #977C84;         /* outline, the hand's pencil */
-  --rule: #EBDCDF;           /* outlineVariant */
-  --rule-strong: #D9C3C9;
-  --focus: #9A3F57;
+  --pencil: #60858F;         /* outline, the hand's pencil */
+  --rule: #E8DED3;           /* outlineVariant */
+  --rule-strong: #D6CABC;
+  --focus: #123F50;
 
   --measure: 38rem;
   --wide: 72rem;
@@ -650,8 +650,8 @@ html[lang="ar"] .cards dt {
   padding: 0.65rem 1.5rem;
   border: 0;
   border-radius: var(--r-btn);
-  background: var(--rose);
-  color: #FFFFFF;
+  background: var(--rose-fill);
+  color: var(--ink);
   font: inherit;
   font-size: 1.0625rem;
   font-weight: 600;
@@ -682,7 +682,7 @@ html[dir="rtl"] .btn::after {
    stuck in its hover colour. */
 @media (hover: hover) and (pointer: fine) {
   .btn:hover {
-    background: var(--rose-deep);
+    background: #E8A5A2;
   }
   .btn.ghost:hover {
     background: var(--rose-container);
@@ -814,7 +814,7 @@ html[dir="rtl"] .kitten {
   padding: 0.45rem;
   border-radius: 2.1rem;
   background: var(--ink);
-  box-shadow: 0 30px 60px -30px rgba(74, 28, 46, 0.45);
+  box-shadow: 0 30px 60px -30px rgba(18, 63, 80, 0.45);
 }
 .phone img {
   display: block;
@@ -902,7 +902,7 @@ ol.steps > li::before {
   inline-size: 100%;
   border-radius: var(--r-lg);
   border: 1px solid var(--rule);
-  box-shadow: 0 16px 32px -24px rgba(74, 28, 46, 0.5);
+  box-shadow: 0 16px 32px -24px rgba(18, 63, 80, 0.5);
   background: var(--paper);
 }
 .shots figcaption {
@@ -1282,6 +1282,176 @@ main > section:last-child {
 /* ---------- 404 ---------- */
 .lost {
   padding-block: 3rem 1rem;
+}
+
+/* ---------- Line drawings ----------
+   Hairline 0.5.1, Copyright (c) 2026 Lucas Marques, MIT licence:
+   https://github.com/lucasmarkes/hairline (the licence text is kept in
+   _build/hairline/LICENSE). The library draws in the browser; this site runs
+   no script, so _build/capture_hairline.py drew each figure once, at rest,
+   and the generator sets it inline. The library's own rules follow as it
+   ships them, then the site's colours, sizes and motion. */
+:where([data-hairline]) { display: block; position: relative; aspect-ratio: 5 / 4; touch-action: pan-y; user-select: none; --hl-sw: var(--hairline-stroke,0.9); --hl-plate: var(--hairline-plate,#ffffff); --hl-hi: var(--hairline-hi,#232327); --hl-edge: var(--hairline-edge,#a4a4ac); --hl-mid: var(--hairline-mid,#c3c3c9); --hl-lo: var(--hairline-lo,#e0e0e4); }
+:where([data-hairline]) { --hl-plate: var(--hairline-plate,light-dark(#ffffff,#08090a)); --hl-hi: var(--hairline-hi,light-dark(#232327,#d0d6e0)); --hl-edge: var(--hairline-edge,light-dark(#a4a4ac,#5b5d64)); --hl-mid: var(--hairline-mid,light-dark(#c3c3c9,#3e3e44)); --hl-lo: var(--hairline-lo,light-dark(#e0e0e4,#29292d)); }
+:where(.dark, [data-theme="dark"]) :where([data-hairline]) { --hl-plate: var(--hairline-plate,#08090a); --hl-hi: var(--hairline-hi,#d0d6e0); --hl-edge: var(--hairline-edge,#5b5d64); --hl-mid: var(--hairline-mid,#3e3e44); --hl-lo: var(--hairline-lo,#29292d); }
+:where([data-hairline][data-hairline-theme="light"]) { --hl-plate: var(--hairline-plate,#ffffff); --hl-hi: var(--hairline-hi,#232327); --hl-edge: var(--hairline-edge,#a4a4ac); --hl-mid: var(--hairline-mid,#c3c3c9); --hl-lo: var(--hairline-lo,#e0e0e4); }
+:where([data-hairline][data-hairline-theme="dark"]) { --hl-plate: var(--hairline-plate,#08090a); --hl-hi: var(--hairline-hi,#d0d6e0); --hl-edge: var(--hairline-edge,#5b5d64); --hl-mid: var(--hairline-mid,#3e3e44); --hl-lo: var(--hairline-lo,#29292d); }
+:where([data-hairline]:focus-visible) { outline: 1.5px solid var(--hl-hi); outline-offset: 2px; }
+:where([data-hairline] > svg) { position: absolute; inset: 0px; width: 100%; height: 100%; display: block; }
+:where([data-hairline] > [data-hairline-live]) { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0px; border: 0px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+:where([data-hairline] > svg) :where(path, polygon, ellipse, line) { fill: var(--hl-plate); stroke: var(--hl-mid); stroke-width: var(--hl-sw); vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; transition: stroke 260ms cubic-bezier(0.5, 0, 0.1, 1); }
+:where([data-hairline] > svg) :where(.nf) { fill: none; }
+:where([data-hairline] > svg) :where(.fo) { stroke: none; }
+:where([data-hairline] > svg) :where(.sil) { stroke: var(--hl-edge); }
+:where([data-hairline] > svg) :where(.hi) { stroke: var(--hl-hi); }
+:where([data-hairline] > svg) :where(.lo) { stroke: var(--hl-lo); }
+:where([data-hairline] > svg) :where(.dash) { stroke-dasharray: 1, 3; }
+:where([data-hairline] > svg) :where(.dot) { stroke: none; fill: var(--hl-hi); transition: fill 260ms cubic-bezier(0.5, 0, 0.1, 1); }
+:where([data-hairline] > svg) :where(.dot.m) { fill: var(--hl-edge); }
+:where([data-hairline] > svg) :where(.dot.off) { fill: var(--hl-lo); }
+:where([data-hairline] > svg) :where(.ghost path) { fill: none; stroke: var(--hl-mid); }
+
+/* Petrol lines with a Pale Pink hint on the paper they sit on. The plate,
+   each face's fill, must be the colour behind the figure. */
+.hl {
+  --hairline-plate: var(--paper);
+  --hairline-hi: var(--rose);
+  --hairline-edge: #5E8C9A;
+  --hairline-mid: #96B2B9;
+  --hairline-lo: var(--rose-fill);
+  --hairline-stroke: 1;
+  /* A still drawing takes no pointer input: keep pinch-zoom over it. */
+  touch-action: auto;
+}
+.band .hl {
+  --hairline-plate: var(--paper-low);
+}
+
+/* A section's mark, beside its heading on a wide screen, above it on a phone.
+   Each drawing sits inside its 5:4 box with a margin of its own; the
+   negative margins line the lines themselves up with the text. */
+.lead-row {
+  display: grid;
+  align-items: center;
+}
+.lead-row > .prose {
+  margin-inline: 0;
+}
+.lead-row > .hl {
+  grid-row: 1;
+  inline-size: 9.5rem;
+  margin-block: -1rem 0;
+  margin-inline-start: -1.5rem;
+}
+.prose > .hl.mark {
+  inline-size: min(14rem, 75%);
+  margin-block: 0.75rem -1rem;
+  margin-inline-start: -2.25rem;
+}
+@media (min-width: 52rem) {
+  .lead-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2.5rem;
+  }
+  .lead-row > .hl {
+    grid-row: auto;
+    inline-size: 15rem;
+    margin-block: 0;
+    margin-inline: 0 -2rem;
+  }
+  .prose > .hl.mark {
+    inline-size: 17rem;
+    margin-inline-start: -3rem;
+  }
+}
+
+/* A door's figure says what is behind it. */
+.doorways a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
+}
+.doorways .t,
+.doorways .d {
+  grid-column: 1;
+}
+.doorways .hl {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  inline-size: 6rem;
+  margin-inline-start: 1rem;
+  --hairline-plate: var(--paper-raised);
+  transition: transform 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.doorways a:hover .hl {
+  --hairline-plate: var(--rose-soft);
+}
+@media (min-width: 62rem) {
+  .doorways .hl {
+    inline-size: 7.5rem;
+  }
+}
+.doorways a:focus-visible .hl {
+  transform: translateY(-4px);
+  --hairline-hi: #D98A87;
+}
+@media (hover: hover) {
+  .doorways a:hover .hl {
+    transform: translateY(-4px);
+    --hairline-hi: #D98A87;
+  }
+}
+
+/* The drawings are isometric and read the same in both scripts, except
+   the question mark: Arabic writes it the other way round. */
+html[dir="rtl"] .hl-query svg {
+  transform: scaleX(-1);
+}
+
+/* Motion: each line is drawn in once, as the page opens, then the section
+   marks breathe. The dash lives only in the keyframes, so a line is whole
+   whenever no animation runs. */
+@keyframes hl-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes hl-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+.hl [pathLength] {
+  animation: hl-draw 1.2s cubic-bezier(0.32, 0.72, 0, 1) var(--hl-delay, 0.1s) backwards;
+}
+.hl.mark {
+  animation: hl-float 6.5s ease-in-out 1.4s infinite alternate;
+}
+.doorways li:nth-child(2) .hl {
+  --hl-delay: 0.25s;
+}
+.doorways li:nth-child(3) .hl {
+  --hl-delay: 0.4s;
+}
+.doorways li:nth-child(4) .hl {
+  --hl-delay: 0.55s;
+}
+/* The global rule above shortens every animation but not its delay, so the
+   drawings are simply still and whole here. */
+@media (prefers-reduced-motion: reduce) {
+  .hl,
+  .hl [pathLength] {
+    animation: none !important;
+  }
 }
 
 /* ---------- Print ---------- */

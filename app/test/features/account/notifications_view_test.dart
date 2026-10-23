@@ -7,12 +7,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/account/domain/notifications.dart';
 import 'package:own_hub/features/account/presentation/account_view_models.dart';
 import 'package:own_hub/features/account/presentation/notifications_view.dart';
+import 'package:own_hub/features/train/domain/notification_plan.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_empty_state.dart';
+import 'package:own_hub/ui/app_toggle.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -61,17 +65,12 @@ void main() {
       // appear and states the rule about them stopping.
       expect(find.byType(AppEmptyState), findsOneWidget);
       expect(
-        find.text(
-          'One nudge a day at most, at your usual time. Ignore three '
-          'and they stop by themselves.',
-        ),
+        find.text('A few gentle reminders. Turn any of them off here.'),
         findsOneWidget,
       );
     });
 
-    testWidgets('a kind with no authored copy is held back, not invented', (
-      tester,
-    ) async {
+    testWidgets('every kind draws its own authored title', (tester) async {
       _phone(tester);
 
       await tester.pumpWidget(
@@ -87,14 +86,31 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      final l10n = lookupAppL10n(const Locale('en'));
+      expect(find.text(l10n.yourCoachRepliedToYourReview), findsOneWidget);
+      expect(find.text(l10n.yourGroupReachedANewMilestone), findsOneWidget);
+      expect(find.text(l10n.yourBestGotAFewLikes), findsOneWidget);
+
       // None of the prototype's four sample sentences reaches a screen: each
       // names a coach, a group or a woman who may not exist for her.
       expect(find.text('Sara replied to your review'), findsNothing);
       expect(find.text('Beginners group reached 146 sessions'), findsNothing);
       expect(find.text('Habiba and 12 others liked your best'), findsNothing);
+      expect(find.byType(AppEmptyState), findsNothing);
+    });
 
-      // So the inbox falls back to its empty state.
-      expect(find.byType(AppEmptyState), findsOneWidget);
+    test('every kind has a title in English and Arabic', () {
+      for (final code in ['en', 'ar']) {
+        final l10n = lookupAppL10n(Locale(code));
+        for (final kind in NotificationKind.values) {
+          expect(
+            NotificationCopy.titleFor(kind, l10n).trim(),
+            isNotEmpty,
+            reason: '$kind in $code',
+          );
+          expect(NotificationCopy.hasAuthoredCopy(kind, l10n), isTrue);
+        }
+      }
     });
 
     test('the gap is counted, so it is measurable rather than silent', () {
@@ -212,6 +228,98 @@ void main() {
         ),
         findsNothing,
       );
+    });
+  });
+
+  group('the event reminders switch', () {
+    final savedFlags = AppRouter.featureFlags;
+    setUp(() {
+      AppRouter.featureFlags = savedFlags.with_({Feature.events: true});
+    });
+    tearDown(() => AppRouter.featureFlags = savedFlags);
+
+    Future<void> show(
+      WidgetTester tester, {
+      NotificationPrefs? prefs,
+      ValueChanged<NotificationPrefs>? onChanged,
+      Locale locale = const Locale('en'),
+      double textScale = 1.0,
+    }) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          NotificationsView(
+            onOpenReminders: () {},
+            prefs: prefs,
+            onPrefsChanged: onChanged,
+          ),
+          locale: locale,
+          textScale: textScale,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sits with the other switches, on by default', (tester) async {
+      await show(tester, prefs: const NotificationPrefs());
+      final row = find.byKey(const ValueKey('a01-events'));
+      await tester.scrollUntilVisible(row, 200);
+      expect(row, findsOneWidget);
+      expect(find.text('Event reminders'), findsOneWidget);
+      expect(
+        find.descendant(of: row, matching: find.byType(AppToggle)),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<AppToggle>(
+              find.descendant(of: row, matching: find.byType(AppToggle)),
+            )
+            .value,
+        isTrue,
+      );
+    });
+
+    testWidgets('tapping it turns only events off', (tester) async {
+      NotificationPrefs? saved;
+      await show(
+        tester,
+        prefs: const NotificationPrefs(nudges: false),
+        onChanged: (prefs) => saved = prefs,
+      );
+      final row = find.byKey(const ValueKey('a01-events'));
+      await tester.scrollUntilVisible(row, 200);
+      await tester.tap(row);
+      await tester.pump();
+      expect(saved, const NotificationPrefs(nudges: false, events: false));
+    });
+
+    testWidgets('is not shown while events are off', (tester) async {
+      AppRouter.featureFlags = savedFlags.with_({Feature.events: false});
+      await show(tester, prefs: const NotificationPrefs());
+      expect(find.byKey(const ValueKey('a01-nudges')), findsOneWidget);
+      expect(find.byKey(const ValueKey('a01-events')), findsNothing);
+    });
+
+    testWidgets('is not shown until the phone has agreed', (tester) async {
+      await show(tester);
+      expect(find.byKey(const ValueKey('a01-events')), findsNothing);
+    });
+
+    testWidgets('reads right to left in Arabic at the largest text', (
+      tester,
+    ) async {
+      await show(
+        tester,
+        prefs: const NotificationPrefs(),
+        locale: const Locale('ar'),
+        textScale: 2.0,
+      );
+      final row = find.byKey(const ValueKey('a01-events'));
+      await tester.scrollUntilVisible(row, 200);
+      expect(find.text('تذكير بالفعاليات'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
     });
   });
 

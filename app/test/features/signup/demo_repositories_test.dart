@@ -44,7 +44,7 @@ void main() {
       expect(day.isDayOne, isFalse);
       expect(day.week.sessionsLogged, 1);
       expect(day.walkToCount, isTrue);
-      expect(day.showCycleCard, isTrue);
+      expect(day.showCycleCard, isFalse);
       expect(day.programWeek, isNull);
       expect(day.programTotalWeeks, isNull);
       expect(day.date, now);
@@ -187,6 +187,7 @@ void main() {
         Feature.lockScreenNudge: true,
         Feature.train: true,
         Feature.recordFromMemory: true,
+        Feature.program: true,
         Feature.exerciseVideo: true,
         Feature.exerciseSwap: true,
         Feature.followAlong: true,

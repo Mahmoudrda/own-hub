@@ -55,7 +55,9 @@ import 'dart:convert';
 
 import '../domain/clock/app_clock.dart';
 import '../domain/identity/user_roles.dart';
+import '../domain/rewards/daily_cap.dart';
 import '../domain/rewards/personal_best_detector.dart';
+import '../domain/rewards/training_streak.dart';
 import '../domain/rewards/week_rollup.dart';
 import '../domain/rewards/weekly_goal.dart';
 import '../domain/training/prescribed_set.dart';
@@ -69,22 +71,46 @@ import '../features/account/domain/privacy_settings.dart';
 import '../features/cycle/domain/cycle_document.dart';
 import '../features/cycle/domain/period_entry.dart';
 import '../features/cycle/domain/today_check_in.dart';
+import '../features/eat/domain/custom_food.dart';
 import '../features/eat/domain/meal_repository.dart';
+import '../features/onboarding/domain/body_data.dart';
 import '../features/onboarding/domain/intake.dart';
+import '../features/onboarding/domain/starting_program.dart'
+    show migratedProgrammeFamily, splitDaysOf;
 import 'pledge.dart';
+import 'guest_session.dart';
 import 'onboarding_state.dart';
 import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
+import '../features/train/domain/custom_workout.dart';
+import '../features/train/domain/getting_started_tips.dart';
+import '../features/train/domain/my_plan.dart';
+import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/train_repository.dart';
+import '../features/train/domain/notification_voice.dart';
 import '../features/train/domain/training_reminders.dart';
+import 'chosen_programme.dart';
+import '../features/followup/domain/follow_up_plan.dart';
+import 'first_gym_guide_state.dart';
+import 'follow_up_state.dart';
 import '../routing/app_router.dart';
 import 'coach_invite_state.dart';
 import 'coach_profile_state.dart';
+import 'custom_workout_state.dart';
+import 'my_plan_state.dart';
+import 'bar_preference.dart';
+import 'coach_application_draft.dart';
+import 'coach_client_notes.dart';
+import 'move_notes.dart';
+import 'rest_timer_prefs.dart';
 import 'cycle_state.dart';
 import 'eat_state.dart';
+import 'rewards_state.dart';
+import 'workout_session_state.dart';
 import 'role_state.dart';
+import 'training_streak_state.dart';
 
 /// The shape this build writes.
 ///
@@ -119,6 +145,7 @@ abstract final class AppSnapshot {
     'today': _captureToday(),
     'progress': _captureProgress(),
     'train': _captureTrain(),
+    'liveSession': ?_captureLiveSession(),
     'meals': _captureMeals(),
     'eat': _captureEat(),
     'cycle': _captureCycle(),
@@ -128,9 +155,25 @@ abstract final class AppSnapshot {
     'language': _captureLanguage(),
     'pledge': _capturePledge(),
     'reminders': _captureReminders(),
+    'firstGymGuide': <String, Object?>{
+      'seen': FirstGymGuideState.instance.seen,
+    },
     'roles': _captureRoles(),
     'coach': _captureCoach(),
     'invite': _captureInvite(),
+    'awards': _captureAwards(),
+    'trainingStreak': _captureTrainingStreak(),
+    'chosenProgramme': ?_captureChosenProgramme(),
+    'followUps': ?_captureFollowUps(),
+    'notificationVoice': ?_captureNotificationVoice(),
+    'customWorkouts': ?_captureCustomWorkouts(),
+    'myPlan': ?_captureMyPlan(),
+    'restTimer': ?_captureRestTimer(),
+    'moveNotes': ?_captureMoveNotes(),
+    'coachApplicationDraft': ?_captureCoachApplicationDraft(),
+    'coachClientNotes': ?_captureCoachClientNotes(),
+    'barKg': ?_captureBarKg(),
+    'guest': ?_captureGuest(),
   };
 
   /// Reads [raw] and puts it back into the stores.
@@ -195,9 +238,25 @@ abstract final class AppSnapshot {
     'language': _readLanguage,
     'pledge': _readPledge,
     'reminders': _readReminders,
+    'firstGymGuide': _readFirstGymGuide,
     'roles': _readRoles,
     'coach': _readCoach,
     'invite': _readInvite,
+    'awards': _readAwards,
+    'trainingStreak': _readTrainingStreak,
+    'chosenProgramme': _readChosenProgramme,
+    'followUps': _readFollowUps,
+    'notificationVoice': _readNotificationVoice,
+    'customWorkouts': _readCustomWorkouts,
+    'myPlan': _readMyPlan,
+    'restTimer': _readRestTimer,
+    'moveNotes': _readMoveNotes,
+    'coachApplicationDraft': _readCoachApplicationDraft,
+    'coachClientNotes': _readCoachClientNotes,
+    'barKg': _readBarKg,
+    'guest': _readGuest,
+    // After `train`: it points at a session that section restores.
+    'liveSession': _readLiveSession,
   };
 }
 
@@ -689,6 +748,17 @@ Map<String, Object?> _captureTrain() {
         <String, Object?>{'from': swap.from, 'to': swap.to},
     ],
     'counter': repository.sessionCounter,
+    // The sessions she removed, so neither a restart nor a merge with the
+    // cloud brings one back.
+    if (repository.removedSessions.isNotEmpty)
+      'removed': [
+        for (final removed in repository.removedSessions)
+          <String, Object?>{
+            'id': removed.id,
+            'source': removed.source.name,
+            'dateKey': removed.dateKey,
+          },
+      ],
   };
 }
 
@@ -733,17 +803,145 @@ void Function()? _readTrain(Object? raw) {
 
   final counter = _int(section['counter']) ?? sessions.length;
 
-  return () => AppRouter.trainRepository.restore(
-    sessions: sessions,
-    flushes: flushes,
-    swaps: swaps,
-    // The live session id is deliberately not carried across. A session she
-    // was midway through when the app was killed is over; `WorkoutSessionState`
-    // is gone with it, and pointing the repository at that id would attribute
-    // her next flush to a workout she is no longer doing. The counter IS
-    // carried, so the next live session gets an id no old one holds.
-    sessionCounter: counter,
+  final removed = <RemovedSession>[
+    for (final entry in _list(section['removed']) ?? const <Object?>[])
+      if (_map(entry) case final row?)
+        if (_str(row['id']) case final id?)
+          if (_pick(SessionSource.values, row['source']) case final source?)
+            RemovedSession(
+              id: id,
+              source: source,
+              dateKey: _str(row['dateKey']) ?? '',
+            ),
+  ];
+
+  return () {
+    AppRouter.trainRepository.restore(
+      sessions: sessions,
+      flushes: flushes,
+      swaps: swaps,
+      // The live session is carried by its own section, `liveSession`. The
+      // counter is carried here, so the next session gets an id no old one
+      // holds.
+      sessionCounter: counter,
+    );
+    AppRouter.trainRepository.restoreRemoved(removed);
+  };
+}
+
+Map<String, Object?>? _captureLiveSession() {
+  final state = WorkoutSessionState.instance;
+  final day = state.day;
+  final session = state.session;
+  if (!state.isLive || day == null || session == null) return null;
+  return <String, Object?>{
+    'sessionId': session.id,
+    'day': <String, Object?>{
+      'id': day.id,
+      'title': day.title,
+      'summary': day.summary,
+      'constraints': day.constraints,
+      'planVersion': ?day.planVersion,
+      'moves': [for (final move in day.moves) _plannedMove(move)],
+    },
+    'moveIndex': state.moveIndex,
+    'setIndex': state.setIndex,
+    'loggedSets': state.loggedSetCount,
+    if (state.startedAt case final at?) 'startedAt': at.toIso8601String(),
+    'swaps': [
+      for (final entry in state.swappedMoves.entries)
+        <String, Object?>{'for': entry.key, 'move': _plannedMove(entry.value)},
+    ],
+  };
+}
+
+Map<String, Object?> _plannedMove(PlannedMove move) => <String, Object?>{
+  'exerciseId': move.exerciseId,
+  'name': move.name,
+  'prescriptionLabel': move.prescriptionLabel,
+  'sets': [for (final set in move.sets) _prescription(set)],
+  if (move.cues.isNotEmpty) 'cues': move.cues,
+  if (move.quiet) 'quiet': true,
+  if (move.needsEquipment) 'needsEquipment': true,
+  if (move.floorOnly) 'floorOnly': true,
+  'videoAssetId': ?move.videoAssetId,
+  'restSeconds': ?move.restSeconds,
+};
+
+PlannedMove? _readPlannedMove(Object? raw) {
+  final row = _map(raw);
+  if (row == null) return null;
+  final exerciseId = _str(row['exerciseId']);
+  final name = _str(row['name']);
+  if (exerciseId == null || name == null) return null;
+  return PlannedMove(
+    exerciseId: exerciseId,
+    name: name,
+    prescriptionLabel: _str(row['prescriptionLabel']) ?? '',
+    sets: [
+      for (final entry in _list(row['sets']) ?? const <Object?>[])
+        ?_readPrescription(entry),
+    ],
+    cues: [
+      for (final cue in _list(row['cues']) ?? const <Object?>[])
+        if (cue is String) cue,
+    ],
+    quiet: _bool(row['quiet']) ?? false,
+    needsEquipment: _bool(row['needsEquipment']) ?? false,
+    floorOnly: _bool(row['floorOnly']) ?? false,
+    videoAssetId: _str(row['videoAssetId']),
+    restSeconds: _int(row['restSeconds']),
   );
+}
+
+void Function()? _readLiveSession(Object? raw) {
+  final section = _map(raw);
+  final dayRow = section == null ? null : _map(section['day']);
+  final sessionId = section == null ? null : _str(section['sessionId']);
+  if (section == null || dayRow == null || sessionId == null) return null;
+  final id = _str(dayRow['id']);
+  if (id == null) return null;
+  final moves = <PlannedMove>[
+    for (final entry in _list(dayRow['moves']) ?? const <Object?>[])
+      ?_readPlannedMove(entry),
+  ];
+  if (moves.isEmpty) return null;
+  final day = WorkoutDay(
+    id: id,
+    title: _str(dayRow['title']) ?? '',
+    summary: _str(dayRow['summary']) ?? '',
+    constraints: _str(dayRow['constraints']) ?? '',
+    planVersion: _str(dayRow['planVersion']),
+    moves: moves,
+  );
+  final swaps = <String, PlannedMove>{};
+  for (final entry in _list(section['swaps']) ?? const <Object?>[]) {
+    final row = _map(entry);
+    final replaced = row == null ? null : _str(row['for']);
+    final move = row == null ? null : _readPlannedMove(row['move']);
+    if (replaced != null && move != null) swaps[replaced] = move;
+  }
+  final moveIndex = _int(section['moveIndex']) ?? 0;
+  final setIndex = _int(section['setIndex']) ?? 0;
+  final loggedSets = _int(section['loggedSets']) ?? 0;
+  final startedAt = DateTime.tryParse(_str(section['startedAt']) ?? '');
+
+  return () {
+    // The session was restored by `train`, which runs first. Without it there
+    // is nothing for her next log to belong to, so she starts fresh.
+    final session = AppRouter.trainRepository.sessionById(sessionId);
+    if (session == null) return;
+    AppRouter.trainRepository.resumeLive(sessionId);
+    WorkoutSessionState.instance.restoreLive(
+      day: day,
+      session: session,
+      moveIndex: moveIndex,
+      setIndex: setIndex,
+      loggedSets: loggedSets,
+      startedAt: startedAt,
+      swaps: swaps,
+    );
+  };
 }
 
 Map<String, Object?> _session(TrainSession session) => <String, Object?>{
@@ -943,7 +1141,10 @@ void Function()? _readMeals(Object? raw) {
     // not carry this one — clearing first would leave E07 and E08 with nothing
     // to draw the moment a week ticks over.
     store.plans.addAll(plans);
-    if (prefs != null) store.prefs = prefs;
+    if (prefs != null) {
+      store.prefs = prefs;
+      EatAppState.instance.syncCustomFoods();
+    }
   };
 }
 
@@ -998,6 +1199,14 @@ Map<String, Object?> _mealItem(MealItem item) => <String, Object?>{
   'origin': item.origin.name,
   'kcal': item.kcal,
   'proteinG': item.proteinG,
+  // Carbs, fat and fibre, her name for a food the pack does not hold, and
+  // the weight she approved: each only when it is known, so a meal logged
+  // before they existed reads back exactly as it was written.
+  'carbsG': ?item.carbsG,
+  'fatG': ?item.fatG,
+  'fiberG': ?item.fiberG,
+  'name': ?item.name,
+  'grams': ?item.grams,
   if (item.planRef case final ref?)
     'planRef': <String, Object?>{
       'assignmentId': ref.assignmentId,
@@ -1026,6 +1235,11 @@ MealItem? _readMealItem(Object? raw) {
     origin: _pick(MealOrigin.values, row['origin']) ?? MealOrigin.search,
     kcal: _int(row['kcal']) ?? 0,
     proteinG: _int(row['proteinG']) ?? 0,
+    carbsG: _macro(row['carbsG']),
+    fatG: _macro(row['fatG']),
+    fiberG: _macro(row['fiberG']),
+    name: _mealName(row['name']),
+    grams: _weight(row['grams']),
     planRef: switch (ref) {
       null => null,
       final ref => switch ((
@@ -1056,6 +1270,8 @@ Map<String, Object?> _mealPlan(MealPlan plan) => <String, Object?>{
         'group': entry.value.group.name,
         'ticked': entry.value.ticked,
         'tickedAt': entry.value.tickedAt?.toIso8601String(),
+        'text': entry.value.text,
+        'recipeId': entry.value.recipeId,
       },
   },
   'recipeVersion': plan.recipeVersion,
@@ -1077,6 +1293,8 @@ MealPlan? _readMealPlan(String weekId, Object? raw) {
       group: _pick(GroceryGroup.values, line['group']) ?? GroceryGroup.cupboard,
       ticked: _bool(line['ticked']) ?? false,
       tickedAt: _time(line['tickedAt']),
+      text: _str(line['text']),
+      recipeId: _str(line['recipeId']),
     );
   }
   return MealPlan(
@@ -1097,6 +1315,8 @@ Map<String, Object?> _eatPrefs(EatPrefs prefs) => <String, Object?>{
   'ramadanMode': prefs.ramadanMode.name,
   'proteinTargetGOverride': prefs.proteinTargetGOverride,
   'libVersion': prefs.libVersion,
+  'favourites': prefs.favourites,
+  'customFoods': [for (final food in prefs.customFoods) food.toJson()],
 };
 
 EatPrefs? _readEatPrefs(Object? raw) {
@@ -1114,6 +1334,17 @@ EatPrefs? _readEatPrefs(Object? raw) {
         _pick(RamadanMode.values, row['ramadanMode']) ?? RamadanMode.auto,
     proteinTargetGOverride: _int(row['proteinTargetGOverride']),
     libVersion: _int(row['libVersion']) ?? 0,
+    favourites: [
+      for (final id in _strings(row['favourites']))
+        if (id.isNotEmpty) id,
+    ].take(kFavouriteCap).toList(),
+    customFoods: [
+      for (final raw
+          in (row['customFoods'] is List
+              ? row['customFoods'] as List
+              : const []))
+        ?CustomFood.fromJson(raw),
+    ].take(kCustomFoodCap).toList(),
   );
 }
 
@@ -1491,6 +1722,12 @@ Map<String, Object?> _captureIntake() {
     'days': intake.days,
     'minutes': intake.minutes,
     'lifeStage': intake.lifeStage.wireName,
+    'level': intake.level.wireName,
+    'weekdays': [...intake.weekdays]..sort(),
+    'minutesCustom': intake.minutesCustom,
+    // O04 "About you". Health data (D31): it is saved here on the phone and
+    // is not in the profile mapping, so it is never uploaded.
+    'body': _captureBody(),
     // Whether she has been through the setup walk at all. Kept beside her
     // answers rather than in a section of its own, because it is a fact about
     // the same four questions and because account deletion clears both through
@@ -1502,7 +1739,30 @@ Map<String, Object?> _captureIntake() {
     // "Not now" on day-one Home's "Track my cycle". A Home preference, kept
     // here because it is cleared by the same reset as the answers above.
     'cycleRowDismissed': OnboardingState.instance.cycleRowDismissed,
+    // She built this week before she had an account, and no account has
+    // claimed it yet. Read by a change of account on this phone.
+    if (OnboardingState.instance.weekBuiltSignedOut) 'builtSignedOut': true,
   };
+}
+
+Map<String, Object?> _captureBody() {
+  final body = BodyDataStore.instance.read();
+  return <String, Object?>{
+    'weightKg': body.weightKg,
+    'heightCm': body.heightCm,
+    'ageYears': body.ageYears,
+  };
+}
+
+BodyData _readBody(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return BodyData.empty;
+  final weight = section['weightKg'];
+  return BodyData(
+    weightKg: weight is num ? weight.toDouble() : null,
+    heightCm: _int(section['heightCm']),
+    ageYears: _int(section['ageYears']),
+  ).sanitised();
 }
 
 void Function()? _readIntake(Object? raw) {
@@ -1516,6 +1776,11 @@ void Function()? _readIntake(Object? raw) {
   };
   final days = _int(section['days']) ?? defaults.days;
   final minutes = _int(section['minutes']) ?? defaults.minutes;
+  final weekdays = Intake.cleanWeekdays([
+    for (final d in _list(section['weekdays']) ?? const <Object?>[])
+      if (d is int) d,
+  ]);
+  final body = _readBody(section['body']);
 
   final intake = Intake(
     goal: _wire(TrainingGoal.values, section['goal']) ?? defaults.goal,
@@ -1524,12 +1789,15 @@ void Function()? _readIntake(Object? raw) {
     // absence of one, and an empty set is not a state a screen can render.
     equipment: equipment.isEmpty ? defaults.equipment : equipment,
     // Both constructor asserts, applied to the document instead of trusting it.
-    days: Intake.allowedDays.contains(days) ? days : defaults.days,
-    minutes: Intake.allowedMinutes.contains(minutes)
-        ? minutes
-        : defaults.minutes,
+    days: Intake.daysOk(days) ? days : defaults.days,
+    minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
     lifeStage:
         _wire(LifeStage.values, section['lifeStage']) ?? defaults.lifeStage,
+    // A document from before the tiers read as the level her answers suggest.
+    level:
+        TrainingLevel.fromWire(section['level']) ?? TrainingLevel.defaultLevel,
+    weekdays: weekdays,
+    minutesCustom: _bool(section['minutesCustom']) ?? false,
   );
 
   // Absent means a document written before the walk existed, and the honest
@@ -1538,6 +1806,7 @@ void Function()? _readIntake(Object? raw) {
   // Absent reads as not asked: a place-less line is never untrue.
   final placeAnswered = _bool(section['placeAnswered']) ?? false;
   final cycleRowDismissed = _bool(section['cycleRowDismissed']) ?? false;
+  final builtSignedOut = _bool(section['builtSignedOut']) ?? false;
 
   return () {
     AppRouter.intakeRepository.restore(
@@ -1545,7 +1814,10 @@ void Function()? _readIntake(Object? raw) {
       setupDone: setupDone,
       placeAnswered: placeAnswered,
     );
-    OnboardingState.instance.cycleRowDismissed = cycleRowDismissed;
+    BodyDataStore.instance.restore(body);
+    OnboardingState.instance
+      ..cycleRowDismissed = cycleRowDismissed
+      ..weekBuiltSignedOut = builtSignedOut;
   };
 }
 
@@ -1570,6 +1842,7 @@ void Function()? _readLanguage(Object? raw) {
 Map<String, Object?> _capturePledge() => <String, Object?>{
   'version': PledgeState.instance.agreedVersion,
   'at': PledgeState.instance.agreedAt?.toUtc().toIso8601String(),
+  'pending': PledgeState.instance.recordPending,
 };
 
 void Function()? _readPledge(Object? raw) {
@@ -1577,18 +1850,52 @@ void Function()? _readPledge(Object? raw) {
   if (section == null) return null;
   final version = _int(section['version']);
   final at = DateTime.tryParse(_str(section['at']) ?? '');
+  final pending = section['pending'] == true;
   return () {
     PledgeState.instance
       ..agreedVersion = version
-      ..agreedAt = at;
+      ..agreedAt = at
+      ..recordPending = pending;
   };
 }
+
+// The day, not the minute: the away count runs in days, and an open that
+// changes the minute alone must not make the snapshot look changed.
+String? _dayOf(DateTime? at) =>
+    at == null ? null : DateTime(at.year, at.month, at.day).toIso8601String();
 
 // Her training reminders: whether R10 has offered them, and the days and time
 // she chose. When to remind her, never a record of what she did.
 Map<String, Object?> _captureReminders() => <String, Object?>{
   'offered': ReminderState.instance.offered,
   'schedule': ReminderState.instance.schedule?.toJson(),
+  'permission': ReminderState.instance.permissionGranted,
+  'logNudge': ReminderState.instance.prefs.logNudge,
+  'checkIns': ReminderState.instance.prefs.checkIns,
+  'restAlert': ReminderState.instance.prefs.restAlert,
+  'tipsOn': ReminderState.instance.prefs.tips,
+  'nudgesOn': ReminderState.instance.prefs.nudges,
+  'eventsOn': ReminderState.instance.prefs.events,
+  // The event notes on the phone: id, time and which text, nothing about the
+  // event itself. Only written while there are some.
+  if (ReminderState.instance.eventPlan.isNotEmpty)
+    'eventPlan': [
+      for (final note in ReminderState.instance.eventPlan)
+        <String, Object?>{
+          'id': note.id,
+          'at': note.at.toIso8601String(),
+          'variant': note.variant,
+        },
+    ],
+  'lastActiveAt': _dayOf(ReminderState.instance.lastActiveAt),
+  'lastSessionAt': _dayOf(ReminderState.instance.lastSessionAt),
+  // The getting started tips. To the minute, unlike the two above: a tip's
+  // time is what tells the next open whether it was shown. It changes only
+  // in her first fortnight, and only when she opens the app.
+  'tips': ReminderState.instance.tips.toJson(),
+  'tipMarks': (ReminderState.instance.tipMarks.toList()..sort()),
+  'tipsOfferDue': ReminderState.instance.tipsOfferDue,
+  'tipsOffered': ReminderState.instance.tipsOffered,
 };
 
 void Function()? _readReminders(Object? raw) {
@@ -1596,11 +1903,171 @@ void Function()? _readReminders(Object? raw) {
   if (section == null) return null;
   final offered = _bool(section['offered']) ?? false;
   final schedule = TrainingReminders.fromJson(section['schedule']);
+  final permission =
+      (_bool(section['permission']) ?? false) || schedule != null;
+  final prefs = NotificationPrefs(
+    logNudge: _bool(section['logNudge']) ?? true,
+    checkIns: _bool(section['checkIns']) ?? true,
+    restAlert: _bool(section['restAlert']) ?? true,
+    tips: _bool(section['tipsOn']) ?? true,
+    nudges: _bool(section['nudgesOn']) ?? true,
+    events: _bool(section['eventsOn']) ?? true,
+  );
+  final eventPlan = _readEventPlan(section['eventPlan']);
+  final active = DateTime.tryParse(_str(section['lastActiveAt']) ?? '');
+  final session = DateTime.tryParse(_str(section['lastSessionAt']) ?? '');
+  final tips = TipSeries.fromJson(section['tips']);
+  final marks = section['tipMarks'];
+  final tipMarks = <String>{
+    if (marks is List)
+      for (final mark in marks)
+        if (mark is String) mark,
+  };
+  final tipsOfferDue = _bool(section['tipsOfferDue']) ?? false;
+  final tipsOffered = _bool(section['tipsOffered']) ?? false;
   return () {
     ReminderState.instance
       ..offered = offered
-      ..schedule = schedule;
+      ..schedule = schedule
+      ..permissionGranted = permission
+      ..prefs = prefs
+      ..eventPlan = eventPlan
+      ..lastActiveAt = active
+      ..lastSessionAt = session
+      ..tips = tips
+      ..tipMarks = tipMarks
+      ..tipsOfferDue = tipsOfferDue
+      ..tipsOffered = tipsOffered;
   };
+}
+
+// The event notes last scheduled. Anything that is not a whole note inside the
+// event id block is dropped, so a damaged entry can never schedule a stray id.
+List<PlannedNotification> _readEventPlan(Object? raw) {
+  if (raw is! List) return const <PlannedNotification>[];
+  final last = kEventFirstId + kEventMaxPlanned * kEventStepsPerEvent;
+  return [
+    for (final entry in raw)
+      if (entry is Map)
+        if (_int(entry['id']) case final id?
+            when id >= kEventFirstId && id < last)
+          if (DateTime.tryParse(_str(entry['at']) ?? '') case final at?)
+            PlannedNotification(
+              id: id,
+              kind: PlanKind.eventReminder,
+              at: at,
+              variant: _int(entry['variant']) ?? 0,
+            ),
+  ];
+}
+
+void Function()? _readFirstGymGuide(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final seen = _bool(section['seen']) ?? false;
+  return () => FirstGymGuideState.instance.seen = seen;
+}
+
+// Her awards (D41): the ids already paid and today's cap. Without these every
+// launch began a fresh ledger, so the daily cap reset with the app and a week
+// could be paid twice.
+Map<String, Object?> _captureAwards() {
+  final rewards = RewardsState.instance;
+  final cap = rewards.capState;
+  return <String, Object?>{
+    'ids': rewards.awardIds.toList(),
+    'cap': <String, Object?>{
+      'day': cap.dayKey,
+      'points': cap.pointsToday,
+      'bests': cap.bestsToday,
+    },
+    // What each capped award paid and what earned each milestone, so a
+    // session or a meal she removes takes back exactly what it was given.
+    if (rewards.grantedPoints.isNotEmpty) 'granted': rewards.grantedPoints,
+    if (rewards.milestoneSources.isNotEmpty)
+      'earnedBy': rewards.milestoneSources,
+  };
+}
+
+void Function()? _readAwards(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final ids = _strings(section['ids']);
+  final cap = _map(section['cap']);
+  final state = cap == null
+      ? null
+      : DailyCapState(
+          dayKey: _str(cap['day']) ?? '',
+          pointsToday: _int(cap['points']) ?? 0,
+          bestsToday: _int(cap['bests']) ?? 0,
+        );
+  final granted = <String, int>{
+    for (final entry in (_map(section['granted']) ?? const {}).entries)
+      entry.key: ?_int(entry.value),
+  };
+  final earnedBy = <String, String>{
+    for (final entry in (_map(section['earnedBy']) ?? const {}).entries)
+      entry.key: ?_str(entry.value),
+  };
+  return () => RewardsState.instance.restore(
+    awardIds: ids,
+    cap: state,
+    granted: granted,
+    earnedBy: earnedBy,
+  );
+}
+
+// Her training streak (D37): her choices and her sessions per day. The length
+// is derived from these, never stored. Null until this phone has either.
+Map<String, Object?>? _captureTrainingStreak() {
+  final state = TrainingStreakState.instance;
+  if (!state.touched) return null;
+  final settings = state.settings();
+  return <String, Object?>{
+    'on': settings.enabled,
+    'since': settings.since,
+    'best': settings.best,
+    'pauses': [
+      for (final pause in settings.pauses)
+        <String, Object?>{'from': pause.start, 'to': pause.end},
+    ],
+    'days': state.sessionsByDay,
+  };
+}
+
+void Function()? _readTrainingStreak(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final since = _str(section['since']);
+  if (since == null || !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(since)) {
+    return null;
+  }
+  // Day ids only: a pause end that is not one would throw when the streak
+  // reads it, on Home.
+  bool isDay(String? value) =>
+      value != null && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value);
+  final pauses = <StreakPause>[
+    for (final row in _list(section['pauses']) ?? const <Object?>[])
+      if (_map(row) case final pause?
+          when isDay(_str(pause['from'])) &&
+              (pause['to'] == null || isDay(_str(pause['to']))))
+        StreakPause(start: _str(pause['from'])!, end: _str(pause['to'])),
+  ];
+  final days = <String, int>{
+    for (final entry
+        in (_map(section['days']) ?? const <String, Object?>{}).entries)
+      if (_int(entry.value) case final count? when count > 0) entry.key: count,
+  };
+  final settings = StreakSettings(
+    enabled: _bool(section['on']) ?? true,
+    since: since,
+    pauses: pauses,
+    best: _int(section['best']) ?? 0,
+  );
+  return () => TrainingStreakState.instance.restore(
+    settings: settings,
+    sessionsByDay: days,
+  );
 }
 
 // Her roles (R1-P17): which apps she holds and which one she was looking at.
@@ -1758,6 +2225,26 @@ num? _num(Object? value) => value is num ? value : null;
 
 int? _int(Object? value) => value is num ? value.toInt() : null;
 
+/// A macro in grams on a logged meal: a whole, non-negative number, or null
+/// when it is absent or not a number. A day can never read back a negative.
+int? _macro(Object? value) =>
+    value is num && value.isFinite && value >= 0 ? value.round() : null;
+
+/// Her name for a food the pack does not hold, bounded the way a typed name
+/// is on E13.
+String? _mealName(Object? value) {
+  if (value is! String) return null;
+  final name = value.trim();
+  if (name.isEmpty) return null;
+  return name.length <= 80 ? name : name.substring(0, 80);
+}
+
+/// The weight she approved on E13, in grams, when it is a sane one.
+num? _weight(Object? value) =>
+    value is num && value.isFinite && value >= 0 && value <= 3000
+    ? value
+    : null;
+
 double? _double(Object? value) => value is num ? value.toDouble() : null;
 
 DateTime? _time(Object? value) {
@@ -1820,3 +2307,307 @@ bool _isDayId(String id) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(id);
 // `community` section is a reader in `_readers`, a writer in `capture`, and
 // `CommunityState.restore` beside the `reset` it already has — no change to the
 // storage layer, the lifecycle or the schema number, beyond bumping it.
+
+// Guest mode: the one action she tried before signing in, kept until she is
+// verified. Null when there is nothing to keep.
+Map<String, Object?>? _captureGuest() {
+  final guest = GuestSession.instance;
+  final action = guest.pending;
+  final at = guest.pendingAt;
+  if (action == null || at == null) return null;
+  return <String, Object?>{
+    'action': action.toJson(),
+    'at': at.toIso8601String(),
+  };
+}
+
+void Function()? _readGuest(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final action = PendingAction.fromJson(section['action']);
+  final at = _time(section['at']);
+  if (action == null || at == null) return null;
+  return () {
+    GuestSession.instance
+      ..pending = action
+      ..pendingAt = at;
+  };
+}
+
+Map<String, Object?>? _captureChosenProgramme() {
+  final family = ChosenProgramme.family;
+  return family == null ? null : <String, Object?>{'family': family};
+}
+
+void Function()? _readChosenProgramme(Object? raw) {
+  final section = _map(raw);
+  final family = section == null ? null : _str(section['family']);
+  if (family == null || family.isEmpty) return null;
+  // A family from before the three splits becomes the split nearest her days,
+  // and her days a week become that split's so every day of it is reached.
+  return () {
+    final intake = AppRouter.intakeRepository;
+    final migrated = migratedProgrammeFamily(family, days: intake.read().days);
+    ChosenProgramme.family = migrated;
+    final days = splitDaysOf(migrated);
+    if (migrated != family && days != null) {
+      ChosenProgramme.alignDays(intake, days);
+    }
+  };
+}
+
+// ------------------------------------------------------------- followUps ---
+
+// What she answered on the follow-ups and how she set them. Phone only: this
+// section is in the snapshot and in no cloud document.
+Map<String, Object?>? _captureFollowUps() {
+  final state = FollowUpState.instance;
+  if (!state.touched) return null;
+  return <String, Object?>{
+    'on': state.enabled,
+    'muted': [for (final kind in state.muted) kind.name],
+    'notBefore': {
+      for (final entry in state.notBefore.entries) entry.key.name: entry.value,
+    },
+    'feels': {
+      for (final entry in state.feels.entries) entry.key: entry.value.name,
+    },
+    'reviews': {
+      for (final entry in state.weekReviews.entries)
+        entry.key: <String, Object?>{
+          'felt': entry.value.felt.name,
+          'fit': entry.value.fit.name,
+          'focus': entry.value.focus.name,
+        },
+    },
+  };
+}
+
+void Function()? _readFollowUps(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  bool isDay(String? value) =>
+      value != null && RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value);
+  final muted = <FollowUpKind>{
+    for (final name in _list(section['muted']) ?? const <Object?>[])
+      ?_pick(FollowUpKind.values, name),
+  };
+  final notBefore = <FollowUpKind, String>{
+    for (final entry
+        in (_map(section['notBefore']) ?? const <String, Object?>{}).entries)
+      if (_pick(FollowUpKind.values, entry.key) case final kind?
+          when isDay(_str(entry.value)))
+        kind: entry.value as String,
+  };
+  final feels = <String, Feel>{};
+  for (final entry
+      in (_map(section['feels']) ?? const <String, Object?>{}).entries) {
+    final feel = _pick(Feel.values, entry.value);
+    if (isDay(entry.key) && feel != null) feels[entry.key] = feel;
+  }
+  final reviews = <String, WeekReviewAnswer>{
+    for (final entry
+        in (_map(section['reviews']) ?? const <String, Object?>{}).entries)
+      if (isDay(entry.key) && _map(entry.value) != null)
+        if (_pick(WeekFelt.values, _map(entry.value)!['felt']) case final felt?)
+          if (_pick(PlanFit.values, _map(entry.value)!['fit']) case final fit?)
+            if (_pick(WeekFocus.values, _map(entry.value)!['focus'])
+                case final focus?)
+              entry.key: WeekReviewAnswer(felt: felt, fit: fit, focus: focus),
+  };
+  final enabled = _bool(section['on']) ?? true;
+  return () => FollowUpState.instance.restore(
+    enabled: enabled,
+    muted: muted,
+    notBefore: notBefore,
+    feels: feels,
+    weekReviews: reviews,
+  );
+}
+
+// ------------------------------------------------------ notificationVoice ---
+
+// Which words each reminder carries, so a line is not repeated and her tone is
+// learned. Phone only: this section is in the snapshot and in no cloud
+// document.
+Map<String, Object?>? _captureNotificationVoice() {
+  final history = VoiceHistory.instance;
+  return history.touched ? history.toJson() : null;
+}
+
+void Function()? _readNotificationVoice(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final sent = <String, String>{
+    for (final entry
+        in (_map(section['sent']) ?? const <String, Object?>{}).entries)
+      entry.key: ?_str(entry.value),
+  };
+  final tones = <String, ToneStat>{};
+  for (final tone in const [kToneCalm, kTonePlayful]) {
+    final stat = _map((_map(section['toneStats']) ?? const {})[tone]);
+    if (stat == null) continue;
+    final sentCount = _int(stat['sent']) ?? 0;
+    final taps = _int(stat['taps']) ?? 0;
+    if (sentCount < 0 || taps < 0) continue;
+    tones[tone] = ToneStat(sent: sentCount, taps: taps);
+  }
+  final scheduled = <int, ScheduledLine>{};
+  for (final entry
+      in (_map(section['scheduled']) ?? const <String, Object?>{}).entries) {
+    final id = int.tryParse(entry.key);
+    final line = _map(entry.value);
+    final lineId = line == null ? null : _str(line['lineId']);
+    final tone = line == null ? null : _str(line['tone']);
+    final at = line == null ? null : _time(line['at']);
+    if (id == null || lineId == null || at == null) continue;
+    if (tone != kToneCalm && tone != kTonePlayful) continue;
+    scheduled[id] = ScheduledLine(lineId: lineId, tone: tone!, at: at);
+  }
+  return () => VoiceHistory.instance.restore(
+    sent: sent,
+    toneStats: tones,
+    scheduled: scheduled,
+  );
+}
+
+// --------------------------------------------------------- customWorkouts ---
+
+Map<String, Object?>? _captureCustomWorkouts() {
+  final state = CustomWorkoutState.instance;
+  if (state.workouts.isEmpty && state.deletedIds.isEmpty) return null;
+  return <String, Object?>{
+    'saved': [for (final workout in state.workouts) workout.toJson()],
+    'deleted': state.deletedIds,
+  };
+}
+
+void Function()? _readCustomWorkouts(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final saved = <CustomWorkout>[
+    for (final entry in _list(section['saved']) ?? const <Object?>[])
+      ?CustomWorkout.tryParse(entry),
+  ];
+  final deleted = <String>[
+    for (final id in _strings(section['deleted']))
+      if (isCustomWorkoutId(id)) id,
+  ];
+  return () =>
+      CustomWorkoutState.instance.restoreSaved(saved: saved, deleted: deleted);
+}
+
+// ----------------------------------------------------------------- myPlan ---
+
+// Her own plan. Phone only: this section is in the snapshot and in no cloud
+// document. A snapshot from before it existed has no such section and reads as
+// no plan.
+Map<String, Object?>? _captureMyPlan() => MyPlanState.instance.plan?.toJson();
+
+void Function()? _readMyPlan(Object? raw) {
+  final plan = MyPlan.tryParse(raw);
+  if (plan == null) return null;
+  return () => MyPlanState.instance.restore(plan);
+}
+
+// -------------------------------------------------------------- restTimer ---
+
+// The rest she set for each move on R09, in seconds. Phone only: this section
+// is in the snapshot and in no cloud document. Written only once she has set
+// one, so an old snapshot has none and reads as none.
+Map<String, Object?>? _captureRestTimer() {
+  final saved = RestTimerPrefs.instance.toJson();
+  if (saved.isEmpty) return null;
+  return <String, Object?>{'moves': saved};
+}
+
+void Function()? _readRestTimer(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final moves = _map(section['moves']);
+  if (moves == null) return null;
+  final saved = <String, int>{
+    for (final entry in moves.entries)
+      if (entry.key.isNotEmpty)
+        if (_int(entry.value) case final seconds? when seconds > 0)
+          entry.key: seconds,
+  };
+  if (saved.isEmpty) return null;
+  return () => RestTimerPrefs.instance.restore(saved);
+}
+
+// ------------------------------------------------------------- moveNotes ---
+
+// The note she keeps for each move. Phone only: this section is in the
+// snapshot and in no cloud document. Written only once she has a note.
+Map<String, Object?>? _captureMoveNotes() {
+  final saved = MoveNotes.instance.toJson();
+  if (saved.isEmpty) return null;
+  return <String, Object?>{'moves': saved};
+}
+
+void Function()? _readMoveNotes(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final moves = _map(section['moves']);
+  if (moves == null) return null;
+  final saved = <String, String>{
+    for (final entry in moves.entries)
+      if (entry.key.isNotEmpty && entry.value is String && entry.value != '')
+        entry.key: entry.value as String,
+  };
+  if (saved.isEmpty) return null;
+  return () => MoveNotes.instance.restore(saved);
+}
+
+// ------------------------------------------------- coachApplicationDraft ---
+
+// The coach application she is writing. Phone only: this section is in the
+// snapshot and in no cloud document. Written only once she has started.
+Map<String, Object?>? _captureCoachApplicationDraft() =>
+    CoachApplicationDraft.instance.touched
+    ? CoachApplicationDraft.instance.toJson()
+    : null;
+
+void Function()? _readCoachApplicationDraft(Object? raw) {
+  final section = _map(raw);
+  if (section == null || _map(section['application']) == null) return null;
+  final saved = Map<String, Object?>.of(section);
+  return () => CoachApplicationDraft.instance.restore(saved);
+}
+
+// ------------------------------------------------------ coachClientNotes ---
+
+// The private note a coach keeps about each client. Phone only: this section is
+// in the snapshot and in no cloud document. Written only once she has a note.
+Map<String, Object?>? _captureCoachClientNotes() {
+  final saved = CoachClientNotes.instance.toJson();
+  if (saved.isEmpty) return null;
+  return <String, Object?>{'clients': saved};
+}
+
+void Function()? _readCoachClientNotes(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final clients = _map(section['clients']);
+  if (clients == null) return null;
+  final saved = <String, String>{
+    for (final entry in clients.entries)
+      if (entry.key.isNotEmpty && entry.value is String && entry.value != '')
+        entry.key: entry.value as String,
+  };
+  if (saved.isEmpty) return null;
+  return () => CoachClientNotes.instance.restore(saved);
+}
+
+// ----------------------------------------------------------------- barKg ---
+
+// The bar she loads, chosen once on R07. Phone only.
+Object? _captureBarKg() =>
+    BarPreference.instance.touched ? BarPreference.instance.kg : null;
+
+void Function()? _readBarKg(Object? raw) {
+  if (raw is! num) return null;
+  final kg = raw.toDouble();
+  return () => BarPreference.instance.restore(kg);
+}

@@ -144,8 +144,10 @@ void main() {
         ),
         isEmpty,
       );
-      expect(find.textContaining(RegExp('soon', caseSensitive: false)),
-          findsNothing);
+      expect(
+        find.textContaining(RegExp('soon', caseSensitive: false)),
+        findsNothing,
+      );
     });
   });
 

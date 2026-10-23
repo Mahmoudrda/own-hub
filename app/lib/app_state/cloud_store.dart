@@ -572,7 +572,9 @@ class CloudStore {
       final digests = parsed['accepted'];
       if (digests is Map<String, Object?>) {
         for (final entry in digests.entries) {
-          if (entry.value is String) _accepted[entry.key] = entry.value as String;
+          if (entry.value is String) {
+            _accepted[entry.key] = entry.value as String;
+          }
         }
       }
     } catch (error) {

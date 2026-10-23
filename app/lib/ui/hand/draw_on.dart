@@ -4,9 +4,14 @@
 /// simply there and a press changes colour without moving.
 library;
 
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
+
+import '../../app_state/haptics.dart';
 import '../../theme/hand_tokens.dart';
+import 'motion.dart';
 
 /// Whether motion should be skipped. Reads the platform setting.
 ///
@@ -117,8 +122,10 @@ class HandPressable extends StatefulWidget {
     this.onTap,
     this.onLongPress,
     this.scale = 0.975,
+    this.spring = false,
     this.borderRadius,
     this.focusColor,
+    this.haptic = false,
   });
 
   final Widget Function(BuildContext context, double pressed) builder;
@@ -128,8 +135,17 @@ class HandPressable extends StatefulWidget {
   /// How small it gets at the bottom of the press.
   final double scale;
 
+  /// Press and release on [HandTiming.spring] rather than a timed curve. The
+  /// release overshoots a little and settles; hit area and semantics are the
+  /// same either way.
+  final bool spring;
+
   final BorderRadius? borderRadius;
   final Color? focusColor;
+
+  /// A light tap under the finger when it lands, for a primary action. The
+  /// platform's own haptics setting still decides whether it is felt.
+  final bool haptic;
 
   @override
   State<HandPressable> createState() => _HandPressableState();
@@ -137,16 +153,33 @@ class HandPressable extends StatefulWidget {
 
 class _HandPressableState extends State<HandPressable>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 90),
-    reverseDuration: const Duration(milliseconds: 180),
-  );
+  // Unbounded so the spring may overshoot its resting value.
+  late final AnimationController _c = widget.spring
+      ? AnimationController.unbounded(vsync: this)
+      : AnimationController(
+          vsync: this,
+          duration: HandTiming.pressIn,
+          reverseDuration: HandTiming.pressOut,
+        );
+
+  void _tap() {
+    if (widget.haptic) unawaited(AppHaptics.play(HapticMoment.actionDone));
+    widget.onTap?.call();
+  }
 
   void _highlight(bool down) {
     if (widget.onTap == null && widget.onLongPress == null) return;
     if (handMotionOff(context)) {
       _c.value = down ? 1 : 0;
+    } else if (widget.spring) {
+      _c.animateWith(
+        SpringSimulation(
+          HandTiming.spring,
+          _c.value,
+          down ? 1 : 0,
+          _c.velocity,
+        ),
+      );
     } else if (down) {
       _c.forward();
     } else {
@@ -166,7 +199,7 @@ class _HandPressableState extends State<HandPressable>
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: widget.onTap,
+        onTap: widget.onTap == null ? null : _tap,
         onLongPress: widget.onLongPress,
         onHighlightChanged: _highlight,
         splashFactory: NoSplash.splashFactory,
@@ -181,13 +214,15 @@ class _HandPressableState extends State<HandPressable>
         child: AnimatedBuilder(
           animation: _c,
           builder: (context, _) {
-            final p = Curves.easeOut.transform(_c.value);
+            final p = widget.spring
+                ? _c.value
+                : Curves.easeOut.transform(_c.value);
             // Always wrapped, pressed or not: adding the transform only
             // mid-press would change the tree shape and rebuild everything
             // inside from scratch, state and all.
             return Transform.scale(
               scale: still ? 1 : 1 - (1 - widget.scale) * p,
-              child: widget.builder(context, p),
+              child: widget.builder(context, p.clamp(0.0, 1.0)),
             );
           },
         ),

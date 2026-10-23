@@ -17,6 +17,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/guest_session.dart';
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
@@ -30,14 +32,17 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../ui/meal_image.dart';
 import '../domain/allergy_guard.dart';
 import '../domain/food_library.dart';
+import '../domain/meal_images.dart';
 import '../domain/meal_log_service.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'meal_log_session.dart';
+import 'meal_labels.dart';
 
 class RecipeView extends StatefulWidget {
   const RecipeView({
@@ -136,6 +141,7 @@ class _RecipeViewState extends State<RecipeView> {
   /// second had already expired. Without that handler nothing downstream would
   /// offer the five seconds, so the snackbar stands in.
   void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
     if (widget.onLogged != null) return;
     showUndoSnackBar(
       context,
@@ -146,6 +152,19 @@ class _RecipeViewState extends State<RecipeView> {
   }
 
   void _log(Food food, FoodSize size) {
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal([
+        ParsedItem(
+          food: food,
+          size: size,
+          servings: 1,
+          sourceText: food.names.first,
+        ),
+      ], origin: MealOrigin.recipe),
+    )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final service = MealLogService(
       repository: _repo,
@@ -181,7 +200,11 @@ class _RecipeViewState extends State<RecipeView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -190,7 +213,11 @@ class _RecipeViewState extends State<RecipeView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -210,7 +237,8 @@ class _RecipeViewState extends State<RecipeView> {
     final food = library.byId(widget.foodId);
 
     final sizes = food?.sizes ?? const <FoodSize>[];
-    final selected = _sizeIndex ?? (sizes.isEmpty ? 0 : sizes.length ~/ 2);
+    final selected =
+        _sizeIndex ?? (food == null ? 0 : sizes.indexOf(food.defaultSize));
 
     return AppScaffold(
       appBar: AppTopBar(
@@ -225,12 +253,15 @@ class _RecipeViewState extends State<RecipeView> {
                 : AppColors.onSurfaceVariant,
             icon: Icon(widget.saved ? Icons.bookmark : Icons.bookmark_border),
           ),
-          IconButton(
-            onPressed: widget.onShare,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.share),
-          ),
+          // Drawn only with somewhere to share to. A button that answers "not
+          // connected" is a dead end.
+          if (widget.onShare != null)
+            IconButton(
+              onPressed: widget.onShare,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              icon: const Icon(Icons.share),
+            ),
         ],
       ),
       footer: [
@@ -241,20 +272,27 @@ class _RecipeViewState extends State<RecipeView> {
               ? null
               : () => _log(food, sizes[selected]),
         ),
-        AppButton(
-          l10n.seeTheSteps,
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          fontSize: 15,
-          onPressed: widget.onSeeSteps,
-        ),
+        // Only when there are steps to see.
+        if (widget.onSeeSteps != null)
+          AppButton(
+            l10n.seeTheSteps,
+            variant: AppButtonVariant.outlined,
+            height: 48,
+            fontSize: 15,
+            onPressed: widget.onSeeSteps,
+          ),
       ],
       children: [
-        const AppMedia(
-          height: 160,
-          kind: AppMediaKind.photo,
-          showPlayButton: false,
-        ),
+        if (MealImages.assetFor(widget.foodId) case final painted?)
+          Center(
+            child: MealImage(
+              asset: painted,
+              size: 180,
+              fallback: const _HeroPlaceholder(),
+            ),
+          )
+        else
+          const _HeroPlaceholder(),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -345,4 +383,15 @@ class _RecipeViewState extends State<RecipeView> {
       ],
     );
   }
+}
+
+class _HeroPlaceholder extends StatelessWidget {
+  const _HeroPlaceholder();
+
+  @override
+  Widget build(BuildContext context) => const AppMedia(
+    height: 160,
+    kind: AppMediaKind.photo,
+    showPlayButton: false,
+  );
 }

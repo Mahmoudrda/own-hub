@@ -45,7 +45,6 @@ abstract final class ScreenArt {
   /// Screen id -> one or two illustrations, drawn at the top of the screen.
   static const Map<String, List<String>> forScreen = {
     'A01': [AppArt.headphones],
-    'A02': [AppArt.strongArms],
     'A03': [AppArt.meditation],
     'A04': [AppArt.meditation],
     'B01': [AppArt.strongArms, AppArt.lungeWarrior],
@@ -98,6 +97,10 @@ abstract final class ScreenArt {
     // deliberately not a dish: a picture of food beside a letter about why we
     // try to eat well would be the screen changing the subject.
     'E11': [AppArt.fruitBasket],
+    // Her plate, photographed and then checked: one small drawing each, so
+    // the camera's window keeps the page.
+    'E12': [AppArt.bruschetta],
+    'E13': [AppArt.bowlSalad],
     'G01': [AppArt.trainers],
     'G02': [AppArt.meditation],
     'G03': [AppArt.yogaMat],
@@ -161,20 +164,22 @@ abstract final class ScreenArt {
     'M14': [AppArt.running],
     'M15': [AppArt.yogaMat],
     'M16': [AppArt.running],
-    'O01': [AppArt.strongArms, AppArt.running],
-    'O02': [AppArt.gymBag, AppArt.dumbbells],
-    'O03': [AppArt.trainers, AppArt.yogaMat],
+    'O01': [AppArt.strongArms],
+    'O02': [AppArt.gymBag],
+    'O03': [AppArt.trainers],
     'O04': [AppArt.meditation],
     'O05': [AppArt.squatWeights, AppArt.running],
-    // What she has at home, and how long she has.
-    'O06': [AppArt.dumbbells, AppArt.yogaMat],
-    'O07': [AppArt.trainers],
+    // What she has at home.
+    'O06': [AppArt.dumbbells],
     'P01': [AppArt.running],
     'P02': [AppArt.strongArms],
     'P03': [AppArt.overheadRaise],
     'P04': [AppArt.meditation],
     // Her card: what she did, to celebrate. The weight on it is hers to add.
     'P05': [AppArt.dance],
+    // Her muscles: the figure is the page's picture, so one small drawing
+    // sits beside the note on how sets are counted.
+    'P06': [AppArt.strongArms],
     'R01': [AppArt.dumbbells, AppArt.running],
     'R02': [AppArt.lungeWarrior, AppArt.squatWeights],
     'R03': [AppArt.overheadRaise, AppArt.yogaMat],
@@ -187,6 +192,8 @@ abstract final class ScreenArt {
     'R11': [AppArt.yogaMat, AppArt.gymBag],
     'R12': [AppArt.trainers],
     'R13': [AppArt.strongArms],
+    'R14': [AppArt.stretchSeated, AppArt.dumbbells],
+    'R15': [AppArt.squatWeights],
     'T01': [AppArt.breakfast, AppArt.running],
     'T02': [AppArt.strongArms],
     'T03': [AppArt.running],
@@ -265,7 +272,22 @@ abstract final class ScreenArt {
   /// page — beside the figure or the section they illustrate — instead of in a
   /// strip across the top. They still draw exactly what [forScreen] gives them,
   /// through [inlineFor].
-  static const Set<String> placesOwnArt = {'T01', 'R01', 'E01', 'K07'};
+  ///
+  /// The setup questions `O01` to `O04` and `O06` set one small drawing beside
+  /// their title, so the answers fit the screen without scrolling. `P06`'s
+  /// figure is its picture, so its drawing sits at the foot of the page.
+  static const Set<String> placesOwnArt = {
+    'T01',
+    'R01',
+    'E01',
+    'K07',
+    'O01',
+    'O02',
+    'O03',
+    'O04',
+    'O06',
+    'P06',
+  };
 
   /// The illustrations to draw at the top of [screenId], or none.
   static List<String> headerFor(String? screenId) {

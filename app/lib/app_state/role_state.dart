@@ -97,6 +97,21 @@ UserRoles launchRoles(FeatureFlags flags) {
       : UserRoles.both;
 }
 
+/// The roles to show once the signed-in account changes from [before] to
+/// [after], or null when nothing changes. Signing out, or another woman
+/// signing in, drops the last account's side at once: a coach's tabs must not
+/// outlive her session on the same phone.
+UserRoles? rolesAfterAccountChange(
+  String? before,
+  String? after,
+  FeatureFlags flags,
+) {
+  if (before == after) return null;
+  if (after != null && before == null) return null;
+  RoleState.instance.reset();
+  return launchRoles(flags);
+}
+
 /// Where her role choice is sent, and read back from on a new phone.
 abstract class RoleRecordStore {
   Future<void> record(SignupRole role);

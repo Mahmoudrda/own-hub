@@ -54,9 +54,8 @@ Widget _host(
   onUnknownRoute: AppRouter.onUnknownRoute,
   home: Builder(
     builder: (context) => MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(textScale)),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: child,
     ),
   ),
@@ -198,9 +197,7 @@ void main() {
           FindACoachView(
             model: FindACoachViewModel(
               snapshot: DirectorySnapshot(
-                rows: [
-                  _row('c1', 'Hala', reviewCount: 4, ratingAverage: 2.5),
-                ],
+                rows: [_row('c1', 'Hala', reviewCount: 4, ratingAverage: 2.5)],
                 source: DirectorySource.pack,
               ),
             ),
@@ -349,7 +346,11 @@ void main() {
             const [
               CoverBlock(headline: 'Back to lifting, after birth'),
               MethodBlock(
-                steps: ['We talk first', 'The floor weeks', 'Back under a weight'],
+                steps: [
+                  'We talk first',
+                  'The floor weeks',
+                  'Back under a weight',
+                ],
               ),
               OffersBlock(offerIds: ['monthly']),
             ],
@@ -442,10 +443,7 @@ void main() {
       // The message button is not offered, and the reason is now stated. It
       // was silent while no dictionary line said "she has closed her books".
       expect(find.text('Message before you decide'), findsNothing);
-      expect(
-        find.text('She is not taking clients right now'),
-        findsOneWidget,
-      );
+      expect(find.text('She is not taking clients right now'), findsOneWidget);
       // Not about this woman: browsing and her packages are still open.
       expect(find.text('Browse. Message when you are verified.'), findsNothing);
       expect(find.text('See her packages'), findsOneWidget);
@@ -454,10 +452,7 @@ void main() {
     testWidgets('renders in Arabic', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
-        _host(
-          CoachProfileView(model: model()),
-          locale: const Locale('ar'),
-        ),
+        _host(CoachProfileView(model: model()), locale: const Locale('ar')),
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
@@ -484,15 +479,17 @@ void main() {
       payment: payment,
     );
 
-    testWidgets('a monthly price renders from her figure and a dictionary word',
-        (tester) async {
-      _phone(tester);
-      await tester.pumpWidget(_host(PackagesView(model: model())));
-      await tester.pumpAndSettle();
-      expect(find.text('1,800 EGP a month'), findsOneWidget);
-      // The mockup's own string is never used.
-      expect(find.text('1,800 EGP'), findsNothing);
-    });
+    testWidgets(
+      'a monthly price renders from her figure and a dictionary word',
+      (tester) async {
+        _phone(tester);
+        await tester.pumpWidget(_host(PackagesView(model: model())));
+        await tester.pumpAndSettle();
+        expect(find.text('1,800 EGP a month'), findsOneWidget);
+        // The mockup's own string is never used.
+        expect(find.text('1,800 EGP'), findsNothing);
+      },
+    );
 
     testWidgets('a one-off package states its price', (tester) async {
       // This asserted the opposite until the bare-currency word was minted,
@@ -556,10 +553,7 @@ void main() {
       // Silent until this sentence existed: no dictionary line said her books
       // were closed, and the nearest ones were about this woman rather than
       // about the coach's capacity.
-      expect(
-        find.text('She is not taking clients right now'),
-        findsOneWidget,
-      );
+      expect(find.text('She is not taking clients right now'), findsOneWidget);
       expect(find.text('Try again'), findsNothing);
       expect(find.text('Pay'), findsNothing);
     });
@@ -578,7 +572,9 @@ void main() {
 
       Future<void> pump(PaymentRecord record) async {
         await tester.pumpWidget(
-          _host(PackagesView(model: model(payment: PaymentView.record(record)))),
+          _host(
+            PackagesView(model: model(payment: PaymentView.record(record))),
+          ),
         );
         await tester.pumpAndSettle();
       }
@@ -643,11 +639,11 @@ void main() {
         findsOneWidget,
       );
       expect(
-        RegExp(r'\d').hasMatch(
-          'Your money is on its way back. It can take a few days.',
-        ),
+        RegExp(r'\d')
+            .hasMatch('Your money is on its way back. It can take a few days.'),
         isFalse,
-        reason: 'the mockup said "wallets 1-3 days, cards 5-14"; no such '
+        reason:
+            'the mockup said "wallets 1-3 days, cards 5-14"; no such '
             'window was measured, and this sentence states none',
       );
     });
@@ -670,12 +666,7 @@ void main() {
       _phone(tester);
       var paid = 0;
       await tester.pumpWidget(
-        _host(
-          PackagesView(
-            model: model(),
-            onPay: (offer, rail) => paid++,
-          ),
-        ),
+        _host(PackagesView(model: model(), onPay: (offer, rail) => paid++)),
       );
       await tester.pumpAndSettle();
 
@@ -723,9 +714,7 @@ void main() {
 
       await tester.pumpWidget(
         _host(
-          PackagesView(
-            model: model(payment: PaymentView.record(awaiting)),
-          ),
+          PackagesView(model: model(payment: PaymentView.record(awaiting))),
           locale: const Locale('ar'),
         ),
       );
@@ -838,9 +827,8 @@ void main() {
   });
 
   group('H05 — my coach', () {
-    MyCoachViewModel model({
-      MyCoachSnapshot? snapshot,
-    }) => MyCoachViewModel(snapshot: snapshot);
+    MyCoachViewModel model({MyCoachSnapshot? snapshot}) =>
+        MyCoachViewModel(snapshot: snapshot);
 
     testWidgets('no coach renders the invitation, not an error', (
       tester,
@@ -852,7 +840,9 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(
-        find.text('Every coach here is a verified woman with checked certificates.'),
+        find.text(
+          'Every coach here is a verified woman with checked certificates.',
+        ),
         findsOneWidget,
       );
       await tester.tap(find.text('Coaches').last);
@@ -942,8 +932,10 @@ void main() {
       _phone(tester);
       await tester.pumpWidget(_host(CoachingEndedView(model: model())));
       await tester.pumpAndSettle();
-      expect(find.text('Everything you did is still here to read.'),
-          findsOneWidget);
+      expect(
+        find.text('Everything you did is still here to read.'),
+        findsOneWidget,
+      );
       expect(find.text('Readable · new messages are closed'), findsOneWidget);
       expect(find.text('Readable · no new assignments'), findsOneWidget);
     });
@@ -955,10 +947,7 @@ void main() {
       var again = 0;
       await tester.pumpWidget(
         _host(
-          CoachingEndedView(
-            model: model(),
-            onWorkTogetherAgain: () => again++,
-          ),
+          CoachingEndedView(model: model(), onWorkTogetherAgain: () => again++),
         ),
       );
       await tester.pumpAndSettle();

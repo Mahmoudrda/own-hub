@@ -49,6 +49,27 @@ String setFigure(AppL10n l10n, {num? weightKg, int? reps, int? holdSeconds}) {
   return '';
 }
 
+/// What was measured, on its own: "40 kg × 10", "40 kg" (no count), "12 reps"
+/// or "45 s". A weight leads when there is one, a hold stands alone, and empty
+/// when nothing is given. History, the bests page and the set editor all read
+/// a set this way.
+String measuredLabel(
+  AppL10n l10n, {
+  num? weightKg,
+  int? reps,
+  int? holdSeconds,
+}) {
+  if (weightKg != null) {
+    return reps == null
+        ? l10n.weightKg(weightLabel(weightKg))
+        : l10n.weightKgReps(weightLabel(weightKg), countLabel(reps));
+  }
+  if (reps == null && holdSeconds != null) {
+    return l10n.secondsS(countLabel(holdSeconds));
+  }
+  return reps == null ? '' : l10n.repsReps(countLabel(reps));
+}
+
 /// The button that logs the set: "Done · 12 kg × 10", "Done — 12 reps",
 /// "Done — 30 seconds".
 String setDoneLabel(

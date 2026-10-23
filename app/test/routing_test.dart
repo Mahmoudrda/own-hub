@@ -43,7 +43,14 @@ void main() {
     // home, and `O07`, minutes a session. 187 -> 192 when the coach's setup
     // did the same: `K08` her name and city, `K10` how she coaches, `K11` her
     // clients' results, `K12` what clients say, `K13` the three rules.
-    expect(appRoutes.length, 192);
+    // 192 -> 194 with the exercise library (D42): `R14` the moves by the part
+    // of the body they work, `R15` one move's clip.
+    //
+    // 194 -> 193 on 17 October 2026: `O07`, minutes a session, was folded
+    // into `O03`, days and minutes on one screen. 193 -> 194 the same day
+    // with `P06`, her muscles on a body she can turn. 194 -> 196 with `E12`,
+    // a photo of her plate, and `E13`, checking it before it is logged.
+    expect(appRoutes.length, 196);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -61,8 +68,12 @@ void main() {
     // 171 -> 176: Z15 to Z18 and T09 are all destinations.
     //
     // 176 -> 177: P05 is a destination. 177 -> 184: O06, O07, K08, K10,
-    // K11, K12 and K13 are all destinations.
-    expect(appDestinations.length, 184);
+    // K11, K12 and K13 are all destinations. 184 -> 186: R14 and R15 are.
+    //
+    // 186 -> 185 on 17 October 2026: `O07` was folded into `O03`.
+    // 185 -> 186: P06 is a destination, opened from P01 and R01.
+    // 186 -> 188: E12 and E13 are destinations, opened from E01, E02 and E04.
+    expect(appDestinations.length, 188);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

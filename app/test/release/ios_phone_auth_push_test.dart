@@ -9,17 +9,15 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 String _plistValue(String plist, String key) {
-  final match = RegExp(
-    '<key>$key</key>\\s*<string>([^<]*)</string>',
-  ).firstMatch(plist);
+  final match = RegExp('<key>$key</key>\\s*<string>([^<]*)</string>')
+      .firstMatch(plist);
   return match?.group(1) ?? '';
 }
 
 void main() {
   final info = File('ios/Runner/Info.plist').readAsStringSync();
-  final entitlements = File(
-    'ios/Runner/Runner.entitlements',
-  ).readAsStringSync();
+  final entitlements = File('ios/Runner/Runner.entitlements')
+      .readAsStringSync();
 
   test('the app can receive a silent push', () {
     expect(_plistValue(entitlements, 'aps-environment'), isNotEmpty);
@@ -33,9 +31,8 @@ void main() {
   });
 
   test('the reCAPTCHA fallback still has its URL scheme', () {
-    final google = File(
-      'ios/Runner/GoogleService-Info.plist',
-    ).readAsStringSync();
+    final google = File('ios/Runner/GoogleService-Info.plist')
+        .readAsStringSync();
     final reversed = _plistValue(google, 'REVERSED_CLIENT_ID');
     expect(reversed, isNotEmpty);
     expect(info, contains('<string>$reversed</string>'));

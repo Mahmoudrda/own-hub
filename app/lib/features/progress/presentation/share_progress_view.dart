@@ -175,7 +175,7 @@ class _ShareProgressViewState extends State<ShareProgressView> {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.yourProgressCard, onBack: widget.onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'P01',
+        activeScreenId: 'P05',
         onSelect: (id) {
           final onTab = widget.onSelectTab;
           if (onTab != null) {
@@ -211,11 +211,15 @@ class _ShareProgressViewState extends State<ShareProgressView> {
             l10n.everythingYouHaveDoneOnOneCard,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
-          RepaintBoundary(
-            key: _card,
-            child: _ProgressCard(
-              story: story,
-              weightChange: _showWeight ? change : null,
+          // The lean is outside the boundary, so the shared picture is the
+          // card standing straight.
+          FingerTilt(
+            child: RepaintBoundary(
+              key: _card,
+              child: _ProgressCard(
+                story: story,
+                weightChange: _showWeight ? change : null,
+              ),
             ),
           ),
           if (change != null)

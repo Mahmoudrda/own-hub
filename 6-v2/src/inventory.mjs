@@ -61,7 +61,6 @@ export const screens = [
   { id: 'O04', flow: 'onboarding', title: 'Life stage' },
   { id: 'O05', flow: 'onboarding', title: 'Your starting program' },
   { id: 'O06', flow: 'onboarding', title: 'What you have at home' },
-  { id: 'O07', flow: 'onboarding', title: 'Minutes a session' },
   // Today and logging
   { id: 'T01', flow: 'today', title: 'Today' },
   { id: 'T02', flow: 'today', title: 'I already did it' },
@@ -88,6 +87,8 @@ export const screens = [
   { id: 'R11', flow: 'train', title: 'Workout library' },
   { id: 'R12', flow: 'train', title: 'Logged from memory' },
   { id: 'R13', flow: 'train', title: 'Move logged' },
+  { id: 'R14', flow: 'train', title: 'Exercise library', noMockup: true },
+  { id: 'R15', flow: 'train', title: 'Exercise demo', noMockup: true },
   // Eat
   { id: 'E01', flow: 'eat', title: 'Eat' },
   { id: 'E02', flow: 'eat', title: 'Type it' },
@@ -109,12 +110,19 @@ export const screens = [
   // Rahma's closing letter, page 26 of her book. Her words, her sign-off, and
   // nothing else on the screen.
   { id: 'E11', flow: 'eat', title: 'A message from Rahma', noMockup: true },
+  // A photo of her plate, read by the server into foods and grams she checks
+  // before anything is logged. Designed in Flutter, after the mockup.
+  { id: 'E12', flow: 'eat', title: 'Snap your meal', noMockup: true },
+  { id: 'E13', flow: 'eat', title: 'Check your meal', noMockup: true },
   // Progress
   { id: 'P01', flow: 'progress', title: 'Your progress' },
   { id: 'P02', flow: 'progress', title: 'Milestones' },
   { id: 'P03', flow: 'progress', title: 'Personal bests' },
   { id: 'P04', flow: 'progress', title: 'Body, privately' },
   { id: 'P05', flow: 'progress', title: 'Your progress card', noMockup: true },
+  // Her body, turned and tapped, coloured by the sets she logged. Designed
+  // in Flutter, after the mockup.
+  { id: 'P06', flow: 'progress', title: 'Your muscles', noMockup: true },
   // My cycle
   { id: 'Y01', flow: 'cycle', title: 'Set up My cycle' },
   { id: 'Y02', flow: 'cycle', title: 'Dates and preferences' },

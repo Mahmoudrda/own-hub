@@ -20,6 +20,7 @@ class AppLogButton extends StatelessWidget {
     super.key,
     this.onPressed,
     this.primary = false,
+    this.haptic = false,
   });
 
   final String label;
@@ -28,15 +29,21 @@ class AppLogButton extends StatelessWidget {
   /// The likeliest answer on the screen. One per list, so the eye lands on it.
   final bool primary;
 
+  /// Off by default: screens play their own tap when an action finishes.
+  final bool haptic;
+
   @override
   Widget build(BuildContext context) {
-    final foreground = primary ? AppColors.onPrimary : AppColors.primaryDim;
+    final foreground = primary
+        ? AppColors.onActionPrimary
+        : AppColors.primaryDim;
 
     // The likeliest answer is printed and set off-register like the primary
     // button; the others are blush slips, pressed into the page when tapped.
     return HandSurface(
       seed: handSeed(['log', label]),
-      fill: primary ? AppColors.primary : AppColors.primarySoft,
+      fill: primary ? AppColors.actionPrimary : AppColors.primarySoft,
+      pressedFill: primary ? AppColors.actionPressed : null,
       offsetOutline: primary ? AppColors.primaryDim : null,
       frame: primary ? null : AppColors.primary.withValues(alpha: 0.35),
       frameWidth: 1.1,
@@ -47,6 +54,7 @@ class AppLogButton extends StatelessWidget {
       pressable: true,
       semanticsButton: true,
       pressScale: 0.96,
+      haptic: haptic,
       child: Container(
         constraints: const BoxConstraints(minHeight: 44),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),

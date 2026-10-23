@@ -21,11 +21,15 @@ const String kRequestReviewCallable = 'request_review';
 /// video service exists: a woman from Own Hub reviews her case and contacts
 /// her by phone within 72 hours (`config.REVIEW_SLA_HOURS`).
 ///
+/// Version 3 (14 October 2026) is the same wording in Egyptian Arabic instead
+/// of formal Arabic. What she is told about the call and the 72 hours did not
+/// change.
+///
 /// **Bump this whenever that wording changes in either language, together with
 /// the server's `config.REVIEW_CONSENT_VERSION`.** The shared fixture
 /// `contracts/identity_contract.json` pins both; the Dart and Python contract
 /// tests fail if either drifts.
-const int kReviewConsentVersion = 2;
+const int kReviewConsentVersion = 3;
 
 /// The consent document's id under `users/{uid}/consents`.
 const String kReviewConsentDocId = 'review-v$kReviewConsentVersion';
@@ -62,7 +66,13 @@ ReviewRequestState? reviewRequestStateFrom(Object? raw) => switch (raw) {
 abstract class ReviewRequester {
   /// Throws [VerificationCallFailure] (or anything else) when the call did not
   /// complete. Never returns a state the server did not send.
-  Future<ReviewRequestState> request(ReviewPath path);
+  ///
+  /// [knownReviewerId] is a listed reviewer she says she knows. The server
+  /// decides what that is worth; the client only passes it on.
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  });
 }
 
 /// The requester a build with no back end holds. It always fails, so the
@@ -71,8 +81,10 @@ class UnavailableReviewRequester implements ReviewRequester {
   const UnavailableReviewRequester();
 
   @override
-  Future<ReviewRequestState> request(ReviewPath path) async =>
-      throw const VerificationCallFailure('unavailable');
+  Future<ReviewRequestState> request(
+    ReviewPath path, {
+    String? knownReviewerId,
+  }) async => throw const VerificationCallFailure('unavailable');
 }
 
 /// A callable that answered with an error, in the domain's words.
@@ -177,6 +189,12 @@ bool isNetworkCallFailure(Object error) {
   return error is VerificationCallFailure &&
       const {'unavailable', 'deadline-exceeded'}.contains(error.code);
 }
+
+/// True when the callable ran out of time on the phone's side
+/// (`deadline-exceeded`). Asked before [classifyCallFailure] by the one place
+/// that tells "too slow, try again" apart from "could not reach us".
+bool isDeadlineExceeded(Object error) =>
+    error is VerificationCallFailure && error.code == 'deadline-exceeded';
 
 CallFailureKind classifyCallFailure(Object error) {
   if (error is! VerificationCallFailure) return CallFailureKind.other;

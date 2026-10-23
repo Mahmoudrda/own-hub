@@ -2,9 +2,10 @@
 ///
 /// The document is `events/{id}` and its shape is fixed by
 /// `firebase/firestore.rules` (`validEvent`). Everything in it is about the
-/// event. Nothing is about a woman: v1 has no "interested", no RSVP and no
-/// attendee list, so there is nothing for a member's phone to write and
-/// nothing about her for anyone to read.
+/// event. Nothing is about a woman: her seat is a separate document,
+/// `events/{id}/attendees/{uid}`, that only the server writes and only she
+/// (and the owner) can read. `seatsTaken` is a count the server keeps; the
+/// app never writes it.
 ///
 /// Times are UTC instants here and Cairo wall-clock time on screen; see
 /// `cairo_time.dart`.
@@ -13,6 +14,30 @@ library;
 import 'package:meta/meta.dart';
 
 import 'cairo_time.dart';
+
+/// A Google Maps link, the only kind of address an event may carry. The same
+/// hosts, in the same shape, as `validEvent` in `firestore.rules`.
+final RegExp _mapsUrl = RegExp(
+  r'^https://((maps\.google\.com|maps\.app\.goo\.gl)([/?#]\S*)?'
+  r'|goo\.gl/maps([/?#]\S*)?'
+  r'|www\.google\.com/maps([/?#]\S*)?)$',
+);
+
+bool isAllowedMapsUrl(String? url) =>
+    url != null && url.length <= 500 && _mapsUrl.hasMatch(url);
+
+final RegExp _pictureName = RegExp(
+  r'^[a-z0-9][a-z0-9_-]{0,80}\.(webp|jpg|jpeg)$',
+);
+final RegExp _clipName = RegExp(r'^[a-z0-9][a-z0-9_-]{0,80}\.mp4$');
+
+bool isEventPictureName(String name) => _pictureName.hasMatch(name);
+bool isEventClipName(String name) => _clipName.hasMatch(name);
+
+abstract final class EventMediaLimits {
+  static const int pictures = 6;
+  static const int clips = 2;
+}
 
 enum EventMode {
   online,
@@ -50,6 +75,11 @@ class HubEvent {
     this.placeName,
     this.capacity,
     this.coverFile,
+    this.imageFiles = const [],
+    this.videoFiles = const [],
+    this.locationAddress,
+    this.locationUrl,
+    this.seatsTaken = 0,
   });
 
   final String id;
@@ -69,16 +99,31 @@ class HubEvent {
   /// `https://…`, for an online event.
   final String? link;
 
-  /// A name, for an event in person. "Zamalek ladies gym" is enough; nobody is
-  /// asked for a street address, and the app never shows a map.
+  /// A name, for an event in person: "Zamalek ladies gym".
   final String? placeName;
 
-  /// Places, when the owner set a limit. Shown, never counted against: there
-  /// is no sign-up in v1.
+  /// The street address of [placeName], as the owner wrote it.
+  final String? locationAddress;
+
+  /// A Google Maps link for the place; see [isAllowedMapsUrl].
+  final String? locationUrl;
+
+  /// Seats she can reserve. Without a number nobody can: the server refuses a
+  /// reservation on an event with no seats set.
   final int? capacity;
+
+  /// Seats reserved so far. Kept by the server and never written from here.
+  final int seatsTaken;
 
   /// A picture from the media library, under `content/events/{id}/`.
   final String? coverFile;
+
+  /// More pictures from the same folder, at most
+  /// [EventMediaLimits.pictures].
+  final List<String> imageFiles;
+
+  /// Short clips from the same folder, at most [EventMediaLimits.clips].
+  final List<String> videoFiles;
 
   final EventStatus status;
 
@@ -102,7 +147,28 @@ class HubEvent {
       ? null
       : 'content/events/$id/$coverFile';
 
-  HubEvent copyWith({EventStatus? status}) => HubEvent(
+  /// Seats left, never below zero; null when the owner set no limit.
+  int? get seatsLeft {
+    final c = capacity;
+    return c == null ? null : (c - seatsTaken).clamp(0, c);
+  }
+
+  bool get isFull => seatsLeft == 0;
+
+  static String _path(String id, String file) => 'content/events/$id/$file';
+
+  /// The pictures to page through: the cover first, then the rest, each once.
+  List<String> get picturePaths => [
+    for (final f in <String>{
+      if (coverFile != null && coverFile!.isNotEmpty) coverFile!,
+      ...imageFiles,
+    })
+      _path(id, f),
+  ];
+
+  List<String> get videoPaths => [for (final f in videoFiles) _path(id, f)];
+
+  HubEvent copyWith({EventStatus? status, int? seatsTaken}) => HubEvent(
     id: id,
     titleEn: titleEn,
     titleAr: titleAr,
@@ -115,11 +181,17 @@ class HubEvent {
     placeName: placeName,
     capacity: capacity,
     coverFile: coverFile,
+    imageFiles: imageFiles,
+    videoFiles: videoFiles,
+    locationAddress: locationAddress,
+    locationUrl: locationUrl,
+    seatsTaken: seatsTaken ?? this.seatsTaken,
     status: status ?? this.status,
   );
 
   /// The document body, with [DateTime]s for the data layer to turn into
-  /// timestamps. Exactly the keys `validEvent` allows, no more.
+  /// timestamps. Exactly the keys `validEvent` allows, no more, and never
+  /// `seatsTaken`: the rules refuse an update that changes it.
   Map<String, Object?> toDocument() => <String, Object?>{
     'titleEn': titleEn,
     'titleAr': titleAr,
@@ -132,8 +204,12 @@ class HubEvent {
     'link': mode == EventMode.online ? link : null,
     'placeName': mode == EventMode.place ? placeName : null,
     'audience': 'all',
+    'locationAddress': mode == EventMode.place ? locationAddress : null,
+    'locationUrl': mode == EventMode.place ? locationUrl : null,
     'capacity': capacity,
     'coverFile': coverFile,
+    'imageFiles': imageFiles,
+    'videoFiles': videoFiles,
     'status': status.name,
   };
 
@@ -155,7 +231,18 @@ class HubEvent {
       return v is String && v.trim().isNotEmpty ? v : null;
     }
 
+    List<String> names(String key, bool Function(String) allowed, int max) {
+      final v = data[key];
+      if (v is! List) return const [];
+      return [
+        for (final n in v)
+          if (n is String && allowed(n)) n,
+      ].take(max).toList();
+    }
+
     final capacity = data['capacity'];
+    final taken = data['seatsTaken'];
+    final mapsUrl = text('locationUrl');
     return HubEvent(
       id: id,
       titleEn: titleEn,
@@ -169,6 +256,15 @@ class HubEvent {
       placeName: text('placeName'),
       capacity: capacity is int && capacity > 0 ? capacity : null,
       coverFile: text('coverFile'),
+      imageFiles: names(
+        'imageFiles',
+        isEventPictureName,
+        EventMediaLimits.pictures,
+      ),
+      videoFiles: names('videoFiles', isEventClipName, EventMediaLimits.clips),
+      locationAddress: text('locationAddress'),
+      locationUrl: isAllowedMapsUrl(mapsUrl) ? mapsUrl : null,
+      seatsTaken: taken is int && taken > 0 ? taken : 0,
       status: status,
     );
   }
@@ -188,6 +284,11 @@ class HubEvent {
       other.placeName == placeName &&
       other.capacity == capacity &&
       other.coverFile == coverFile &&
+      _same(other.imageFiles, imageFiles) &&
+      _same(other.videoFiles, videoFiles) &&
+      other.locationAddress == locationAddress &&
+      other.locationUrl == locationUrl &&
+      other.seatsTaken == seatsTaken &&
       other.status == status;
 
   @override
@@ -204,8 +305,21 @@ class HubEvent {
     placeName,
     capacity,
     coverFile,
+    Object.hashAll(imageFiles),
+    Object.hashAll(videoFiles),
+    locationAddress,
+    locationUrl,
+    seatsTaken,
     status,
   );
+}
+
+bool _same(List<String> a, List<String> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 /// The ones still to come, soonest first.

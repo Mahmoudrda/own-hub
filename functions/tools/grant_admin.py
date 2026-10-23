@@ -37,7 +37,7 @@ from typing import Callable, Optional
 @dataclass(frozen=True)
 class Outcome:
     changed: bool
-    admin: bool
+    has: bool
     phone_sign_in: bool
 
 
@@ -72,26 +72,42 @@ def apply(
     *,
     get_user: Callable,
     set_claims: Callable,
+    claim: str = "admin",
 ) -> Outcome:
-    """Read her claims, change `admin` only if it differs from `want`.
+    """Read her claims, change `claim` only if it differs from `want`.
 
     `want` None only reads. Returns whether anything was written."""
     user = get_user(uid)
     claims = dict(user.custom_claims or {})
-    has = claims.get("admin") is True
+    has = claims.get(claim) is True
     phone = bool(getattr(user, "phone_number", None))
     if want is None or want == has:
-        return Outcome(changed=False, admin=has, phone_sign_in=phone)
+        return Outcome(changed=False, has=has, phone_sign_in=phone)
     if want:
-        claims["admin"] = True
+        claims[claim] = True
     else:
-        claims.pop("admin", None)
+        claims.pop(claim, None)
     set_claims(uid, claims)
-    return Outcome(changed=True, admin=want, phone_sign_in=phone)
+    return Outcome(changed=True, has=want, phone_sign_in=phone)
 
 
-def main(argv=None, *, auth=None, require_adc=None, out=print) -> int:
-    parser = argparse.ArgumentParser(prog="grant_admin")
+PHONE_NOTE = (
+    "note: this account has no phone number. The console callables "
+    "accept a phone sign-in only."
+)
+
+
+def run(
+    claim: str,
+    argv=None,
+    *,
+    auth=None,
+    require_adc=None,
+    out=print,
+    phone_note: str = PHONE_NOTE,
+) -> int:
+    """The command line for one claim. grant_finance.py runs it for `finance`."""
+    parser = argparse.ArgumentParser(prog=f"grant_{claim}")
     parser.add_argument("--uid", required=True)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--revoke", action="store_true")
@@ -107,24 +123,25 @@ def main(argv=None, *, auth=None, require_adc=None, out=print) -> int:
     want = None if args.check else (not args.revoke)
     try:
         result = apply(
-            uid, want, get_user=a.get_user, set_claims=a.set_custom_user_claims
+            uid, want, get_user=a.get_user, set_claims=a.set_custom_user_claims, claim=claim
         )
     except a.UserNotFoundError:
         out(f"no account with uid {uid}")
         return 1
 
     if args.check:
-        out(f"{uid}: admin {'yes' if result.admin else 'no'}")
+        out(f"{uid}: {claim} {'yes' if result.has else 'no'}")
     elif result.changed:
-        out(f"{uid}: admin {'granted' if result.admin else 'removed'}")
+        out(f"{uid}: {claim} {'granted' if result.has else 'removed'}")
     else:
-        out(f"{uid}: already {'admin' if result.admin else 'not admin'}, nothing written")
-    if result.admin and not result.phone_sign_in:
-        out(
-            "note: this account has no phone number. The console callables "
-            "accept a phone sign-in only."
-        )
+        out(f"{uid}: already {claim if result.has else 'not ' + claim}, nothing written")
+    if result.has and not result.phone_sign_in:
+        out(phone_note)
     return 0
+
+
+def main(argv=None, *, auth=None, require_adc=None, out=print) -> int:
+    return run("admin", argv, auth=auth, require_adc=require_adc, out=out)
 
 
 if __name__ == "__main__":

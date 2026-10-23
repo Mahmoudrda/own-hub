@@ -38,6 +38,9 @@ JOBS = "jobs"                              # verificationJobs where uid ==
 FLAGS = "flags"                            # verification_flags where uid ==
 SESSIONS = "sessions"                      # verificationSessions where uid ==
 LEDGER = "ledger"                          # verificationLedger/{uid}
+BOOKINGS = "bookings"                      # verificationBookings where uid ==
+REVIEWER_DATA = "reviewer_data"            # verificationReviewers/{uid}, her slots
+PREAPPROVED = "preapproved"                # verificationPreapproved/{her Auth phone}
 REGISTRY = "registry"                      # nidRegistry where uid == : closed
 STORAGE = "storage"                        # deletion.STORAGE_PREFIXES, both buckets
 GROUP_HOOK = "group_hook"                  # row 26: community, coach, assistant (N14)
@@ -78,6 +81,14 @@ ACTIONS: dict[int, str] = {
     # Community and coach data, named row by row (APL-16). All five run inside
     # row 26's purge_group_hook.
     45: GROUP_HOOK, 46: GROUP_HOOK, 47: GROUP_HOOK, 48: GROUP_HOOK, 49: GROUP_HOOK,
+    50: BOOKINGS,
+    51: REVIEWER_DATA,
+    52: PREAPPROVED,
+    53: GROUP_HOOK,  # events/{eventId}/attendees/{uid}, run inside purge_group_hook
+    54: GROUP_HOOK,  # communityFoodCandidates/{key}/by/{hash}, run inside purge_group_hook
+    # Private coaching, all run inside purge_group_hook.
+    55: GROUP_HOOK, 56: GROUP_HOOK, 57: GROUP_HOOK, 58: GROUP_HOOK,
+    59: GROUP_HOOK,  # receipts, paymentProofs: pseudonymised inside purge_group_hook
 }
 
 

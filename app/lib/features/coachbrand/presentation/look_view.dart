@@ -138,7 +138,7 @@ class _LookViewState extends State<LookView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.thisIsYoursNotOurs,
+                l10n.makeItLookLikeYou,
                 style: AppText.titleM.copyWith(color: AppColors.onSurface),
               ),
               const SizedBox(height: 4),

@@ -32,3 +32,9 @@ String eventWhere(AppL10n l10n, HubEvent event) {
       ? where
       : '$where · ${l10n.placesCount(countLabel(capacity))}';
 }
+
+/// `Online`, or the place's name. The seats have their own line on `T09`.
+String eventVenue(AppL10n l10n, HubEvent event) => switch (event.mode) {
+  EventMode.online => l10n.online,
+  EventMode.place => event.placeName ?? l10n.inPerson,
+};

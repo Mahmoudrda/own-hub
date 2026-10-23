@@ -12,13 +12,14 @@
 /// nothing to switch to implies the app is keeping something from her, so the
 /// avatar is simply her profile and nothing more.
 ///
-/// There is no photo pipeline yet, so this draws her initial. That is a
-/// deliberate placeholder for the image and **not** a placeholder for the
-/// behaviour: the switching works now.
+/// It draws her photo when she has set one (kept on the phone, see
+/// `ProfilePhotoState`) and her initial otherwise. Only her own picture: the
+/// avatars of other women never show it. No network is involved either way.
 library;
 
 import 'package:flutter/material.dart';
 
+import '../app_state/profile_photo_state.dart';
 import '../domain/identity/user_roles.dart';
 import '../l10n/app_l10n.dart';
 import '../theme/app_tokens.dart';
@@ -103,26 +104,49 @@ class AppAvatar extends StatelessWidget {
                 ),
               ),
             ),
-            Container(
-              width: size,
-              height: size,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: initial == null
-                  ? Icon(
-                      Icons.person,
-                      size: size * 0.58,
-                      color: AppColors.onPrimaryContainer,
-                    )
-                  : Text(
-                      initial,
-                      style: AppText.titleM.copyWith(
+            ListenableBuilder(
+              listenable: ProfilePhotoState.instance,
+              builder: (context, _) {
+                final photo = isSelf ? ProfilePhotoState.instance.bytes : null;
+                final inner = initial == null
+                    ? Icon(
+                        Icons.person,
+                        size: size * 0.58,
                         color: AppColors.onPrimaryContainer,
-                      ),
-                    ),
+                      )
+                    : Text(
+                        initial,
+                        style: AppText.titleM.copyWith(
+                          color: AppColors.onPrimaryContainer,
+                        ),
+                      );
+                return Container(
+                  width: size,
+                  height: size,
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: photo == null
+                      ? inner
+                      : Image.memory(
+                          photo,
+                          key: const ValueKey('app-avatar-photo'),
+                          width: size,
+                          height: size,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                          cacheWidth:
+                              (size * MediaQuery.devicePixelRatioOf(context))
+                                  .round(),
+                          // The label above already names the control.
+                          excludeFromSemantics: true,
+                          errorBuilder: (_, _, _) => inner,
+                        ),
+                );
+              },
             ),
             // A small mark, so a dual-role woman can see the picture is a
             // control before she taps it. Absent for everyone else.

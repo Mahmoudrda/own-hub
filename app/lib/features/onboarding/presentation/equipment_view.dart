@@ -26,12 +26,14 @@ class EquipmentView extends StatefulWidget {
     super.key,
     required this.repository,
     this.onContinue,
+    this.onSkip,
     this.onBack,
     this.onClose,
   });
 
   final IntakeRepository repository;
   final VoidCallback? onContinue;
+  final VoidCallback? onSkip;
   final VoidCallback? onBack;
   final VoidCallback? onClose;
 
@@ -77,8 +79,9 @@ class _EquipmentViewState extends State<EquipmentView> {
       step: at.step,
       total: at.total,
       title: l10n.whatDoYouHaveAtHome,
-      subtitle: l10n.mostWomenStartWithNothingThatIs,
+      subtitle: l10n.mostWomenStartWithNothingAndThats,
       onContinue: _continue,
+      onSkip: widget.onSkip,
       onBack: widget.onBack,
       onClose: widget.onClose,
       children: [

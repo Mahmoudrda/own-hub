@@ -21,23 +21,28 @@ import '../round1/round1_harness.dart';
 void main() {
   useShippingApp();
 
-  for (final days in <int>[2, 4]) {
+  for (final days in <int>[3, 4]) {
     testWidgets('she chose $days: what every week line says', (t) async {
       phone(t);
       final s = t.ensureSemantics();
 
       await open(t, appDestinations['O03']!.name, locale: const Locale('en'));
+      // The presets are the three splits: 3, 4 and 5 days.
       await t.tapAt(t.getRect(find.text('$days').first).center);
       await settle(t);
       await tapControl(t, RegExp('Continue'));
       OnboardingState.instance.finish();
 
       print('=== R3-05 chose $days ===');
-      print('  goal.sessionsTarget      = '
-          '${AppRouter.progressStore.goal.sessionsTarget}');
-      print('  today.day.week           = '
-          '${AppRouter.todayRepository.day.week.sessionsLogged} of '
-          '${AppRouter.todayRepository.day.week.sessionsTarget}');
+      print(
+        '  goal.sessionsTarget      = '
+        '${AppRouter.progressStore.goal.sessionsTarget}',
+      );
+      print(
+        '  today.day.week           = '
+        '${AppRouter.todayRepository.day.week.sessionsLogged} of '
+        '${AppRouter.todayRepository.day.week.sessionsTarget}',
+      );
 
       for (final id in <String>['T01', 'R01', 'P01', 'T04', 'T07']) {
         await open(t, appDestinations[id]!.name, locale: const Locale('en'));
@@ -73,12 +78,16 @@ void main() {
         .where((e) => RegExp(r'\d+\s*(of|/)\s*\d+').hasMatch(e))
         .toList();
     print('=== R3-05 after one session, chose 4 ===');
-    print('  week = ${AppRouter.todayRepository.day.week.sessionsLogged} of '
-        '${AppRouter.todayRepository.day.week.sessionsTarget}');
+    print(
+      '  week = ${AppRouter.todayRepository.day.week.sessionsLogged} of '
+      '${AppRouter.todayRepository.day.week.sessionsTarget}',
+    );
     print('  T01 lines: ${lines.join(" // ")}');
     for (final id in <String>['R01', 'P01']) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
-      print('  $id: ${paintedText(t).where((e) => RegExp(r"\d+\s*(of|/)\s*\d+").hasMatch(e)).join(" // ")}');
+      print(
+        '  $id: ${paintedText(t).where((e) => RegExp(r"\d+\s*(of|/)\s*\d+").hasMatch(e)).join(" // ")}',
+      );
     }
     s.dispose();
   });

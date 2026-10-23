@@ -23,10 +23,19 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 
 class PledgeView extends StatelessWidget {
-  const PledgeView({super.key, this.onAgree, this.onBack});
+  const PledgeView({
+    super.key,
+    this.onAgree,
+    this.onBack,
+    this.readOnly = false,
+  });
 
   /// She has agreed — on to `O01`, where her programme starts.
   final VoidCallback? onAgree;
+
+  /// Read again from the Safety Centre, after she agreed: the rules alone,
+  /// with nothing to agree to a second time.
+  final bool readOnly;
 
   final VoidCallback? onBack;
 
@@ -37,7 +46,7 @@ class PledgeView extends StatelessWidget {
     return AppScaffold(
       appBar: AppTopBar(onBack: onBack),
       footer: [
-        AppButton(l10n.iAgreeLetMeIn, onPressed: onAgree),
+        if (!readOnly) AppButton(l10n.iAgreeLetMeIn, onPressed: onAgree),
         Text(
           l10n.breakingThemCanCloseYourAccountYou,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),

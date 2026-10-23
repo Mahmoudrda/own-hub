@@ -1,11 +1,22 @@
-"""The coach side's server logic: her role, her certificates, her invites.
+"""The coach side's server logic: applications, portfolios, and (later) the
+paid relationship.
 
-Dormant while the coach app is off. COACH_APP_LIVE moves with the app's
-`Feature.coachApp` and with `coachLive()` in firebase/firestore.rules and
-firebase/storage.rules: all three are switched on in the same release, never
-one without the others. While it is False every callable here that would put
-coach data on the server refuses, so a verified account calling the API
-directly cannot create what the app does not offer.
+Three switches, matching `coachPortfolioLive()`, `coachClientsLive()` and
+`coachPaymentsLive()` in firebase/firestore.rules and firebase/storage.rules.
+A callable that would put coach data on the server refuses with
+`coach_app_closed` while its switch is False, so a verified account calling
+the API directly cannot create what the app does not offer.
 """
 
-COACH_APP_LIVE = False
+# Applications, profiles, packages, drafts, the reviewer's decisions, the
+# coach claim and the public coach reads.
+COACH_PORTFOLIO_LIVE = True
+
+# Requests, accepting or declining, relationships, chat and its trigger,
+# shared plans, live sessions, invites and ending a coaching. With payments
+# off, accepting makes the coaching active at once, free.
+COACH_CLIENTS_LIVE = True
+
+# Payment proofs, refunds, payouts, receipts, receiving accounts and the
+# ledger. Stays off until the legal steps for taking money are done.
+COACH_PAYMENTS_LIVE = False

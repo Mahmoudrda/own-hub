@@ -113,9 +113,8 @@ class _CountingProvider implements PaymentProvider {
   Future<RefundOutcome> requestRefund({
     required String providerTxnId,
     required RefundReason reason,
-  }) async => const RefundOutcome.unavailable(
-    PaymentUnavailableReason.notImplemented,
-  );
+  }) async =>
+      const RefundOutcome.unavailable(PaymentUnavailableReason.notImplemented);
 }
 
 void main() {
@@ -131,9 +130,7 @@ void main() {
           rows: [_row('c1', 'Nourhan')],
           source: DirectorySource.pack,
         ),
-        query: const DirectoryQuery(
-          specialties: {CoachingSpecialty.pregnancy},
-        ),
+        query: const DirectoryQuery(specialties: {CoachingSpecialty.pregnancy}),
       );
       expect(matchedNothing.emptiness, DirectoryEmptiness.nothingMatched);
     });
@@ -410,18 +407,20 @@ void main() {
       expect(provider.checkoutCalls, 0);
     });
 
-    test('an allowed attempt reaches the provider, and still fails today',
-        () async {
-      final provider = _CountingProvider();
-      final attempt = await run(provider);
-      expect(provider.checkoutCalls, 1);
-      expect(attempt, isA<CheckoutAttemptProvider>());
-      expect(
-        (attempt as CheckoutAttemptProvider).outcome,
-        isA<CheckoutUnavailable>(),
-        reason: 'there is no contracted rail, and the seam says so',
-      );
-    });
+    test(
+      'an allowed attempt reaches the provider, and still fails today',
+      () async {
+        final provider = _CountingProvider();
+        final attempt = await run(provider);
+        expect(provider.checkoutCalls, 1);
+        expect(attempt, isA<CheckoutAttemptProvider>());
+        expect(
+          (attempt as CheckoutAttemptProvider).outcome,
+          isA<CheckoutUnavailable>(),
+          reason: 'there is no contracted rail, and the seam says so',
+        );
+      },
+    );
   });
 
   group('H04 — the enquiry', () {
@@ -521,8 +520,10 @@ void main() {
         MyCoachViewModel(snapshot: snapshot(lastReviewAnswered: true)).waiting,
         MyCoachWaiting.lastReviewAnswered,
       );
-      expect(MyCoachViewModel(snapshot: snapshot()).waiting,
-          MyCoachWaiting.nothing);
+      expect(
+        MyCoachViewModel(snapshot: snapshot()).waiting,
+        MyCoachWaiting.nothing,
+      );
     });
 
     test('an unmeasured reply time makes no claim', () {
@@ -629,24 +630,25 @@ void main() {
       expect((result as EnquirySent).queued, isTrue);
     });
 
-    test('a rejection creates nothing that looks like a relationship', () async {
-      final repository = InMemoryCoachingRepository(rejectEnquiries: true);
-      final result = await repository.sendEnquiry(
-        const EnquiryDraft(
-          coachUid: 'c1',
-          clientUid: 'client-93',
-          herWords: 'Hello',
-        ),
-      );
-      expect(result, isA<EnquiryRejected>());
-      expect(repository.enquiries, isEmpty);
-    });
+    test(
+      'a rejection creates nothing that looks like a relationship',
+      () async {
+        final repository = InMemoryCoachingRepository(rejectEnquiries: true);
+        final result = await repository.sendEnquiry(
+          const EnquiryDraft(
+            coachUid: 'c1',
+            clientUid: 'client-93',
+            herWords: 'Hello',
+          ),
+        );
+        expect(result, isA<EnquiryRejected>());
+        expect(repository.enquiries, isEmpty);
+      },
+    );
 
     test('the cold fallback is bounded to its page size', () async {
       final repository = InMemoryCoachingRepository(
-        rows: [
-          for (var i = 0; i < 40; i++) _row('c$i', 'Coach $i'),
-        ],
+        rows: [for (var i = 0; i < 40; i++) _row('c$i', 'Coach $i')],
         source: DirectorySource.coldFallback,
       );
       final snapshot = await repository.directory();

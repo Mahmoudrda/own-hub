@@ -60,14 +60,14 @@ void main() {
 
       expect(find.text('What do you have at home?'), findsOneWidget);
       expect(
-        find.text('Most women start with nothing. That is plenty.'),
+        find.text('Most women start with nothing, and that\'s plenty.'),
         findsOneWidget,
       );
       for (final item in ['Nothing', 'A mat', 'Dumbbells', 'Bands']) {
         expect(find.text(item), findsOneWidget, reason: item);
       }
       // Third of six: after her goal and her place.
-      expect(find.text('3 of 6'), findsOneWidget);
+      expect(find.text('3 of 5'), findsOneWidget);
     });
   });
 
@@ -207,7 +207,7 @@ void main() {
 
       expect(find.text('عندك إيه في البيت؟'), findsOneWidget);
       expect(find.text('ولا حاجة'), findsOneWidget);
-      expect(find.text('3 من 6'), findsOneWidget);
+      expect(find.text('3 من 5'), findsOneWidget);
       expect(find.text('What do you have at home?'), findsNothing);
       expect(find.text('Dumbbells'), findsNothing);
     });

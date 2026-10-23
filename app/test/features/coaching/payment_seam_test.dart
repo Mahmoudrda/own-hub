@@ -131,7 +131,10 @@ void main() {
         RefundRequestedOk() => 'requested',
       };
       expect(described, 'requested');
-      expect((outcome as RefundRequestedOk).quote.amountBack.amountText, '1,800');
+      expect(
+        (outcome as RefundRequestedOk).quote.amountBack.amountText,
+        '1,800',
+      );
     });
 
     test('a checkout request carries no amount', () {

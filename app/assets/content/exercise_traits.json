@@ -1,0 +1,605 @@
+{
+  "moves": {
+    "arm_circles": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "hold",
+      "nameEn": "Big arm circles"
+    },
+    "back_extension": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "45-degree back extension"
+    },
+    "band_shoulder_pass_through": {
+      "equipment": [
+        "bands"
+      ],
+      "metric": "hold",
+      "nameEn": "Band shoulder pass-through"
+    },
+    "barbell_back_squat": {
+      "equipment": [
+        "barbell"
+      ],
+      "metric": "load",
+      "nameEn": "Barbell back squat"
+    },
+    "barbell_bench_press": {
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Barbell bench press"
+    },
+    "barbell_deadlift": {
+      "equipment": [
+        "barbell"
+      ],
+      "metric": "load",
+      "nameEn": "Barbell deadlift"
+    },
+    "barbell_hip_thrust": {
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Barbell hip thrust"
+    },
+    "bent_knee_leg_swing": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "hold",
+      "nameEn": "Bent-knee leg swing"
+    },
+    "bent_over_row": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Bent-over dumbbell row"
+    },
+    "bicycle_crunch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Bicycle crunch"
+    },
+    "bodyweight_squat_arm_swing": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "reps",
+      "nameEn": "Bodyweight squat with arm swing"
+    },
+    "butterfly_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Butterfly stretch"
+    },
+    "cable_biceps_curl": {
+      "equipment": [
+        "cable"
+      ],
+      "metric": "load",
+      "nameEn": "Cable biceps curl"
+    },
+    "cable_face_pull": {
+      "equipment": [
+        "cable"
+      ],
+      "metric": "load",
+      "nameEn": "Cable face pull"
+    },
+    "cable_rope_triceps_pushdown": {
+      "equipment": [
+        "cable"
+      ],
+      "metric": "load",
+      "nameEn": "Cable rope triceps pushdown"
+    },
+    "calf_raise": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "reps",
+      "nameEn": "Bodyweight calf raise"
+    },
+    "childs_pose": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Child's pose"
+    },
+    "close_grip_lat_pulldown": {
+      "equipment": [
+        "cable"
+      ],
+      "metric": "load",
+      "nameEn": "Close-grip lat pulldown"
+    },
+    "cobra_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Cobra stretch"
+    },
+    "cross_body_shoulder_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Cross-body shoulder stretch"
+    },
+    "crunch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Crunch"
+    },
+    "dead_bug": {
+      "equipment": [],
+      "metric": "reps",
+      "nameEn": "Dead bug"
+    },
+    "donkey_kick": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Donkey kick"
+    },
+    "dumbbell_bench_press": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell bench press"
+    },
+    "dumbbell_bulgarian_split_squat": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell Bulgarian split squat"
+    },
+    "dumbbell_calf_raise": {
+      "equipment": [
+        "dumbbells",
+        "step"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell calf raise on a plate"
+    },
+    "dumbbell_external_rotation": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell 90/90 external rotation"
+    },
+    "dumbbell_hammer_curl": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell hammer curl"
+    },
+    "dumbbell_lateral_raise": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell lateral raise"
+    },
+    "dumbbell_reverse_lunge": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell reverse lunge"
+    },
+    "dumbbell_stiff_leg_deadlift": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell stiff-leg deadlift"
+    },
+    "dumbbell_sumo_squat": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell sumo squat"
+    },
+    "ez_bar_curl": {
+      "equipment": [
+        "barbell"
+      ],
+      "metric": "load",
+      "nameEn": "EZ-bar curl"
+    },
+    "ez_bar_skull_crusher": {
+      "equipment": [
+        "barbell",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "EZ-bar skull crusher"
+    },
+    "figure_four_glute_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Lying figure-4 glute stretch"
+    },
+    "flutter_kicks": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Flutter kicks"
+    },
+    "forearm_plank": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Forearm plank"
+    },
+    "glute_bridge": {
+      "equipment": [],
+      "metric": "reps",
+      "nameEn": "Glute bridge"
+    },
+    "goblet_squat": {
+      "equipment": [],
+      "metric": "load",
+      "nameEn": "Goblet squat"
+    },
+    "half_kneeling_hip_flexor_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Half-kneeling hip flexor stretch"
+    },
+    "heel_elevated_goblet_squat": {
+      "equipment": [
+        "dumbbells",
+        "step"
+      ],
+      "metric": "load",
+      "nameEn": "Heel-elevated goblet squat"
+    },
+    "heel_touches": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Heel touches"
+    },
+    "hip_flexor_rock_back": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Hip flexor to hamstring rock-back"
+    },
+    "hip_thrust_hold": {
+      "equipment": [],
+      "metric": "hold",
+      "nameEn": "Hip thrust hold"
+    },
+    "incline_dumbbell_press": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Incline dumbbell press"
+    },
+    "kettlebell_glute_bridge": {
+      "equipment": [
+        "kettlebell",
+        "mat"
+      ],
+      "metric": "load",
+      "nameEn": "Kettlebell glute bridge"
+    },
+    "knee_press_up": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Kneeling push-up"
+    },
+    "knees_to_chest_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Knees-to-chest stretch"
+    },
+    "lat_pulldown_wide": {
+      "equipment": [
+        "cable"
+      ],
+      "metric": "load",
+      "nameEn": "Lat pulldown, wide grip"
+    },
+    "leg_swing": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "hold",
+      "nameEn": "Front-to-back leg swing"
+    },
+    "lying_bicycle_legs": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Lying bicycle legs"
+    },
+    "machine_chest_press": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Machine chest press"
+    },
+    "machine_shoulder_press": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Machine shoulder press"
+    },
+    "mountain_climbers": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Mountain climbers"
+    },
+    "overhead_triceps_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Overhead triceps stretch"
+    },
+    "pec_deck_fly": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Pec deck fly"
+    },
+    "pendulum_squat": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Pendulum squat"
+    },
+    "plank": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "High plank"
+    },
+    "plank_hold": {
+      "equipment": [],
+      "metric": "hold",
+      "nameEn": "Plank hold"
+    },
+    "plate_loaded_shoulder_press": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Plate-loaded shoulder press"
+    },
+    "push_up": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Push-up"
+    },
+    "reach_crunch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Reach crunch"
+    },
+    "reach_up_crunch_pulses": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Reach-up crunch pulses"
+    },
+    "reverse_pec_deck": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Reverse pec deck"
+    },
+    "romanian_deadlift": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Dumbbell Romanian deadlift"
+    },
+    "russian_twist": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Russian twist"
+    },
+    "seated_cable_row": {
+      "equipment": [
+        "cable",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Seated cable row, V-handle"
+    },
+    "seated_dumbbell_biceps_curl": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Seated dumbbell biceps curl"
+    },
+    "seated_dumbbell_calf_raise": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Seated dumbbell calf raise"
+    },
+    "seated_dumbbell_front_raise": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Seated dumbbell front raise"
+    },
+    "seated_hamstring_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Seated single-leg hamstring stretch"
+    },
+    "seated_leg_curl": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Seated leg curl"
+    },
+    "seated_leg_press": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Seated leg press"
+    },
+    "shoulder_press": {
+      "equipment": [
+        "dumbbells",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Seated dumbbell shoulder press"
+    },
+    "side_lying_clamshell": {
+      "equipment": [
+        "dumbbells",
+        "mat"
+      ],
+      "metric": "load",
+      "nameEn": "Side-lying clamshell"
+    },
+    "single_arm_low_cable_row": {
+      "equipment": [
+        "cable",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Single-arm low cable row"
+    },
+    "single_arm_machine_row": {
+      "equipment": [
+        "machine"
+      ],
+      "metric": "load",
+      "nameEn": "Single-arm machine row"
+    },
+    "smith_machine_hip_thrust": {
+      "equipment": [
+        "smith_machine",
+        "bench"
+      ],
+      "metric": "load",
+      "nameEn": "Smith machine hip thrust"
+    },
+    "standing_dumbbell_biceps_curl": {
+      "equipment": [
+        "dumbbells"
+      ],
+      "metric": "load",
+      "nameEn": "Standing dumbbell biceps curl"
+    },
+    "standing_forward_fold": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Standing forward fold"
+    },
+    "step_back_lunge": {
+      "equipment": [],
+      "metric": "reps",
+      "nameEn": "Step-back lunge"
+    },
+    "straight_leg_glute_kickback": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "reps",
+      "nameEn": "Straight-leg glute kickback"
+    },
+    "wall_chest_stretch": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "hold",
+      "nameEn": "Wall chest stretch"
+    },
+    "windmill_toe_touch": {
+      "equipment": [
+        "none"
+      ],
+      "metric": "hold",
+      "nameEn": "Windmill toe touch"
+    },
+    "wrist_flexor_stretch": {
+      "equipment": [
+        "mat"
+      ],
+      "metric": "hold",
+      "nameEn": "Wrist-flexor stretch"
+    }
+  },
+  "version": 1
+}

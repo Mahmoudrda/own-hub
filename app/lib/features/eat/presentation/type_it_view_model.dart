@@ -113,7 +113,7 @@ class TypeItViewModel {
 
   List<ParsedItem> _screenedHistory() {
     final allowed = guard
-        .screen(history.map((entry) => entry.food))
+        .screenSuggestions(history.map((entry) => entry.food))
         .map((food) => food.foodId)
         .toSet();
     return history.where((e) => allowed.contains(e.food.foodId)).toList();

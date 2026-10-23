@@ -105,7 +105,16 @@ _FakeSource _remote({int version = 2}) {
     'allergensExtra': <String>[],
     'allergensRemoved': <String, Object?>{},
     'allergensFinal': <String>[],
+    // Nobody has cooked or checked the new dish, so it is a review row: copied
+    // from a published recipe it would claim a signature it does not have.
+    'status': 'review',
     'allergenReviewedBy': null,
+    'allergenReviewedAt': null,
+    'cookedBy': null,
+    'cookedAt': null,
+    // Nor has the script, and a record copied from another recipe would claim
+    // it derived that recipe's allergens.
+    'verification': null,
   });
   for (final r in all) {
     source.recipes[r['recipeId']! as String] = r;
@@ -183,7 +192,7 @@ void main() {
       final cache = _MemoryStorage()..value = '{not json';
       final book = await _sync(cache: cache).load();
       expect(book.contentVersion, 1);
-      expect(book.recipes, hasLength(39));
+      expect(book.recipes, hasLength(50));
     });
   });
 
@@ -197,7 +206,7 @@ void main() {
       expect(result.outcome, RecipeRefreshOutcome.updated);
       final book = result.book!;
       expect(book.contentVersion, 2);
-      expect(book.recipes, hasLength(40));
+      expect(book.recipes, hasLength(51));
       expect(book.byId('rahma_lazy_cake')!.titleEn, 'Lazy Cake, second print');
       // Her letter is not in the remote set and stays.
       expect(book.letterAr, RecipeBook.fromJson(_raw).letterAr);
@@ -287,7 +296,9 @@ void main() {
 
     test('a signature by the author herself', () async {
       final source = _remote();
-      source.recipes['rahma_new_dish']!['allergenReviewedBy'] = 'rahma_mohsen';
+      final dish = source.recipes['rahma_new_dish']!;
+      dish['authoredBy'] = 'rahma_mohsen';
+      dish['allergenReviewedBy'] = 'rahma_mohsen';
       await expectRejected(source);
     });
 
@@ -377,6 +388,40 @@ void main() {
       },
     );
 
+    test('a download cut short leaves no "checked" stamp, so the next launch '
+        'asks again', () async {
+      final source = _remote();
+      final checks = _MemoryStorage();
+      final cache = _MemoryStorage();
+      final clock = _Clock();
+      source.failOn = source.recipes.keys.first;
+
+      final first = await _sync(
+        source: source,
+        cache: cache,
+        checks: checks,
+        clock: clock,
+      ).refresh();
+      expect(first.outcome, RecipeRefreshOutcome.failed);
+      expect(checks.value, isNull);
+      expect(cache.value, isNull);
+
+      source.failOn = null;
+      final second = await _sync(
+        source: source,
+        cache: cache,
+        checks: checks,
+        clock: clock,
+      ).refresh();
+      expect(second.outcome, RecipeRefreshOutcome.updated);
+      expect(checks.value, isNotNull);
+      expect(source.versionReads, 2);
+    });
+
+    test('a server read gives up after ten seconds', () {
+      expect(FirestoreRecipeSource.readTimeout, const Duration(seconds: 10));
+    });
+
     test('a full fetch happens only on a version bump', () async {
       final source = _remote();
       final cache = _MemoryStorage();
@@ -447,6 +492,76 @@ void main() {
             .screenRecipes(book.recipes)
             .map((r) => r.recipeId);
         expect(everyone, contains('rahma_new_dish'));
+      },
+    );
+  });
+
+  group('a remote recipe verified by the automated check', () {
+    Map<String, Object?> checked(String id, List<String> allergens) => {
+      ..._seedRecipes().firstWhere(
+        (r) => r['recipeId'] == 'ownhub_shish_tawook_bowl',
+      ),
+      'recipeId': id,
+      'allergensDerived': allergens,
+      'allergensExtra': <String>[],
+      'allergensRemoved': <String, Object?>{},
+      'allergensFinal': allergens,
+      'verification': {
+        'method': 'ownhub-auto-check-v1',
+        'checkedAt': '2026-10-21T00:00:00Z',
+        'macroDeltaPct': 0.0,
+        'allergensDerived': allergens,
+      },
+    };
+
+    test('publishes with no signature and reaches an allergic woman', () async {
+      final source = _remote();
+      source.recipes['rahma_checked_plain'] = checked('rahma_checked_plain', [
+        'milk',
+      ]);
+      source.recipes['rahma_checked_nuts'] = checked('rahma_checked_nuts', [
+        'tree_nuts',
+      ]);
+      (source.index!['rows']! as List).addAll(<Object?>[
+        {'recipeId': 'rahma_checked_plain', 'status': 'published'},
+        {'recipeId': 'rahma_checked_nuts', 'status': 'published'},
+      ]);
+      final result = await _sync(source: source).refresh();
+      expect(result.outcome, RecipeRefreshOutcome.updated);
+
+      final shown = AllergyGuard(
+        const DietaryConstraints(allergies: {'tree_nuts'}, dietary: {}),
+      ).screenRecipes(result.book!.recipes).map((r) => r.recipeId).toSet();
+      expect(shown, contains('rahma_checked_plain'));
+      expect(shown, isNot(contains('rahma_checked_nuts')));
+    });
+
+    test('a record that omits what it derived refuses the whole set', () async {
+      final source = _remote();
+      final bad = checked('rahma_checked_bad', ['milk']);
+      (bad['verification']! as Map)['allergensDerived'] = ['milk', 'peanuts'];
+      source.recipes['rahma_checked_bad'] = bad;
+      (source.index!['rows']! as List).add(<String, Object?>{
+        'recipeId': 'rahma_checked_bad',
+        'status': 'published',
+      });
+      final result = await _sync(source: source).refresh();
+      expect(result.outcome, RecipeRefreshOutcome.rejected);
+    });
+
+    test(
+      'published with neither a signature nor a record is refused',
+      () async {
+        final source = _remote();
+        final bare = checked('rahma_checked_bare', ['milk'])
+          ..['verification'] = null;
+        source.recipes['rahma_checked_bare'] = bare;
+        (source.index!['rows']! as List).add(<String, Object?>{
+          'recipeId': 'rahma_checked_bare',
+          'status': 'published',
+        });
+        final result = await _sync(source: source).refresh();
+        expect(result.outcome, RecipeRefreshOutcome.rejected);
       },
     );
   });

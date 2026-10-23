@@ -139,7 +139,8 @@ void main() {
       expect(
         file.existsSync(),
         isTrue,
-        reason: 'The exempted file must exist, or the exemption is stale and '
+        reason:
+            'The exempted file must exist, or the exemption is stale and '
             'should be deleted rather than left pointing at nothing.',
       );
 
@@ -147,7 +148,8 @@ void main() {
       expect(
         source.contains('DefaultFirebaseOptions'),
         isTrue,
-        reason: 'The exempted path must be the FlutterFire generated file. If '
+        reason:
+            'The exempted path must be the FlutterFire generated file. If '
             'it is something else, the exemption is being reused for a file it '
             'was never reasoned about.',
       );
@@ -168,7 +170,8 @@ void main() {
       expect(
         misplaced,
         isEmpty,
-        reason: 'A key-shaped literal in the generated file that is not the '
+        reason:
+            'A key-shaped literal in the generated file that is not the '
             'Firebase apiKey field is not covered by the reasoning for this '
             'exemption.',
       );
@@ -250,6 +253,13 @@ void main() {
       'الذكاء الاصطناعي': RegExp('الذكاء الاصطناعي'),
     };
 
+    // One message is exempt, by key: the consent shown before her first meal
+    // photo (E12). It is a disclosure, not a name for a feature: she is told
+    // that the photo goes to an AI before anything is sent, which is what the
+    // owner's wording says and what consent needs. The assistant is still
+    // never called AI anywhere.
+    const disclosures = <String>{'yourPhotoGoesToOurAiIn'};
+
     for (final locale in ['en', 'ar']) {
       test('app_$locale.arb contains no reference to it', () {
         final dictionary = jsonDecode(
@@ -259,6 +269,7 @@ void main() {
         final offenders = <String>[];
         dictionary.forEach((key, value) {
           if (key.startsWith('@') || value is! String) return;
+          if (disclosures.contains(key)) return;
           for (final entry in banned.entries) {
             if (entry.value.hasMatch(value)) {
               offenders.add('$key = "$value"  (${entry.key})');

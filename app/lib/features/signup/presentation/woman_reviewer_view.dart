@@ -31,6 +31,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
+import '../data/review_scheduling_repository.dart';
 import '../domain/review_request.dart';
 
 /// Which no-selfie check she chose. Only the video check is offered; the
@@ -48,7 +49,12 @@ class WomanReviewerView extends StatefulWidget {
     this.onRejected,
     this.onBack,
     this.onSignInAgain,
+    this.scheduling,
   });
+
+  /// `list_reviewers`, for the optional "I know one of the reviewers" picker.
+  /// Null, empty or failing: the picker is simply not shown.
+  final ReviewSchedulingRepository? scheduling;
 
   /// The server did not accept her sign-in: out to sign in again (N4).
   final VoidCallback? onSignInAgain;
@@ -91,6 +97,25 @@ enum _Failure {
 class _WomanReviewerViewState extends State<WomanReviewerView> {
   bool _booking = false;
   _Failure _failure = _Failure.none;
+  List<ListedReviewer> _reviewers = const [];
+  String? _known;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviewers();
+  }
+
+  Future<void> _loadReviewers() async {
+    final scheduling = widget.scheduling;
+    if (scheduling == null) return;
+    try {
+      final list = await scheduling.listReviewers();
+      if (mounted) setState(() => _reviewers = list);
+    } catch (_) {
+      // The picker is optional. Without the list she asks the usual way.
+    }
+  }
 
   Future<void> _book() async {
     if (_booking) return;
@@ -99,7 +124,10 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
       _failure = _Failure.none;
     });
     try {
-      final answer = await widget.requester.request(widget.path);
+      final answer = await widget.requester.request(
+        widget.path,
+        knownReviewerId: _known,
+      );
       if (!mounted) return;
       switch (answer) {
         case ReviewRequestState.pending:
@@ -156,7 +184,7 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
         // Shown before `request_review`, which records her agreement to the
-        // review route on the server (users/{uid}/consents/review-v2, written
+        // review route on the server (users/{uid}/consents/review-v3, written
         // before the flag): who calls, how, and what her number is used for.
         // This sentence and the one above are that consent's wording. PENDING COUNSEL: this wording is part of the consent
         // mechanism the PDPC must approve, and needs a lawyer's sign-off.
@@ -185,22 +213,50 @@ class _WomanReviewerViewState extends State<WomanReviewerView> {
             ),
           ],
         ),
+        if (_reviewers.isNotEmpty) ...[
+          Text(l10n.iKnowOneOfTheReviewers, style: AppText.titleM),
+          Text(
+            l10n.pickHerNameIfSheKnowsYou_akwt2,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final reviewer in _reviewers)
+                ChoiceChip(
+                  key: ValueKey('c15-known-${reviewer.reviewerId}'),
+                  label: Text(reviewer.firstName),
+                  selected: _known == reviewer.reviewerId,
+                  onSelected: _booking
+                      ? null
+                      : (on) => setState(
+                          () => _known = on ? reviewer.reviewerId : null,
+                        ),
+                ),
+            ],
+          ),
+        ],
         if (_failure != _Failure.none)
           Semantics(
             liveRegion: true,
-            child: Text(switch (_failure) {
-              _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
-              _Failure.appCannotReach => l10n.thisCopyOfTheAppCannotReach_agbhf,
-              _Failure.signInAgain => l10n.yourSignInIsNoLongerValid_1y16r,
-              _Failure.checkStillRunning =>
-                l10n.yourAutomaticCheckIsStillRunningSo,
-              _ => l10n.weCouldNotReachOwnHubSo_3usbb,
-            }, style: AppText.bodyM.copyWith(
-              // Waiting on her own check is not an error.
-              color: _failure == _Failure.checkStillRunning
-                  ? AppColors.onSurfaceVariant
-                  : AppColors.error,
-            )),
+            child: Text(
+              switch (_failure) {
+                _Failure.tooManyToday => l10n.youHaveAskedForAReviewerToo,
+                _Failure.appCannotReach =>
+                  l10n.thisCopyOfTheAppCannotReach_agbhf,
+                _Failure.signInAgain => l10n.yourSignInIsNoLongerValid_1y16r,
+                _Failure.checkStillRunning =>
+                  l10n.yourAutomaticCheckIsStillRunningSo,
+                _ => l10n.weCouldNotReachOwnHubSo_3usbb,
+              },
+              style: AppText.bodyM.copyWith(
+                // Waiting on her own check is not an error.
+                color: _failure == _Failure.checkStillRunning
+                    ? AppColors.onSurfaceVariant
+                    : AppColors.error,
+              ),
+            ),
           ),
         if (_failure == _Failure.signInAgain && widget.onSignInAgain != null)
           AppButton(

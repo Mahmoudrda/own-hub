@@ -50,9 +50,7 @@ import '../../../ui/hand/hand.dart';
 import '../domain/auth_repository.dart';
 import '../domain/digits.dart';
 import '../domain/legal_acceptance.dart';
-
-/// Digits in an Egyptian mobile number after the country code.
-const int _egyptianMobileDigits = 10;
+import '../domain/phone_format.dart';
 
 class PhoneNumberView extends StatefulWidget {
   const PhoneNumberView({
@@ -67,9 +65,14 @@ class PhoneNumberView extends StatefulWidget {
     this.analyticsInitially = false,
     this.onAnalyticsChosen,
     this.now,
+    this.signIn = false,
   });
 
   final AuthRepository repository;
+
+  /// Opens on the sign-in wording instead of sign-up. One tap on the toggle
+  /// switches it, and the number she typed stays.
+  final bool signIn;
 
   /// Open the Terms of Use and the Privacy Policy in her language. Null while
   /// the pages have no address, and the names are then plain text.
@@ -105,6 +108,8 @@ class PhoneNumberView extends StatefulWidget {
 class _PhoneNumberViewState extends State<PhoneNumberView> {
   final TextEditingController _controller = TextEditingController();
   bool _sending = false;
+  late bool _signIn = widget.signIn;
+  bool _formatting = false;
 
   /// The optional crash-report switch. Off unless she turns it on.
   late bool _crashReports = widget.crashReportsInitially;
@@ -134,6 +139,15 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
 
   void _onTyped() {
     if (!mounted) return;
+    // Pasted, autofilled or typed: one shape. See `formatEgyptianMobile`.
+    if (!_formatting) {
+      final formatted = formatEgyptianMobile(_controller.value);
+      if (formatted != _controller.value) {
+        _formatting = true;
+        _controller.value = formatted;
+        _formatting = false;
+      }
+    }
     setState(() {
       if (_failure != null && _controller.text != _failedText) _failure = null;
     });
@@ -142,17 +156,14 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
   /// Arabic-Indic digits count, because an Arabic keyboard types them.
   String get _digits => asciiDigits(_controller.text);
 
-  /// Full international form. A leading zero is a local-dialling habit and is
-  /// dropped rather than sent, because `+200100…` is not a number.
-  String get _e164 {
-    final digits = _digits.startsWith('0') ? _digits.substring(1) : _digits;
-    return '+20$digits';
-  }
+  /// Full international form. The field already holds only the ten digits
+  /// after the country code, so `+200100…` cannot be built.
+  String get _e164 => '+20$_digits';
 
   bool get _canSend =>
       !_sending &&
-      (_digits.startsWith('0') ? _digits.length - 1 : _digits.length) >=
-          _egyptianMobileDigits;
+      _digits.length == kEgyptianMobileDigits &&
+      !_digits.startsWith('0');
 
   Future<void> _send() async {
     if (!_canSend) return;
@@ -222,7 +233,10 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
           ),
       ],
       children: [
-        Text(l10n.whatsYourNumber, style: AppText.display),
+        Text(
+          _signIn ? l10n.signInWithYourNumber : l10n.whatsYourNumber,
+          style: AppText.display,
+        ),
         Text(
           l10n.weTextYouASixDigitCode_18wn2,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
@@ -263,9 +277,10 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
                 child: AppField(
                   controller: _controller,
                   autofocus: true,
+                  textDirection: TextDirection.ltr,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.telephoneNumberNational],
+                  autofillHints: const [AutofillHints.telephoneNumber],
                   onSubmitted: (_) => _send(),
                 ),
               ),
@@ -281,6 +296,23 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
               style: AppText.bodyM.copyWith(color: AppColors.error),
             ),
           ),
+        // Sign up and sign in are the same flow; this only changes the words,
+        // and the number she typed stays.
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: AppButton(
+            _signIn
+                ? l10n.newHereCreateAccount
+                : l10n.alreadyHaveAnAccountSignIn,
+            key: const ValueKey('phone-toggle-intent'),
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: _sending
+                ? null
+                : () => setState(() => _signIn = !_signIn),
+          ),
+        ),
         // Where her number and her account go, before she sends either.
         Text(
           l10n.toSendYourCodeYourNumberGoes,
@@ -303,7 +335,7 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
         if (widget.onAnalyticsChosen != null)
           AppListItem(
             title: l10n.helpImproveOwnHub,
-            subtitle: l10n.optionalSharesWhichScreensAndStepsYou,
+            subtitle: l10n.optionalSharesBasicAppUsageWithGoogle,
             trailing: AppToggle(
               key: const ValueKey('phone-analytics'),
               value: _analytics,
@@ -312,6 +344,8 @@ class _PhoneNumberViewState extends State<PhoneNumberView> {
             ),
             onTap: () => setState(() => _analytics = !_analytics),
           ),
+        // Room under the last line, so it clears the pinned button.
+        const SizedBox(height: 24),
       ],
     );
   }

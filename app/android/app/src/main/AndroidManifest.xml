@@ -14,7 +14,11 @@
          picture of somebody else's card, which is the entire attack the
          women-only gate has to survive. It is also a Play Data Safety
          declaration and a policy conversation we would have to have for a
-         capability the product does not want. -->
+         capability the product does not want. The one place she can pick an
+         existing picture is her own profile photo (A02), through the system
+         photo picker, which hands the app only the single picture she chooses
+         and needs no permission; nothing in the identity check or the meal
+         scan can use it, and the photo never leaves the phone. -->
 
     <!-- Stripped from the MERGED manifest, because plugins add them. The
          camera plugin declares RECORD_AUDIO for video, and this app records no
@@ -38,8 +42,14 @@
     <!-- Training reminders: on the days she chose on R10 or in Notifications,
          scheduled on the phone (flutter_local_notifications). The phone
          forgets scheduled alarms when it restarts; this lets the app set them
-         again. Inexact on purpose: no exact-alarm permission is requested. -->
+         again. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- The "Rest is over" alert while the phone is in her pocket. Used only
+         when the phone allows it (canScheduleExactNotifications); otherwise
+         the alert is inexact. She is never sent to Settings for it. Reminders
+         and check-ins stay inexact either way. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!-- No advertising ID. The analytics SDK's library manifest brings this
          permission; Own Hub shows no advertising and never reads the ID
@@ -79,6 +89,10 @@
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         tools:replace="android:allowBackup">
+        <!-- Initialize from Dart only after explicit usage-statistics consent. -->
+        <meta-data android:name="com.posthog.posthog.AUTO_INIT" android:value="false" />
+        <meta-data android:name="com.posthog.posthog.CAPTURE_PUSH_NOTIFICATION_OPENED" android:value="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -154,6 +168,18 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
+        </receiver>
+        <!-- Home-screen "Today" widget (lib/app_state/home_widget_sync.dart
+             writes the payload it reads). -->
+        <receiver
+            android:name=".TodayWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/today_widget_info" />
         </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

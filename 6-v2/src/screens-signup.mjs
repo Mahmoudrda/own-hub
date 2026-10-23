@@ -23,7 +23,7 @@ const C02 = phone(
     col(`${h('اختاري لغتك', 'headline')}${h('Choose your language', 'titleL')}`, { gap: 4 })
     + m('You can change this any time in settings.')
     + `<div style="height:8px"></div>`
-    + listItem({ title: 'العربية', sub: 'الفصحى · كل شيء في التطبيق', trail: icon('check_circle', { size: 26, color: C.primary, fill: true }), v: 'selected', pad: '16px', go: 'C03' })
+    + listItem({ title: 'العربية', sub: 'مصري · كل حاجة في التطبيق', trail: icon('check_circle', { size: 26, color: C.primary, fill: true }), v: 'selected', pad: '16px', go: 'C03' })
     + listItem({ title: 'English', sub: 'Everything in the app', pad: '16px', go: 'C03' })
   , { pad: '0 16px 0' })
   + footer(btn('Continue', { h: 56, go: 'C03' })));

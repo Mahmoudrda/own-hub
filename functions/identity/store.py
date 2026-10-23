@@ -550,6 +550,8 @@ def mint_claims(uid: str, verified: bool) -> None:
     user = auth.get_user(uid)
     claims = dict(user.custom_claims or {})
     claims["verified"] = bool(verified)
+    if not verified and claims.get("coachV") == "active":
+        claims["coachV"] = "suspended"
     auth.set_custom_user_claims(uid, claims)
 
 
@@ -927,6 +929,44 @@ def purge_health_data(uid: str) -> None:
     )
 
 
+MEAL_PHOTO_CONSENT_FIELDS = ("version", "at", "locale", "appVersion")
+"""Every field a meal-photo consent record may hold, and nothing else."""
+
+
+def _meal_photo_consent_ref(uid: str):
+    return (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(f"meal-photo-v{config.MEAL_PHOTO_CONSENT_VERSION}")
+    )
+
+
+def has_meal_photo_consent(uid: str) -> bool:
+    return _meal_photo_consent_ref(uid).get().exists
+
+
+def write_meal_photo_consent(
+    uid: str, locale: Optional[str] = None, app_version: Optional[str] = None
+) -> bool:
+    """E12: users/{uid}/consents/meal-photo-v1 = {version, at, locale?,
+    appVersion?}. Server-written only, once per version; a record already on
+    file is left as it was. Returns True when written. Lives under users/{uid},
+    so account deletion's recursive delete removes it."""
+    ref = _meal_photo_consent_ref(uid)
+    if ref.get().exists:
+        return False
+    payload = {
+        "version": config.MEAL_PHOTO_CONSENT_VERSION,
+        "at": firestore.SERVER_TIMESTAMP,
+    }
+    payload.update(consent_extras(locale, app_version))
+    assert set(payload) <= set(MEAL_PHOTO_CONSENT_FIELDS)
+    ref.set(payload)
+    return True
+
+
 def has_consent(uid: str) -> bool:
     snapshot = (
         db()
@@ -1018,9 +1058,9 @@ def _today() -> str:
 def uid_daily_count_and_increment(uid: str, field: str) -> int:
     """One account's count of `field` today, after adding this call.
 
-    On verificationLedger/{uid}.daily = {day, starts, verifies, reviews}, reset
-    when the UTC day changes. Transactional, and nothing else on the ledger
-    document is touched.
+    On verificationLedger/{uid}.daily = {day, starts, verifies, reviews,
+    mealScans}, reset when the UTC day changes. Transactional, and nothing else
+    on the ledger document is touched.
 
     merge=["daily"], NOT merge=True. Firestore's merge=True on a nested map is
     a leaf merge (update mask daily.day, daily.starts), so yesterday's
@@ -1043,6 +1083,29 @@ def uid_daily_count_and_increment(uid: str, field: str) -> int:
         return count
 
     return txn(db().transaction())
+
+
+def uid_daily_refund(uid: str, field: str) -> None:
+    """Give back one count of `field` today, after a call our side failed.
+
+    The pair of uid_daily_count_and_increment, for a provider outage that must
+    not cost her an attempt (the rule LIVENESS_PROVIDER_ERROR states). Only
+    today's count moves, never below zero; a day that has already rolled over
+    is left alone. Same merge=["daily"] as the increment."""
+    reference = db().collection(config.COL_LEDGER).document(uid)
+    today = _today()
+
+    @firestore.transactional
+    def txn(transaction):
+        snapshot = reference.get(transaction=transaction)
+        data = snapshot.to_dict() if snapshot.exists else {}
+        daily = dict((data or {}).get("daily") or {})
+        if daily.get("day") != today or int(daily.get(field, 0)) <= 0:
+            return
+        daily[field] = int(daily[field]) - 1
+        transaction.set(reference, {"daily": daily}, merge=["daily"])
+
+    txn(db().transaction())
 
 
 @dataclass(frozen=True)
@@ -1375,6 +1438,15 @@ class FirestoreReviewStore:
         db().collection(config.COL_FLAGS).document(flag_id).update(
             {"mintPending": firestore.DELETE_FIELD}
         )
+
+    def clear_mint_pending_for(self, uid):
+        query = (
+            db().collection(config.COL_FLAGS)
+            .where("uid", "==", uid)
+            .where("mintPending", "==", True)
+        )
+        for snapshot in query.stream():
+            snapshot.reference.update({"mintPending": firestore.DELETE_FIELD})
 
     def mint_pending_flags(self, limit):
         """Single-field equality on mintPending (auto-indexed). APPROVED is

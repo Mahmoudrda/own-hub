@@ -37,7 +37,7 @@ stop() {
 
 [ "$(uname)" = "Darwin" ] || stop "an iPhone build needs a Mac with Xcode."
 command -v xcodebuild >/dev/null 2>&1 || stop "Xcode is not installed. Install it from the Mac App Store, open it once, then run this again."
-XCODE="$(xcodebuild -version | head -1 | awk '{print $2}')"
+XCODE="$(xcodebuild -version | awk 'NR==1 {print $2}')"
 [ "${XCODE%%.*}" -ge 26 ] 2>/dev/null || stop "Xcode $XCODE is too old. App Store Connect needs Xcode 26 or later. Update it from the Mac App Store."
 command -v flutter >/dev/null 2>&1 || stop "flutter is not on PATH. Run: export PATH=\"\$HOME/development/flutter/bin:\$PATH\""
 [ -f ios/Runner/GoogleService-Info.plist ] || stop "ios/Runner/GoogleService-Info.plist is missing. Download it from Firebase console > Project settings > Your apps > the iOS app, and put it there."
@@ -45,7 +45,7 @@ command -v flutter >/dev/null 2>&1 || stop "flutter is not on PATH. Run: export 
 grep -q 'DEVELOPMENT_TEAM = ' ios/Runner.xcodeproj/project.pbxproj || stop "no Apple team is set on the Runner target."
 ! grep -qE "static const String (privacyPolicy|terms|support|deleteAccount) = ''" lib/config/legal_links.dart || stop "lib/config/legal_links.dart has an empty page address; a release build would refuse to start."
 
-NAME="$(grep -E '^version: ' pubspec.yaml | head -1 | awk '{print $2}' | cut -d+ -f1)"
+NAME="$(awk '/^version: / {print $2; exit}' pubspec.yaml | cut -d+ -f1)"
 [ -n "$NAME" ] || stop "no version line in pubspec.yaml."
 BUILD="${BUILD_NUMBER:-$(( ($(date -u +%s) - 1767225600) / 60 ))}"
 VERSION="$NAME+$BUILD"
@@ -54,7 +54,7 @@ SYMBOLS="build/symbols/$VERSION-ios"
 
 # The iOS app the dSYMs and Dart symbols belong to, checked against
 # firebase_options.dart so a reconfigured project cannot point this elsewhere.
-IOS_APP_ID="1:681714989950:ios:0e2cab381dd5cd91fbd12f"
+IOS_APP_ID="1:681714989950:ios:02417d9df27fbcf2fbd12f"
 grep -q "appId: '$IOS_APP_ID'" lib/firebase_options.dart || stop "the iOS app id here no longer matches lib/firebase_options.dart."
 
 echo "== Own Hub iPhone build $VERSION (Xcode $XCODE) =="

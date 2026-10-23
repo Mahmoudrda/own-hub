@@ -282,7 +282,7 @@ void main() {
     test('`none` is used as a value, not as an absence', () {
       // If nothing said `none`, the seed would be avoiding the distinction
       // rather than keeping it.
-      expect(_row(ContentCollection.foods, 'ful_medames').list('allergens'), [
+      expect(_row(ContentCollection.foods, 'dates').list('allergens'), [
         'none',
       ]);
       expect(
@@ -387,7 +387,7 @@ void main() {
       );
 
       final verdict = guard.assess(
-        asFood(_row(ContentCollection.foods, 'koshari')),
+        asFood(_row(ContentCollection.foods, 'koshary')),
       );
 
       expect(verdict.isBlocked, isTrue);
@@ -425,7 +425,7 @@ void main() {
           .map((f) => f.foodId);
 
       expect(offered, isNot(contains('om_ali')));
-      expect(offered, contains('lentil_soup'));
+      expect(offered, contains('shorbet_ads'));
     });
 
     test('a vegetarian preference keeps the dishes tagged vegetarian', () {
@@ -439,10 +439,10 @@ void main() {
           .screen(seedRowsFor(ContentCollection.foods).map(asFood))
           .map((f) => f.foodId);
 
-      expect(offered, contains('koshari'));
+      expect(offered, contains('koshary'));
       expect(
         offered,
-        isNot(contains('grilled_chicken_breast')),
+        isNot(contains('chicken_breast_grilled')),
         reason: DietaryTag.vegetarianWeekdays.requiredDishTags.toString(),
       );
     });

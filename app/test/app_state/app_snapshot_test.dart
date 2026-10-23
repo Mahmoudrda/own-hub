@@ -19,6 +19,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/account_data.dart';
 import 'package:own_hub/app_state/app_snapshot.dart';
 import 'package:own_hub/app_state/cycle_state.dart';
+import 'package:own_hub/app_state/workout_session_state.dart';
+import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/domain/rewards/personal_best_detector.dart';
 import 'package:own_hub/domain/rewards/week_rollup.dart';
 import 'package:own_hub/domain/training/session.dart' as training;
@@ -184,6 +186,36 @@ void main() {
       expect(train.flushes.map((f) => f.exerciseId), ['goblet_squat']);
     });
 
+    test('a workout she is in keeps the rest its plan gave', () async {
+      WorkoutSessionState.instance.start(
+        const WorkoutDay(
+          id: _dayKey,
+          title: 'Legs',
+          summary: '',
+          constraints: '',
+          moves: [
+            PlannedMove(
+              exerciseId: 'goblet_squat',
+              name: 'Goblet squat',
+              prescriptionLabel: '1 × 10',
+              restSeconds: 90,
+              sets: [
+                PrescribedSet(exerciseId: 'goblet_squat', order: 1, reps: 10),
+              ],
+            ),
+          ],
+        ),
+        AppRouter.trainRepository,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      await _roundTrip();
+
+      expect(WorkoutSessionState.instance.isLive, isTrue);
+      expect(WorkoutSessionState.instance.day!.moves.single.restSeconds, 90);
+      WorkoutSessionState.instance.reset();
+    });
+
     test('her meals, with the figures frozen onto them', () async {
       final store = AppRouter.mealRepository.store;
       store.apply(
@@ -323,6 +355,62 @@ void main() {
       expect(intake.lifeStage, LifeStage.postpartum);
     });
 
+    test(
+      'a saved session length is kept, even the old default of 15',
+      () async {
+        for (final minutes in [15, 20, 30, 60]) {
+          await AppRouter.intakeRepository.merge(minutes: minutes);
+          final saved = jsonDecode(
+            jsonEncode(AppSnapshot.capture()),
+          ) as Map<String, Object?>;
+          expect((saved['intake']! as Map)['minutes'], minutes);
+          await _roundTrip();
+          expect(AppRouter.intakeRepository.read().minutes, minutes);
+        }
+      },
+    );
+
+    test('a snapshot with no session length reads as the new 45', () {
+      final whole =
+          jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
+      whole['intake'] = <String, Object?>{
+        'goal': 'stronger',
+        'days': 3,
+        'equipment': ['none'],
+      };
+
+      expect(AppSnapshot.restore(jsonEncode(whole)), greaterThan(0));
+      expect(Intake.defaults.minutes, 45);
+      expect(AppRouter.intakeRepository.read().minutes, 45);
+    });
+
+    test('Build muscle is saved by its wire name and read back', () async {
+      await AppRouter.intakeRepository.merge(goal: TrainingGoal.buildMuscle);
+
+      final saved =
+          jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
+      expect((saved['intake']! as Map)['goal'], 'build_muscle');
+
+      await _roundTrip();
+      expect(AppRouter.intakeRepository.read().goal, TrainingGoal.buildMuscle);
+    });
+
+    test('a snapshot written before Build muscle still reads', () {
+      final whole =
+          jsonDecode(jsonEncode(AppSnapshot.capture())) as Map<String, Object?>;
+      whole['intake'] = <String, Object?>{
+        'goal': 'lose_steadily',
+        'days': 4,
+        'minutes': 30,
+        'equipment': ['dumbbells'],
+      };
+
+      expect(AppSnapshot.restore(jsonEncode(whole)), greaterThan(0));
+      final intake = AppRouter.intakeRepository.read();
+      expect(intake.goal, TrainingGoal.loseSteadily);
+      expect(intake.days, 4);
+    });
+
     test('that she has been through setup at all', () async {
       // The value the second launch turns on. Without it the four questions
       // would open over Home every time the app started, which is the one
@@ -437,8 +525,10 @@ void main() {
 
       expect(AppSnapshot.restore(jsonEncode(whole)), greaterThan(0));
       final intake = AppRouter.intakeRepository.read();
-      expect(Intake.allowedDays, contains(intake.days));
-      expect(Intake.allowedMinutes, contains(intake.minutes));
+      expect(Intake.daysOk(intake.days), isTrue);
+      expect(intake.days, Intake.defaults.days);
+      expect(Intake.minutesOk(intake.minutes), isTrue);
+      expect(intake.minutes, Intake.defaults.minutes);
       expect(
         intake.equipment,
         isNotEmpty,

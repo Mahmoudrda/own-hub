@@ -35,6 +35,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../domain/clock/app_clock.dart';
+import '../../../domain/format/date_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
@@ -64,6 +65,7 @@ class CycleCalendarView extends StatelessWidget {
     this.onSelectCycleTab,
     this.onPreviousMonth,
     this.onNextMonth,
+    this.onOpenPeriod,
   });
 
   final CycleDocument? cycle;
@@ -86,6 +88,17 @@ class CycleCalendarView extends StatelessWidget {
   /// a month other than this one.
   final VoidCallback? onPreviousMonth;
   final VoidCallback? onNextMonth;
+
+  /// Opens a logged period on Y09, to correct its dates or delete it. A logged
+  /// day is tappable only when this is given.
+  final ValueChanged<PeriodEntry>? onOpenPeriod;
+
+  PeriodEntry? _periodOn(DateTime date) {
+    for (final period in periods) {
+      if (period.covers(date)) return period;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,8 +178,21 @@ class CycleCalendarView extends StatelessWidget {
               ],
             ),
           _WeekdayHeader(l10n: l10n),
-          _Grid(cells: snapshot.cells),
+          _Grid(
+            cells: snapshot.cells,
+            onOpenLogged: onOpenPeriod == null
+                ? null
+                : (date) {
+                    final period = _periodOn(date);
+                    if (period != null) onOpenPeriod!(period);
+                  },
+          ),
           _Legend(l10n: l10n),
+          if (onOpenPeriod != null && periods.isNotEmpty)
+            Text(
+              l10n.tapALoggedDayToChangeIt,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
           if (snapshot.estimate != null)
             AppCard(
               variant: AppCardVariant.filled,
@@ -219,7 +245,7 @@ class CycleCalendarView extends StatelessWidget {
   /// The month name where the dictionary has one, numerals otherwise.
   String _monthTitle(AppL10n l10n) {
     if (year == 2026 && month == DateTime.september) return l10n.september2026;
-    return '$year-${month.toString().padLeft(2, '0')}';
+    return monthYearLabel(l10n, year, month);
   }
 }
 
@@ -259,9 +285,10 @@ class _WeekdayHeader extends StatelessWidget {
 }
 
 class _Grid extends StatelessWidget {
-  const _Grid({required this.cells});
+  const _Grid({required this.cells, this.onOpenLogged});
 
   final List<CalendarCell> cells;
+  final ValueChanged<DateTime>? onOpenLogged;
 
   @override
   Widget build(BuildContext context) {
@@ -275,15 +302,27 @@ class _Grid extends StatelessWidget {
       mainAxisSpacing: 4,
       crossAxisSpacing: 4,
       childAspectRatio: 1,
-      children: [for (final cell in cells) _Cell(cell: cell)],
+      children: [
+        for (final cell in cells)
+          _Cell(
+            cell: cell,
+            onTap:
+                onOpenLogged != null &&
+                    cell.kind == CalendarDayKind.logged &&
+                    cell.date != null
+                ? () => onOpenLogged!(cell.date!)
+                : null,
+          ),
+      ],
     );
   }
 }
 
 class _Cell extends StatelessWidget {
-  const _Cell({required this.cell});
+  const _Cell({required this.cell, this.onTap});
 
   final CalendarCell cell;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -369,9 +408,17 @@ class _Cell extends StatelessWidget {
       _ => content,
     };
 
+    final tap = onTap;
     return Semantics(
       label: cell.semanticLabel.isEmpty ? null : cell.semanticLabel,
-      child: marked,
+      button: tap != null,
+      child: tap == null
+          ? marked
+          : GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: tap,
+              child: marked,
+            ),
     );
   }
 }

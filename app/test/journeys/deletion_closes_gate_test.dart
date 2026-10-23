@@ -4,7 +4,7 @@
 // of her verification) standing, and the sheet then popped to the first
 // route, which was Home. So for the rest of the session the product stayed
 // open on a phone that no longer had an account. With an account required,
-// deletion now ends on C01 with nothing underneath, and no product route
+// deletion now ends on guest Home with nothing underneath, and no product route
 // resolves to itself.
 
 import 'package:flutter/material.dart';
@@ -28,7 +28,7 @@ import 'package:own_hub/ui/app_button.dart';
 FeatureFlags get _gated =>
     FeatureFlags.allOff.with_({for (final f in Feature.values) f: true});
 
-const _product = ['T01', 'R01', 'E01', 'P01', 'Y03'];
+const _product = ['P01', 'Y03', 'M01'];
 
 void _verified() {
   AppRouter.lastVerification = VerificationResult(
@@ -77,7 +77,7 @@ void main() {
     }
   });
 
-  testWidgets('deleting from A02 ends on C01 with nothing underneath', (
+  testWidgets('deleting from A02 ends on guest Home with nothing underneath', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1170, 2532);
@@ -97,6 +97,9 @@ void main() {
         .pushNamed(appDestinations['A02']!.name);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Privacy and data').first);
+    await tester.tap(find.text('Privacy and data').first);
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Your data').first);
     await tester.tap(find.text('Your data').first);
     await tester.pumpAndSettle();
@@ -104,15 +107,18 @@ void main() {
     await tester.tap(find.widgetWithText(AppButton, 'Delete everything'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(WelcomeView), findsOneWidget);
-    expect(find.byType(TodayView), findsNothing);
+    // The front door is Home as a guest, with the sign-in pill and nothing
+    // of hers underneath.
+    expect(find.byType(TodayView), findsOneWidget);
+    expect(find.byKey(const ValueKey('sign-in-pill')), findsOneWidget);
     final navigator = tester.state<NavigatorState>(
       find.byType(Navigator).first,
     );
     expect(navigator.canPop(), isFalse, reason: 'no product underneath');
 
-    // And a deep link into the product meets the front door.
-    navigator.pushNamed(appDestinations['R01']!.name);
+    // And a deep link into the part that needs an account meets the front
+    // door.
+    navigator.pushNamed(appDestinations['P01']!.name);
     await tester.pumpAndSettle();
     expect(find.byType(WelcomeView), findsWidgets);
   });

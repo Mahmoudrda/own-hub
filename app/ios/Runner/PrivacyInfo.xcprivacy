@@ -7,6 +7,11 @@
 	  the App Store Connect App Privacy answers. A mismatch between the three is
 	  one of the most common rejections.
 
+	  PostHog also receives consented product interaction milestones, a pseudonymous
+	  app identifier and SDK device metadata; one fixed diagnostic status log.
+	  No advertising, user identification, replay or health values are sent.
+	  The existing DeviceID/ProductInteraction declarations also cover this SDK;
+	  recheck App Store privacy answers against device traffic before release.
 	  WHAT THIS BINARY DOES TODAY. `Firebase.initializeApp` runs on every launch
 	  (`lib/app_state/firebase_boot.dart`), and pubspec carries nine Firebase
 	  packages: firebase_core, firebase_auth, cloud_firestore, firebase_storage,
@@ -32,10 +37,24 @@
 	      she turns on "Back up my health data" (off by default, own consent).
 	    - SensitiveInfo: pregnancy or postpartum stage (with backup on), and
 	      the biometric face match during the check.
+	    - Name: only for a woman who applies to coach: her full name, kept
+	      with the application for the review (never public). The name read
+	      from the ID card is still processed in memory and not kept.
+	    - EmailsorTextMessages: chat messages between a member and her
+	      coach, kept on our servers (Frankfurt) while both accounts exist,
+	      readable by the two of them; staff read a thread only after a report.
 	    - PhotosorVideos: both sides of her national ID card and the selfie
-	      frames, processed in memory and never stored. Declared anyway.
+	      frames, processed in memory and never stored. Declared anyway. Also,
+	      for a woman who applies to coach only: the pictures she picks for
+	      the application (profile photo, documents, feedback screenshots,
+	      client photos, photos of herself or her work), which ARE stored.
+	      The woman reviewer checks each one; on approval a re-encoded copy
+	      with no location or other metadata is kept, the original is
+	      deleted, and verified members see the approved items.
 	    - OtherDataTypes: the verification result, the keyed code of her ID
-	      number, and her consent records.
+	      number, and her consent records. Also the coach application text,
+	      the public coach portfolio, and the intake form a member sends a
+	      coach (health answers in it fall under Health, already declared).
 	  NOT LINKED, not tracking, purpose AppFunctionality:
 	    - CrashData: Firebase Crashlytics, release builds, and only once she
 	      has allowed crash reports: fatal crashes, and non-fatal reports of a
@@ -54,18 +73,27 @@
 	    - CoarseLocation: Google Analytics derives an approximate location
 	      (country, and city unless granular location is off in the GA
 	      property) from the masked IP address. The app reads no location.
-	  Name is not declared: it is read from the card in memory and not kept.
 	  Training reminders (flutter_local_notifications) are scheduled on the
 	  phone and collect nothing: the days and time she picks stay in the
 	  app's local snapshot, and no token or schedule leaves the device.
 	  There is no combined "health and fitness" key in Apple's list; Fitness
 	  and Health are declared separately.
 
-	  NSPrivacyAccessedAPITypes for the APP TARGET holds one entry: UserDefaults
-	  1C8F.1, for the App Group group.com.ownhub.app that home_widget writes the
+	  NSPrivacyAccessedAPITypes for the APP TARGET holds three entries. UserDefaults
+	  1C8F.1, for the App Group group.com.ownhub.fitness that home_widget writes the
 	  widget payload to (lib/app_state/home_widget_sync.dart). home_widget
 	  0.10.0 ships no privacy manifest of its own, so the reason is declared
 	  here. The widget extension declares the same reason in its own manifest.
+	  FileTimestamp C617.1, for the exercise library's clips and posters kept in
+	  the app's own cache folder (lib/features/train/data/exercise_media_store.dart):
+	  Dart's file calls read the size and timestamps of those files, inside the
+	  app container only. path_provider_foundation ships no manifest of its own.
+	  SystemBootTime 35F9.1, for the accelerometer that tilts the welcome and
+	  finished art a few pixels (lib/ui/hand/tilt_parallax.dart):
+	  sensors_plus 7.1.1 reads ProcessInfo.systemUptime to stamp each reading
+	  and its own manifest declares no API types. The accelerometer is CoreMotion,
+	  so Info.plist carries NSMotionUsageDescription (localised in the
+	  InfoPlist.strings files), and the readings never leave the screen.
 	  Every other required-reason API this product touches is touched by a
 	  package that ships its own manifest, which Xcode merges into the privacy
 	  report at build time: shared_preferences declares NSUserDefaults 1C8F.1,
@@ -82,6 +110,18 @@
 	<array/>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeName</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypePhoneNumber</string>
@@ -169,6 +209,18 @@
 		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeEmailsorTextMessages</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
 			<string>NSPrivacyCollectedDataTypeOtherDataTypes</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
@@ -236,6 +288,22 @@
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
 				<string>1C8F.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>35F9.1</string>
 			</array>
 		</dict>
 	</array>

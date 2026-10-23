@@ -21,6 +21,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/week/week_key.dart';
 import '../../../l10n/app_l10n.dart';
@@ -29,7 +30,10 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import '../../today/presentation/today_cards.dart' show openScreen;
+import '../../../ui/app_button.dart';
+import '../domain/grocery_from_recipes.dart';
 import '../domain/meal_repository.dart';
+import '../domain/recipe.dart';
 import 'eat_sample_library.dart';
 import 'week_plan_view_model.dart';
 
@@ -41,7 +45,27 @@ class GroceryListView extends StatefulWidget {
     this.onBack,
     this.onShare,
     this.onSelectTab,
+    this.recipeOf,
+    this.recipeTitle,
+    this.onPlanWeek,
+    this.embedded = false,
   });
+
+  /// Drawn inside the Eat hub's Plan segment, under the week's dinners: just
+  /// the list, with no scaffold, top bar or bottom bar. With nothing to shop
+  /// for it says so in one line and leaves "Plan my week" to the dinners above.
+  final bool embedded;
+
+  /// Finds one of Rahma's recipes by id. Given it, the list is made from the
+  /// dinners on the week plan, in her own words; without it the screen draws
+  /// the lines the plan already holds.
+  final Recipe? Function(String recipeId)? recipeOf;
+
+  /// The name a dinner's section is headed with.
+  final String? Function(String recipeId)? recipeTitle;
+
+  /// "Plan my week": E07, shown when there is nothing to shop for yet.
+  final VoidCallback? onPlanWeek;
 
   final MealRepository? repository;
   final DateTime? now;
@@ -65,19 +89,40 @@ class _GroceryListViewState extends State<GroceryListView> {
 
   WeekPlanView? _view;
 
+  /// The line she has just ticked, so only its tick is drawn on. The others
+  /// are simply there.
+  String? _justTicked;
+
   DateTime get _now => widget.now ?? AppClock.now();
   String get _weekId => WeekKey.of(_now).id;
+
+  bool _started = false;
 
   @override
   void initState() {
     super.initState();
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryMealRepository();
-    unawaited(_load());
   }
 
-  Future<void> _load() async {
-    final plan = await _repo.mealPlan(_weekId);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    unawaited(_load(AppL10n.of(context).localeName.startsWith('ar')));
+  }
+
+  Future<void> _load(bool arabic) async {
+    var plan = await _repo.mealPlan(_weekId);
+    final recipeOf = widget.recipeOf;
+    if (plan != null && recipeOf != null) {
+      await _repo.syncGroceries(
+        weekId: _weekId,
+        lines: groceryLinesFor(plan, recipeOf, arabic: arabic),
+      );
+      plan = await _repo.mealPlan(_weekId);
+    }
     if (!mounted) return;
     setState(() => _view = _model.build(weekId: _weekId, plan: plan));
   }
@@ -92,7 +137,11 @@ class _GroceryListViewState extends State<GroceryListView> {
   void _tick(String itemKey, bool ticked) {
     final current = _view;
     if (current == null) return;
-    setState(() => _view = _model.tick(current, itemKey, ticked));
+    setState(() {
+      _view = _model.tick(current, itemKey, ticked);
+      _justTicked = ticked ? itemKey : null;
+    });
+    if (ticked) unawaited(AppHaptics.play(HapticMoment.actionDone));
     unawaited(
       _repo.tickGrocery(weekId: _weekId, itemKey: itemKey, ticked: ticked),
     );
@@ -102,6 +151,25 @@ class _GroceryListViewState extends State<GroceryListView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final view = _view ?? _model.build(weekId: _weekId);
+    final nothingToShopFor = _view != null && view.itemCount == 0;
+
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        spacing: kStackGap,
+        children: nothingToShopFor
+            ? [
+                Text(
+                  l10n.pickYourDinnersForTheWeekAnd,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ]
+            : _listChildren(l10n, view),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -109,16 +177,19 @@ class _GroceryListViewState extends State<GroceryListView> {
         title: l10n.groceryList,
         onBack: widget.onBack,
         actions: [
-          IconButton(
-            onPressed: widget.onShare,
-            // Named. It was an icon with no tooltip, no label and no hint, so
-            // E08 shipped a tappable a screen reader announces as nothing at
-            // all — the only unnamed control on the screen.
-            tooltip: l10n.share,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            icon: const Icon(Icons.share),
-          ),
+          // Nothing to share while the list is empty.
+          // Nor while there is nowhere to share it to.
+          if (!nothingToShopFor && view.itemCount > 0 && widget.onShare != null)
+            IconButton(
+              onPressed: widget.onShare,
+              // Named. It was an icon with no tooltip, no label and no hint, so
+              // E08 shipped a tappable a screen reader announces as nothing at
+              // all — the only unnamed control on the screen.
+              tooltip: l10n.share,
+              iconSize: 24,
+              color: AppColors.onSurfaceVariant,
+              icon: const Icon(Icons.share),
+            ),
         ],
       ),
       bottomNavigationBar: AppNavBar(
@@ -137,37 +208,58 @@ class _GroceryListViewState extends State<GroceryListView> {
       ),
       body: AppScaffold(
         children: [
-          Text(
-            l10n.groupedTheWayYouShopTickAs,
-            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-          ),
-          // A list she keeps, not a stack of cards: each market stop is an
-          // open section on the page, and a pencil rule separates one stop
-          // from the next.
-          for (var i = 0; i < view.groups.length; i++) ...[
-            if (i > 0) HandRule(seed: 50 + i, height: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  groceryGroupLabel(l10n, view.groups[i].group),
-                  style: AppText.titleS.copyWith(color: AppColors.primaryDim),
-                ),
-                const SizedBox(height: 4),
-                for (final line in view.groups[i].lines)
-                  _GroceryTick(
-                    label: groceryLabel(l10n, line.ingredientId),
-                    ticked: line.ticked,
-                    onTap: () => _tick(line.itemKey, !line.ticked),
-                  ),
-              ],
+          if (nothingToShopFor) ...[
+            Text(l10n.planYourWeekFirst, style: AppText.titleL),
+            Text(
+              l10n.pickYourDinnersForTheWeekAnd,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
+            AppButton(
+              l10n.planMyWeek,
+              key: const ValueKey('e08-plan-week'),
+              onPressed: () => openScreen(context, 'E07', widget.onPlanWeek),
+            ),
+          ] else ...[
+            ..._listChildren(l10n, view),
           ],
         ],
       ),
     );
   }
+
+  List<Widget> _listChildren(AppL10n l10n, WeekPlanView view) => [
+    Text(
+      l10n.groupedTheWayYouShopTickAs,
+      style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+    ),
+    // A list she keeps, not a stack of cards: each dinner or market
+    // stop is an open section on the page, and a pencil rule separates
+    // one from the next.
+    for (var i = 0; i < view.groups.length; i++) ...[
+      if (i > 0) HandRule(seed: 50 + i, height: 12),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            view.groups[i].recipeId == null
+                ? groceryGroupLabel(l10n, view.groups[i].group)
+                : (widget.recipeTitle?.call(view.groups[i].recipeId!) ??
+                      recipeLabel(l10n, view.groups[i].recipeId!)),
+            style: AppText.titleS.copyWith(color: AppColors.primaryDim),
+          ),
+          const SizedBox(height: 4),
+          for (final line in view.groups[i].lines)
+            _GroceryTick(
+              label: line.text ?? groceryLabel(l10n, line.ingredientId),
+              ticked: line.ticked,
+              drawOn: line.itemKey == _justTicked,
+              onTap: () => _tick(line.itemKey, !line.ticked),
+            ),
+        ],
+      ),
+    ],
+  ];
 }
 
 /// One line. A filled tick or an empty pencil ring — shape, not colour alone.
@@ -176,10 +268,12 @@ class _GroceryTick extends StatelessWidget {
     required this.label,
     required this.ticked,
     required this.onTap,
+    this.drawOn = false,
   });
 
   final String label;
   final bool ticked;
+  final bool drawOn;
   final VoidCallback onTap;
 
   @override
@@ -196,10 +290,11 @@ class _GroceryTick extends StatelessWidget {
             child: Row(
               children: [
                 if (ticked)
-                  const Icon(
-                    Icons.check_circle,
+                  HandTick(
                     size: 22,
                     color: AppColors.tertiary,
+                    seed: handSeed(['grocery-tick', label]),
+                    drawOn: drawOn,
                   )
                 else
                   // The box she has not ticked yet, drawn in pencil the way a

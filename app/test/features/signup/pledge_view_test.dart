@@ -111,11 +111,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('كيف نعامل بعضنا'), findsOneWidget);
-    expect(find.text('1 · ما يُقال هنا يبقى هنا'), findsOneWidget);
-    expect(find.text('2 · لا تعليق على جسد أي امرأة أخرى'), findsOneWidget);
+    expect(find.text('إزاي بنعامل بعض'), findsOneWidget);
+    expect(find.text('1 · اللي بيتقال هنا بيفضل هنا'), findsOneWidget);
+    expect(find.text('2 · مفيش تعليق على جسم أي ست تانية'), findsOneWidget);
     // R1-P24: the button no longer addresses the app as a woman.
-    expect(find.text('أوافق، لنبدأ'), findsOneWidget);
+    expect(find.text('موافقة، يلا نبدأ'), findsOneWidget);
     expect(find.text('أوافق، أدخليني'), findsNothing);
     expect(find.text('How we treat each other'), findsNothing);
   });

@@ -39,9 +39,8 @@ Widget _copyWithHost(Widget child, {double textScale = 1.0}) => MaterialApp(
   home: Scaffold(
     body: Builder(
       builder: (context) => MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(textScaler: TextScaler.linear(textScale)),
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(textScale)),
         child: child,
       ),
     ),
@@ -65,60 +64,63 @@ class _Probe extends StatelessWidget {
 }
 
 void main() {
-  testWidgets(
-    'a bare MediaQueryData zeroes the window; copyWith keeps it',
-    (tester) async {
-      tester.view.physicalSize = const Size(1170, 2532);
-      tester.view.devicePixelRatio = 3;
-      tester.view.padding = const FakeViewPadding(bottom: 102, top: 141);
-      addTearDown(tester.view.reset);
+  testWidgets('a bare MediaQueryData zeroes the window; copyWith keeps it', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    tester.view.padding = const FakeViewPadding(bottom: 102, top: 141);
+    addTearDown(tester.view.reset);
 
-      late MediaQueryData bare;
-      late double bareBubble;
-      await tester.pumpWidget(
-        _bareHost(_Probe((d, b) {
+    late MediaQueryData bare;
+    late double bareBubble;
+    await tester.pumpWidget(
+      _bareHost(
+        _Probe((d, b) {
           bare = d;
           bareBubble = b;
-        })),
-      );
+        }),
+      ),
+    );
 
-      late MediaQueryData kept;
-      late double keptBubble;
-      await tester.pumpWidget(
-        _copyWithHost(_Probe((d, b) {
+    late MediaQueryData kept;
+    late double keptBubble;
+    await tester.pumpWidget(
+      _copyWithHost(
+        _Probe((d, b) {
           kept = d;
           keptBubble = b;
-        })),
-      );
+        }),
+      ),
+    );
 
-      // ignore: avoid_print
-      print(
-        'R2-13a  bare MediaQueryData: size=${bare.size} '
-        'padding=${bare.padding} viewPadding=${bare.viewPadding} '
-        'devicePixelRatio=${bare.devicePixelRatio}',
-      );
-      // ignore: avoid_print
-      print(
-        'R2-13a  copyWith:            size=${kept.size} '
-        'padding=${kept.padding} viewPadding=${kept.viewPadding} '
-        'devicePixelRatio=${kept.devicePixelRatio}',
-      );
-      // ignore: avoid_print
-      print(
-        'R2-13a  a chat bubble at 0.8 * width: '
-        'bare=$bareBubble  copyWith=$keptBubble',
-      );
+    // ignore: avoid_print
+    print(
+      'R2-13a  bare MediaQueryData: size=${bare.size} '
+      'padding=${bare.padding} viewPadding=${bare.viewPadding} '
+      'devicePixelRatio=${bare.devicePixelRatio}',
+    );
+    // ignore: avoid_print
+    print(
+      'R2-13a  copyWith:            size=${kept.size} '
+      'padding=${kept.padding} viewPadding=${kept.viewPadding} '
+      'devicePixelRatio=${kept.devicePixelRatio}',
+    );
+    // ignore: avoid_print
+    print(
+      'R2-13a  a chat bubble at 0.8 * width: '
+      'bare=$bareBubble  copyWith=$keptBubble',
+    );
 
-      // The trap, stated as an assertion so it is evidence and not prose.
-      expect(bare.size, Size.zero);
-      expect(bare.padding, EdgeInsets.zero);
-      expect(bareBubble, 0.0);
+    // The trap, stated as an assertion so it is evidence and not prose.
+    expect(bare.size, Size.zero);
+    expect(bare.padding, EdgeInsets.zero);
+    expect(bareBubble, 0.0);
 
-      // And the correct host, for contrast.
-      expect(kept.size.width, 390);
-      expect(kept.size.height, 844);
-      expect(kept.padding.bottom, 34);
-      expect(keptBubble, closeTo(312, 0.5));
-    },
-  );
+    // And the correct host, for contrast.
+    expect(kept.size.width, 390);
+    expect(kept.size.height, 844);
+    expect(kept.padding.bottom, 34);
+    expect(keptBubble, closeTo(312, 0.5));
+  });
 }

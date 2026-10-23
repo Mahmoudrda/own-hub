@@ -39,6 +39,8 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../eat/presentation/recipe_labels.dart';
+import '../domain/meal_picks.dart';
 import 'cycle_widgets.dart';
 
 /// One option, already screened by G5's allergy guard and ranked by G5.
@@ -52,13 +54,42 @@ class CycleMealOption {
     required this.title,
     required this.meta,
     required this.reason,
+    this.recipeId,
   });
+
+  /// The recipe the card is for, when it is one of Rahma's.
+  final String? recipeId;
 
   final String title;
   final String meta;
 
   /// Why this is being offered — written on the card.
   final String reason;
+}
+
+/// The card for [pick]: her recipe's name and time, and a reason made only of
+/// what she logged today and the tags the recipe carries.
+CycleMealOption cycleMealOption(AppL10n l10n, MealPick pick) {
+  final recipe = pick.recipe;
+  final why = switch (pick.signal) {
+    MealSignal.lowEnergy => l10n.yourEnergyIsLowToday,
+    MealSignal.cramps => l10n.youHaveCrampsToday,
+    MealSignal.both => l10n.yourEnergyIsLowAndYouHave,
+  };
+  final what = switch (pick.tags) {
+    MealTags.comfyAndProtein => l10n.aComfyDinnerHighInProtein,
+    MealTags.comfy => l10n.aComfyDinner,
+    MealTags.protein => l10n.highInProtein,
+  };
+  return CycleMealOption(
+    recipeId: recipe.recipeId,
+    title: recipe.titleEn,
+    meta: [
+      ?totalTimeLabel(l10n, recipe.totalMinutes),
+      if (recipe.dietTags.contains('vegetarian')) l10n.vegetarian,
+    ].join(' · '),
+    reason: '$why $what',
+  );
 }
 
 class CycleMealsView extends StatelessWidget {
@@ -146,15 +177,15 @@ class CycleMealsView extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      AppButton(
-                        l10n.swap,
-                        variant: AppButtonVariant.outlined,
-                        height: 44,
-                        fontSize: 15,
-                        onPressed: onSwap == null
-                            ? null
-                            : () => onSwap!(option),
-                      ),
+                      // Offered only where there is a swap to make.
+                      if (onSwap != null)
+                        AppButton(
+                          l10n.swap,
+                          variant: AppButtonVariant.outlined,
+                          height: 44,
+                          fontSize: 15,
+                          onPressed: () => onSwap!(option),
+                        ),
                     ],
                   ),
                 ],

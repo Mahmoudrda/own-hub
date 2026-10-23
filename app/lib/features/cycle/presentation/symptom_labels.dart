@@ -29,6 +29,7 @@ library;
 
 import '../../../l10n/app_l10n.dart';
 import '../domain/symptom_context.dart';
+import '../domain/today_check_in.dart';
 
 /// One logged symptom, in words. Empty when the dictionary has no word for it.
 String loggedSymptomLabel(AppL10n l10n, LoggedSymptom symptom) {
@@ -66,4 +67,52 @@ String loggedSymptomsSentence(AppL10n l10n, List<LoggedSymptom> reason) {
   ];
 
   return parts.join(' · ');
+}
+
+/// What she logged on Y04, as Y04's own label-and-value pairs: "Energy: Low ·
+/// Cramps: Mild". Only what she chose; empty for an absent check-in. A value
+/// Y04 has no chip for (`Sleep.ok`, light or medium bleeding) is left out
+/// rather than given a word she never saw.
+String checkInSummary(AppL10n l10n, TodayCheckIn checkIn) {
+  String? pair(String label, String? value) =>
+      value == null ? null : '$label: $value';
+  final parts = <String?>[
+    pair(l10n.energy, switch (checkIn.energy) {
+      Energy.low => l10n.low,
+      Energy.ok => l10n.okay,
+      Energy.high => l10n.high,
+      null => null,
+    }),
+    pair(l10n.cramps, switch (checkIn.cramps) {
+      Cramps.none => l10n.none,
+      Cramps.mild => l10n.mild,
+      Cramps.moderate => l10n.moderate,
+      Cramps.severe => l10n.severe,
+      null => null,
+    }),
+    pair(l10n.appetite, switch (checkIn.appetite) {
+      Appetite.low => l10n.lessHungry,
+      Appetite.ok => l10n.usual,
+      Appetite.high => l10n.moreHungry,
+      null => null,
+    }),
+    pair(l10n.sleep, switch (checkIn.sleep) {
+      Sleep.poor => l10n.poor,
+      Sleep.good => l10n.good,
+      Sleep.ok || null => null,
+    }),
+    pair(l10n.bloating, switch (checkIn.bloating) {
+      Bloating.none => l10n.none,
+      Bloating.mild => l10n.mild,
+      Bloating.moderate => l10n.moderate,
+      Bloating.severe => l10n.severe,
+      null => null,
+    }),
+    pair(l10n.bleeding, switch (checkIn.bleeding) {
+      Bleeding.spotting => l10n.spotting,
+      Bleeding.heavy => l10n.heavy,
+      Bleeding.none || Bleeding.light || Bleeding.medium || null => null,
+    }),
+  ];
+  return [for (final part in parts) ?part].join(' · ');
 }

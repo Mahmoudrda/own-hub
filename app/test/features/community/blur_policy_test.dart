@@ -145,10 +145,7 @@ void main() {
 
     test('opting out an image that is not in the composition is an error', () {
       final composition = BlurComposition.start();
-      expect(
-        () => composition.optOut('nope', at: _at),
-        throwsStateError,
-      );
+      expect(() => composition.optOut('nope', at: _at), throwsStateError);
     });
 
     test('a woman whose privacy default is off still has it recorded', () {

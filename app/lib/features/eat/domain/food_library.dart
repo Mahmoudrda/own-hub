@@ -5,22 +5,22 @@
 /// updated out of band, which is what makes parsing free and makes E02 work on a
 /// microbus with no signal.
 ///
-/// ## `allergens[]` and `dietTags[]` do not exist, and this file says so
+/// ## `allergens[]`: null means unknown, and the shipped pack no longer is
 ///
-/// `SCHEMA-SPINE.md` §1 calls them "**mandatory, not enrichment**" and requires
-/// that a missing tag read as "**unknown, therefore unsafe** — never as safe".
-/// `DECISIONS.md` and `PHASE2-ACCEPTANCE.md` both record that the content has
-/// not been authored, and that this blocks `P0-EAT-01`.
+/// `SCHEMA-SPINE.md` §1 calls `allergens[]` and `dietTags[]` "**mandatory, not
+/// enrichment**" and requires that a missing tag read as "**unknown, therefore
+/// unsafe** — never as safe".
 ///
 /// So [Food.allergens] is `Set<String>?`, and **null means unknown**. It is not
 /// an empty set, because an empty set is a claim — "this dish contains none of
-/// the allergens you named" — and that claim is exactly the one nobody is in a
-/// position to make yet. [AllergyGuard] reads the difference and fails closed on
-/// it.
+/// the allergens you named" — and [AllergyGuard] reads the difference and fails
+/// closed on it.
 ///
-/// A fabricated allergen list would make the guard *look* like it works. That is
-/// the worst available outcome here, so it is not done: the type carries the
-/// absence instead.
+/// The bundled Egyptian pack now carries a list for every food, derived from the
+/// standard ingredients and over-inclusive, with its basis recorded in the
+/// pack's `review` note (`tool/build_food_pack.py` refuses a food without one).
+/// The hand-written sample foods and the foods she types in still carry null,
+/// and still fail closed.
 ///
 /// ## Names come from the caller
 ///
@@ -33,6 +33,31 @@ library;
 
 import 'package:meta/meta.dart';
 
+import 'meal_images.dart';
+
+/// The seven shelves the pack is browsed by.
+///
+/// The names are the `category` strings in `assets/content/foods_eg.json`, which
+/// `tool/build_food_pack.py` refuses to write with any other value.
+enum FoodCategory {
+  egyptianDishes,
+  proteins,
+  dairyAndCheese,
+  grainsAndBreads,
+  vegetablesAndSalads,
+  fruitsAndNuts,
+  snacksAndDrinks;
+
+  /// The category a pack string names, or null for an unknown string.
+  static FoodCategory? fromWire(String? wire) {
+    if (wire == null) return null;
+    for (final category in values) {
+      if (category.name == wire) return category;
+    }
+    return null;
+  }
+}
+
 /// One portion a woman actually serves — "medium bowl", "2 eggs".
 ///
 /// Portions are the objects she serves, never grams (E06's design note). [grams]
@@ -44,6 +69,9 @@ class FoodSize {
     required this.label,
     required this.kcal,
     required this.proteinG,
+    this.carbsG,
+    this.fatG,
+    this.fiberG,
     this.grams,
   });
 
@@ -56,6 +84,12 @@ class FoodSize {
   /// Frozen onto the item at log time, with the pack version.
   final int kcal;
   final int proteinG;
+
+  /// Null where the pack does not say. Nothing invents them: a food without
+  /// them logs without them, and its day total leaves them out.
+  final int? carbsG;
+  final int? fatG;
+  final int? fiberG;
 
   final int? grams;
 }
@@ -71,9 +105,16 @@ class Food {
     this.dietTags,
     this.popularity = 0,
     this.verified = true,
+    this.category,
+    this.kind,
+    this.custom = false,
+    this.community = false,
   });
 
   final String foodId;
+
+  /// The painted picture, or null while this food has none.
+  String? get imageAsset => MealImages.assetFor(foodId);
 
   /// Every spelling the parser may match — the display name first, then aliases
   /// and the Franco-Arabic form. §2.10: the parser can only ever emit a `foodId`
@@ -98,15 +139,77 @@ class Food {
   /// totals rather than with invented ones.
   final bool verified;
 
+  /// The shelf she browses it under. Null for the hand-written samples and the
+  /// foods she typed in, which show only under All.
+  final FoodCategory? category;
+
+  /// The pack's kind of dish ("drink", "soup", "main"), where it has one. Units
+  /// read it: only drinks and soups are measured in millilitres.
+  final String? kind;
+
+  /// True for a food she typed in herself ("Quick custom"). Its name travels
+  /// with every meal it is logged in, because no pack holds it.
+  final bool custom;
+
+  /// True for a food other women confirmed and the owner approved. It is
+  /// [custom] too, so its name travels with each meal it is logged in.
+  final bool community;
+
   /// What she gets if she picks nothing — the middle size, which is the one she
   /// usually serves.
-  FoodSize get defaultSize => sizes[sizes.length ~/ 2];
+  FoodSize get defaultSize {
+    for (final size in sizes) {
+      if (size.id == 'M') return size;
+    }
+    return sizes[sizes.length ~/ 2];
+  }
 
   FoodSize? sizeById(String id) {
     for (final size in sizes) {
       if (size.id == id) return size;
     }
+    final grams = gramsOfSizeId(id);
+    return grams == null ? null : sizeForGrams(grams);
+  }
+
+  /// The size id of a portion she chose by weight: `g150` is 150 g.
+  static String sizeIdForGrams(int grams) => 'g$grams';
+
+  /// The weight in a [sizeIdForGrams] id, or null for any other id.
+  static int? gramsOfSizeId(String id) {
+    final match = RegExp(r'^g(\d{1,5})$').firstMatch(id);
+    final grams = match == null ? null : int.parse(match.group(1)!);
+    return grams == null || grams < 1 ? null : grams;
+  }
+
+  /// The size whose weight is known, which every portion by weight scales from.
+  FoodSize? get weighedSize {
+    final middle = defaultSize;
+    if (middle.grams != null && middle.grams! > 0) return middle;
+    for (final size in sizes) {
+      if (size.grams != null && size.grams! > 0) return size;
+    }
     return null;
+  }
+
+  /// A portion of [grams], worked out from the weighed size's figures. Null
+  /// when the pack gives this food no weight to scale from: nothing is
+  /// invented for it.
+  FoodSize? sizeForGrams(int grams) {
+    final base = weighedSize;
+    if (base == null || grams < 1) return null;
+    final ratio = grams / base.grams!;
+    int? scale(int? value) => value == null ? null : (value * ratio).round();
+    return FoodSize(
+      id: sizeIdForGrams(grams),
+      label: '$grams g',
+      kcal: (base.kcal * ratio).round(),
+      proteinG: (base.proteinG * ratio).round(),
+      carbsG: scale(base.carbsG),
+      fatG: scale(base.fatG),
+      fiberG: scale(base.fiberG),
+      grams: grams,
+    );
   }
 
   /// True when nobody has told us what is in this dish.
@@ -207,6 +310,10 @@ class FoodLibrary {
     return sorted.take(take).toList();
   }
 
+  /// [input] as [resolve] compares it. Public so a caller can tell whether two
+  /// spellings are the same to the matcher.
+  static String normalise(String input) => _normalise(input);
+
   /// Lower-cases, strips Arabic diacritics and collapses whitespace.
   ///
   /// Egyptian women type Arabic with and without harakat and in Franco, so a
@@ -217,6 +324,7 @@ class FoodLibrary {
         .replaceAll(RegExp(r'[ً-ْـ]'), '')
         .replaceAll(RegExp(r'[أإآ]'), 'ا')
         .replaceAll('ة', 'ه')
+        .replaceAll('ى', 'ي')
         .replaceAll(RegExp(r'[^\w؀-ۿ ]'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();

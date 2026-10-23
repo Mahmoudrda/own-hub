@@ -72,11 +72,13 @@ import '../features/cycle/domain/today_check_in.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/onboarding/domain/intake.dart';
 import '../features/progress/domain/progress_repository.dart';
+import '../features/train/domain/custom_workout.dart';
 import '../features/signup/domain/locale_preference.dart';
 import '../features/today/domain/today_day.dart';
 import '../features/today/domain/today_repository.dart';
 import '../features/train/domain/train_repository.dart';
 import '../routing/app_router.dart';
+import 'custom_workout_state.dart';
 import 'cycle_state.dart';
 
 /// The `schemaV` every document carrying one is written with.
@@ -180,6 +182,7 @@ abstract final class CloudDocuments {
     return <CloudDoc>[
       _userDoc(includeHealth: health),
       ..._sessions(),
+      ..._splits(),
       ..._mealDays(includeHealth: health),
       _eatPrefsDoc(),
       ..._mealPlans(),
@@ -227,6 +230,7 @@ abstract final class CloudDocuments {
   static final Map<String, int Function(List<CloudDoc>)> _folds = {
     '': _foldUser,
     'sessions': _foldSessions,
+    'splits': _foldSplits,
     'meals': _foldMealDays,
     'eatPrefs': _foldEatPrefs,
     'mealPlans': _foldMealPlans,
@@ -258,6 +262,7 @@ abstract final class CloudDocuments {
 
   static const List<String> _allReadableCollections = <String>[
     'sessions',
+    'splits',
     'meals',
     'eatPrefs',
     'mealPlans',
@@ -296,6 +301,9 @@ CloudDoc _userDoc({required bool includeHealth}) {
         'equipment': [for (final item in intake.equipment) item.wireName],
         'days': intake.days,
         'minutes': intake.minutes,
+        'minutesCustom': intake.minutesCustom,
+        'level': intake.level.wireName,
+        'weekdays': [...intake.weekdays]..sort(),
         if (includeHealth) 'lifeStage': intake.lifeStage.wireName,
         'setupDone': AppRouter.intakeRepository.setupDone,
         // Null is her never having been asked and an empty list is her
@@ -353,10 +361,17 @@ int _foldUser(List<CloudDoc> docs) {
     goal: _wire(TrainingGoal.values, profile['goal']) ?? defaults.goal,
     place: _wire(TrainingPlace.values, profile['place']) ?? defaults.place,
     equipment: equipment.isEmpty ? defaults.equipment : equipment,
-    days: Intake.allowedDays.contains(days) ? days : defaults.days,
-    minutes: Intake.allowedMinutes.contains(minutes)
-        ? minutes
-        : defaults.minutes,
+    days: Intake.daysOk(days) ? days : defaults.days,
+    minutes: Intake.minutesOk(minutes) ? minutes : defaults.minutes,
+    // Old profiles carry none of these three: the level then follows her
+    // answers, and she has no chosen weekdays.
+    level:
+        TrainingLevel.fromWire(profile['level']) ?? TrainingLevel.defaultLevel,
+    weekdays: Intake.cleanWeekdays([
+      for (final d in _list(profile['weekdays']) ?? const <Object?>[])
+        if (d is int) d,
+    ]),
+    minutesCustom: _bool(profile['minutesCustom']) ?? false,
     // Kept as this phone has it when the cloud has none: never replaced by
     // the default "none" from a profile that simply did not carry it.
     lifeStage:
@@ -406,6 +421,81 @@ int _foldUser(List<CloudDoc> docs) {
   return 1;
 }
 
+// ----------------------------------------------------------------- splits ---
+
+/// The workouts she built herself, one document each under `splits`.
+///
+/// `splits` is a collection the rules also open to a coach's own splits, so the
+/// rule on CREATE and UPDATE is that `ownerKind` is `self`, no run counter is
+/// present, and `updatedAt`, when sent, is the server's own clock. Nothing else
+/// is whitelisted; this shape is fixed here so that it stays small and so a
+/// test can pin it.
+///
+/// A deletion is a document too, `deleted: true` with no name and no moves: the
+/// store only ever writes, and a delete that left the old document in place
+/// would be folded straight back in on the next sign-in.
+Iterable<CloudDoc> _splits() sync* {
+  final state = CustomWorkoutState.instance;
+  for (final workout in state.workouts) {
+    if (!isCustomWorkoutId(workout.id) || workout.moves.isEmpty) continue;
+    yield CloudDoc(
+      collection: 'splits',
+      id: workout.id,
+      data: <String, Object?>{
+        'ownerKind': 'self',
+        'schemaV': kSplitSchema,
+        'name': workout.name,
+        'moves': [for (final move in workout.moves) move.toJson()],
+        'updatedAt': kServerTime,
+      },
+    );
+  }
+  for (final id in state.deletedIds) {
+    if (!isCustomWorkoutId(id)) continue;
+    yield CloudDoc(
+      collection: 'splits',
+      id: id,
+      data: <String, Object?>{
+        'ownerKind': 'self',
+        'schemaV': kSplitSchema,
+        'deleted': true,
+        'updatedAt': kServerTime,
+      },
+    );
+  }
+}
+
+/// A cloud timestamp as the text a workout stores, or null when it is not one.
+String? _stampOf(Object? raw) {
+  if (raw is DateTime) return raw.toIso8601String();
+  if (raw is String) return raw;
+  try {
+    final date = (raw as dynamic).toDate();
+    if (date is DateTime) return date.toIso8601String();
+  } catch (_) {}
+  return null;
+}
+
+int _foldSplits(List<CloudDoc> docs) {
+  final state = CustomWorkoutState.instance;
+  var taken = 0;
+  for (final doc in docs) {
+    if (doc.data['ownerKind'] != 'self' || !isCustomWorkoutId(doc.id)) continue;
+    if (doc.data['deleted'] == true) {
+      if (state.adoptRemoteDeletion(doc.id)) taken++;
+      continue;
+    }
+    final workout = CustomWorkout.tryParse(<String, Object?>{
+      'id': doc.id,
+      'name': doc.data['name'],
+      'moves': doc.data['moves'],
+      'updatedAt': _stampOf(doc.data['updatedAt']),
+    });
+    if (workout != null && state.adoptRemote(workout)) taken++;
+  }
+  return taken;
+}
+
 // --------------------------------------------------------------- sessions ---
 
 Iterable<CloudDoc> _sessions() sync* {
@@ -448,6 +538,30 @@ Iterable<CloudDoc> _sessions() sync* {
             },
     );
   }
+
+  // A session she removed. The rules keep a session with a set in it for good
+  // (`allow delete` covers only an empty live one), so the removal is written
+  // as an update the rules allow: the same source, nothing logged, and
+  // `removed`. Nothing logged also lets a removed live session that never
+  // reached the server be created in this state, so it needs no birth
+  // document. A bool rather than a time: a pending server timestamp reads back
+  // as null, and the merge would miss it.
+  for (final removed in AppRouter.trainRepository.removedSessions) {
+    if (removed.id.isEmpty) continue;
+    yield CloudDoc(
+      collection: 'sessions',
+      id: removed.id,
+      data: <String, Object?>{
+        'source': removed.source.name,
+        'dateKey': removed.dateKey,
+        'sets': const <Object?>[],
+        'loggedSetCount': 0,
+        'removed': true,
+        'schemaV': kCloudSchema,
+        'updatedAt': kServerTime,
+      },
+    );
+  }
 }
 
 int _foldSessions(List<CloudDoc> docs) {
@@ -457,19 +571,24 @@ int _foldSessions(List<CloudDoc> docs) {
 
   for (final doc in docs) {
     if (held.contains(doc.id)) continue;
+    // Removed, on this phone or on the server: never taken back.
+    if (repository.isRemoved(doc.id)) continue;
+    if (_bool(doc.data['removed']) == true) continue;
     final session = _readSession(doc.id, doc.data);
     if (session != null) added.add(session);
   }
   if (added.isEmpty) return 0;
 
+  final sessions = <TrainSession>[...repository.sessions, ...added];
   repository.restore(
-    sessions: <TrainSession>[...repository.sessions, ...added],
+    sessions: sessions,
     flushes: repository.flushes.toList(),
     swaps: repository.swaps.toList(),
     // Deliberately not carried: a session she was midway through is over, and
     // the counter has to stay ahead of every id that now exists or the next
-    // live session reuses one.
-    sessionCounter: repository.sessionCounter,
+    // live session reuses one, which on a new phone would overwrite a session
+    // that came from the cloud.
+    sessionCounter: liveCounterAbove(sessions, repository.sessionCounter),
   );
   return added.length;
 }
@@ -544,6 +663,10 @@ Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
 
     var kcal = 0;
     var protein = 0;
+    int? carbs;
+    int? fat;
+    int? fiber;
+    int? add(int? sum, int? value) => value == null ? sum : (sum ?? 0) + value;
     final slots = <String, Object?>{};
     for (final slot in MealSlot.values) {
       final items = day.itemsIn(slot);
@@ -559,6 +682,9 @@ Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
       for (final item in kept) {
         kcal += item.kcal;
         protein += item.proteinG;
+        carbs = add(carbs, item.carbsG);
+        fat = add(fat, item.fatG);
+        fiber = add(fiber, item.fiberG);
       }
     }
 
@@ -572,6 +698,12 @@ Iterable<CloudDoc> _mealDays({required bool includeHealth}) sync* {
         'totals': <String, Object?>{
           'kcal': kcal.clamp(0, 30000),
           'protein': protein.clamp(0, 2000),
+          // Only when some item carries them. The rule bounds kcal and
+          // protein and leaves the rest of this cache alone, so these need
+          // no change to it; they are clamped the same way all the same.
+          'carbs': ?carbs?.clamp(0, 5000),
+          'fat': ?fat?.clamp(0, 5000),
+          'fiber': ?fiber?.clamp(0, 5000),
         },
         'firstLogAt': ?day.firstLogAt,
         'tz': day.tz,
@@ -638,28 +770,34 @@ MealDay? _readMealDay(String dayId, Map<String, Object?> row) {
 /// One logged item. [includeHealth] false (the backup off) leaves out
 /// `allergenOverride`, the allergens she chose to eat anyway: it is allergy
 /// data, and the copy says allergies stay on the phone (N12).
-Map<String, Object?> _mealItem(
-  MealItem item, {
-  required bool includeHealth,
-}) => <String, Object?>{
-  'itemId': item.itemId,
-  'foodId': item.foodId,
-  'servings': item.servings,
-  'size': item.size,
-  'loggedAt': item.loggedAt,
-  'source': item.source.name,
-  'origin': item.origin.name,
-  'kcal': item.kcal,
-  'proteinG': item.proteinG,
-  if (item.planRef case final ref?)
-    'planRef': <String, Object?>{
-      'assignmentId': ref.assignmentId,
-      'slot': ref.slot.name,
-      'idx': ref.idx,
-    },
-  'helpingOf': ?item.helpingOf,
-  if (includeHealth) 'allergenOverride': item.allergenOverride,
-};
+Map<String, Object?> _mealItem(MealItem item, {required bool includeHealth}) =>
+    <String, Object?>{
+      'itemId': item.itemId,
+      'foodId': item.foodId,
+      'servings': item.servings,
+      'size': item.size,
+      'loggedAt': item.loggedAt,
+      'source': item.source.name,
+      'origin': item.origin.name,
+      'kcal': item.kcal,
+      'proteinG': item.proteinG,
+      // Carbs, fat and fibre, her name for a food the pack does not hold, and
+      // the weight she approved: each only when it is known, so a meal logged
+      // before they existed reads back exactly as it was written.
+      'carbsG': ?item.carbsG,
+      'fatG': ?item.fatG,
+      'fiberG': ?item.fiberG,
+      'name': ?item.name,
+      'grams': ?item.grams,
+      if (item.planRef case final ref?)
+        'planRef': <String, Object?>{
+          'assignmentId': ref.assignmentId,
+          'slot': ref.slot.name,
+          'idx': ref.idx,
+        },
+      'helpingOf': ?item.helpingOf,
+      if (includeHealth) 'allergenOverride': item.allergenOverride,
+    };
 
 MealItem? _readMealItem(Object? raw) {
   final row = _map(raw);
@@ -679,6 +817,11 @@ MealItem? _readMealItem(Object? raw) {
     origin: _pick(MealOrigin.values, row['origin']) ?? MealOrigin.search,
     kcal: _int(row['kcal']) ?? 0,
     proteinG: _int(row['proteinG']) ?? 0,
+    carbsG: _macro(row['carbsG']),
+    fatG: _macro(row['fatG']),
+    fiberG: _macro(row['fiberG']),
+    name: _mealName(row['name']),
+    grams: _weight(row['grams']),
     planRef: switch (ref) {
       null => null,
       final ref => switch ((
@@ -754,6 +897,8 @@ int _foldEatPrefs(List<CloudDoc> docs) {
     ramadanMode: ramadan,
     proteinTargetGOverride: target,
     libVersion: local.libVersion,
+    favourites: local.favourites,
+    customFoods: local.customFoods,
   );
   return taken;
 }
@@ -835,6 +980,8 @@ Iterable<CloudDoc> _mealPlans() sync* {
               'group': line.value.group.name,
               'ticked': line.value.ticked,
               'tickedAt': ?line.value.tickedAt,
+              'text': ?line.value.text,
+              'recipeId': ?line.value.recipeId,
             },
         },
         'recipeVersion': plan.recipeVersion,
@@ -871,6 +1018,8 @@ MealPlan? _readMealPlan(String weekId, Map<String, Object?> row) {
       group: _pick(GroceryGroup.values, line['group']) ?? GroceryGroup.cupboard,
       ticked: _bool(line['ticked']) ?? false,
       tickedAt: _time(line['tickedAt']),
+      text: _str(line['text']),
+      recipeId: _str(line['recipeId']),
     );
   }
   return MealPlan(
@@ -1025,7 +1174,9 @@ CloudDoc? _cycleDoc() {
     data: <String, Object?>{
       'mode': cycle.mode.name,
       'contextFlags': [
-        for (final flag in cycle.contextFlags.take(CycleDocument.maxContextFlags))
+        for (final flag in cycle.contextFlags.take(
+          CycleDocument.maxContextFlags,
+        ))
           flag.name,
       ],
       // Explicitly null rather than absent: `cycleLengthDays == null` is a case
@@ -1307,6 +1458,26 @@ num? _num(Object? value) => value is num ? value : null;
 
 int? _int(Object? value) => value is num ? value.toInt() : null;
 
+/// A macro in grams on a logged meal: a whole, non-negative number, or null
+/// when it is absent or not a number. A day can never read back a negative.
+int? _macro(Object? value) =>
+    value is num && value.isFinite && value >= 0 ? value.round() : null;
+
+/// Her name for a food the pack does not hold, bounded the way a typed name
+/// is on E13.
+String? _mealName(Object? value) {
+  if (value is! String) return null;
+  final name = value.trim();
+  if (name.isEmpty) return null;
+  return name.length <= 80 ? name : name.substring(0, 80);
+}
+
+/// The weight she approved on E13, in grams, when it is a sane one.
+num? _weight(Object? value) =>
+    value is num && value.isFinite && value >= 0 && value <= 3000
+    ? value
+    : null;
+
 double? _double(Object? value) => value is num ? value.toDouble() : null;
 
 /// A moment, however Firestore handed it over. A `Timestamp` has already been
@@ -1382,3 +1553,16 @@ bool _isDayId(String id) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(id);
 // **Where she was standing** — the open post, the scrolled month, the session in
 // flight — is not here for the same reason it is not in the snapshot. Those are
 // places, not records.
+
+/// The next `live-N` counter: at least [current], and past every `live-N` id
+/// already among [sessions].
+@visibleForTesting
+int liveCounterAbove(Iterable<TrainSession> sessions, int current) {
+  var highest = current;
+  for (final session in sessions) {
+    final match = RegExp(r'^live-(\d+)$').firstMatch(session.id);
+    final n = match == null ? null : int.tryParse(match.group(1)!);
+    if (n != null && n > highest) highest = n;
+  }
+  return highest;
+}

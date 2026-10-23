@@ -28,6 +28,20 @@ List<String> _drawn(WidgetTester t) => t
     .map((n) => n.substring('assets/art/'.length).replaceAll('.webp', ''))
     .toList();
 
+/// Screens whose drawing was taken out on purpose: R01 sets the kitten beside
+/// its title instead, and A02 is a settings list.
+const Set<String> _drawsNoIllustration = {
+  'R01',
+  'A02',
+  // Coaching screens show real people instead: coach photos, before and after
+  // pictures, names, messages and plans, laid out like the references chosen
+  // for them (Strava profiles, WhatsApp chats). A drawing would compete with
+  // the people on them.
+  'H01', 'H02', 'H03', 'H05', 'H06',
+  'K02', 'K06', 'K07', 'K16', 'K18',
+  'W01', 'W03', 'W06', 'W10',
+};
+
 void main() {
   final saved = AppRouter.featureFlags;
   tearDown(() => AppRouter.featureFlags = saved);
@@ -133,7 +147,9 @@ void main() {
       }
       final n = drawn.length;
       spread.putIfAbsent(n, () => []).add(entry.key);
-      if (n == 0) none.add(entry.key);
+      if (n == 0 && !_drawsNoIllustration.contains(entry.key)) {
+        none.add(entry.key);
+      }
       if (n > 3) tooMany.add('${entry.key}($n)');
     }
     // ignore: avoid_print
@@ -142,8 +158,10 @@ void main() {
     print('SCREENS WITH MORE THAN THREE: ${tooMany.join(' ')}');
     for (final k in (spread.keys.toList()..sort())) {
       // ignore: avoid_print
-      print('DRAWS $k: ${spread[k]!.length} screens'
-          '${k >= 3 ? ' -> ${spread[k]!.join(' ')}' : ''}');
+      print(
+        'DRAWS $k: ${spread[k]!.length} screens'
+        '${k >= 3 ? ' -> ${spread[k]!.join(' ')}' : ''}',
+      );
     }
     // ignore: avoid_print
     print('SCREENS DRAWING ONE TWICE: ${twice.join(' ')}');
@@ -151,7 +169,8 @@ void main() {
     expect(
       twice,
       isEmpty,
-      reason: 'these screens rendered the same drawing more than once; each '
+      reason:
+          'these screens rendered the same drawing more than once; each '
           'entry names the screen and the mark it repeated',
     );
   });

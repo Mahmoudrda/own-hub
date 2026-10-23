@@ -196,7 +196,7 @@ void main() {
     test('each build mode gets its sink', () {
       expect(
         analyticsSinkFor(release: true, debug: false, debugSend: false),
-        isA<FirebaseAnalyticsSink>(),
+        isA<TeeAnalyticsSink>(),
       );
       expect(
         analyticsSinkFor(release: false, debug: true, debugSend: false),

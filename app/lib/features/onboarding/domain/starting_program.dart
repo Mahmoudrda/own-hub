@@ -1,24 +1,19 @@
 /// The programme O05 offers her, and the catalogue it is chosen from.
 ///
-/// # There is no authored programme content yet
+/// # Three splits, nine programmes
 ///
-/// `6-v2/plans/G2-onboarding-program.md` §9 Q8 states it plainly: three
-/// programme *names* appear in the mockup's copy and `R03` shows the shape of a
-/// training day, but **no programme content is authored** — no week templates,
-/// no day templates, no prescribed sets. The same owner-track dependency as the
-/// 124 workout videos.
+/// `assets/content/starting_programmes.json` holds the coach's three splits (3,
+/// 4 and 5 days a week), each in a beginner, an intermediate and an advanced
+/// tier: nine programmes in all. The tiers of a split hold the same moves in
+/// the same order and differ in sets, reps, rest and the load note. They are
+/// written in the shape the owner's console publishes (`AuthoredProgramme`),
+/// held to the same `workoutProblems`, and every move is a catalogue exercise
+/// carrying that exercise's own tags. The file says `review: drafted ...,
+/// pending Rahma's sign-off`, and nothing here pretends otherwise.
 ///
-/// So this file models the *shape* of a programme and contains exactly one
-/// entry, which carries only what the design already shows on screen. It
-/// deliberately does not contain invented exercises, sets, reps or loads.
-/// Inventing them would be worse than having none: a plausible-looking week of
-/// made-up training is indistinguishable from a real one in review, and it would
-/// reach a pregnant woman's phone.
-///
-/// TODO(owner): author the `programs` catalogue — roughly 12–20 programmes ×
-/// weeks × day templates with prescribed sets — and replace
-/// [kStartingProgramCatalogue] with it. Until then `publishStartingPlan` has
-/// nothing to publish and O05's card is a preview of content that does not exist.
+/// [StartingProgrammes.adopt] reads the file once at start. Until it has, the
+/// catalogue is the single placeholder below, which is what a build with no
+/// content looked like and what a test that never loads the file still sees.
 ///
 /// # Why this is a preview and not the decision
 ///
@@ -39,8 +34,11 @@
 /// does not invent an exclusion list to look careful.
 library;
 
+import 'dart:convert';
+
 import 'package:meta/meta.dart';
 
+import '../../train/domain/workout_library.dart';
 import 'intake.dart';
 
 /// A starting programme, as much of it as the design puts on screen.
@@ -61,7 +59,13 @@ class StartingProgram {
     required this.sessionLength,
     required this.quiet,
     required this.equipment,
-  });
+    this.goals = const {},
+    this.places = const {},
+    this.adapts = false,
+    this.rank = 0,
+    this.tier = TrainingLevel.beginner,
+    String? family,
+  }) : family = family ?? programId;
 
   /// Matches `programs/{programId}` and the published plan version's
   /// `programId`. The presentation layer maps it to her language.
@@ -79,7 +83,29 @@ class StartingProgram {
   /// most load-bearing property in this product's promise.
   final bool quiet;
 
+  /// Kit she must own. [Equipment.none] and [Equipment.mat] are never required.
   final Set<Equipment> equipment;
+
+  /// The goals it is written for. Empty means any.
+  final Set<TrainingGoal> goals;
+
+  /// Where it can be done. Empty means anywhere.
+  final Set<TrainingPlace> places;
+
+  /// Whether its days a week follow her answers instead of being its own. The
+  /// splits write their own days, so they are ranked by them.
+  final bool adapts;
+
+  /// How much it asks of where she trains: a programme for the gym outranks one
+  /// for dumbbells, which outranks one for the floor, when she can do them all.
+  final int rank;
+
+  /// Which of the three versions of its plan this is.
+  final TrainingLevel tier;
+
+  /// The id of the plan the three tiers share (the beginner version's id), the
+  /// key the presentation layer maps to its copy.
+  final String family;
 
   @override
   bool operator ==(Object other) =>
@@ -92,9 +118,10 @@ class StartingProgram {
   String toString() => 'StartingProgram($programId)';
 }
 
-/// The one programme that exists, and it exists as a name only.
+/// The placeholder a build holds until [StartingProgrammes.adopt] has read the
+/// file, and the id O05 still has copy for.
 ///
-/// Its numbers are the ones the design prints on O05's card — "8 weeks · quiet ·
+/// Its numbers are the ones the design printed on O05's card — "8 weeks · quiet ·
 /// no equipment". Nothing more is claimed about it.
 const StartingProgram beginnerFoundations = StartingProgram(
   programId: 'beginner_foundations',
@@ -105,74 +132,329 @@ const StartingProgram beginnerFoundations = StartingProgram(
   equipment: {Equipment.none},
 );
 
-/// The bundled catalogue.
+/// The id of the plan a programme belongs to: its id without the tier suffix
+/// the intermediate and advanced versions carry.
+String programmeFamily(String programId) {
+  for (final tier in const ['intermediate', 'advanced']) {
+    if (programId.endsWith('_$tier')) {
+      return programId.substring(0, programId.length - tier.length - 1);
+    }
+  }
+  return programId;
+}
+
+/// The days a week the coach's splits are written for.
+const List<int> kSplitDays = [3, 4, 5];
+
+/// The split whose days a week come closest to [days]: five or more get the
+/// five day split, four the four day one, anything less the three day one.
+int splitDaysFor(int days) => days >= 5
+    ? 5
+    : days == 4
+    ? 4
+    : 3;
+
+/// The family id of the [days] day split: `split_3day`, `split_4day` or
+/// `split_5day`.
+String splitFamily(int days) => 'split_${days}day';
+
+/// Whether [familyOrId] is one of the three splits, at any tier.
+bool isCoachSplit(String familyOrId) =>
+    kSplitDays.any((d) => programmeFamily(familyOrId) == splitFamily(d));
+
+/// The days a week of the split that [familyOrId] names, or null when it is not
+/// one of the three.
+int? splitDaysOf(String familyOrId) {
+  for (final d in kSplitDays) {
+    if (programmeFamily(familyOrId) == splitFamily(d)) return d;
+  }
+  return null;
+}
+
+/// The tier a programme id names: its suffix, or beginner when it has none.
+TrainingLevel programmeTier(String programId) {
+  for (final tier in const [
+    TrainingLevel.intermediate,
+    TrainingLevel.advanced,
+  ]) {
+    if (programId.endsWith('_${tier.wireName}')) return tier;
+  }
+  return TrainingLevel.beginner;
+}
+
+/// What a programme or plan family she followed before the splits becomes: a
+/// split id is kept, anything else maps to the split nearest her [days] a week,
+/// at the tier its id names (beginner when it names none).
+///
+/// Pure, so the router and the snapshot reader can both use it. The old
+/// programmes were chosen by goal and place and carried no days of their own,
+/// so her days a week is what decides.
+String migratedProgrammeId(String programId, {required int days}) {
+  if (isCoachSplit(programId)) return programId;
+  final family = splitFamily(splitDaysFor(days));
+  final tier = programmeTier(programId);
+  return tier == TrainingLevel.beginner ? family : '${family}_${tier.wireName}';
+}
+
+/// The family of [migratedProgrammeId]: the split itself, whatever tier it is.
+String migratedProgrammeFamily(String family, {required int days}) =>
+    isCoachSplit(family)
+    ? programmeFamily(family)
+    : splitFamily(splitDaysFor(days));
+
+/// The programmes in the bundled file, and the content behind each.
+///
+/// Held in one place so O05 (the card), R02 (the week) and R03 (today's
+/// session) read the same programme.
+abstract final class StartingProgrammes {
+  /// Where the file is bundled.
+  static const String assetPath = 'assets/content/starting_programmes.json';
+
+  static List<StartingProgram> _catalogue = const [beginnerFoundations];
+  static WorkoutLibrary _library = WorkoutLibrary.empty;
+  static final Map<String, ({String en, String ar})> _summaries = {};
+  static String _review = '';
+
+  /// What the file says about its own sign-off.
+  static String get review => _review;
+
+  static List<StartingProgram> get catalogue => _catalogue;
+
+  /// The programme with [programId], or null when none is loaded under it.
+  static AuthoredProgramme? programme(String programId) {
+    for (final p in _library.programmes) {
+      if (p.programId == programId) return p;
+    }
+    return null;
+  }
+
+  /// The names of the programme's days in the order she trains them, joined by a
+  /// middle dot: "Upper · Lower · Lower II". Only the sessions written for a
+  /// woman with no life stage count, so the gentle ones are not listed. Empty
+  /// when no programme is loaded under [programId].
+  static String dayNames(String programId, String languageCode) {
+    final programme = StartingProgrammes.programme(programId);
+    if (programme == null) return '';
+    return [
+      for (final s in programme.sessions)
+        if (suits(s, LifeStage.none)) s.title(languageCode),
+    ].join(' · ');
+  }
+
+  /// A line on what the programme asks of her, in [languageCode].
+  static String summary(String programId, String languageCode) {
+    final s = _summaries[programId];
+    if (s == null) return '';
+    return languageCode == 'ar' ? s.ar : s.en;
+  }
+
+  /// Reads the file's text. Throws [FormatException] when any programme breaks
+  /// a rule; the catalogue is then left as it was, so a bad file never leaves
+  /// her half of a programme.
+  static void adopt(String source) {
+    final decoded = jsonDecode(source);
+    if (decoded is! Map) throw const FormatException('not a library');
+    final json = decoded.cast<String, Object?>();
+    final library = WorkoutLibrary.parse(json);
+    final catalogue = <StartingProgram>[];
+    final summaries = <String, ({String en, String ar})>{};
+    for (final raw in (json['programmes'] as List?) ?? const []) {
+      if (raw is! Map) continue;
+      final meta = raw.cast<String, Object?>();
+      final id = meta['programId'] as String;
+      catalogue.add(
+        StartingProgram(
+          programId: id,
+          weeks: (meta['weeks'] as num?)?.toInt() ?? 8,
+          daysPerWeek: (meta['daysPerWeek'] as num?)?.toInt() ?? 3,
+          sessionLength: _typicalMinutes(library, id),
+          quiet: meta['quiet'] != false,
+          equipment: _wires(
+            meta['equipment'],
+            Equipment.values,
+            (e) => e.wireName,
+          ),
+          goals: _wires(meta['goals'], TrainingGoal.values, (e) => e.wireName),
+          places: _wires(
+            meta['places'],
+            TrainingPlace.values,
+            (e) => e.wireName,
+          ),
+          adapts: false,
+          rank: (meta['rank'] as num?)?.toInt() ?? 0,
+          tier: TrainingLevel.fromWire(meta['tier']) ?? TrainingLevel.beginner,
+          family: programmeFamily(id),
+        ),
+      );
+      summaries[id] = (
+        en: meta['summaryEn'] as String? ?? '',
+        ar: meta['summaryAr'] as String? ?? '',
+      );
+    }
+    if (catalogue.isEmpty) throw const FormatException('no programmes');
+    _library = library;
+    _catalogue = List.unmodifiable(catalogue);
+    _summaries
+      ..clear()
+      ..addAll(summaries);
+    _review = json['review'] as String? ?? '';
+  }
+
+  /// Back to the placeholder. For tests.
+  @visibleForTesting
+  static void reset() {
+    _catalogue = const [beginnerFoundations];
+    _library = WorkoutLibrary.empty;
+    _summaries.clear();
+    _review = '';
+  }
+}
+
+/// The minutes of an ordinary day of [programId], to the nearest five: the
+/// average of its sessions written for a woman with no life stage.
+int _typicalMinutes(WorkoutLibrary library, String programId) {
+  for (final p in library.programmes) {
+    if (p.programId != programId) continue;
+    final minutes = [
+      for (final s in p.sessions)
+        if (suits(s, LifeStage.none)) s.minutes,
+    ];
+    if (minutes.isEmpty) break;
+    final mean = minutes.reduce((a, b) => a + b) / minutes.length;
+    return (mean / 5).round() * 5;
+  }
+  return 15;
+}
+
+Set<T> _wires<T>(Object? wires, List<T> values, String Function(T) wireOf) => {
+  for (final w in (wires as List?) ?? const [])
+    ...values.where((v) => wireOf(v) == w),
+};
+
+/// The bundled catalogue: the programmes in the file once it is read.
 ///
 /// Never queried from Firestore: it is content, it is small, and selection is a
-/// pure in-memory filter (G2 §2.6). One entry today; see the TODO at the top of
-/// this file.
-const List<StartingProgram> kStartingProgramCatalogue = [beginnerFoundations];
+/// pure in-memory filter (G2 §2.6).
+List<StartingProgram> get kStartingProgramCatalogue =>
+    StartingProgrammes.catalogue;
+
+/// What she owns, as far as selection is concerned.
+///
+/// Nothing is always owned, and a mat is not kit worth refusing a floor
+/// programme over. At a ladies' gym, or both, the gym's own kit is hers too.
+/// This is read at selection only: it is never written back into her answers.
+Set<Equipment> _kitFor(Intake intake) => {
+  Equipment.none,
+  Equipment.mat,
+  ...intake.equipment,
+  if (intake.place != TrainingPlace.home) ...{
+    Equipment.dumbbells,
+    Equipment.bands,
+    Equipment.bench,
+    Equipment.barbell,
+    Equipment.cable,
+    Equipment.smithMachine,
+    Equipment.machine,
+  },
+};
 
 /// Picks the programme O05 shows her.
 ///
-/// A pure function of her answers over a bundled list — no Firestore query, no
-/// index, no network, and the same result offline. With a real catalogue this
-/// becomes a genuine filter on place, equipment, days and minutes; with one
-/// entry it returns that entry, and saying so is more honest than writing a
-/// filter that has nothing to filter.
+/// A pure function of her answers over a bundled list: no Firestore query, no
+/// index, no network, and the same result offline.
 ///
-/// Returns null when the catalogue is empty, which the caller must handle — an
-/// empty catalogue is a content failure, not a woman with no options.
+/// **The kit is a hard rule.** A programme that needs something she does not
+/// have is never offered, so no programme at all (null) is what she gets when
+/// nothing fits; an empty catalogue and an unsatisfiable one are both a content
+/// failure to the caller, never a woman handed training she cannot do.
+///
+/// Her days a week come first: the split with her days (any other number maps
+/// to the nearest of 3, 4 and 5), then her [tier] (her own level unless the
+/// caller names another), so a catalogue with only one tier still answers. Her
+/// goal does not choose a plan; it only drives her food targets. Among what is
+/// left, how much the programme asks of where she trains breaks the tie, then
+/// quiet at home.
 StartingProgram? selectStartingProgram(
   Intake intake, {
-  List<StartingProgram> catalogue = kStartingProgramCatalogue,
+  List<StartingProgram>? catalogue,
+  TrainingLevel? tier,
 }) {
-  if (catalogue.isEmpty) return null;
+  final ranked = rankStartingPrograms(intake, catalogue, tier: tier);
+  return ranked.isEmpty ? null : ranked.first;
+}
 
-  // This took `intake` and ignored it — `return catalogue.first` — so a woman
-  // who chose five days at a gym was shown the same three-days-at-home
-  // programme as everyone else. O05 exists to reflect her answers back to her,
-  // so ignoring them there is the one place it is least forgivable.
-  //
-  // Scored rather than filtered: the catalogue is thin (one authored programme
-  // today), and a filter that matches nothing would leave her with a blank
-  // screen. Scoring always returns the closest thing we have.
-  StartingProgram? best;
-  var bestScore = -1000;
-  for (final programme in catalogue) {
-    var score = 0;
+/// The programmes O05 and R02 offer: the best fit of each plan, at most
+/// [count], so the same plan at another tier is never a second card. Best fit
+/// first; the screens draw them in the order of their days.
+List<StartingProgram> topStartingPrograms(
+  Intake intake, {
+  List<StartingProgram>? catalogue,
+  TrainingLevel? tier,
+  int count = 3,
+}) {
+  final seen = <String>{};
+  return [
+    for (final programme in rankStartingPrograms(intake, catalogue, tier: tier))
+      if (seen.add(programme.family)) programme,
+  ].take(count).toList();
+}
 
-    // Equipment is a hard constraint, not a preference. Offering a dumbbell
-    // programme to a woman who owns nothing is offering her nothing, so a
-    // programme needing kit she does not have is pushed below everything else
-    // rather than excluded outright — see the note on scoring above.
-    if (programme.equipment.difference(intake.equipment).isNotEmpty) {
-      score -= 100;
+/// Every programme that fits her kit and place, best first, by the same
+/// comparison [selectStartingProgram] makes. Ties keep the catalogue's order.
+List<StartingProgram> rankStartingPrograms(
+  Intake intake,
+  List<StartingProgram>? catalogue, {
+  TrainingLevel? tier,
+}) {
+  final wanted = tier ?? intake.level;
+  final programmes = catalogue ?? kStartingProgramCatalogue;
+  final have = _kitFor(intake);
+  final days = intake.days.clamp(kSplitDays.first, kSplitDays.last);
+
+  final keyed = <({StartingProgram programme, List<int> key})>[];
+  for (final programme in programmes) {
+    if (!programme.equipment.every(have.contains)) continue;
+    if (programme.places.isNotEmpty &&
+        !programme.places.contains(intake.place)) {
+      continue;
     }
-
-    // Her stated shape of week. Closeness, not equality: three days when she
-    // asked for four is a better offer than nothing.
-    score -= (programme.daysPerWeek - intake.days).abs() * 2;
-    score -= (programme.sessionLength - intake.minutes).abs() ~/ 5;
-
-    // At home means quiet matters; a gym programme need not be.
-    if (intake.place == TrainingPlace.home && programme.quiet) score += 3;
-
-    if (score > bestScore) {
-      bestScore = score;
-      best = programme;
-    }
+    // Compared left to right; a bigger number wins at the first difference.
+    final key = [
+      -(programme.daysPerWeek - days).abs(),
+      programme.tier == wanted ? 1 : 0,
+      programme.rank,
+      // At home quiet matters; a gym programme need not be.
+      intake.place == TrainingPlace.home && programme.quiet ? 1 : 0,
+    ];
+    keyed.add((programme: programme, key: key));
   }
-  return best;
+  // A stable insertion order, so equal keys stay in the catalogue's order.
+  final order = <int>[for (var i = 0; i < keyed.length; i++) i]
+    ..sort((a, b) {
+      if (_later(keyed[a].key, keyed[b].key)) return -1;
+      if (_later(keyed[b].key, keyed[a].key)) return 1;
+      return a.compareTo(b);
+    });
+  return [for (final i in order) keyed[i].programme];
+}
+
+bool _later(List<int> a, List<int> b) {
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return a[i] > b[i];
+  }
+  return false;
 }
 
 /// Whether her life stage actually changes the training she is handed.
 ///
 /// **Measured, not declared.** It runs [selectStartingProgram] once per
 /// [LifeStage] over the same answers and reports whether any of them lands
-/// somewhere different. So it is false today for the two reasons the top of
-/// this file gives — nothing here reads `intake.lifeStage`, and the catalogue
-/// holds one programme — and it turns true by itself on the day either of those
-/// stops being so. Nobody has to remember to flip it.
+/// somewhere different. So it is false today: nothing here reads
+/// `intake.lifeStage`, because the gentler sessions for pregnancy and after a
+/// birth sit inside each programme and are chosen from its list
+/// (`programmeSessionsFor`), not between programmes. It turns true by itself on
+/// the day a stage selects a different programme. Nobody has to remember to
+/// flip it.
 ///
 /// O04 is its one caller, and this is why it exists. That screen offered
 /// *"Pelvic floor first, once your doctor says you are ready"* and *"Gentler
@@ -183,9 +465,7 @@ StartingProgram? selectStartingProgram(
 /// pregnancy. The promises are kept in the dictionary and shown only when this
 /// is true — the arrangement `care_links.dart` uses for Y11's button, which
 /// appears only when there is a page behind it.
-bool lifeStageShapesTraining({
-  List<StartingProgram> catalogue = kStartingProgramCatalogue,
-}) {
+bool lifeStageShapesTraining({List<StartingProgram>? catalogue}) {
   const answers = Intake(place: TrainingPlace.home, days: 3, minutes: 15);
   final baseline = selectStartingProgram(answers, catalogue: catalogue);
   for (final stage in LifeStage.values) {

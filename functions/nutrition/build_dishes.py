@@ -1,0 +1,939 @@
+"""Build egyptian_dishes.json: Egyptian and Arabic dishes as standard recipes.
+
+Each dish is one typical serving of a well-known home or street recipe, written
+as USDA FoodData Central ingredients in grams: cooked forms where the dish uses
+cooked components, and the oil a fried food absorbs. Nothing here is a typed
+macro number. Every per-100 g value in the output is computed from
+usda_foods.json: the ingredients' nutrients summed and divided by the serving's
+weight. `yield_` is the cooked weight over the raw weight, for dishes that lose
+water in the oven or the pan; the serving weight is the ingredients' grams
+times it.
+
+A recipe line may name another dish ("@taameya") to use that dish's recipe,
+scaled to the grams given, so a sandwich is its bread plus its filling.
+
+Every number is an estimate from a standard recipe, pending review by a
+dietitian, and every dish says so.
+
+Run from functions/:
+    .venv/bin/python -I nutrition/build_dishes.py           # write the file
+    .venv/bin/python -I nutrition/build_dishes.py --check   # exit 1 if stale
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+USDA_PATH = os.path.join(HERE, "usda_foods.json")
+OUT_PATH = os.path.join(HERE, "egyptian_dishes.json")
+
+REVIEW = "estimated from a standard recipe, pending dietitian review"
+NUTRIENTS = ("kcal", "protein_g", "carbs_g", "fat_g", "fiber_g")
+
+# key: (fdcId, the start of its USDA name, the label shown to her)
+INGREDIENTS = {
+    "rice": (168878, "Rice, white, long-grain, regular, enriched, cooked", "rice, cooked"),
+    "rice_raw": (168877, "Rice, white, long-grain, regular, raw", "rice, uncooked"),
+    "pasta": (169737, "Pasta, cooked, enriched", "pasta, cooked"),
+    "lentils": (172421, "Lentils, mature seeds, cooked, boiled", "lentils, cooked"),
+    "chickpeas": (173757, "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked", "chickpeas, cooked"),
+    "chickpeas_dry": (173756, "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw", "chickpeas, dried"),
+    "fava": (173753, "Broadbeans (fava beans), mature seeds, cooked", "fava beans, cooked"),
+    "fava_dry": (175205, "Broadbeans (fava beans), mature seeds, raw", "fava beans, dried"),
+    "white_beans": (175203, "Beans, white, mature seeds, cooked", "white beans, cooked"),
+    "lupins": (172424, "Lupins, mature seeds, cooked, boiled", "lupini beans, cooked"),
+    "pita_ww": (174916, "Bread, pita, whole-wheat", "baladi bread"),
+    "pita": (174915, "Bread, pita, white, enriched", "white pita bread"),
+    "roll": (172796, "Rolls, hamburger or hotdog, plain", "fino roll"),
+    "bread_white": (174924, "Bread, white, commercially prepared", "white bread"),
+    "bulgur": (170287, "Bulgur, cooked", "bulgur wheat, cooked"),
+    "couscous": (169700, "Couscous, cooked", "couscous, cooked"),
+    "semolina": (169715, "Semolina, enriched", "semolina"),
+    "flour": (168894, "Wheat flour, white, all-purpose, enriched", "white flour"),
+    "phyllo": (172791, "Phyllo dough", "phyllo or kunafa dough"),
+    "puff_pastry": (172738, "Puff pastry, frozen, ready-to-bake, baked", "puff pastry, baked"),
+    "cornstarch": (169698, "Cornstarch", "cornstarch"),
+    "jute": (168420, "Jute, potherb, cooked", "molokhia leaves, cooked"),
+    "okra": (169261, "Okra, cooked, boiled", "okra, cooked"),
+    "taro": (168486, "Taro, cooked", "taro, cooked"),
+    "zucchini": (169292, "Squash, summer, zucchini, includes skin, cooked", "zucchini, cooked"),
+    "eggplant_raw": (169228, "Eggplant, raw", "eggplant, raw"),
+    "eggplant": (169229, "Eggplant, cooked, boiled", "eggplant, cooked"),
+    "green_pepper": (170427, "Peppers, sweet, green, raw", "green pepper"),
+    "red_pepper": (170108, "Peppers, sweet, red, raw", "red pepper"),
+    "tomato": (170457, "Tomatoes, red, ripe, raw", "tomato"),
+    "tomato_paste": (170459, "Tomato products, canned, paste", "tomato paste"),
+    "tomato_sauce": (170054, "Tomato products, canned, sauce", "tomato sauce"),
+    "onion": (170000, "Onions, raw", "onion"),
+    "spring_onion": (170005, "Onions, spring or scallions", "spring onion"),
+    "garlic": (169230, "Garlic, raw", "garlic"),
+    "parsley": (170416, "Parsley, fresh", "parsley"),
+    "dill": (172233, "Dill weed, fresh", "dill"),
+    "coriander": (169997, "Coriander (cilantro) leaves, raw", "coriander leaves"),
+    "mint": (173475, "Spearmint, fresh", "mint"),
+    "lettuce": (169247, "Lettuce, cos or romaine, raw", "lettuce"),
+    "cucumber": (168409, "Cucumber, with peel, raw", "cucumber"),
+    "carrot": (170393, "Carrots, raw", "carrot"),
+    "cabbage": (169975, "Cabbage, raw", "cabbage"),
+    "grape_leaves": (169393, "Grape leaves, canned", "vine leaves"),
+    "cauliflower": (169986, "Cauliflower, raw", "cauliflower"),
+    "spinach": (168463, "Spinach, cooked, boiled", "spinach, cooked"),
+    "radish": (169276, "Radishes, raw", "radish"),
+    "lemon": (167747, "Lemon juice, raw", "lemon juice"),
+    "vinegar": (172237, "Vinegar, distilled", "vinegar"),
+    "green_beans": (169141, "Beans, snap, green, cooked, boiled", "green beans, cooked"),
+    "peas": (170017, "Peas, green, frozen, cooked, boiled", "peas, cooked"),
+    "potato": (170440, "Potatoes, boiled, cooked without skin", "potato, cooked"),
+    "fries": (170698, "Fast foods, potato, french fried in vegetable oil", "french fries"),
+    "sweet_potato": (168483, "Sweet potato, cooked, baked in skin", "sweet potato, baked"),
+    "corn": (169999, "Corn, sweet, yellow, cooked, boiled", "corn, cooked"),
+    "pickles": (168558, "Pickles, cucumber, dill or kosher dill", "pickles"),
+    "chicken_breast": (171477, "Chicken, broilers or fryers, breast, meat only, cooked, roasted", "chicken breast, cooked"),
+    "chicken_thigh": (172388, "Chicken, broilers or fryers, thigh, meat only, cooked, roasted", "chicken thigh, cooked"),
+    "chicken": (171450, "Chicken, broilers or fryers, meat and skin, cooked, roasted", "chicken with skin, cooked"),
+    "chicken_stewed": (171451, "Chicken, broilers or fryers, meat only, cooked, stewed", "chicken, boiled"),
+    "beef_kofta": (174032, "Beef, ground, 85% lean meat / 15% fat, patty, cooked, broiled", "minced beef, grilled"),
+    "beef_mince": (171799, "Beef, ground, 80% lean meat / 20% fat, crumbles, cooked, pan-browned", "minced beef, cooked"),
+    "beef_stew": (171203, "Beef, chuck for stew, separable lean and fat, all grades, cooked, braised", "beef, stewed"),
+    "lamb": (172480, "Lamb, composite of trimmed retail cuts, separable lean and fat", "lamb, cooked"),
+    "lamb_shoulder": (172497, "Lamb, shoulder, whole (arm and blade), separable lean and fat", "lamb shoulder, braised"),
+    "liver": (168627, "Beef, variety meats and by-products, liver, cooked, pan-fried", "beef liver, fried"),
+    "chicken_liver": (174491, "Chicken, liver, all classes, cooked, pan-fried", "chicken liver, fried"),
+    "rabbit": (174346, "Game meat, rabbit, domesticated, composite of cuts, cooked, stewed", "rabbit, stewed"),
+    "pigeon": (169905, "Dove, cooked (includes squab)", "pigeon, cooked"),
+    "tripe": (174769, "Beef, variety meats and by-products, tripe, cooked", "tripe, cooked"),
+    "tilapia": (175177, "Fish, tilapia, cooked, dry heat", "tilapia, cooked"),
+    "mullet": (175124, "Fish, mullet, striped, cooked, dry heat", "mullet, cooked"),
+    "herring": (173668, "Fish, herring, Atlantic, kippered", "smoked herring"),
+    "shrimp": (171971, "Crustaceans, shrimp, mixed species, cooked, moist heat", "shrimp, cooked"),
+    "egg": (171287, "Egg, whole, raw, fresh", "egg"),
+    "egg_boiled": (173424, "Egg, whole, cooked, hard-boiled", "egg, boiled"),
+    "egg_fried": (173423, "Egg, whole, cooked, fried", "egg, fried"),
+    "pastrami": (170204, "Beef, cured, pastrami", "pastirma"),
+    "sausage": (174618, "Sausage, beef, fresh, cooked", "beef sausage, cooked"),
+    "milk": (171265, "Milk, whole, 3.25% milkfat", "whole milk"),
+    "feta": (173420, "Cheese, feta", "white cheese (domiati)"),
+    "cottage": (173417, "Cheese, cottage, lowfat, 1% milkfat", "areesh cheese"),
+    "romano": (171249, "Cheese, romano", "rumi cheese"),
+    "mozzarella": (170845, "Cheese, mozzarella, whole milk", "mozzarella"),
+    "yogurt": (171284, "Yogurt, plain, whole milk", "yogurt"),
+    "greek_yogurt": (171304, "Yogurt, Greek, plain, whole milk", "strained yogurt"),
+    "butter": (173430, "Butter, without salt", "butter"),
+    "ghee": (173412, "Butter oil, anhydrous", "ghee"),
+    "cream": (170859, "Cream, fluid, heavy whipping", "cream (eshta)"),
+    "olive_oil": (171413, "Oil, olive, salad or cooking", "olive oil"),
+    "oil": (171025, "Oil, sunflower, linoleic", "vegetable oil"),
+    "tahini": (170189, "Seeds, sesame butter, tahini, from roasted and toasted kernels", "tahini"),
+    "sesame": (170151, "Seeds, sesame seeds, whole, roasted and toasted", "sesame seeds"),
+    "sugar": (169655, "Sugars, granulated", "sugar"),
+    "honey": (169640, "Honey", "honey"),
+    "jam": (169641, "Jams and preserves", "jam"),
+    "coconut": (170170, "Nuts, coconut meat, dried (desiccated), not sweetened", "desiccated coconut"),
+    "almonds": (170567, "Nuts, almonds", "almonds"),
+    "pistachio": (170185, "Nuts, pistachio nuts, dry roasted, without salt", "pistachios"),
+    "walnuts": (170187, "Nuts, walnuts, english", "walnuts"),
+    "raisins": (168165, "Raisins, dark, seedless", "raisins"),
+    "dates": (171726, "Dates, deglet noor", "dates"),
+    "tamarind": (167763, "Tamarinds, raw", "tamarind"),
+    "carob": (173755, "Carob flour", "carob"),
+    "mango": (169910, "Mangos, raw", "mango"),
+    "guava": (173044, "Guavas, common, raw", "guava"),
+    "strawberries": (167762, "Strawberries, raw", "strawberries"),
+    "tea": (173227, "Beverages, tea, black, brewed", "tea"),
+    "coffee": (171890, "Beverages, coffee, brewed, prepared with tap water", "coffee"),
+    "hibiscus": (171946, "Beverages, tea, hibiscus, brewed", "hibiscus infusion"),
+    "water": (173647, "Beverages, water, tap, drinking", "water"),
+    "cumin": (170923, "Spices, cumin seed", "cumin"),
+    "thyme": (170938, "Spices, thyme, dried", "dried thyme (zaatar)"),
+    "cinnamon": (171320, "Spices, cinnamon, ground", "cinnamon"),
+}
+
+
+def D(key, name_en, name_ar, category, aliases, recipe, yield_=1.0, note=None):
+    return {
+        "key": key,
+        "name_en": name_en,
+        "name_ar": name_ar,
+        "category": category,
+        "aliases": aliases,
+        "recipe": recipe,
+        "yield": yield_,
+        "yield_note": note,
+    }
+
+
+FRIED = "includes the oil a fried food absorbs"
+BAKED = "weight after baking, which drives off part of the water"
+SYRUP = "includes the sugar syrup poured over it"
+
+DISHES = [
+    # ------------------------------------------------ Egyptian staples
+    D("koshary", "Koshary", "كشري", "main",
+      ["koshari", "kushari", "koshary", "koshary", "egyptian koshary", "كشرى", "كشري مصري", "طبق كشري"],
+      [("rice", 100), ("lentils", 60), ("pasta", 110), ("chickpeas", 30), ("onion", 25),
+       ("oil", 14), ("tomato_sauce", 90), ("garlic", 3), ("vinegar", 8), ("cumin", 1)],
+      note="crispy onions counted as raw onion plus the oil they take up"),
+    D("ful_medames", "Ful medames", "فول مدمس", "breakfast",
+      ["ful", "foul", "fool", "ful medames", "foul medames", "fool medames", "ful mudammas", "plain ful",
+       "فول", "فول سادة", "فول مدمس سادة"],
+      [("fava", 200), ("oil", 5), ("lemon", 5), ("cumin", 1)]),
+    D("ful_bel_zeit", "Ful with oil", "فول بالزيت", "breakfast",
+      ["ful bel zeit", "foul bel zeit", "fool bel zeit", "ful with oil", "foul with oil", "فول بالزيت الحار", "فول بزيت"],
+      [("fava", 200), ("oil", 15), ("lemon", 5), ("cumin", 1), ("tomato", 20), ("onion", 10)]),
+    D("ful_bel_tahina", "Ful with tahini", "فول بالطحينة", "breakfast",
+      ["ful bel tahina", "foul bel tahina", "fool bel ta7ina", "ful with tahini", "فول بالطحينه"],
+      [("fava", 200), ("tahini", 20), ("lemon", 5), ("olive_oil", 5), ("cumin", 1), ("garlic", 2)]),
+    D("ful_bel_beid", "Ful with egg", "فول بالبيض", "breakfast",
+      ["ful bel beid", "foul bel beid", "fool bel bed", "ful with egg", "ful with eggs", "فول بيض", "فول بالبيض المقلي"],
+      [("fava", 180), ("egg", 55), ("oil", 8), ("cumin", 1)]),
+    D("ful_iskandarani", "Alexandrian ful", "فول إسكندراني", "breakfast",
+      ["ful eskandarani", "foul eskandarani", "fool eskandarani", "alexandrian ful", "فول اسكندراني"],
+      [("fava", 180), ("tomato", 40), ("green_pepper", 20), ("onion", 20), ("garlic", 3), ("oil", 12), ("cumin", 1)]),
+    D("taameya", "Taameya (Egyptian falafel)", "طعمية", "breakfast",
+      ["taameya", "ta3meya", "ta'ameya", "tameya", "taamia", "taameyya", "egyptian falafel", "طعميه", "طعمية مقلية"],
+      [("fava_dry", 30), ("water", 25), ("parsley", 7), ("dill", 4), ("coriander", 6), ("onion", 10),
+       ("garlic", 2), ("sesame", 2), ("cumin", 1), ("oil", 15)],
+      yield_=0.95, note="dried fava soaked in water, " + FRIED),
+    D("besara", "Besara", "بصارة", "main",
+      ["besara", "bessara", "bisara", "besarah", "بصاره"],
+      [("fava", 120), ("jute", 20), ("parsley", 10), ("dill", 10), ("coriander", 10), ("water", 40),
+       ("onion", 30), ("oil", 12), ("garlic", 3), ("cumin", 1)]),
+    D("shakshuka", "Shakshuka", "شكشوكة", "breakfast",
+      ["shakshuka", "shakshouka", "shakshoka", "eggs with tomatoes", "eggs with tomato", "بيض بالطماطم", "شكشوكه"],
+      [("egg", 110), ("tomato", 150), ("green_pepper", 30), ("onion", 30), ("oil", 10), ("garlic", 3)],
+      yield_=0.9),
+    D("eggs_pastirma", "Baladi eggs with pastirma", "بيض بالبسطرمة", "breakfast",
+      ["beid bel basterma", "bed bel basterma", "eggs with pastirma", "eggs with basterma", "eggs pastirma",
+       "baladi eggs with pastirma", "بيض بسطرمة", "بيض بالبسطرمه", "بيض بلدي بالبسطرمة"],
+      [("egg", 110), ("pastrami", 40), ("ghee", 8)], yield_=0.95),
+    D("eggs_fried_ghee", "Fried baladi eggs", "بيض مقلي", "breakfast",
+      ["beid ma2li", "fried eggs", "fried baladi eggs", "eggs fried in ghee", "بيض عيون", "بيض مقلى", "بيض بلدي مقلي"],
+      [("egg_fried", 100), ("ghee", 4)]),
+    D("egga", "Eggah (Egyptian herb omelette)", "عجة", "breakfast",
+      ["eggah", "egga", "3egga", "herb omelette", "egyptian omelette", "عجه", "عجة بالبقدونس"],
+      [("egg", 110), ("parsley", 10), ("onion", 20), ("flour", 5), ("oil", 10)], yield_=0.9),
+    D("eggs_boiled", "Boiled eggs", "بيض مسلوق", "breakfast",
+      ["beid masloo2", "bed masloo2", "boiled eggs", "hard boiled eggs", "بيض مسلوق بلدي"],
+      [("egg_boiled", 100)]),
+    D("omelette", "Omelette", "أومليت", "breakfast",
+      ["omelette", "omelet", "plain omelette", "plain omelet", "omlet", "omelette with milk", "اومليت", "أومليت سادة", "اومليت سادة"],
+      [("egg", 110), ("milk", 15), ("olive_oil", 5)], yield_=0.9,
+      note="two eggs beaten with a splash of milk, cooked in 1 tsp olive oil"),
+    D("egg_fried_olive", "Fried egg in olive oil", "بيضة مقلية بزيت الزيتون", "breakfast",
+      ["fried egg", "fried egg in olive oil", "egg fried in olive oil", "fried egg in 1 tsp olive oil",
+       "beida ma2leya bel zeit", "بيضة مقلية", "بيضه مقليه", "بيضة عيون", "بيضه مقليه بزيت الزيتون"],
+      [("egg", 50), ("olive_oil", 5)], yield_=0.96, note="one large egg fried in 1 tsp (5 g) olive oil"),
+    D("kesk", "Kesk (fermented wheat and yoghurt)", "كشك صعيدي", "main",
+      ["kesk", "kishk", "kishk saidi", "kesk saidy", "kesk sa3idy", "upper egyptian kesk", "كشك", "كشك صعيدى", "كشك بالسمنة", "كشك بالسمنه"],
+      [("bulgur", 70), ("yogurt", 100), ("ghee", 8), ("garlic", 3), ("chicken_stewed", 40), ("water", 130)],
+      note="fermented wheat counted as bulgur, cooked in broth counted as water"),
+    D("mesh", "Mesh (aged cheese)", "مش", "breakfast",
+      ["mesh", "mish", "meshe", "مش صعيدي", "مش بلدي", "مش بالطماطم"],
+      [("feta", 35), ("romano", 5), ("tomato", 5), ("green_pepper", 5), ("oil", 3)],
+      note="aged in whey; counted as white and hard cheese"),
+    D("gebna_areesh", "Areesh cheese", "جبنة قريش", "cheese",
+      ["gebna areesh", "gebna 2areesh", "areesh", "qareesh cheese", "jibna qarish", "cottage cheese", "جبنه قريش", "جبنة كوتيج"],
+      [("cottage", 100)], note="low-fat fresh curd cheese, counted as 1% cottage cheese"),
+    D("areesh_tomato", "Areesh cheese with tomato", "جبنة قريش بالطماطم", "breakfast",
+      ["gebna areesh bel tamatem", "areesh with tomato", "جبنه قريش بالطماطم"],
+      [("cottage", 80), ("tomato", 40), ("green_pepper", 10), ("olive_oil", 5)]),
+    D("gebna_rumi", "Rumi cheese", "جبنة رومي", "cheese",
+      ["gebna romy", "gebna rumi", "gebna roumy", "rumi cheese", "roumy cheese", "romi cheese", "جبنه رومي"],
+      [("romano", 30)], note="aged hard cheese, counted as romano"),
+    D("gebna_domiati", "Domiati cheese", "جبنة دمياطي", "cheese",
+      ["gebna domiaty", "gebna domiati", "domiati", "domiati cheese", "white cheese", "gebna beida",
+       "feta", "feta cheese", "gebna feta", "جبنه بيضا", "جبنة بيضاء", "جبنه دمياطي", "جبنة بيضا", "جبنة فيتا"],
+      [("feta", 40)], note="white brined cheese, counted as feta"),
+    D("ful_sandwich", "Ful sandwich", "سندوتش فول", "sandwich",
+      ["ful sandwich", "foul sandwich", "fool sandwich", "sandwich ful", "ساندوتش فول", "سندويتش فول", "سندوتش فول بالزيت"],
+      [("pita_ww", 45), ("@ful_bel_zeit", 90), ("@tahina", 8)]),
+    D("taameya_sandwich", "Taameya sandwich", "سندوتش طعمية", "sandwich",
+      ["taameya sandwich", "ta3meya sandwich", "tameya sandwich", "ساندوتش طعمية", "سندويتش طعميه", "سندوتش طعميه"],
+      [("pita_ww", 45), ("@taameya", 60), ("tomato", 15), ("@tahina", 15), ("pickles", 5)]),
+    D("ful_taameya_breakfast", "Ful and taameya breakfast", "فطار فول وطعمية", "breakfast",
+      ["fool w ta3meya", "ful and taameya", "ful w taameya", "فول وطعمية", "فول و طعميه", "فطار مصري"],
+      [("@ful_bel_zeit", 150), ("@taameya", 80), ("pita_ww", 90), ("@salata_baladi", 60), ("@tahina", 20)]),
+    D("tahina", "Tahini sauce", "طحينة", "salad",
+      ["tahina", "ta7ina", "tahini sauce", "tahina salad", "salata tahina", "سلطة طحينة", "طحينه", "سلطه طحينه"],
+      [("tahini", 30), ("water", 25), ("lemon", 8), ("garlic", 2), ("cumin", 1)]),
+    D("baba_ghanoug", "Baba ghanoug", "بابا غنوج", "salad",
+      ["baba ghanoug", "baba ghanoush", "baba ghanouj", "baba ghannouj", "بابا غنوج بالطحينة"],
+      [("eggplant", 120), ("tahini", 15), ("lemon", 8), ("garlic", 3), ("olive_oil", 5)]),
+    D("salata_baladi", "Egyptian salad", "سلطة بلدي", "salad",
+      ["salata baladi", "baladi salad", "egyptian salad", "green salad", "salata khadra",
+       "سلطة خضرا", "سلطة خضراء", "سلطه خضرا", "سلطة بلدى", "سلطه بلدي"],
+      [("tomato", 80), ("cucumber", 70), ("onion", 15), ("green_pepper", 15), ("parsley", 5), ("lemon", 8), ("oil", 5)]),
+    D("salata_zabadi", "Yogurt cucumber salad", "سلطة زبادي", "salad",
+      ["salata zabadi", "yogurt salad", "yogurt cucumber salad", "zabadi bel khiar", "سلطة زبادى", "زبادي بالخيار", "سلطه زبادي"],
+      [("yogurt", 150), ("cucumber", 60), ("garlic", 2), ("mint", 2)]),
+    D("molokhia", "Molokhia", "ملوخية", "main",
+      ["molokhia", "molokheya", "mloukhiya", "mulukhiyah", "molokhiya", "melokhia", "ملوخيه", "ملوخية خضرا", "ملوخيه سادة"],
+      [("jute", 150), ("water", 100), ("ghee", 8), ("garlic", 8), ("coriander", 3)],
+      note="cooked in broth, counted as water, with the garlic and ghee tasha"),
+    D("molokhia_chicken", "Molokhia with chicken", "ملوخية بالفراخ", "main",
+      ["molokhia with chicken", "molokhia bel frakh", "molokheya w frakh", "ملوخيه بالفراخ", "ملوخية وفراخ", "ملوخية بالدجاج"],
+      [("@molokhia", 250), ("chicken", 150)]),
+    D("molokhia_rabbit", "Molokhia with rabbit", "ملوخية بالأرانب", "main",
+      ["molokhia with rabbit", "molokhia bel araneb", "molokheya w araneb", "ملوخيه بالارانب", "ملوخية بالارانب", "ملوخيه وارانب"],
+      [("@molokhia", 250), ("rabbit", 150)]),
+    D("mahshi_vine", "Stuffed vine leaves (warak enab)", "محشي ورق عنب", "main",
+      ["warak enab", "mahshi warak enab", "wara2 3enab", "warak 3enab", "mahshi wara2 3enab", "stuffed vine leaves", "stuffed grape leaves",
+       "dolma", "ورق عنب", "محشى ورق عنب", "ورق عنب محشي"],
+      [("grape_leaves", 40), ("rice", 100), ("tomato_sauce", 20), ("onion", 10), ("parsley", 5), ("dill", 3),
+       ("mint", 2), ("oil", 12), ("lemon", 5)]),
+    D("mahshi_peppers", "Stuffed peppers", "محشي فلفل", "main",
+      ["mahshi felfel", "stuffed peppers", "stuffed bell peppers", "محشى فلفل", "فلفل محشي"],
+      [("green_pepper", 100), ("rice", 90), ("tomato_sauce", 25), ("onion", 10), ("parsley", 5), ("dill", 3), ("oil", 10)]),
+    D("mahshi_zucchini", "Stuffed zucchini (kousa)", "محشي كوسة", "main",
+      ["mahshi kousa", "mahshi koussa", "mahshi kossa", "mahshi kosa", "kosa mahshi", "stuffed zucchini", "stuffed courgette", "محشي كوسه", "كوسة محشية", "كوسه محشي"],
+      [("zucchini", 120), ("rice", 80), ("tomato_sauce", 25), ("onion", 10), ("parsley", 5), ("dill", 3), ("oil", 10)]),
+    D("mahshi_eggplant", "Stuffed eggplant", "محشي باذنجان", "main",
+      ["mahshi betengan", "stuffed eggplant", "stuffed aubergine", "محشي بتنجان", "محشى باذنجان", "باذنجان محشي"],
+      [("eggplant", 110), ("rice", 80), ("tomato_sauce", 25), ("onion", 10), ("parsley", 5), ("dill", 3), ("oil", 10)]),
+    D("mahshi_cabbage", "Stuffed cabbage", "محشي كرنب", "main",
+      ["mahshi koronb", "mahshi kromb", "stuffed cabbage", "stuffed cabbage rolls", "malfouf", "محشى كرنب", "ملفوف", "كرنب محشي"],
+      [("cabbage", 60), ("rice", 110), ("tomato_sauce", 20), ("onion", 10), ("dill", 3), ("oil", 10), ("garlic", 2)]),
+    D("mahshi_mix", "Mixed mahshi", "محشي مشكل", "main",
+      ["mahshi", "mahshi meshakel", "mixed mahshi", "محشي", "محشى مشكل", "محشي مشكل"],
+      [("@mahshi_vine", 100), ("@mahshi_peppers", 100), ("@mahshi_zucchini", 100)]),
+    D("fattah", "Fattah with meat", "فتة باللحمة", "main",
+      ["fattah", "fatta", "fattah with meat", "fatta bel lahma", "egyptian fattah", "فتة", "فته", "فتة لحمة", "فته باللحمه"],
+      [("rice", 150), ("pita", 50), ("lamb", 100), ("tomato_sauce", 50), ("garlic", 5), ("vinegar", 5),
+       ("ghee", 15), ("water", 50)], note="bread soaked in broth, counted as water"),
+    D("fattah_chicken", "Fattah with chicken", "فتة بالفراخ", "main",
+      ["fattah with chicken", "fatta bel frakh", "فته بالفراخ", "فتة فراخ"],
+      [("rice", 150), ("pita", 50), ("chicken", 120), ("tomato_sauce", 50), ("garlic", 5), ("vinegar", 5),
+       ("ghee", 12), ("water", 50)]),
+    D("hawawshi", "Hawawshi", "حواوشي", "sandwich",
+      ["hawawshi", "hawawshy", "7awawshi", "hawawsheh", "حواوشى", "حواوشي بلدي"],
+      [("pita_ww", 90), ("beef_mince", 100), ("onion", 25), ("green_pepper", 15), ("tomato", 10), ("parsley", 3), ("oil", 8)]),
+    D("feteer", "Feteer meshaltet", "فطير مشلتت", "bread",
+      ["feteer", "fetir", "feteer meshaltet", "fetir meshaltet", "egyptian layered pie", "فطير", "فطير بالسمنة", "مشلتت"],
+      [("flour", 70), ("ghee", 30), ("water", 35)], yield_=0.8, note=BAKED),
+    D("feteer_honey", "Feteer with honey", "فطير بالعسل", "sweet",
+      ["feteer bel 3asal", "feteer with honey", "fetir with honey", "فطير بالعسل الابيض", "فطير وعسل"],
+      [("@feteer", 110), ("honey", 25)]),
+    D("feteer_cheese", "Feteer with cheese", "فطير بالجبنة", "main",
+      ["feteer bel gebna", "feteer with cheese", "cheese feteer", "فطير جبنة", "فطير بالجبنه"],
+      [("@feteer", 110), ("feta", 30), ("mozzarella", 20)]),
+    D("roz_shareya", "Rice with vermicelli", "رز بالشعرية", "side",
+      ["roz bel shareya", "roz bel sha'reya", "rice with vermicelli", "ruz bil sha3riya", "roz shareya", "egyptian rice",
+       "أرز بالشعرية", "رز بالشعريه", "ارز بالشعريه"],
+      [("rice", 170), ("pasta", 20), ("oil", 7)]),
+    D("roz_abyad", "Plain white rice", "رز أبيض", "side",
+      ["roz abyad", "white rice", "plain rice", "plain white rice", "أرز أبيض", "رز ابيض", "رز سادة"],
+      [("rice", 180), ("butter", 3)]),
+    D("roz_khalta", "Rice with liver and nuts", "رز بالخلطة", "side",
+      ["roz bel khalta", "rice with khalta", "festive rice with nuts", "ارز بالخلطة", "رز بالخلطه"],
+      [("rice", 180), ("chicken_liver", 40), ("beef_mince", 30), ("almonds", 8), ("raisins", 8), ("ghee", 10)]),
+    D("roz_meammar", "Baked rice with milk (roz me'ammar)", "رز معمر", "side",
+      ["roz me3ammar", "roz mo3amar", "rice meammar", "roz meammar", "أرز معمر", "رز معمر بالفرن"],
+      [("rice_raw", 60), ("milk", 150), ("cream", 30), ("butter", 15)], yield_=0.85, note=BAKED),
+    D("macarona_bechamel", "Macarona bechamel", "مكرونة بشاميل", "main",
+      ["macarona bechamel", "makarona bashamel", "macaroni bechamel", "pasta bechamel", "bechamel pasta",
+       "مكرونه بشاميل", "مكرونة بالبشاميل", "مكرونه بالبشاميل"],
+      [("pasta", 150), ("beef_mince", 50), ("onion", 10), ("tomato_paste", 5), ("milk", 100), ("butter", 12), ("flour", 10)],
+      yield_=0.9, note=BAKED),
+    D("macarona_salsa", "Pasta with tomato sauce", "مكرونة بالصلصة", "main",
+      ["macarona bel salsa", "makarona salsa", "pasta with tomato sauce", "red pasta", "مكرونه بالصلصه", "مكرونة حمرا"],
+      [("pasta", 200), ("tomato_sauce", 80), ("onion", 10), ("oil", 8)]),
+    D("kofta", "Kofta", "كفتة", "main",
+      ["kofta", "beef kofta", "kufta", "kofta mashwiya", "grilled kofta", "kofta kebab", "كفته", "كفتة مشوية", "كفته مشويه"],
+      [("beef_kofta", 120), ("onion", 15), ("parsley", 5)]),
+    D("kebab", "Lamb kebab", "كباب", "main",
+      ["kebab", "kabab", "lamb kebab", "kabab daani", "كباب ضاني", "كباب مشوي"],
+      [("lamb", 150), ("onion", 10)]),
+    D("kebab_kofta", "Kebab and kofta plate", "كباب وكفتة", "main",
+      ["kabab w kofta", "kebab and kofta", "kebab kofta plate", "كباب و كفته", "كباب وكفته", "طبق كباب وكفتة"],
+      [("@kofta", 120), ("@kebab", 120), ("@salata_baladi", 60), ("pita_ww", 45), ("@tahina", 20)]),
+    D("shish_tawook", "Shish tawook", "شيش طاووق", "main",
+      ["shish tawook", "shish taouk", "shish tawouk", "shish tawuk", "chicken skewers", "شيش طاوق", "شيش طاووق مشوي"],
+      [("chicken_breast", 150), ("yogurt", 15), ("olive_oil", 8), ("lemon", 5), ("garlic", 3), ("tomato_paste", 5)]),
+    D("kebda_iskandarani", "Alexandrian liver", "كبدة إسكندراني", "main",
+      ["kebda eskandarani", "kebda iskandarani", "kibda iskandarani", "alexandrian liver", "liver alexandrian style",
+       "كبده اسكندراني", "كبدة اسكندراني", "كبده", "كبدة"],
+      [("liver", 120), ("green_pepper", 30), ("garlic", 5), ("oil", 10), ("cumin", 1), ("lemon", 5)]),
+    D("kebda_sandwich", "Liver sandwich", "سندوتش كبدة", "sandwich",
+      ["kebda sandwich", "liver sandwich", "alexandrian liver sandwich", "ساندوتش كبده", "سندويتش كبدة", "سندوتش كبده"],
+      [("roll", 60), ("@kebda_iskandarani", 80), ("@tahina", 10), ("pickles", 5)]),
+    D("sayadeya", "Sayadeya (fish with rice)", "صيادية", "main",
+      ["sayadeya", "sayadiyah", "sayadieh", "fish sayadeya", "sayadeya rice", "صياديه", "صيادية سمك", "رز صيادية"],
+      [("rice", 150), ("tilapia", 120), ("onion", 30), ("oil", 15), ("tomato_paste", 5), ("cumin", 1)]),
+    D("samak_mashwi", "Grilled fish", "سمك مشوي", "main",
+      ["samak mashwi", "grilled fish", "grilled tilapia", "grilled tilapia (bolti)", "grilled bolti", "bolti mashwi", "سمك مشوى", "بلطي مشوي"],
+      [("tilapia", 200), ("olive_oil", 5), ("lemon", 5), ("garlic", 3), ("cumin", 1)]),
+    D("samak_maqli", "Fried fish", "سمك مقلي", "main",
+      ["samak ma2li", "fried fish", "fried tilapia", "bolti ma2li", "سمك مقلى", "بلطي مقلي"],
+      [("tilapia", 180), ("flour", 15), ("oil", 15)], note=FRIED),
+    D("bouri", "Grilled mullet (bouri)", "بوري مشوي", "main",
+      ["bouri", "bori mashwi", "grilled mullet", "mullet", "سمك بوري", "بوري"],
+      [("mullet", 200), ("olive_oil", 5), ("lemon", 5)]),
+    D("renga", "Smoked herring (renga)", "رنجة", "main",
+      ["renga", "ringa", "smoked herring", "رنجه", "رنجة مدخنة"],
+      [("herring", 100), ("lemon", 5), ("olive_oil", 5), ("onion", 15)]),
+    D("gambari", "Grilled shrimp", "جمبري مشوي", "main",
+      ["gambari mashwi", "grilled shrimp", "shrimp with garlic butter", "جمبرى", "جمبري", "جمبري بالزبدة"],
+      [("shrimp", 150), ("butter", 10), ("garlic", 5), ("lemon", 5)]),
+    D("bamya", "Okra stew (bamya)", "بامية", "main",
+      ["bamya", "bamia", "bamyah", "okra stew", "bamya bel lahma", "باميه", "بامية باللحمة", "باميه باللحمه"],
+      [("okra", 150), ("beef_stew", 70), ("tomato_sauce", 60), ("onion", 15), ("garlic", 3), ("ghee", 8)]),
+    D("torly", "Torly (baked mixed vegetables)", "تورلي", "main",
+      ["torly", "turli", "torli", "mixed vegetables in the oven", "تورلى", "خضار مشكل بالفرن", "خضار مشكل"],
+      [("potato", 60), ("zucchini", 60), ("carrot", 40), ("green_beans", 40), ("peas", 30), ("onion", 15),
+       ("tomato_sauce", 50), ("beef_stew", 50), ("oil", 10)]),
+    D("fasolia", "Green bean stew", "فاصوليا خضرا", "main",
+      ["fasolia", "fasolya", "fasolia khadra", "fasolya khadra", "green bean stew", "green beans with meat",
+       "فاصوليا", "فاصوليا خضراء", "فاصوليا باللحمة"],
+      [("green_beans", 150), ("beef_stew", 60), ("tomato_sauce", 60), ("onion", 15), ("ghee", 8), ("garlic", 3)]),
+    D("fasolia_beida", "White bean stew", "فاصوليا بيضا", "main",
+      ["fasolia beida", "fasolya beda", "white bean stew", "فاصوليا بيضاء", "فاصوليا بيضا باللحمة"],
+      [("white_beans", 150), ("tomato_sauce", 60), ("onion", 15), ("beef_stew", 40), ("oil", 8)]),
+    D("batates_lahma", "Potatoes with meat", "بطاطس باللحمة", "main",
+      ["batates bel lahma", "potatoes with meat", "potato stew with meat", "potato stew", "بطاطس بالصلصة",
+       "بطاطس باللحمه", "بطاطس بالفرن باللحمة", "صينية بطاطس"],
+      [("potato", 180), ("beef_stew", 80), ("tomato_sauce", 60), ("onion", 15), ("oil", 10)]),
+    D("bisella", "Peas and carrots with meat", "بسلة بالجزر", "main",
+      ["bisella", "besella", "bisella bel gazar", "peas and carrots stew", "peas stew", "بسله", "بسلة باللحمة", "بسله بالجزر"],
+      [("peas", 120), ("carrot", 50), ("beef_stew", 60), ("tomato_sauce", 60), ("onion", 15), ("ghee", 8)]),
+    D("sabanekh", "Spinach stew", "سبانخ", "main",
+      ["sabanekh", "spinach stew", "spinach with minced meat", "سبانخ باللحمة", "سبانخ مطبوخة"],
+      [("spinach", 180), ("beef_mince", 40), ("onion", 20), ("garlic", 3), ("ghee", 8), ("coriander", 3)]),
+    D("colcas", "Taro stew (colcas)", "قلقاس", "main",
+      ["colcas", "qolqas", "kolkas", "taro stew", "قلقاس بالسلق", "قلقاس اخضر"],
+      [("taro", 150), ("spinach", 50), ("coriander", 5), ("garlic", 5), ("water", 80), ("ghee", 8)],
+      note="cooked with chard, counted as spinach, in broth counted as water"),
+    D("mesaqaa", "Egyptian moussaka (mesaqaa)", "مسقعة", "main",
+      ["mesa2a3a", "mesaqaa", "msa2a3a", "egyptian moussaka", "moussaka", "musaqqa", "مسقعه", "مسقعة باللحمة"],
+      [("eggplant", 150), ("oil", 25), ("tomato_sauce", 70), ("green_pepper", 20), ("beef_mince", 40), ("onion", 15), ("garlic", 3)],
+      note="eggplant fried before baking; " + FRIED),
+    D("arnabeet_maqli", "Fried cauliflower", "قرنبيط مقلي", "side",
+      ["arnabeet ma2li", "fried cauliflower", "قرنبيط", "قرنبيط مقلى"],
+      [("cauliflower", 150), ("egg", 25), ("flour", 10), ("oil", 20)], note=FRIED),
+    D("betingan_maqli", "Fried eggplant", "باذنجان مقلي", "side",
+      ["betengan ma2li", "fried eggplant", "fried aubergine", "باتنجان مقلي", "بتنجان مقلي", "بدنجان مقلي"],
+      [("eggplant_raw", 150), ("oil", 25), ("garlic", 3), ("vinegar", 5)], yield_=0.8, note=FRIED),
+    D("batates_maqlia", "Egyptian fries", "بطاطس مقلية", "side",
+      ["batates ma2leya", "batates mahamara", "بطاطس محمرة", "بطاطس مقليه", "بطاطس محمره"],
+      [("fries", 150)]),
+    D("lesan_asfour", "Orzo soup", "شوربة لسان عصفور", "soup",
+      ["lesan asfour", "lesan 3asfour", "orzo soup", "shorbet lesan asfour", "شوربه لسان عصفور", "لسان عصفور"],
+      [("pasta", 50), ("water", 230), ("chicken_stewed", 10), ("butter", 5), ("onion", 5)],
+      note="broth counted as water plus a little chicken"),
+    D("shorbet_ads", "Lentil soup", "شوربة عدس", "soup",
+      ["shorbet 3ads", "shorbet ads", "lentil soup", "egyptian lentil soup", "شوربه عدس", "شوربة العدس", "عدس اصفر"],
+      [("lentils", 150), ("carrot", 30), ("onion", 20), ("potato", 30), ("tomato", 20), ("water", 50), ("oil", 8), ("cumin", 1)]),
+    D("shorbet_frakh", "Chicken soup", "شوربة فراخ", "soup",
+      ["shorbet frakh", "chicken soup", "chicken broth soup", "شوربه فراخ", "شوربة دجاج"],
+      [("chicken_stewed", 50), ("water", 220), ("carrot", 15), ("onion", 10), ("pasta", 20), ("butter", 3)]),
+    D("shorbet_freekeh", "Freekeh soup", "شوربة فريك", "soup",
+      ["shorbet freek", "freekeh soup", "freek soup", "شوربه فريك"],
+      [("bulgur", 80), ("water", 150), ("chicken_stewed", 30), ("butter", 5), ("onion", 10)],
+      note="green wheat counted as bulgur"),
+    D("mombar", "Mombar", "ممبار", "main",
+      ["mombar", "mumbar", "stuffed intestines", "ممبار محشي"],
+      [("tripe", 40), ("rice", 80), ("tomato_sauce", 20), ("onion", 10), ("oil", 15), ("parsley", 5)],
+      note="casing counted as tripe; " + FRIED),
+    D("hamam_mahshi", "Stuffed pigeon", "حمام محشي", "main",
+      ["hamam mahshi", "stuffed pigeon", "stuffed squab", "pigeon with freekeh", "حمام محشى", "حمام محشي فريك", "حمام محشي رز"],
+      [("pigeon", 150), ("rice", 80), ("ghee", 10), ("onion", 10)]),
+    D("frakh_mashwi", "Grilled chicken", "فراخ مشوية", "main",
+      ["frakh mashwya", "grilled chicken", "roast chicken", "فرخة مشوية", "فراخ مشويه", "دجاج مشوي"],
+      [("chicken", 250), ("olive_oil", 5), ("lemon", 5), ("onion", 10)]),
+    D("frakh_pane", "Chicken pane", "فراخ بانيه", "main",
+      ["chicken pane", "chicken panee", "panee", "breaded chicken", "chicken escalope", "بانيه", "صدور بانيه", "فراخ بانية"],
+      [("chicken_breast", 120), ("bread_white", 25), ("egg", 15), ("flour", 5), ("oil", 15)], note=FRIED),
+    D("frakh_batates", "Chicken with potatoes", "فراخ بالبطاطس", "main",
+      ["frakh bel batates", "chicken with potatoes", "chicken and potato tray", "صينية فراخ بالبطاطس", "فراخ بالبطاطس بالفرن"],
+      [("chicken", 200), ("potato", 150), ("tomato_sauce", 50), ("onion", 20), ("oil", 10)]),
+    D("lahma_basal", "Meat with onions", "لحمة بالبصل", "main",
+      ["lahma bel basal", "meat with onions", "beef with onions", "لحمه بالبصل", "لحم بالبصل"],
+      [("beef_stew", 150), ("onion", 80), ("ghee", 10)]),
+    D("sogo2", "Egyptian sausage (sogo')", "سجق", "main",
+      ["sogo2", "sogo'", "sujuk", "egyptian sausage", "سجق اسكندراني", "سجق مشوي", "سجق بالفلفل"],
+      [("sausage", 120), ("green_pepper", 30), ("tomato", 30), ("onion", 15), ("oil", 5)]),
+    D("sogo2_sandwich", "Sausage sandwich", "سندوتش سجق", "sandwich",
+      ["sogo2 sandwich", "sausage sandwich", "sujuk sandwich", "ساندوتش سجق", "سندويتش سجق"],
+      [("roll", 60), ("@sogo2", 80), ("@tahina", 5)]),
+    D("kofta_sandwich", "Kofta sandwich", "سندوتش كفتة", "sandwich",
+      ["kofta sandwich", "ساندوتش كفته", "سندويتش كفتة", "سندوتش كفته"],
+      [("roll", 60), ("@kofta", 80), ("@tahina", 15), ("tomato", 10)]),
+    D("pane_sandwich", "Chicken pane sandwich", "سندوتش بانيه", "sandwich",
+      ["pane sandwich", "chicken pane sandwich", "breaded chicken sandwich", "ساندوتش بانيه", "سندويتش بانيه"],
+      [("roll", 60), ("@frakh_pane", 80), ("lettuce", 10), ("tomato", 10)]),
+    D("hummus_el_sham", "Hummus el sham (chickpea drink)", "حمص الشام", "drink",
+      ["hummus el sham", "7ommos el sham", "hot chickpea drink", "حمص شام"],
+      [("chickpeas", 80), ("water", 150), ("tomato", 10), ("lemon", 5), ("cumin", 1)]),
+    D("termes", "Termes (lupini beans)", "ترمس", "side",
+      ["termes", "tirmis", "lupini", "lupini beans", "ترمس مملح"],
+      [("lupins", 100)]),
+    D("batata", "Roasted sweet potato", "بطاطا مشوية", "side",
+      ["batata", "batata mashwia", "roasted sweet potato", "baked sweet potato", "بطاطا", "بطاطا بالفرن"],
+      [("sweet_potato", 200)]),
+    D("dora_mashwi", "Grilled corn", "درة مشوي", "side",
+      ["dora mashwi", "grilled corn", "corn on the cob", "ذرة مشوية", "درة مشوية"],
+      [("corn", 150)]),
+    # ------------------------------------------------------------ breads
+    D("aish_baladi", "Aish baladi (Egyptian bread)", "عيش بلدي", "bread",
+      ["aish baladi", "eish baladi", "3eesh baladi", "baladi bread", "egyptian bread", "عيش", "رغيف عيش",
+       "رغيف بلدي", "عيش بلدى", "خبز بلدي"],
+      [("pita_ww", 90)], note="one loaf; bran bread counted as whole-wheat pita"),
+    D("aish_shami", "Aish shami (white pita)", "عيش شامي", "bread",
+      ["aish shami", "eish shami", "3eesh shami", "shami bread", "white pita", "pita bread", "عيش شامى", "خبز شامي", "رغيف شامي"],
+      [("pita", 80)]),
+    D("aish_fino", "Fino bread", "عيش فينو", "bread",
+      ["fino", "eish fino", "3eesh fino", "fino roll", "fino bread", "فينو", "عيش فينو صغير"],
+      [("roll", 60)], note="soft white roll"),
+    D("simit", "Simit (sesame bread ring)", "سميط", "bread",
+      ["simit", "semeet", "sesame ring", "سميط بالسمسم"],
+      [("flour", 60), ("water", 30), ("sesame", 8), ("sugar", 3), ("oil", 3)], yield_=0.85, note=BAKED),
+    # ------------------------------------------------------------ sweets
+    D("basbousa", "Basbousa", "بسبوسة", "sweet",
+      ["basbousa", "basboosa", "basbusa", "hareeseh", "namoura", "بسبوسه", "هريسة"],
+      [("semolina", 35), ("sugar", 35), ("yogurt", 15), ("ghee", 12), ("coconut", 5), ("water", 15), ("almonds", 3)],
+      yield_=0.85, note=BAKED + "; " + SYRUP),
+    D("basbousa_cream", "Basbousa with cream", "بسبوسة بالقشطة", "sweet",
+      ["basbousa bel eshta", "basbousa with cream", "بسبوسه بالقشطه"],
+      [("@basbousa", 100), ("cream", 20)]),
+    D("kunafa", "Kunafa with cream", "كنافة بالقشطة", "sweet",
+      ["kunafa", "konafa", "knafeh", "kanafeh", "kunafa bel eshta", "كنافه", "كنافة", "كنافه بالقشطه"],
+      [("phyllo", 40), ("ghee", 15), ("milk", 40), ("cornstarch", 5), ("cream", 10), ("sugar", 30), ("water", 15), ("pistachio", 3)],
+      yield_=0.85, note="shredded dough counted as phyllo; " + SYRUP),
+    D("kunafa_nuts", "Kunafa with nuts", "كنافة بالمكسرات", "sweet",
+      ["kunafa bel mekassarat", "kunafa with nuts", "كنافه بالمكسرات"],
+      [("phyllo", 40), ("ghee", 15), ("walnuts", 15), ("pistachio", 5), ("sugar", 25), ("water", 15)],
+      yield_=0.85, note="shredded dough counted as phyllo; " + SYRUP),
+    D("kunafa_nabulsi", "Kunafa with cheese (nabulsi)", "كنافة نابلسية", "sweet",
+      ["knafeh nabulsi", "kunafa nabulsi", "kunafa bel gebna", "cheese kunafa", "كنافه نابلسيه", "كنافة بالجبنة"],
+      [("phyllo", 35), ("ghee", 12), ("mozzarella", 50), ("sugar", 25), ("water", 15), ("pistachio", 3)],
+      yield_=0.9, note="akkawi counted as mozzarella; " + SYRUP),
+    D("om_ali", "Om Ali", "أم علي", "sweet",
+      ["om ali", "umm ali", "om 3ali", "oum ali", "ام علي", "ام على"],
+      [("puff_pastry", 50), ("milk", 150), ("sugar", 15), ("cream", 20), ("raisins", 8), ("coconut", 5),
+       ("almonds", 5), ("pistachio", 5)], yield_=0.85, note=BAKED),
+    D("roz_bel_laban", "Rice pudding", "رز بلبن", "sweet",
+      ["roz bel laban", "rozz bel laban", "rice pudding", "ruz bil haleeb", "أرز باللبن", "رز باللبن", "ارز بلبن"],
+      [("rice_raw", 25), ("milk", 180), ("sugar", 20), ("cornstarch", 3)], yield_=0.85,
+      note="weight after simmering, which drives off part of the milk's water"),
+    D("mahalabeya", "Mahalabeya", "مهلبية", "sweet",
+      ["mahalabeya", "mahalabia", "muhallebi", "muhallabia", "milk pudding", "مهلبيه", "مهلبية بالمكسرات"],
+      [("milk", 180), ("cornstarch", 18), ("sugar", 20), ("pistachio", 3), ("coconut", 2)], yield_=0.95),
+    D("qatayef", "Qatayef with nuts", "قطايف بالمكسرات", "sweet",
+      ["qatayef", "atayef", "katayef", "2atayef", "qatayef with nuts", "قطايف"],
+      [("flour", 40), ("milk", 20), ("water", 30), ("sugar", 23), ("walnuts", 15), ("raisins", 5), ("coconut", 5),
+       ("oil", 12)], yield_=0.8, note=FRIED + "; " + SYRUP),
+    D("qatayef_cream", "Qatayef with cream", "قطايف بالقشطة", "sweet",
+      ["qatayef bel eshta", "qatayef with cream", "atayef bel eshta", "قطايف بالقشطه"],
+      [("flour", 40), ("milk", 50), ("water", 38), ("sugar", 18), ("cream", 25), ("cornstarch", 4)],
+      yield_=0.85, note=SYRUP),
+    D("zalabya", "Zalabya (Egyptian doughnuts)", "زلابية", "sweet",
+      ["zalabya", "zalabia", "zalabiya", "lokma", "luqmat al qadi", "زلابيه", "لقمة القاضي", "لقمه القاضي"],
+      [("flour", 40), ("water", 45), ("oil", 15), ("sugar", 25)], yield_=0.8, note=FRIED + "; " + SYRUP),
+    D("baklava", "Baklava", "بقلاوة", "sweet",
+      ["baklava", "baklawa", "بقلاوه"],
+      [("phyllo", 30), ("butter", 15), ("walnuts", 15), ("pistachio", 5), ("sugar", 20), ("honey", 5), ("water", 10)],
+      yield_=0.9, note=SYRUP),
+    D("ghorayeba", "Ghorayeba (butter cookies)", "غريبة", "sweet",
+      ["ghorayeba", "ghraybeh", "ghoriba", "ghraybe", "غريبه"],
+      [("flour", 50), ("ghee", 25), ("sugar", 20)], yield_=0.97, note=BAKED),
+    D("kahk", "Kahk (Eid cookies)", "كحك", "sweet",
+      ["kahk", "ka7k", "ka3k el eid", "eid cookies", "كعك", "كحك العيد", "كعك العيد"],
+      [("flour", 50), ("ghee", 22), ("sugar", 12), ("sesame", 4), ("milk", 8), ("honey", 5)], yield_=0.95, note=BAKED),
+    D("petit_four", "Petit four (butter biscuits)", "بيتي فور", "sweet",
+      ["petit four", "betifour", "beti four", "بيتيفور", "بسكويت بيتي فور"],
+      [("flour", 45), ("butter", 25), ("sugar", 15), ("egg", 5), ("jam", 5)], yield_=0.95, note=BAKED),
+    D("maamoul", "Maamoul", "معمول", "sweet",
+      ["maamoul", "ma'amoul", "ma3moul", "date maamoul", "معمول بالتمر"],
+      [("semolina", 40), ("ghee", 15), ("dates", 30), ("sugar", 5), ("milk", 5)], yield_=0.95, note=BAKED),
+    D("balah_el_sham", "Balah el sham", "بلح الشام", "sweet",
+      ["balah el sham", "bala7 el sham", "egyptian churros", "بلح شام"],
+      [("flour", 30), ("water", 40), ("egg", 15), ("butter", 5), ("oil", 15), ("sugar", 25)],
+      yield_=0.77, note=FRIED + "; " + SYRUP),
+    D("couscous_sweet", "Sweet couscous", "كسكسي بالسكر", "sweet",
+      ["couscous bel sukkar", "sweet couscous", "egyptian sweet couscous", "كسكسي حلو", "كسكسى"],
+      [("couscous", 150), ("butter", 12), ("sugar", 15), ("raisins", 10), ("coconut", 5), ("almonds", 5)]),
+    D("belila", "Belila (wheat with milk)", "بليلة", "sweet",
+      ["belila", "balila", "beleela", "بليله", "بليلة باللبن"],
+      [("bulgur", 100), ("milk", 150), ("sugar", 20), ("raisins", 10), ("coconut", 5), ("almonds", 5)],
+      note="boiled whole wheat counted as bulgur"),
+    D("halawa", "Halawa (sesame halva)", "حلاوة طحينية", "sweet",
+      ["halawa", "halva", "halawa tahinia", "7alawa", "halawa tahineya", "حلاوه", "حلاوة", "حلاوه طحينيه"],
+      [("tahini", 25), ("sugar", 25)]),
+    # ------------------------------------------------------------ drinks
+    D("shai_bel_laban", "Tea with milk", "شاي بلبن", "drink",
+      ["shai bel laban", "shay bel laban", "shay bil laban", "tea with milk", "milk tea", "شاي باللبن", "شاى بلبن", "شاي بحليب"],
+      [("milk", 150), ("tea", 60), ("sugar", 10)]),
+    D("karkadeh", "Karkadeh (hibiscus drink)", "كركديه", "drink",
+      ["karkadeh", "karkade", "karkadeh sa2e3", "hibiscus drink", "hibiscus juice", "كركدية", "كركديه ساقع"],
+      [("hibiscus", 230), ("sugar", 25)], note="sweetened the usual Egyptian way"),
+    D("asab", "Sugarcane juice", "عصير قصب", "drink",
+      ["asab", "3aseer asab", "aseer asab", "sugarcane juice", "sugar cane juice", "قصب", "عصير القصب"],
+      [("water", 205), ("sugar", 45)],
+      note="USDA has no sugarcane juice: counted as its usual sugar content in water"),
+    D("sahlab", "Sahlab", "سحلب", "drink",
+      ["sahlab", "sahleb", "salep", "سحلب بالمكسرات"],
+      [("milk", 220), ("cornstarch", 15), ("sugar", 20), ("coconut", 5), ("pistachio", 3), ("walnuts", 3), ("raisins", 5)],
+      note="thickened with starch, counted as cornstarch"),
+    D("tamr_hindi", "Tamarind drink (tamr hindi)", "تمر هندي", "drink",
+      ["tamr hindi", "tamarhindi", "tamr hendi", "tamarind juice", "tamarind drink", "تمرهندي", "عصير تمر هندي"],
+      [("tamarind", 30), ("sugar", 30), ("water", 200)]),
+    D("kharoub", "Carob drink", "خروب", "drink",
+      ["kharoub", "kharroub", "carob juice", "carob drink", "عصير خروب"],
+      [("carob", 20), ("sugar", 20), ("water", 210)]),
+    D("sobia", "Sobia (coconut rice drink)", "سوبيا", "drink",
+      ["sobia", "sobya", "سوبيا جوز الهند"],
+      [("rice_raw", 10), ("coconut", 10), ("milk", 100), ("sugar", 25), ("water", 100)]),
+    D("lemon_mint", "Lemon mint juice", "ليمون بالنعناع", "drink",
+      ["lemon mint", "lemon with mint", "limon bel ne3na3", "lemonade with mint", "ليمون نعناع", "عصير ليمون", "ليمون بالنعناع"],
+      [("lemon", 40), ("sugar", 30), ("mint", 3), ("water", 180)]),
+    D("ahwa_mazboot", "Turkish coffee, medium sugar", "قهوة مظبوط", "drink",
+      ["ahwa mazboot", "2ahwa mazbouta", "turkish coffee", "arabic coffee with sugar", "قهوه مظبوط", "قهوة تركي", "قهوة مظبوطة"],
+      [("coffee", 60), ("sugar", 6)]),
+    D("coffee_milk", "Coffee with milk", "قهوة باللبن", "drink",
+      ["nescafe with milk", "coffee with milk", "white coffee", "نسكافيه باللبن", "نسكافيه بلبن", "قهوه باللبن"],
+      [("coffee", 80), ("milk", 150), ("sugar", 8)]),
+    D("mango_juice", "Mango juice", "عصير مانجو", "drink",
+      ["mango juice", "3aseer mango", "aseer manga", "عصير مانجا", "عصير منجا"],
+      [("mango", 150), ("sugar", 20), ("water", 80)]),
+    D("guava_juice", "Guava juice", "عصير جوافة", "drink",
+      ["guava juice", "3aseer gawafa", "عصير جوافه"],
+      [("guava", 120), ("sugar", 20), ("water", 80)]),
+    D("strawberry_juice", "Strawberry juice", "عصير فراولة", "drink",
+      ["strawberry juice", "3aseer farawla", "عصير فراوله"],
+      [("strawberries", 150), ("sugar", 20), ("water", 80)]),
+    # ------------------------------------------------ Levantine and Gulf
+    D("hummus", "Hummus", "حمص بالطحينة", "salad",
+      ["hummus", "houmous", "hommos", "humus", "hummus bi tahini", "حمص", "حمص بالطحينه"],
+      [("chickpeas", 100), ("tahini", 25), ("lemon", 10), ("garlic", 3), ("olive_oil", 10), ("water", 15)]),
+    D("mutabbal", "Mutabbal", "متبل", "salad",
+      ["mutabbal", "moutabal", "mutabal", "متبل باذنجان", "متبل بتنجان"],
+      [("eggplant", 120), ("tahini", 20), ("yogurt", 20), ("lemon", 8), ("garlic", 3), ("olive_oil", 5)]),
+    D("tabbouleh", "Tabbouleh", "تبولة", "salad",
+      ["tabbouleh", "tabouleh", "tabbouli", "tabouli", "تبوله"],
+      [("parsley", 60), ("bulgur", 25), ("tomato", 40), ("onion", 10), ("mint", 5), ("lemon", 15), ("olive_oil", 15)]),
+    D("fattoush", "Fattoush", "فتوش", "salad",
+      ["fattoush", "fattush", "fatoush", "فتوش لبناني"],
+      [("lettuce", 50), ("tomato", 50), ("cucumber", 50), ("radish", 15), ("onion", 10), ("parsley", 10), ("mint", 3),
+       ("pita", 25), ("oil", 8), ("olive_oil", 12), ("lemon", 10)], note="fried bread; " + FRIED),
+    D("muhammara", "Muhammara", "محمرة", "salad",
+      ["muhammara", "mhammara", "red pepper walnut dip", "محمره"],
+      [("red_pepper", 60), ("walnuts", 25), ("bread_white", 10), ("olive_oil", 15), ("lemon", 5)]),
+    D("labneh", "Labneh", "لبنة", "breakfast",
+      ["labneh", "labne", "labna", "labneh with olive oil", "لبنه", "لبنة بزيت الزيتون"],
+      [("greek_yogurt", 80), ("olive_oil", 8)], note="strained yogurt counted as Greek yogurt"),
+    D("falafel", "Falafel", "فلافل", "main",
+      ["falafel", "felafel", "levantine falafel", "فلافل مقلية", "فلافل حمص"],
+      [("chickpeas_dry", 30), ("water", 25), ("parsley", 8), ("coriander", 5), ("onion", 10), ("garlic", 2),
+       ("cumin", 1), ("oil", 15)], yield_=0.95, note="dried chickpeas soaked in water, " + FRIED),
+    D("falafel_sandwich", "Falafel sandwich", "سندوتش فلافل", "sandwich",
+      ["falafel sandwich", "falafel wrap", "falafel pita", "ساندويش فلافل", "سندويشة فلافل", "سندوتش فلافل"],
+      [("pita", 60), ("@falafel", 70), ("@tahina", 20), ("tomato", 20), ("lettuce", 10), ("pickles", 10), ("parsley", 5)]),
+    D("shawarma_chicken_sandwich", "Chicken shawarma sandwich", "سندوتش شاورما فراخ", "sandwich",
+      ["chicken shawarma sandwich", "shawarma chicken sandwich", "chicken shawarma wrap", "chicken shawarma",
+       "shawerma frakh", "shawarma frakh", "شاورما فراخ", "شاورما دجاج", "ساندويش شاورما دجاج", "سندوتش شاورمة فراخ"],
+      [("pita", 70), ("chicken_thigh", 100), ("oil", 12), ("garlic", 3), ("lemon", 3), ("pickles", 15), ("fries", 20)],
+      note="garlic sauce counted as oil, garlic and lemon"),
+    D("shawarma_beef_sandwich", "Beef shawarma sandwich", "سندوتش شاورما لحمة", "sandwich",
+      ["beef shawarma sandwich", "meat shawarma sandwich", "shawarma beef sandwich", "beef shawarma",
+       "shawerma lahma", "shawarma lahma", "شاورما لحمة", "شاورما لحم", "سندوتش شاورمة لحمه"],
+      [("pita", 70), ("lamb", 50), ("beef_stew", 50), ("@tahina", 20), ("onion", 15), ("tomato", 15), ("parsley", 5), ("pickles", 10)]),
+    D("shawarma_chicken_plate", "Chicken shawarma plate", "طبق شاورما فراخ", "main",
+      ["chicken shawarma plate", "shawarma chicken plate", "chicken shawarma meal", "شاورما فراخ طبق",
+       "وجبة شاورما فراخ", "طبق شاورما دجاج"],
+      [("chicken_thigh", 180), ("fries", 80), ("oil", 20), ("garlic", 5), ("lemon", 5), ("pickles", 20), ("pita", 40),
+       ("tomato", 30), ("cucumber", 30)], note="garlic sauce counted as oil, garlic and lemon"),
+    D("shawarma_beef_plate", "Beef shawarma plate", "طبق شاورما لحمة", "main",
+      ["beef shawarma plate", "meat shawarma plate", "shawarma beef plate", "beef shawarma meal", "شاورما لحمة طبق",
+       "وجبة شاورما لحمة", "طبق شاورما لحم"],
+      [("lamb", 90), ("beef_stew", 90), ("@tahina", 40), ("fries", 60), ("pita", 40), ("tomato", 30), ("cucumber", 30), ("onion", 20)]),
+    D("kabsa_chicken", "Chicken kabsa", "كبسة فراخ", "main",
+      ["kabsa", "kabsah", "chicken kabsa", "kabsa dajaj", "كبسه", "كبسة", "كبسة دجاج"],
+      [("rice", 220), ("chicken", 180), ("tomato", 30), ("onion", 25), ("carrot", 15), ("raisins", 10), ("almonds", 8),
+       ("ghee", 15), ("tomato_paste", 5)]),
+    D("kabsa_lamb", "Lamb kabsa", "كبسة لحم", "main",
+      ["lamb kabsa", "kabsa lahm", "meat kabsa", "كبسة لحمة", "كبسه لحم"],
+      [("rice", 220), ("lamb_shoulder", 150), ("tomato", 30), ("onion", 25), ("carrot", 15), ("raisins", 10),
+       ("almonds", 8), ("ghee", 12)]),
+    D("mandi_chicken", "Chicken mandi", "مندي فراخ", "main",
+      ["mandi", "mandy", "chicken mandi", "mandi dajaj", "مندي", "مندي دجاج"],
+      [("rice", 230), ("chicken", 200), ("ghee", 12), ("onion", 15)]),
+    D("mandi_lamb", "Lamb mandi", "مندي لحم", "main",
+      ["lamb mandi", "laham mandi", "lahm mandi", "مندي لحمة", "مندي لحم"],
+      [("rice", 230), ("lamb_shoulder", 180), ("ghee", 10), ("onion", 15)]),
+    D("mansaf", "Mansaf", "منسف", "main",
+      ["mansaf", "mensaf", "jordanian mansaf", "منسف أردني"],
+      [("rice", 200), ("lamb_shoulder", 180), ("greek_yogurt", 60), ("yogurt", 100), ("ghee", 15), ("almonds", 10), ("pita", 30)],
+      note="jameed sauce counted as strained and plain yogurt"),
+    D("majboos", "Chicken majboos", "مجبوس دجاج", "main",
+      ["majboos", "machboos", "majbous", "chicken machboos", "مجبوس", "مكبوس"],
+      [("rice", 220), ("chicken", 180), ("tomato", 30), ("onion", 25), ("ghee", 12), ("lemon", 5), ("cinnamon", 1)]),
+    D("harees", "Harees", "هريس", "main",
+      ["harees", "hareis", "jareesh harees", "هريس دجاج"],
+      [("bulgur", 150), ("chicken_stewed", 80), ("ghee", 12), ("water", 50)], note="whole wheat counted as bulgur"),
+    D("jareesh", "Jareesh", "جريش", "main",
+      ["jareesh", "jerish", "jarish", "جريش باللبن"],
+      [("bulgur", 180), ("yogurt", 40), ("onion", 15), ("ghee", 10), ("chicken_stewed", 40)],
+      note="crushed wheat counted as bulgur"),
+    D("saleeg", "Saleeg", "سليق", "main",
+      ["saleeg", "saleek", "سليق دجاج"],
+      [("rice_raw", 70), ("milk", 200), ("chicken_stewed", 120), ("butter", 12), ("water", 100)],
+      yield_=0.85, note="rice simmered in milk and broth"),
+    D("thareed", "Thareed", "ثريد", "main",
+      ["thareed", "tharid", "ثريد لحم"],
+      [("pita", 60), ("lamb_shoulder", 100), ("potato", 60), ("zucchini", 40), ("carrot", 30), ("tomato_sauce", 50),
+       ("water", 80), ("ghee", 8)]),
+    D("luqaimat", "Luqaimat", "لقيمات", "sweet",
+      ["luqaimat", "logaimat", "lgeimat", "لقيمات بالدبس"],
+      [("flour", 40), ("water", 30), ("oil", 12), ("honey", 20)], yield_=0.8, note=FRIED + "; " + SYRUP),
+    D("kibbeh", "Fried kibbeh", "كبة مقلية", "main",
+      ["kibbeh", "kibbe", "kobeba", "koubeiba", "fried kibbeh", "كبة", "كبيبة", "كبه", "كبيبه"],
+      [("bulgur", 60), ("beef_mince", 40), ("onion", 10), ("walnuts", 5), ("oil", 12)], note=FRIED),
+    D("kibbeh_baked", "Baked kibbeh", "كبة بالصينية", "main",
+      ["kibbeh bil sanieh", "baked kibbeh", "kibbeh tray", "كبة صينية", "كبة بالفرن"],
+      [("bulgur", 80), ("beef_mince", 60), ("onion", 15), ("ghee", 10), ("walnuts", 5)]),
+    D("manakish_zaatar", "Zaatar manakish", "مناقيش زعتر", "bread",
+      ["manakish zaatar", "manaeesh zaatar", "man2oushe za3tar", "zaatar flatbread", "zaatar manakish",
+       "منقوشة زعتر", "مناقيش زعتر", "مناقيش بالزعتر"],
+      [("flour", 70), ("water", 40), ("thyme", 6), ("sesame", 4), ("olive_oil", 15)], yield_=0.85,
+      note=BAKED + "; zaatar counted as dried thyme and sesame"),
+    D("manakish_cheese", "Cheese manakish", "مناقيش جبنة", "bread",
+      ["manakish jebneh", "cheese manakish", "man2oushe jebne", "manakish cheese", "منقوشة جبنة", "مناقيش جبن", "مناقيش بالجبنة"],
+      [("flour", 70), ("water", 40), ("mozzarella", 40), ("feta", 15), ("olive_oil", 5)], yield_=0.85, note=BAKED),
+    D("fatayer_spinach", "Spinach fatayer", "فطاير سبانخ", "bread",
+      ["fatayer sabanekh", "spinach fatayer", "spinach pie", "فطاير بالسبانخ", "فطيرة سبانخ"],
+      [("flour", 50), ("water", 25), ("spinach", 50), ("onion", 10), ("olive_oil", 10), ("lemon", 5)], yield_=0.85, note=BAKED),
+    D("sfiha", "Sfiha (meat pies)", "صفيحة", "bread",
+      ["sfiha", "sfeeha", "lahm bi ajeen", "lahmacun", "meat pies", "صفيحه", "لحم بعجين"],
+      [("flour", 50), ("water", 25), ("beef_mince", 40), ("tomato", 20), ("onion", 15), ("olive_oil", 5)], yield_=0.85, note=BAKED),
+    D("musakhan", "Musakhan", "مسخن", "main",
+      ["musakhan", "msakhan", "musakhan chicken", "مسخن دجاج"],
+      [("pita", 80), ("chicken", 150), ("onion", 100), ("olive_oil", 30), ("almonds", 5)]),
+    D("maqluba", "Maqluba", "مقلوبة", "main",
+      ["maqluba", "makloubeh", "maqloubeh", "maklouba", "مقلوبه"],
+      [("rice", 200), ("chicken", 120), ("eggplant_raw", 80), ("oil", 20), ("cauliflower", 50), ("onion", 10)],
+      note="eggplant fried; " + FRIED),
+    D("mujaddara", "Mujaddara", "مجدرة", "main",
+      ["mujaddara", "mjaddara", "mudardara", "megadara", "مجدره", "مدردرة"],
+      [("lentils", 100), ("rice", 100), ("onion", 60), ("olive_oil", 20)]),
+    D("fatteh_hummus", "Fatteh hummus", "فتة حمص", "main",
+      ["fatteh hummus", "fattet hummus", "fatteh", "levantine fatteh", "فته حمص", "فتة حمص بالزبادي"],
+      [("chickpeas", 100), ("pita", 40), ("oil", 10), ("yogurt", 120), ("tahini", 15), ("garlic", 3), ("ghee", 10), ("almonds", 5)]),
+    D("arayes", "Arayes", "عرايس", "sandwich",
+      ["arayes", "araies", "arayes kofta", "عرايس لحمة", "عرايس كفتة"],
+      [("pita", 70), ("beef_mince", 70), ("onion", 10), ("parsley", 3), ("olive_oil", 5)]),
+]
+
+
+# The sixteen tokens the app screens against: AllergenTag.wireName in
+# app/lib/features/account/domain/dietary_profile.dart.
+ALLERGEN_TOKENS = (
+    "gluten", "crustaceans", "eggs", "fish", "peanuts", "soy", "milk", "tree_nuts",
+    "celery", "mustard", "sesame", "sulphites", "lupin", "molluscs", "fava", "coconut",
+)
+
+# What each ingredient brings to a dish. Ingredients not listed bring nothing.
+# Deliberately over-inclusive where the shop-bought or usual form commonly
+# carries the allergen: a missing tag costs a reaction, an extra one costs her
+# a suggestion. Ghee and butter are milk: they are milk fat.
+INGREDIENT_ALLERGENS = {
+    "pasta": ("gluten",),
+    "fava": ("fava",), "fava_dry": ("fava",),
+    "pita_ww": ("gluten",), "pita": ("gluten",),
+    "roll": ("gluten", "milk", "soy"), "bread_white": ("gluten", "milk", "soy"),
+    "bulgur": ("gluten",), "couscous": ("gluten",), "semolina": ("gluten",),
+    "flour": ("gluten",), "phyllo": ("gluten",), "puff_pastry": ("gluten", "milk"),
+    "grape_leaves": ("sulphites",),
+    "sausage": ("gluten", "soy"),
+    "egg": ("eggs",), "egg_boiled": ("eggs",), "egg_fried": ("eggs",),
+    "milk": ("milk",), "feta": ("milk",), "cottage": ("milk",), "romano": ("milk",),
+    "mozzarella": ("milk",), "yogurt": ("milk",), "greek_yogurt": ("milk",),
+    "butter": ("milk",), "ghee": ("milk",), "cream": ("milk",),
+    "tahini": ("sesame",), "sesame": ("sesame",),
+    "coconut": ("coconut",),
+    "almonds": ("tree_nuts",), "pistachio": ("tree_nuts",), "walnuts": ("tree_nuts",),
+    "raisins": ("sulphites",),
+    "shrimp": ("crustaceans",),
+    "tilapia": ("fish",), "mullet": ("fish",), "herring": ("fish",),
+    "lupins": ("lupin",),
+}
+
+# What the recipe table cannot show: an ingredient a usual version of the dish
+# has that the standard recipe above leaves out. Each line says why.
+DISH_ALLERGEN_EXTRAS = {
+    "taameya": (("gluten", "bread or flour is added to the batter in many shops"),),
+    "falafel": (("fava", "an Egyptian falafel is often fava, and mixes blend both"),
+                ("gluten", "bread or flour is added to the batter in many shops"),
+                ("sesame", "sesame is pressed into the patties")),
+    "shawarma_chicken_sandwich": (("eggs", "the garlic sauce is usually mayonnaise-based"),
+                                  ("milk", "the chicken is marinated in yoghurt")),
+    "shawarma_chicken_plate": (("eggs", "the garlic sauce is usually mayonnaise-based"),
+                               ("milk", "the chicken is marinated in yoghurt")),
+    "kofta": (("gluten", "bread or rusk is mixed into the meat as a binder in most kitchens"),),
+    "maqluba": (("tree_nuts", "toasted almonds or pine nuts are scattered over it"),),
+    "petit_four": (("tree_nuts", "an almond or a nut sits on top of many pieces"),),
+    "feteer": (("eggs", "many doughs are enriched with egg"),),
+    "macarona_bechamel": (("eggs", "the bechamel is often enriched with egg"),),
+    "basbousa": (("eggs", "many batters carry an egg"),),
+    "zalabya": (("milk", "the batter is often made with milk"), ("eggs", "many batters carry an egg")),
+    "luqaimat": (("milk", "the batter is often made with milk or yoghurt"),),
+    "ghorayeba": (("tree_nuts", "a pistachio or almond is pressed on top"),),
+    "kahk": (("tree_nuts", "stuffed with nuts in many homes"),),
+    "maamoul": (("tree_nuts", "walnut and pistachio fillings are as common as dates"),),
+    "halawa": (("tree_nuts", "pistachio halawa is the usual variety"),),
+    "hamam_mahshi": (("gluten", "stuffed with freekeh, which is green wheat"),),
+}
+
+# A dish cooked in stock carries celery: the stock cube in Egyptian kitchens is
+# the same decision allergen_tripwire.py makes for a method that says shorba.
+STOCK_DISHES = ("fattah", "fattah_chicken", "thareed", "harees", "saleeg")
+
+
+def _stock_based(dish: dict) -> bool:
+    return (
+        dish["category"] == "soup"
+        or "broth" in (dish["yield_note"] or "")
+        or dish["key"] in STOCK_DISHES
+    )
+
+
+def _allergens(dish: dict, by_key: dict, memo: dict) -> list:
+    """The tags a dish carries, from its ingredients, the dishes it contains and
+    the extras above. Never empty by omission: a dish with none returns []."""
+    key = dish["key"]
+    if key in memo:
+        return memo[key]
+    found = set()
+    for ref, _grams in dish["recipe"]:
+        if ref.startswith("@"):
+            found.update(_allergens(by_key[ref[1:]], by_key, memo))
+        else:
+            found.update(INGREDIENT_ALLERGENS.get(ref, ()))
+    for tag, _why in DISH_ALLERGEN_EXTRAS.get(key, ()):
+        found.add(tag)
+    if _stock_based(dish):
+        found.add("celery")
+    unknown = found - set(ALLERGEN_TOKENS)
+    if unknown:
+        raise SystemExit(f"{key}: {sorted(unknown)} are not allergen tokens")
+    memo[key] = sorted(found)
+    return memo[key]
+
+
+def _usda() -> dict:
+    with open(USDA_PATH, encoding="utf-8") as handle:
+        return {f["fdcId"]: f for f in json.load(handle)["foods"]}
+
+
+def _check_ingredients(foods: dict) -> None:
+    for key, (fdc_id, prefix, _label) in INGREDIENTS.items():
+        food = foods.get(fdc_id)
+        if food is None:
+            raise SystemExit(f"{key}: fdcId {fdc_id} is not in usda_foods.json")
+        if not food["name"].startswith(prefix):
+            raise SystemExit(f"{key}: fdcId {fdc_id} is {food['name']!r}, expected {prefix!r}")
+        missing = [n for n in NUTRIENTS if food.get(n) is None]
+        if missing:
+            raise SystemExit(f"{key}: fdcId {fdc_id} has no {missing}")
+
+
+def _expand(dish: dict, by_key: dict, depth: int = 0) -> list:
+    """The raw recipe lines, with @dish references replaced by that dish's
+    lines scaled to the grams asked for."""
+    if depth > 3:
+        raise SystemExit(f"{dish['key']}: dish references nest too deep")
+    lines = []
+    for ref, grams in dish["recipe"]:
+        if ref.startswith("@"):
+            inner = by_key[ref[1:]]
+            inner_lines = _expand(inner, by_key, depth + 1)
+            inner_serving = sum(g for _, g in inner_lines) * inner["yield"]
+            scale = grams / inner_serving
+            lines.extend((k, g * scale) for k, g in inner_lines)
+        else:
+            if ref not in INGREDIENTS:
+                raise SystemExit(f"{dish['key']}: unknown ingredient {ref!r}")
+            lines.append((ref, float(grams)))
+    return lines
+
+
+def _merge(lines: list) -> list:
+    merged: dict = {}
+    for key, grams in lines:
+        merged[key] = merged.get(key, 0.0) + grams
+    return list(merged.items())
+
+
+def build() -> dict:
+    foods = _usda()
+    _check_ingredients(foods)
+    by_key = {}
+    for dish in DISHES:
+        if dish["key"] in by_key:
+            raise SystemExit(f"duplicate dish key {dish['key']}")
+        if not dish["name_ar"]:
+            raise SystemExit(f"{dish['key']}: no Arabic name")
+        by_key[dish["key"]] = dish
+    out = []
+    allergen_memo: dict = {}
+    for dish in DISHES:
+        # Grams are rounded to 0.1 g first and everything is computed from the
+        # rounded figures, so the file's recipe adds up to the file's values.
+        lines = [(key, round(grams, 1)) for key, grams in _merge(_expand(dish, by_key))]
+        serving = round(sum(g for _, g in lines) * dish["yield"], 1)
+        totals = {n: 0.0 for n in NUTRIENTS}
+        recipe = []
+        for key, grams in lines:
+            fdc_id, _prefix, label = INGREDIENTS[key]
+            food = foods[fdc_id]
+            for n in NUTRIENTS:
+                totals[n] += food[n] * grams / 100.0
+            recipe.append({"fdcId": fdc_id, "grams": grams, "label": label, "usdaName": food["name"]})
+        per100g = {n: round(totals[n] * 100.0 / serving, 2) for n in NUTRIENTS}
+        entry = {
+            "key": dish["key"],
+            "name_en": dish["name_en"],
+            "name_ar": dish["name_ar"],
+            "aliases": dish["aliases"],
+            "category": dish["category"],
+            "typical_serving_g": serving,
+            "recipe": recipe,
+            "per100g": per100g,
+            "allergens": _allergens(dish, by_key, allergen_memo),
+            "review": REVIEW,
+        }
+        if dish["yield"] != 1.0:
+            entry["yield"] = dish["yield"]
+        if dish["yield_note"]:
+            entry["yield_note"] = dish["yield_note"]
+        out.append(entry)
+    return {
+        "source": "Standard recipes of USDA FoodData Central foods (usda_foods.json), computed by nutrition/build_dishes.py",
+        "review": REVIEW,
+        "per": "100 g of the dish as served",
+        "dishes": out,
+    }
+
+
+def render(doc: dict) -> str:
+    return json.dumps(doc, ensure_ascii=False, indent=1) + "\n"
+
+
+def main(argv) -> int:
+    text = render(build())
+    if "--check" in argv:
+        with open(OUT_PATH, encoding="utf-8") as handle:
+            if handle.read() != text:
+                print("egyptian_dishes.json is out of date: run nutrition/build_dishes.py")
+                return 1
+        return 0
+    with open(OUT_PATH, "w", encoding="utf-8") as handle:
+        handle.write(text)
+    doc = json.loads(text)
+    print(f"{len(doc['dishes'])} dishes written to {OUT_PATH}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

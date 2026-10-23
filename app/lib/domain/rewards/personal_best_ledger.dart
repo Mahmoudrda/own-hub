@@ -79,9 +79,10 @@ class SessionBests {
 
 /// Her running bests, and the lifetime count the tier ladder reads.
 ///
-/// Mutable and append-only, exactly as `AwardLedger` is: there is no method that
-/// lowers [bestsCount] and none that removes a best. Nothing earned is ever
-/// taken away is a property of the type rather than a promise about its use.
+/// Mutable and append-only in use, exactly as `AwardLedger` is: logging never
+/// lowers [bestsCount] and never removes a best. The one way down is
+/// [forgetSession], for a session she removed herself: a best she never
+/// lifted is not one she earned.
 class PersonalBestLedger {
   PersonalBestLedger({
     this.detector = const PersonalBestDetector(),
@@ -100,8 +101,8 @@ class PersonalBestLedger {
 
   final Set<String> _counted;
 
-  /// `rewards.bestsCount`. Rises or stays; the only statement that touches it
-  /// adds one.
+  /// `rewards.bestsCount`. Rises or stays while she logs; it comes down only
+  /// through [forgetSession].
   int bestsCount;
 
   /// The ids already counted, for the caller that persists them.
@@ -155,6 +156,53 @@ class PersonalBestLedger {
     }
 
     return SessionBests(written: found, counted: counted);
+  }
+
+  /// Takes back what one session she removed did to her bests.
+  ///
+  /// Each best it counted comes off the tally. Each running best it set goes
+  /// back to the one it beat, or away when it beat nothing. Returns the moves
+  /// whose running best changed, so a caller holding her other sessions can
+  /// look for a better one among them.
+  Set<String> forgetSession(String sessionId) {
+    final suffix = ':$sessionId';
+    final counted = [
+      for (final id in _counted)
+        if (id.startsWith('best:') && id.endsWith(suffix)) id,
+    ];
+    _counted.removeAll(counted);
+    bestsCount = bestsCount > counted.length ? bestsCount - counted.length : 0;
+
+    return revertBestsOf(sessionId);
+  }
+
+  /// Puts each running best [sessionId] set back to the one it beat, or takes
+  /// it away when it beat nothing. Counts and points are not touched. Returns
+  /// the moves whose running best changed.
+  Set<String> revertBestsOf(String sessionId) {
+    final changed = <String>{};
+    for (final entry in bests.entries.toList()) {
+      final best = entry.value;
+      if (best.sessionId != sessionId) continue;
+      changed.add(entry.key);
+      final previous = best.previous;
+      if (previous == null) {
+        bests.remove(entry.key);
+        continue;
+      }
+      bests[entry.key] = PersonalBest(
+        exerciseId: best.exerciseId,
+        metric: best.metric,
+        dateKey: previous.dateKey ?? best.dateKey,
+        // The session behind the earlier best is not recorded with it.
+        sessionId: '',
+        loadKg: previous.loadKg,
+        reps: previous.reps,
+        holdSec: previous.holdSec,
+        rank: previous.rank,
+      );
+    }
+    return changed;
   }
 
   /// Puts back what she had already earned when the app was last closed.

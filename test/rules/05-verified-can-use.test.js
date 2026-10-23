@@ -272,10 +272,10 @@ describe('the community and the library, as a verified woman', () => {
     }
   });
 
-  test('she can browse coaches, offers, portfolios and consented results', async () => {
+  test('she can read a coach page, but not the closed offers, portfolio and results', async () => {
     await seed(async (ctx) => {
       const d = ctx.firestore();
-      await setDoc(doc(d, `coaches/${uid.coach}`), { name: 'Coach', rating: 4.8 });
+      await setDoc(doc(d, `coaches/${uid.coach}`), { name: 'Coach', rating: 4.8, published: true });
       await setDoc(doc(d, `coaches/${uid.coach}/offers/o1`), { price: 1000 });
       await setDoc(doc(d, `coaches/${uid.coach}/portfolio/v1`), { published: true });
       await setDoc(doc(d, `coaches/${uid.coach}/portfolio/v2`), { published: false });
@@ -284,50 +284,33 @@ describe('the community and the library, as a verified woman', () => {
     });
     const db = await verified(HER);
     await assertSucceeds(getDoc(doc(db, `coaches/${uid.coach}`)));
-    await assertSucceeds(getDoc(doc(db, `coaches/${uid.coach}/offers/o1`)));
-    await assertSucceeds(getDoc(doc(db, `coaches/${uid.coach}/portfolio/v1`)));
+    await assertFails(getDoc(doc(db, `coaches/${uid.coach}/offers/o1`)));
+    await assertFails(getDoc(doc(db, `coaches/${uid.coach}/portfolio/v1`)));
     await assertFails(getDoc(doc(db, `coaches/${uid.coach}/portfolio/v2`)));
-    await assertSucceeds(getDoc(doc(db, `coaches/${uid.coach}/results/r1`)));
+    await assertFails(getDoc(doc(db, `coaches/${uid.coach}/results/r1`)));
     await assertFails(getDoc(doc(db, `coaches/${uid.coach}/results/r2`)));
     // She may not edit a coach's page.
     await assertFails(updateDoc(doc(db, `coaches/${uid.coach}`), { rating: 5 }));
   });
 });
 
-describe('a verified coach can run her own page', () => {
-  test('create, update, and the three fields she may never WRITE', async () => {
+describe('a verified coach cannot write her own page from the app', () => {
+  test('the page and every old subcollection are server-written now', async () => {
     const db = await verifiedCoach(uid.coach2);
-    // The three server-written fields are now refused at BIRTH as well as on
-    // update, so the create payload no longer carries `coachV`. It never came
-    // from the client anyway: `coachV` is a server-minted claim, and grep finds
-    // no write of a `coachV` FIELD anywhere in app/lib.
+    await assertFails(setDoc(doc(db, `coaches/${uid.coach2}`), {
+      name: 'Coach Two', bio: 'strength',
+    }));
     await assertFails(setDoc(doc(db, `coaches/${uid.coach2}`), {
       name: 'Coach Two', rating: 4.9,
     }));
-    await assertFails(setDoc(doc(db, `coaches/${uid.coach2}`), {
-      name: 'Coach Two', verifiedCerts: ['NASM'],
-    }));
-    await assertFails(setDoc(doc(db, `coaches/${uid.coach2}`), {
-      name: 'Coach Two', coachV: 'active',
-    }));
-    await assertSucceeds(setDoc(doc(db, `coaches/${uid.coach2}`), {
-      name: 'Coach Two', bio: 'strength',
-    }));
-    await assertSucceeds(updateDoc(doc(db, `coaches/${uid.coach2}`), { bio: 'new' }));
-    await assertFails(updateDoc(doc(db, `coaches/${uid.coach2}`), { rating: 5 }));
-    await assertFails(updateDoc(doc(db, `coaches/${uid.coach2}`), { coachV: 'suspended' }));
-    await assertFails(updateDoc(doc(db, `coaches/${uid.coach2}`), { verifiedCerts: ['x'] }));
-    // A write that does not CHANGE the value is a no-op for diff(), so it is
-    // allowed. Correct, and worth stating: the guard is on change, not on
-    // presence. The document has no `coachV` to be unchanged, so this uses a
-    // field it does hold.
-    await assertSucceeds(
-      updateDoc(doc(db, `coaches/${uid.coach2}`), { bio: 'new' }),
-    );
-    await assertSucceeds(setDoc(doc(db, `coaches/${uid.coach2}/offers/o1`), { price: 500 }));
-    await assertSucceeds(setDoc(doc(db, `coaches/${uid.coach2}/ads/ad1`), { copy: 'x' }));
-    await assertSucceeds(setDoc(doc(db, `coaches/${uid.coach2}/splits/s1`), { name: 'PPL' }));
-    // A woman without the coach claim cannot open a coach page.
+    await seed(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), `coaches/${uid.coach2}`), { name: 'Coach Two', published: true });
+    });
+    await assertFails(updateDoc(doc(db, `coaches/${uid.coach2}`), { bio: 'new' }));
+    await assertFails(deleteDoc(doc(db, `coaches/${uid.coach2}`)));
+    await assertFails(setDoc(doc(db, `coaches/${uid.coach2}/offers/o1`), { price: 500 }));
+    await assertFails(setDoc(doc(db, `coaches/${uid.coach2}/ads/ad1`), { copy: 'x' }));
+    await assertFails(setDoc(doc(db, `coaches/${uid.coach2}/splits/s1`), { name: 'PPL' }));
     const her = await verified(HER);
     await assertFails(setDoc(doc(her, `coaches/${HER}`), { name: 'not a coach' }));
   });
@@ -338,12 +321,7 @@ describe('a verified coach can run her own page', () => {
     await assertFails(setDoc(doc(db, `coaches/${uid.coach2}/offers/o2`), { price: 0 }));
   });
 
-  test('the three protected fields cannot be present at CREATE time', async (t) => {
-    // `allow update` has always named verifiedCerts, coachV and rating.
-    // `allow create` was `isSelf(coachUid) && isCoach()` with no field
-    // constraint at all, so a coach page could simply be BORN with them — and
-    // was: rating=5, verifiedCerts=["NASM","ACE","anything at all"], read back
-    // by a verified woman choosing who to train with.
+  test('a page cannot be born with a rating or checked certificates', async (t) => {
     const who = 'c_born_with_it_0011';
     const db = await verifiedCoach(who);
     const r = await observe('coach page born with rating + verifiedCerts',
@@ -353,16 +331,12 @@ describe('a verified coach can run her own page', () => {
       }));
     t.diagnostic(`  ${r.outcome.padEnd(8)} ${r.label}`);
     assert.equal(r.outcome, 'DENIED');
+    await assertFails(setDoc(doc(db, `coaches/${who}`), { name: 'Honest' }));
 
+    // Nothing was written. A member reading a page that does not exist is
+    // refused rather than told "not found", so an unpublished or missing page
+    // looks the same from outside.
     const readBack = await verified(uid.her);
-    const snap = await getDoc(doc(readBack, `coaches/${who}`));
-    t.diagnostic(
-      `  a verified woman browsing coaches reads: exists=${snap.exists()}`,
-    );
-    assert.equal(snap.exists(), false);
-
-    // And the same page without them is accepted, so a coach is not locked out
-    // of creating her own profile.
-    await assertSucceeds(setDoc(doc(db, `coaches/${who}`), { name: 'Honest' }));
+    await assertFails(getDoc(doc(readBack, `coaches/${who}`)));
   });
 });

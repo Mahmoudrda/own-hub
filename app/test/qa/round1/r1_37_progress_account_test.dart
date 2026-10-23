@@ -8,20 +8,32 @@
 // R1-37 to R1-48: Progress, and the account / privacy / deletion flow.
 @Tags(['qa'])
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+
 import 'round1_harness.dart';
 
 void main() {
   useShippingApp();
-  for (final id in ['P01','P02','P03','P04','A01','A02','A03','A04','C02']) {
+  for (final id in [
+    'P01',
+    'P02',
+    'P03',
+    'P04',
+    'A01',
+    'A02',
+    'A03',
+    'A04',
+    'C02',
+  ]) {
     testWidgets('$id day one', (t) async {
       phone(t);
       final s = t.ensureSemantics();
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       print('$id PAINTED: ${paintedText(t).join(" | ")}');
-      print('$id TAPPABLE: ${tappables(t).map((e)=>e.label).join(" | ")}');
+      print('$id TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');
       s.dispose();
     });
   }

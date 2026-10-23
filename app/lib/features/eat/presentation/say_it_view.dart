@@ -37,6 +37,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/guest_session.dart';
+import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
@@ -55,7 +57,9 @@ import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
 import 'meal_log_session.dart';
+import 'meal_result_card.dart';
 import 'say_it_view_model.dart';
+import 'meal_labels.dart';
 
 class SayItView extends StatefulWidget {
   const SayItView({
@@ -71,6 +75,7 @@ class SayItView extends StatefulWidget {
     this.onLogged,
     this.onBlocked,
     this.onTypeInstead,
+    this.onEditSentence,
   });
 
   /// See `EatView.constraints` — required, never defaulted.
@@ -99,6 +104,10 @@ class SayItView extends StatefulWidget {
   /// Where `refused` and `failed` send her — E02, with an explanation rather
   /// than a spinner.
   final VoidCallback? onTypeInstead;
+
+  /// Edit on the result card: opens E02 with what she said already in the box.
+  /// Falls back to [onTypeInstead] when not given.
+  final ValueChanged<String>? onEditSentence;
 
   @override
   State<SayItView> createState() => _SayItViewState();
@@ -158,6 +167,7 @@ class _SayItViewState extends State<SayItView> {
   /// second had already expired. Without that handler nothing downstream would
   /// offer the five seconds, so the snackbar stands in.
   void _offerUndo(LogHandle handle, {VoidCallback? onUndo}) {
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
     if (widget.onLogged != null) return;
     showUndoSnackBar(
       context,
@@ -168,6 +178,12 @@ class _SayItViewState extends State<SayItView> {
   }
 
   void _log(List<ParsedItem> entries) {
+    if (!GuestSession.require(
+      context,
+      PendingAction.logMeal(entries, origin: MealOrigin.voice),
+    )) {
+      return;
+    }
     final l10n = AppL10n.of(context);
     final service = MealLogService(
       repository: _repo,
@@ -198,7 +214,11 @@ class _SayItViewState extends State<SayItView> {
       final handle = session.submit(
         prepared,
         slot: slot,
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
       );
       _offerUndo(handle, onUndo: session.settle);
       widget.onLogged?.call(handle);
@@ -207,7 +227,11 @@ class _SayItViewState extends State<SayItView> {
 
     final handle = _bus.submit(
       UndoableLog(
-        describe: l10n.mealAdded,
+        describe: mealAddedLabel(
+          l10n,
+          mealFoodNames(_library(l10n), prepared.items),
+          slot,
+        ),
         commit: () => service.commit(prepared.write),
       ),
     );
@@ -285,6 +309,18 @@ class _SayItViewState extends State<SayItView> {
             ),
             onRemove: () => setState(() => _state = model.remove(state, i)),
             removeTooltip: l10n.edit,
+            imageAsset: state.parse.items[i].food.imageAsset,
+          ),
+        // Below the rows she edits, so the card never pushes them off-screen.
+        if (state.state == VoiceState.transcribing)
+          const MealResultCard(adding: true)
+        else if (state.canLog)
+          MealResultCard(
+            items: state.parse.items,
+            onYes: () => _log(state.parse.items),
+            onEdit: widget.onEditSentence != null && state.transcript != null
+                ? () => widget.onEditSentence!(state.transcript!)
+                : widget.onTypeInstead,
           ),
       ],
     );

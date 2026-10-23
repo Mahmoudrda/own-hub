@@ -32,13 +32,13 @@
 /// There is no `confirm*` method on this class, and no parameter anywhere that
 /// could carry a dialog. That absence is the enforcement, as it is on the bus.
 ///
-/// ## The guard runs before the write, on every path
+/// ## Allergies do not block a log
 ///
-/// Each of the three builders consults [AllergyGuard] and returns a
-/// [MealLogRefused] rather than a write when the verdict is outstanding. Because
-/// it sits here rather than in a widget, every entry point hits it — E01's
-/// one-tap suggestion, E02's sentence, E03's transcript, E06's recipe, and the
-/// lock-screen nudge, which therefore cannot one-tap-log a conflicting meal.
+/// A log records what she already ate, so refusing it helps nobody. The guard
+/// still decides what is *offered* ([AllergyGuard.screenSuggestions]) and which
+/// allergens a logged food is known to contain ([AllergyGuard.knownAllergens]),
+/// which the screens show as a "Contains X" note. A refusal now means a day with
+/// no context or a food the pack cannot name.
 library;
 
 import 'package:meta/meta.dart';
@@ -47,6 +47,7 @@ import '../../../domain/week/week_key.dart';
 import 'allergy_guard.dart';
 import 'food_library.dart';
 import 'item_id.dart';
+import 'meal_check.dart';
 import 'meal_repository.dart';
 import 'meal_sentence_parser.dart';
 import 'meal_slot_state_machine.dart';
@@ -134,7 +135,7 @@ class MealLogService {
     required DateTime at,
     Set<String> acknowledged = const <String>{},
   }) {
-    final refusal = _screen(day, entry, acknowledged);
+    final refusal = _screen(day, entry, acknowledged, enforceGuard: true);
     if (refusal != null) {
       return MealLogRefused(refusal, dish: entry.food.names.first);
     }
@@ -162,6 +163,9 @@ class MealLogService {
       origin: MealOrigin.plan,
       kcal: entry.kcal,
       proteinG: entry.proteinG,
+      carbsG: entry.carbsG,
+      fatG: entry.fatG,
+      fiberG: entry.fiberG,
       planRef: planRef,
       allergenOverride: acknowledged.toList(),
     );
@@ -193,13 +197,10 @@ class MealLogService {
     Set<String> acknowledged = const <String>{},
   }) {
     final food = library.byId(of.foodId);
-    final assessment = food == null
-        ? AllergyAssessment.clear
-        : guard.assess(food, acknowledged: acknowledged);
     final refusal = machine.refuseLog(
       day: day,
       food: food,
-      assessment: assessment,
+      assessment: AllergyAssessment.clear,
     );
     if (refusal != null) {
       return MealLogRefused(refusal, dish: food?.names.first);
@@ -220,6 +221,11 @@ class MealLogService {
       origin: of.origin,
       kcal: of.kcal,
       proteinG: of.proteinG,
+      carbsG: of.carbsG,
+      fatG: of.fatG,
+      fiberG: of.fiberG,
+      name: of.name,
+      grams: of.grams,
       helpingOf: root,
       allergenOverride: acknowledged.toList(),
     );
@@ -274,6 +280,10 @@ class MealLogService {
           origin: origin,
           kcal: entry.kcal,
           proteinG: entry.proteinG,
+          carbsG: entry.carbsG,
+          fatG: entry.fatG,
+          fiberG: entry.fiberG,
+          name: entry.food.custom ? entry.food.names.first : null,
           allergenOverride: acknowledged.toList(),
         ),
     ];
@@ -288,6 +298,86 @@ class MealLogService {
       ),
       items: items,
     );
+  }
+
+  /// The plate she checked on E13, item by item, exactly as she approved it.
+  ///
+  /// A free log like [logNew]: fresh ids, nothing removed, no [PlanRef]. What
+  /// differs is where the numbers come from. A food the pack does not hold is
+  /// logged under her name for it and the figures she approved, and it is
+  /// still put to the guard: as a dish nobody has listed the contents of,
+  /// which is exactly what a photographed plate is. So she is refused here
+  /// on the same terms as for any dish in the pack, never waved through.
+  MealLogOutcome logChecked({
+    required MealDay day,
+    required MealSlot slot,
+    required List<CheckedEntry> entries,
+    required DateTime at,
+    Set<String> acknowledged = const <String>{},
+  }) {
+    if (entries.isEmpty) {
+      return const MealLogRefused(LogRefusal(LogRefusalReason.foodNotInPack));
+    }
+
+    for (final entry in entries) {
+      final listed = entry.food;
+      // A food from the list must still be in it; one she named is assessed
+      // as a dish whose contents nobody has listed.
+      final Food? food = listed == null
+          ? Food(
+              foodId: entry.foodId,
+              names: [entry.name ?? ''],
+              sizes: const <FoodSize>[],
+            )
+          : library.byId(listed.foodId);
+      final refusal = machine.refuseLog(
+        day: day,
+        food: food,
+        assessment: AllergyAssessment.clear,
+      );
+      if (refusal != null) {
+        return MealLogRefused(refusal, dish: entry.name ?? listed?.names.first);
+      }
+    }
+
+    final items = [
+      for (final entry in entries)
+        MealItem(
+          itemId: freshItemId(),
+          foodId: entry.foodId,
+          servings: 1,
+          size: entry.sizeId,
+          loggedAt: at,
+          source: MealSource.search,
+          origin: MealOrigin.photo,
+          kcal: entry.kcal,
+          proteinG: entry.proteinG,
+          carbsG: entry.carbsG,
+          fatG: entry.fatG,
+          fiberG: entry.fiberG,
+          name: entry.food == null ? entry.name : null,
+          grams: entry.grams == null ? null : _grams(entry.grams!),
+          allergenOverride: acknowledged.toList(),
+        ),
+    ];
+
+    return MealLogPrepared(
+      write: MealWrite.transform(
+        dayId: day.dayId,
+        slot: slot,
+        added: items,
+        tz: tz,
+        libVersion: libVersion,
+      ),
+      items: items,
+    );
+  }
+
+  /// A weight as she saw it: whole grams, or one decimal below ten.
+  static num _grams(double grams) {
+    final whole = grams.roundToDouble();
+    if ((grams - whole).abs() < 0.05 || grams >= 10) return whole.toInt();
+    return (grams * 10).round() / 10;
   }
 
   /// Marks a slot skipped. No penalty anywhere, and never final.
@@ -306,15 +396,23 @@ class MealLogService {
   Future<void> commit(MealWrite write) => repository.applyLog(write);
 
   /// The guard and the state machine, in the one order that is safe.
-  LogRefusal? _screen(MealDay day, ParsedItem entry, Set<String> acknowledged) {
+  ///
+  /// [enforceGuard] is true only for a coach-PLANNED row: D53 unblocks logging
+  /// food she ate, but a planned row still fails closed on allergies.
+  LogRefusal? _screen(
+    MealDay day,
+    ParsedItem entry,
+    Set<String> acknowledged, {
+    bool enforceGuard = false,
+  }) {
     // Resolved against the pack by id, not trusted from the caller: an entry
     // could have been built from a Food that is no longer in the library after
     // a pack update, and §2 rule 10 forbids logging a food the product cannot
     // name.
     final food = library.byId(entry.food.foodId);
-    final assessment = food == null
-        ? AllergyAssessment.clear
-        : guard.assess(food, acknowledged: acknowledged);
+    final assessment = (enforceGuard && food != null)
+        ? guard.assess(food, acknowledged: acknowledged)
+        : AllergyAssessment.clear;
     return machine.refuseLog(day: day, food: food, assessment: assessment);
   }
 }

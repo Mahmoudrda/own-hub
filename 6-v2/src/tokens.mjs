@@ -1,4 +1,20 @@
-// v2 design language: Material 3 colour roles, pink, tuned for Egyptian light and cheap screens.
+// v2 design language: Material 3 colour roles, Linen, Petrol and Pale Pink, tuned for Egyptian light and cheap screens.
+//
+// PALETTE OF 16 OCTOBER 2026 (DECISIONS D49). The owner replaced the rose and
+// blush palette with three colours: Linen #FCF8F2 for the page, Pale Pink
+// #F4BEBB leading as the action colour, the marker and the selected state, and
+// Petrol #1A5D74 as the hint: links, icons, ticks and progress. Those three are exact. Everything else is a tint or shade of
+// one of them, plus the sage and the error tone, which keep their own hues so
+// that done and wrong still read apart from brand.
+//
+// Pink is never type and never the only signal of a graphic: it is 1.53:1 on
+// Linen, so a pink series carries a petrol outline. Any text that sits on pink
+// is dark petrol #123F50, because Petrol on Pink measures about 4.5 and the
+// product holds a 0.2 margin above the 4.50 floor. A pair that fails is fixed by
+// changing a colour here, never by lowering a threshold or a margin.
+//
+// The notes below are the history of the previous rose palette. The hexes they
+// quote are retired; the reasoning about roles still holds.
 //
 // SIX FOREGROUND ROLES WERE DARKENED IN QA ROUND TWO (R2-41), AND NOT ONE HUE
 // MOVED. A SEVENTH WAS, AND ROUND THREE PUT IT BACK.
@@ -47,32 +63,47 @@
 // `flutter test test/qa/round2/r2_41_app_palette_contrast_test.dart`, which
 // measures every pair the shipping code actually draws.
 export const C = {
-  primary: '#A24661', onPrimary: '#FFFFFF', primaryContainer: '#FFD9E3', onPrimaryContainer: '#4A1C2E',
-  primaryDim: '#9A3F57', primarySoft: '#F8E1E7',
-  secondary: '#75565E', onSecondary: '#FFFFFF', secondaryContainer: '#F5E3E8', onSecondaryContainer: '#412B32',
+  primary: '#1A5D74', onPrimary: '#FCF8F2', primaryContainer: '#F4BEBB', onPrimaryContainer: '#123F50',
+  primaryDim: '#123F50', primarySoft: '#F9DEDC',
+  secondary: '#4E6E79', onSecondary: '#FCF8F2', secondaryContainer: '#F9DEDC', onSecondaryContainer: '#123F50',
   tertiary: '#4C6E55', onTertiary: '#FFFFFF', tertiaryContainer: '#DDEDE1', onTertiaryContainer: '#1E3826', tertiarySoft: '#65896F',
   error: '#A34848', onError: '#FFFFFF', errorContainer: '#FBE0E0', onErrorContainer: '#4E1C1C',
   amber: '#8A5A17', amberContainer: '#FBEBD6',
-  surface: '#FFF8F9', surfaceLowest: '#FFFFFF', surfaceLow: '#FFF1F4', surfaceContainer: '#FBEAEF',
-  surfaceHigh: '#F6E3E9', surfaceHighest: '#F0DBE2',
-  onSurface: '#241A1E', onSurfaceVariant: '#6B5C61', outline: '#977C84', outlineVariant: '#EBDCDF',
-  inverseSurface: '#37292E', inverseOnSurface: '#FFECF0', scrim: 'rgba(36,26,30,.45)',
-  canvas: '#F2E8EB', ink: '#241A1E',
+  surface: '#FCF8F2', surfaceLowest: '#FFFFFF', surfaceLow: '#F8F2EA', surfaceContainer: '#F4EDE3',
+  surfaceHigh: '#EFE7DB', surfaceHighest: '#E8DED3',
+  onSurface: '#123F50', onSurfaceVariant: '#4E6068', outline: '#60858F', outlineVariant: '#E8DED3',
+  inverseSurface: '#123F50', inverseOnSurface: '#FCF8F2', scrim: 'rgba(18,63,80,.45)',
+  canvas: '#F4EDE3', ink: '#123F50',
 };
+// Brand aliases. A hex is a new value; a role name points at that role.
+export const BRAND = {
+  brandLinen: '#FCF8F2', brandPetrol: '#1A5D74', brandPink: '#F4BEBB', white: '#FFFFFF',
+  petrolDark: '#123F50', petrolMuted: '#668B96', pinkSoft: '#F9DEDC', pinkShade: '#E8A5A2', pinkDeep: '#D98A87',
+  borderWarm: '#E8DED3',
+};
+export const ALIAS = {
+  textPrimary: 'onSurface', textSecondary: 'onSurfaceVariant', actionPrimary: 'brandPink', onActionPrimary: 'petrolDark', actionPressed: 'pinkShade',
+  progressPrimary: 'primary', progressAccent: 'brandPink',
+  statusSuccess: 'tertiary', statusWarning: 'amber', statusError: 'error',
+  chartPrimary: 'primary', chartSecondary: 'brandPink', chartMuted: 'petrolMuted',
+  illustrationBg: 'surfaceLow',
+};
+export const SPACE = [4, 8, 12, 16, 20, 24, 32, 40];
+export const ICON_SIZE = [16, 20, 24, 32];
 export const F = {
   ui: "'Rubik',system-ui,-apple-system,sans-serif",
   mono: "'IBM Plex Mono',ui-monospace,monospace",
 };
 // size / line-height / weight
 export const TY = {
-  display: [32, 40, 600], headline: [26, 33, 600], titleL: [20, 26, 600], titleM: [17, 23, 600],
+  display: [32, 40, 700], headline: [26, 33, 700], titleL: [20, 26, 600], titleM: [17, 23, 600],
   titleS: [15, 20, 600], body: [16, 24, 400], bodyM: [15, 22, 400], label: [15, 20, 500], nav: [12, 16, 500],
 };
 export const R = { xs: 8, sm: 12, md: 16, lg: 20, xl: 28, full: 999 };
 export const E = {
-  e1: '0 1px 2px rgba(36,26,30,.06),0 1px 3px rgba(36,26,30,.05)',
-  e2: '0 2px 8px rgba(36,26,30,.08)',
-  e3: '0 8px 24px rgba(36,26,30,.12)',
+  e1: '0 1px 2px rgba(18,63,80,.06),0 1px 3px rgba(18,63,80,.05)',
+  e2: '0 2px 8px rgba(18,63,80,.08)',
+  e3: '0 8px 24px rgba(18,63,80,.12)',
 };
 export const M = {
   fast: 150, short: 220, med: 320, long: 460,

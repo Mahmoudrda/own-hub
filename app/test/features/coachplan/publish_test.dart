@@ -62,10 +62,9 @@ PlanDraft _draft({String? effectiveFrom, Map<String, PlanDay>? days}) =>
               workout: DraftWorkout(title: 'Full-body', minutes: 35),
               meal: DraftMealDay(
                 slots: <PlanMealSlot, MealSlotAssignment?>{
-                  PlanMealSlot.breakfast:
-                      const MealSlotAssignment.fromLibrary(
-                        foodIds: <String>['ful_medames'],
-                      ),
+                  PlanMealSlot.breakfast: const MealSlotAssignment.fromLibrary(
+                    foodIds: <String>['ful_medames'],
+                  ),
                 },
               ),
             ),
@@ -94,7 +93,8 @@ void main() {
         context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
       );
 
-      final days = gateway.requests.single.payload['days']! as Map<String, Object?>;
+      final days =
+          gateway.requests.single.payload['days']! as Map<String, Object?>;
       final monday = days['2026-09-14']! as Map<String, Object?>;
       final slots =
           (monday['meal']! as Map<String, Object?>)['slots']!
@@ -142,10 +142,7 @@ void main() {
 
     test('a future date she chose is kept', () {
       expect(
-        CoachPlanPublisher.clampToToday(
-          requested: '2026-09-25',
-          today: _today,
-        ),
+        CoachPlanPublisher.clampToToday(requested: '2026-09-25', today: _today),
         '2026-09-25',
       );
     });
@@ -198,7 +195,9 @@ void main() {
       );
       // And no withheld label is left behind.
       expect(
-        view.contains("_publishLabel(l10n, PublishButtonLabel.publishWhenOnline) => ''"),
+        view.contains(
+          "_publishLabel(l10n, PublishButtonLabel.publishWhenOnline) => ''",
+        ),
         isFalse,
       );
     });
@@ -219,40 +218,42 @@ void main() {
       }
     });
 
-    test('the queued intent is the request that would have been sent', () async {
-      final queue = InMemoryPublishIntentQueue();
-      final publisher = _publisher(_RecordingGateway(), queue);
-      final draft = _draft();
+    test(
+      'the queued intent is the request that would have been sent',
+      () async {
+        final queue = InMemoryPublishIntentQueue();
+        final publisher = _publisher(_RecordingGateway(), queue);
+        final draft = _draft();
 
-      await publisher.publish(
-        draft: draft,
-        context: PublishContext(
-          lifeStage: LifeStage.over1y,
-          today: _today,
-          online: false,
-        ),
-      );
+        await publisher.publish(
+          draft: draft,
+          context: PublishContext(
+            lifeStage: LifeStage.over1y,
+            today: _today,
+            online: false,
+          ),
+        );
 
-      final online = publisher.requestFor(
-        draft: draft,
-        context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
-      );
-      expect(queue.pending.single.idempotencyKey, online.idempotencyKey);
-      expect(
-        queue.pending.single.payload.toString(),
-        online.payload.toString(),
-        reason: 'replaying it cannot produce a second version',
-      );
-    });
+        final online = publisher.requestFor(
+          draft: draft,
+          context: PublishContext(lifeStage: LifeStage.over1y, today: _today),
+        );
+        expect(queue.pending.single.idempotencyKey, online.idempotencyKey);
+        expect(
+          queue.pending.single.payload.toString(),
+          online.payload.toString(),
+          reason: 'replaying it cannot produce a second version',
+        );
+      },
+    );
 
     test('the same content hashes the same, every time', () {
       expect(_draft().contentHash, _draft().contentHash);
       expect(
         _draft().contentHash,
         isNot(
-          _draft(
-            days: <String, PlanDay>{'2026-09-14': const PlanDay.rest()},
-          ).contentHash,
+          _draft(days: <String, PlanDay>{'2026-09-14': const PlanDay.rest()})
+              .contentHash,
         ),
       );
     });
@@ -271,32 +272,38 @@ void main() {
     Clearance clearance(bool granted) =>
         Clearance(granted: granted, recordedAt: DateTime(2026, 9, 1));
 
-    test('clearance withheld in the first six weeks blocks publishing', () async {
-      final gateway = _RecordingGateway();
-      final outcome = await _publisher(gateway).publish(
-        draft: _draft(),
-        context: PublishContext(
-          lifeStage: LifeStage.postpartum0to6w,
-          clearance: clearance(false),
-          today: _today,
-        ),
-      );
+    test(
+      'clearance withheld in the first six weeks blocks publishing',
+      () async {
+        final gateway = _RecordingGateway();
+        final outcome = await _publisher(gateway).publish(
+          draft: _draft(),
+          context: PublishContext(
+            lifeStage: LifeStage.postpartum0to6w,
+            clearance: clearance(false),
+            today: _today,
+          ),
+        );
 
-      expect(outcome.isRefused, isTrue);
-      expect(outcome.refusal, PublishRefusal.clearanceWithheld);
-      expect(gateway.requests, isEmpty);
-    });
+        expect(outcome.isRefused, isTrue);
+        expect(outcome.refusal, PublishRefusal.clearanceWithheld);
+        expect(gateway.requests, isEmpty);
+      },
+    );
 
-    test('no clearance recorded at all blocks too — unknown is not absent', () async {
-      final outcome = await _publisher(_RecordingGateway()).publish(
-        draft: _draft(),
-        context: PublishContext(
-          lifeStage: LifeStage.postpartum0to6w,
-          today: _today,
-        ),
-      );
-      expect(outcome.refusal, PublishRefusal.clearanceUnrecorded);
-    });
+    test(
+      'no clearance recorded at all blocks too — unknown is not absent',
+      () async {
+        final outcome = await _publisher(_RecordingGateway()).publish(
+          draft: _draft(),
+          context: PublishContext(
+            lifeStage: LifeStage.postpartum0to6w,
+            today: _today,
+          ),
+        );
+        expect(outcome.refusal, PublishRefusal.clearanceUnrecorded);
+      },
+    );
 
     test('granted clearance publishes', () async {
       final outcome = await _publisher(_RecordingGateway()).publish(
@@ -325,61 +332,67 @@ void main() {
       }
     });
 
-    test('an unverified coach authors everything and publishes nothing', () async {
-      final outcome = await _publisher(_RecordingGateway()).publish(
-        draft: _draft(),
-        context: PublishContext(
-          lifeStage: LifeStage.over1y,
-          today: _today,
-          coachVerified: false,
-        ),
-      );
-      expect(outcome.refusal, PublishRefusal.coachNotVerified);
-    });
+    test(
+      'an unverified coach authors everything and publishes nothing',
+      () async {
+        final outcome = await _publisher(_RecordingGateway()).publish(
+          draft: _draft(),
+          context: PublishContext(
+            lifeStage: LifeStage.over1y,
+            today: _today,
+            coachVerified: false,
+          ),
+        );
+        expect(outcome.refusal, PublishRefusal.coachNotVerified);
+      },
+    );
   });
 
   group('P1-RULE-20 — a referral never blocks a publish', () {
-    test('an active referral publishes, and is not an error anywhere', () async {
-      final assessment = SafetyAssessment(
-        assessmentId: 'c1_u1__2026-09-01',
-        clientUid: 'u1',
-        coachUid: 'c1',
-        takenAt: DateTime(2026, 9, 1),
-        lifeStage: LifeStage.postpartum6wTo1y,
-        screening: <ScreeningItem>[
-          ScreeningItem(
-            id: 'pelvic_floor',
-            outcome: ScreeningOutcome.refer,
-            suppresses: <ContraindicationTag>{
-              ContraindicationTag.pelvicFloorLoad,
-              ContraindicationTag.jumping,
-              ContraindicationTag.highImpact,
-            },
+    test(
+      'an active referral publishes, and is not an error anywhere',
+      () async {
+        final assessment = SafetyAssessment(
+          assessmentId: 'c1_u1__2026-09-01',
+          clientUid: 'u1',
+          coachUid: 'c1',
+          takenAt: DateTime(2026, 9, 1),
+          lifeStage: LifeStage.postpartum6wTo1y,
+          screening: <ScreeningItem>[
+            ScreeningItem(
+              id: 'pelvic_floor',
+              outcome: ScreeningOutcome.refer,
+              suppresses: <ContraindicationTag>{
+                ContraindicationTag.pelvicFloorLoad,
+                ContraindicationTag.jumping,
+                ContraindicationTag.highImpact,
+              },
+            ),
+          ],
+        );
+
+        expect(ReferralRegistry.activeTags(assessment), isNotEmpty);
+
+        final outcome = await _publisher(_RecordingGateway()).publish(
+          draft: _draft(),
+          context: PublishContext(
+            lifeStage: assessment.lifeStage,
+            today: _today,
           ),
-        ],
-      );
+        );
+        expect(
+          outcome.isPublished,
+          isTrue,
+          reason: 'refer is an outcome, not a failure',
+        );
 
-      expect(ReferralRegistry.activeTags(assessment), isNotEmpty);
-
-      final outcome = await _publisher(_RecordingGateway()).publish(
-        draft: _draft(),
-        context: PublishContext(
-          lifeStage: assessment.lifeStage,
-          today: _today,
-        ),
-      );
-      expect(
-        outcome.isPublished,
-        isTrue,
-        reason: 'refer is an outcome, not a failure',
-      );
-
-      // And the refusal enum has nothing referral-shaped to return.
-      expect(
-        PublishRefusal.values.map((r) => r.name),
-        isNot(contains(anyOf('referral', 'referred', 'referralOutstanding'))),
-      );
-    });
+        // And the refusal enum has nothing referral-shaped to return.
+        expect(
+          PublishRefusal.values.map((r) => r.name),
+          isNot(contains(anyOf('referral', 'referred', 'referralOutstanding'))),
+        );
+      },
+    );
 
     test('a referral suppresses moves before the picker is built', () {
       final constraints = ClientConstraintResolver.resolve(
@@ -401,22 +414,21 @@ void main() {
         dietary: const <String>{},
       );
 
-      final survivors = ExerciseCandidateFilter(constraints).screen(
-        const <ScreenableExercise>[
-          ScreenableExercise(
-            exerciseId: 'glute_bridge',
-            tags: <ContraindicationTag>{ContraindicationTag.none},
-            quiet: true,
-            floorOnly: true,
-          ),
-          ScreenableExercise(
-            exerciseId: 'box_jump',
-            tags: <ContraindicationTag>{ContraindicationTag.jumping},
-            quiet: false,
-            floorOnly: false,
-          ),
-        ],
-      );
+      final survivors = ExerciseCandidateFilter(constraints)
+          .screen(const <ScreenableExercise>[
+            ScreenableExercise(
+              exerciseId: 'glute_bridge',
+              tags: <ContraindicationTag>{ContraindicationTag.none},
+              quiet: true,
+              floorOnly: true,
+            ),
+            ScreenableExercise(
+              exerciseId: 'box_jump',
+              tags: <ContraindicationTag>{ContraindicationTag.jumping},
+              quiet: false,
+              floorOnly: false,
+            ),
+          ]);
 
       expect(survivors.map((e) => e.exerciseId), <String>['glute_bridge']);
     });
@@ -441,9 +453,9 @@ void main() {
 
     test('an empty review is refused — the client always gets a reply', () {
       expect(
-        () => ReviewFeedbackService(InMemoryReviewGateway()).save(
-          const ReviewFeedback(reviewId: 'r1', text: '   '),
-        ),
+        () =>
+            ReviewFeedbackService(InMemoryReviewGateway())
+                .save(const ReviewFeedback(reviewId: 'r1', text: '   ')),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -526,10 +538,7 @@ void main() {
         ),
         _ => null,
       },
-      safety: MealSafety(
-        constraints: constraints(),
-        foods: (id) => pack[id],
-      ),
+      safety: MealSafety(constraints: constraints(), foods: (id) => pack[id]),
     );
 
     AssistantDraft incoming({String status = 'draft'}) => AssistantDraft(
@@ -611,7 +620,11 @@ void main() {
         reason: 'the allergy guard is re-run here too',
       );
       expect(
-        report.draft.days['2026-09-21']!.meal!.slots[PlanMealSlot.breakfast]!
+        report
+            .draft
+            .days['2026-09-21']!
+            .meal!
+            .slots[PlanMealSlot.breakfast]!
             .foodIds,
         <String>['ful_medames'],
       );

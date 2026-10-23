@@ -39,9 +39,8 @@ Widget host(
     theme: buildTheme(locale),
     home: Builder(
       builder: (context) => MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(textScaler: TextScaler.linear(textScale)),
+        data: MediaQuery.of(context)
+            .copyWith(textScaler: TextScaler.linear(textScale)),
         child: child,
       ),
     ),
@@ -51,11 +50,8 @@ Widget host(
 /// The starter theme, stamped at [at] so the validation is deterministic.
 PortfolioTheme theme() => PortfolioTheme.starter(now: at);
 
-PortfolioBlock block(
-  String id,
-  BlockPayload payload, {
-  bool visible = true,
-}) => PortfolioBlock(id: id, payload: payload, visible: visible);
+PortfolioBlock block(String id, BlockPayload payload, {bool visible = true}) =>
+    PortfolioBlock(id: id, payload: payload, visible: visible);
 
 Portfolio draft({List<PortfolioBlock> blocks = const <PortfolioBlock>[]}) =>
     Portfolio(

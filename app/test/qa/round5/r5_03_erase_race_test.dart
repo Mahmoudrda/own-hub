@@ -81,7 +81,8 @@ void main() {
     expect(
       storage.document,
       isNull,
-      reason: 'a write that lost the race to a deletion put her week back on '
+      reason:
+          'a write that lost the race to a deletion put her week back on '
           'the phone — the next launch would restore everything she deleted',
     );
   });

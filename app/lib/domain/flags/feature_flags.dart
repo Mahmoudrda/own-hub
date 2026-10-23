@@ -92,6 +92,11 @@ enum Feature {
   /// uses the microphone. A microphone drawn on Eat would be a feature the
   /// build does not have. Its parent is [eat].
   voiceLogging,
+
+  /// A photo of her plate, read by the server into foods and grams she checks
+  /// before anything is logged (`E12`, `E13`). For verified members only.
+  /// Its parent is [eat].
+  mealPhotos,
   progress,
   cycle,
   privacyCentre,
@@ -140,10 +145,12 @@ enum Feature {
   assistant,
 
   /// Events the owner runs: a class online, a meet-up at a ladies-only gym.
-  /// The Events screen (`T09`) and the Upcoming card on Home. **Off** until
-  /// the owner switches it on from Z14, which also writes `meta/features` so
-  /// members' apps take the same answer at their next launch. Nothing about
-  /// a woman is collected: there is no "interested" and no attendee list.
+  /// The Events screen (`T09`) and the Upcoming card on Home. **On** in the
+  /// shipped build; the owner can still switch it off from Z14, which also
+  /// writes `meta/features` so members' apps take the same answer at their
+  /// next launch. A woman's seat is her own attendee document, written only by
+  /// the server when she taps Reserve; there is no "interested" and no public
+  /// attendee list.
   events,
 
   // ------------------------------------------------- Parts of a feature
@@ -159,15 +166,21 @@ enum Feature {
   /// "After a quiet week" (`T04`): the rest week she has earned.
   quietWeek,
 
-  /// "When a tier slips" (`T05`).
+  /// "When a tier slips" (`T05`). **Off** for launch: the screen is not
+  /// finished.
   tiers,
 
-  /// The lock-screen nudge (`T03`).
+  /// The lock-screen nudge (`T03`). **Off** for launch: the screen is not
+  /// finished.
   lockScreenNudge,
 
   /// "I already did it": a session from memory (`T02`, `R12`).
   /// Inside [train], although `T02` opens from Home.
   recordFromMemory,
+
+  /// A programme and its days (`R02`). Back on with the three starting plans
+  /// (D47): her week, from her programme. Its parent is [train].
+  program,
 
   /// The exercise video (`R04`).
   exerciseVideo,
@@ -175,13 +188,17 @@ enum Feature {
   /// Swapping a move (`R05`).
   exerciseSwap,
 
-  /// The follow-along move (`R06`).
+  /// The follow-along move (`R06`): a hold counts itself down and logs.
   followAlong,
 
   /// The workout library the owner publishes (`R11`).
   workoutLibrary,
 
-  /// Training reminders: the sheet on `A01` and `R10`. No screen of its own.
+  /// The exercise library and one move's demo (`R14`, `R15`): the owner's
+  /// clips, kept on the phone after the first view (D42).
+  exerciseLibrary,
+
+  /// Training reminders: the sheet on `A01`, offered on Home. No screen of its own.
   trainingReminders,
 
   /// Recipes, one recipe and Rahma's letter (`E05`, `E06`, `E11`).
@@ -190,7 +207,7 @@ enum Feature {
   /// The week plan (`E07`).
   weekPlan,
 
-  /// The grocery list (`E08`).
+  /// The grocery list (`E08`), made from the dinners she plans.
   groceryList,
 
   /// Milestones (`P02`).
@@ -205,7 +222,12 @@ enum Feature {
   /// The progress card she can share (`P05`).
   shareCard,
 
-  /// Meals for the day of her cycle (`Y07`).
+  /// Her muscles on a body she can turn, coloured by the sets she logged
+  /// (`P06`).
+  muscleMap,
+
+  /// Meals for today (`Y07`): up to three of Rahma's recipes, picked from
+  /// today's check-in.
   cycleMeals,
 
   /// The cycle calendar (`Y08`).
@@ -245,7 +267,38 @@ enum Feature {
   /// built. The flag exists so the entitlement can be modelled and tested now,
   /// and so the day a paid tier is real, the shape it plugs into was designed
   /// when nobody was in a hurry.
-  recipeTiering;
+  recipeTiering,
+
+  // ------------------------------------------- Motivation design, D37–D41
+  /// Her training streak (D37): a line on Home, a row on P01, a stage on R10,
+  /// a sheet, and a switch on A02. Hers to pause or switch off.
+  trainingStreak,
+
+  /// One weekly challenge against her own last week (D38).
+  weeklyChallenge,
+
+  /// R10 as the peak (D40): her real results revealed one after another, and
+  /// paper confetti, once.
+  finishReveal,
+
+  /// A light touch on a logged set and on R10 (D40).
+  haptics,
+
+  /// Short named steps on O05 and C12, each one an operation that really ran
+  /// (D39).
+  reassuringWaits,
+
+  /// The personal follow-up card on Home: how she feels after a session, the
+  /// Friday week review, a welcome back and a protein idea. In-app only.
+  followUps,
+
+  /// Her workout history: Recent sessions, the last sessions of one move, and
+  /// fixing a set she typed wrong.
+  trainHistory,
+
+  /// The small helpers inside a gym session: the plate line for a barbell move
+  /// and the note she keeps for a move.
+  gymHelpers;
 
   /// The feature this one lives inside, or null when it is top level.
   Feature? get parent => switch (this) {
@@ -256,19 +309,27 @@ enum Feature {
     communityGroups ||
     communityStories => community,
     payments => marketplace,
-    voiceLogging || recipes => eat,
+    voiceLogging || recipes || mealPhotos => eat,
     // The plan is built from recipes, and the list from the plan.
     weekPlan => recipes,
     groceryList => weekPlan,
     recipeTiering => payments,
-    firstWeek || quietWeek || tiers || lockScreenNudge => today,
+    firstWeek || quietWeek || tiers || lockScreenNudge || followUps => today,
     recordFromMemory ||
+    program ||
     exerciseVideo ||
     exerciseSwap ||
     followAlong ||
     workoutLibrary ||
+    exerciseLibrary ||
     trainingReminders => train,
-    milestones || personalBests || bodyPrivately || shareCard => progress,
+    milestones ||
+    personalBests ||
+    bodyPrivately ||
+    shareCard ||
+    muscleMap ||
+    trainingStreak => progress,
+    weeklyChallenge || finishReveal || trainHistory || gymHelpers => train,
     cycleMeals || cycleCalendar || cyclePatterns => cycle,
     appTour => signUp,
     coachResults || coachReviews || coachAds => coachPortfolio,
@@ -320,15 +381,35 @@ enum Feature {
   /// together, so a switch that does nothing cannot sit on `Z14`.
   static const Map<Feature, String> gatesNoScreen = {
     Feature.accountRequired: 'The whole-app gate: AppRouter.verificationGate.',
-    Feature.verification: 'The check screens belong to signUp and open with '
+    Feature.verification:
+        'The check screens belong to signUp and open with '
         'it. The switch stays so a release note can name it.',
-    Feature.privacyCentre: 'Her data and her way out live in account, which '
+    Feature.privacyCentre:
+        'Her data and her way out live in account, which '
         'is never gated. The switch stays so a release note can name it.',
     Feature.communityPosts: 'Checked inside the community screens.',
     Feature.communityVoiceNotes: 'Checked inside the community screens.',
     Feature.communityFollowerCounts: 'Checked inside the community screens.',
     Feature.recipeTiering: 'Checked by the recipe access gate.',
-    Feature.trainingReminders: 'A sheet on A01 and R10, not a screen.',
+    Feature.trainingReminders:
+        'A sheet on A01 and R10, and the one-line offer on T01.',
+    Feature.trainingStreak:
+        'A line on T01, a row on P01, a stage on R10, a '
+        'sheet, and a switch on A02.',
+    Feature.weeklyChallenge: 'One line on T01, a note on R03, a line on R10.',
+    Feature.finishReveal:
+        'How R10 arrives: the staged reveal and the paper '
+        'confetti.',
+    Feature.workoutLibrary: 'The Workouts group in Explore on R01.',
+    Feature.haptics: 'A light tap on a logged set and on R10.',
+    Feature.reassuringWaits: 'The named steps on O05 and C12.',
+    Feature.followUps:
+        'One card on T01, its week review sheet, and a switch on A01.',
+    Feature.trainHistory:
+        'Recent sessions and a move\'s history, opened from the programme, '
+        'P01, P03, R04 and R07, and the set editor inside Recent sessions.',
+    Feature.gymHelpers:
+        'The plate line and the move note on R07, and the plate line on R08.',
   };
 }
 
@@ -389,6 +470,10 @@ class FeatureFlags {
     // the microphone is never used. She types what she ate.
     Feature.voiceLogging: false,
 
+    // A photo of her plate, checked by her before it is logged. Each scan is
+    // a paid call, capped on the server at five a day for each member.
+    Feature.mealPhotos: true,
+
     // The console is for the people who run the product, not for the women
     // using it. It is also compiled out of a release build entirely.
     Feature.adminConsole: false,
@@ -399,28 +484,36 @@ class FeatureFlags {
     Feature.communityVideo: false,
     Feature.communityVoiceNotes: false,
     Feature.communityFollowerCounts: false,
-    Feature.coachApp: false,
+    // Coaching without money: coaches apply and are checked, build a page,
+    // members find them, ask to join, chat and receive plans. The old
+    // in-memory coach screens and everything that takes payment stay dark.
+    Feature.coachApp: true,
     Feature.coachPlanning: false,
     Feature.coachPortfolio: false,
     Feature.coachedLife: false,
-    Feature.marketplace: false,
+    Feature.marketplace: true,
     Feature.payments: false,
     Feature.assistant: false,
 
-    // Nothing shows until the owner turns it on, from Z14.
-    Feature.events: false,
+    // On for launch; the owner can switch it off from Z14.
+    Feature.events: true,
 
     // The parts of what ships. Each is on, and each can be switched off on
-    // its own from the server if it breaks.
+    // its own from the server if it breaks. Two are off for launch, each
+    // because its screen is not finished: `tiers` and `lockScreenNudge`. Each
+    // goes back on, with a line in DECISIONS.md (D43), when its screen is
+    // real.
     Feature.firstWeek: true,
     Feature.quietWeek: true,
-    Feature.tiers: true,
-    Feature.lockScreenNudge: true,
+    Feature.tiers: false,
+    Feature.lockScreenNudge: false,
     Feature.recordFromMemory: true,
+    Feature.program: true,
     Feature.exerciseVideo: true,
     Feature.exerciseSwap: true,
     Feature.followAlong: true,
     Feature.workoutLibrary: true,
+    Feature.exerciseLibrary: true,
     Feature.trainingReminders: true,
     Feature.recipes: true,
     Feature.weekPlan: true,
@@ -429,6 +522,7 @@ class FeatureFlags {
     Feature.personalBests: true,
     Feature.bodyPrivately: true,
     Feature.shareCard: true,
+    Feature.muscleMap: true,
     Feature.cycleMeals: true,
     Feature.cycleCalendar: true,
     Feature.cyclePatterns: true,
@@ -444,6 +538,20 @@ class FeatureFlags {
     // Off, and its parent is `payments`, so this line is belt as well as
     // braces: `isOn()` would refuse it even set to true.
     Feature.recipeTiering: false,
+
+    // D37–D41, the motivation design from the guide's §15. Each is on, and
+    // each can be switched off on its own from the server if it misbehaves.
+    Feature.trainingStreak: true,
+    Feature.weeklyChallenge: true,
+    Feature.finishReveal: true,
+    Feature.haptics: true,
+    Feature.reassuringWaits: true,
+    Feature.followUps: true,
+
+    // The gym additions: history and fixing a set, and the plate and note
+    // helpers.
+    Feature.trainHistory: true,
+    Feature.gymHelpers: true,
   });
 
   /// Every feature on, with no account required.

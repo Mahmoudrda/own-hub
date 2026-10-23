@@ -76,7 +76,10 @@ class SplitValidator {
       }
       if (slot.dayIndex < 1 || slot.dayIndex > split.cycleLength) {
         found.add(
-          SplitInvalid(SplitProblem.dayIndexOutOfRange, dayIndex: slot.dayIndex),
+          SplitInvalid(
+            SplitProblem.dayIndexOutOfRange,
+            dayIndex: slot.dayIndex,
+          ),
         );
       }
       if (slot.isRest) {
@@ -84,14 +87,20 @@ class SplitValidator {
             slot.minutes != null ||
             slot.moves.isNotEmpty) {
           found.add(
-            SplitInvalid(SplitProblem.restCarriesSession, dayIndex: slot.dayIndex),
+            SplitInvalid(
+              SplitProblem.restCarriesSession,
+              dayIndex: slot.dayIndex,
+            ),
           );
         }
         continue;
       }
       if ((slot.title ?? '').trim().isEmpty) {
         found.add(
-          SplitInvalid(SplitProblem.sessionWithoutTitle, dayIndex: slot.dayIndex),
+          SplitInvalid(
+            SplitProblem.sessionWithoutTitle,
+            dayIndex: slot.dayIndex,
+          ),
         );
       }
       final minutes = slot.minutes;
@@ -116,7 +125,10 @@ class SplitValidator {
       }
       if (slot.approvedAlternatives.length > kMaxApprovedAlternatives) {
         found.add(
-          SplitInvalid(SplitProblem.tooManyAlternatives, dayIndex: slot.dayIndex),
+          SplitInvalid(
+            SplitProblem.tooManyAlternatives,
+            dayIndex: slot.dayIndex,
+          ),
         );
       }
       // D7: "approved" means approved *by a coach*. A woman choosing her own

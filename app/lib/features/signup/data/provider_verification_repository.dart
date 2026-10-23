@@ -78,6 +78,13 @@ class ProviderVerificationRepository implements VerificationRepository {
   /// One uuid per attempt. Injectable so a test can see it reused on retry.
   final String Function() _operationIds;
 
+  /// The id of an attempt that ran out of time. The server may have finished
+  /// it after the phone stopped listening, so the next submit reuses it: a
+  /// first run that was billed is refused as a duplicate before the OCR
+  /// provider is touched (`duplicate_submission`, a retake), so the retry
+  /// cannot be billed twice. One that never started simply runs.
+  String? _heldOperationId;
+
   final VerificationProvider provider;
   final VerificationEvidence evidence;
 
@@ -146,11 +153,19 @@ class ProviderVerificationRepository implements VerificationRepository {
       } catch (_) {
         install = null;
       }
-      final decision = await _submitWithOneRetry(
-        session.sessionId,
-        operationId: _operationIds(),
-        installId: install,
-      );
+      final operationId = _heldOperationId ?? _operationIds();
+      _heldOperationId = null;
+      final VerificationDecision decision;
+      try {
+        decision = await _submitWithOneRetry(
+          session.sessionId,
+          operationId: operationId,
+          installId: install,
+        );
+      } catch (error) {
+        if (isDeadlineExceeded(error)) _heldOperationId = operationId;
+        rethrow;
+      }
       if (kDebugMode && decision.reasons.isNotEmpty) {
         // Debug only, and it never leaves the device. This is the one place the
         // reason codes are visible at all, and it exists so that a developer
@@ -218,6 +233,11 @@ class ProviderVerificationRepository implements VerificationRepository {
   /// asks for it herself. `request_review` is never called on her behalf
   /// (R4), because asking for the call is her consent to it.
   Future<VerificationState> _afterFailure(Object error) async {
+    if (isDeadlineExceeded(error)) {
+      const next = VerificationState.tooSlow();
+      _emit(next);
+      return next;
+    }
     final next = switch (classifyCallFailure(error)) {
       CallFailureKind.tryTomorrow => const VerificationState.tryTomorrow(),
       CallFailureKind.checksUsedUp => const VerificationState.checksUsedUp(),

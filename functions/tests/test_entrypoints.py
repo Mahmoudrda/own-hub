@@ -55,6 +55,57 @@ CALLABLES = {
     "accept_coach_invite",
     "admin_dashboard",
     "admin_logs",
+    "record_meal_photo_consent",
+    "analyze_meal_photo",
+    "approve_user",
+    "approve_users",
+    "revoke_user",
+    "decline_user",
+    "list_review_queue",
+    "set_preapproved_phones",
+    "list_preapproved_phones",
+    "claim_fast_verification",
+    "get_reviewer_settings",
+    "set_reviewer_settings",
+    "list_reviewers",
+    "list_review_slots",
+    "book_review_slot",
+    "list_schedule",
+    "reschedule_review",
+    "register_for_event",
+    "cancel_event_registration",
+    "submit_coach_application",
+    "list_coach_applications",
+    "decide_coach_application",
+    "add_portfolio_media", "remove_portfolio_media", "confirm_portfolio_consent",
+    "list_portfolio_media", "decide_portfolio_media",
+    "suspend_coach",
+    "update_coach_profile",
+    "request_payout_account_change",
+    "confirm_payout_account",
+    "save_coach_package",
+    "request_coaching",
+    "respond_coaching_request",
+    "cancel_coaching_request",
+    "submit_payment_proof",
+    "list_payment_proofs",
+    "decide_payment_proof",
+    "request_cancellation",
+    "end_my_coaching",
+    "list_refund_requests",
+    "record_refund",
+    "end_coaching",
+    "list_payouts_owed",
+    "record_coach_payout",
+    "get_receiving_accounts",
+    "set_receiving_accounts",
+    "set_seller_details",
+    "publish_coach_plan",
+    "schedule_live_session",
+    "respond_live_session",
+    "mark_session_done", "mark_thread_read",
+    "list_coaching_reports",
+    "decide_coaching_report",
 }
 
 
@@ -160,7 +211,7 @@ def raises(fn, code):
 # ------------------------------------------------------- App Check and auth
 
 
-_GUARDS = {"_require_auth", "_require_woman_reviewer", "_require_admin"}
+_GUARDS = {"_require_auth", "_require_woman_reviewer", "_require_admin", "_require_finance"}
 
 
 def test_every_callable_runs_the_app_check_guard_before_anything_else():
@@ -596,3 +647,17 @@ def test_the_consent_record_keeps_only_well_formed_extras():
     assert store.consent_extras("ar", "1.0.0+3") == {"locale": "ar", "appVersion": "1.0.0+3"}
     assert store.consent_extras("fr", "1.0 beta") == {}
     assert store.consent_extras(None, None) == {}
+
+
+def test_an_iphone_wrapped_consent_version_is_recorded(monkeypatch, stubbed):
+    # The iOS SDK sends a Dart int as an Int64Value wrapper.
+    writes = []
+    monkeypatch.setattr(main.store, "has_consent", lambda uid: False)
+    monkeypatch.setattr(main.store, "write_consent", lambda uid, *extras: writes.append(uid))
+    wrapped = {
+        "@type": "type.googleapis.com/google.protobuf.Int64Value",
+        "value": str(config.CONSENT_VERSION),
+    }
+    answer = inner("record_consent")(request({"consentVersion": wrapped, "locale": "en"}))
+    assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
+    assert writes == ["uid-1"]

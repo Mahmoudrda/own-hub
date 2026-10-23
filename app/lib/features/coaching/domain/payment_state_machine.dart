@@ -161,12 +161,14 @@ class RefundQuote {
   /// [amountBack] is **always** the gross. There is no branch in this
   /// constructor that returns less, which is the owner's "the platform absorbs
   /// the refund fee" expressed as code that cannot do otherwise.
-  factory RefundQuote.full({required Money gross, required RefundReason reason}) =>
-      RefundQuote._(
-        amountBack: gross,
-        reason: reason,
-        feeBearer: RefundFeeBearer.platform,
-      );
+  factory RefundQuote.full({
+    required Money gross,
+    required RefundReason reason,
+  }) => RefundQuote._(
+    amountBack: gross,
+    reason: reason,
+    feeBearer: RefundFeeBearer.platform,
+  );
 
   final Money amountBack;
   final RefundReason reason;
@@ -248,11 +250,7 @@ sealed class PaymentEvent {
 /// The hosted page opened, the wallet push went out, or a code was issued.
 @immutable
 final class ProviderOpened extends PaymentEvent {
-  const ProviderOpened({
-    required this.at,
-    this.reference,
-    this.expiresAt,
-  });
+  const ProviderOpened({required this.at, this.reference, this.expiresAt});
 
   @override
   final DateTime at;
@@ -415,9 +413,8 @@ class PaymentRecord {
   ///
   /// Null until the webhook lands. A screen that renders this before then shows
   /// nothing, which is correct: she has not paid yet.
-  Money? get capturedAmount => state.holdsHerMoney || state == PaymentState.refunded
-      ? priced
-      : null;
+  Money? get capturedAmount =>
+      state.holdsHerMoney || state == PaymentState.refunded ? priced : null;
 
   PaymentRecord _with({
     PaymentState? state,

@@ -54,9 +54,13 @@
 /// take unilaterally in a widget.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../../app_state/undo_offer.dart';
 import '../../../domain/format/number_label.dart' show countLabel;
+import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -78,9 +82,14 @@ class SafetyCentreView extends StatefulWidget {
     this.onBack,
     this.onReportSomeone,
     this.onTalkToAHuman,
+    this.onReadRules,
     this.nameOf,
     this.onSelectTab,
   });
+
+  /// The three rules she agreed to on `C16`, to read again. The pledge says
+  /// she can, and this is where. Null draws no row.
+  final VoidCallback? onReadRules;
 
   final BlockService blockService;
   final ReportService reportService;
@@ -116,8 +125,17 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
     color: AppColors.onSurfaceVariant,
   );
 
+  /// Holds an unblock for its five seconds, so Undo keeps the block.
+  final LogCommandBus _bus = LogCommandBus();
+
+  @override
+  void dispose() {
+    unawaited(_bus.flushAll());
+    super.dispose();
+  }
+
   Future<void> _openBlocked() async {
-    await showAppSheet<void>(
+    final uid = await showAppSheet<String>(
       context: context,
       children: [
         _BlockedMembersSheet(
@@ -126,9 +144,21 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
         ),
       ],
     );
-    // The sheet unblocks through the same service this screen counts from, so
-    // the row underneath has to be re-read rather than left at its old count.
-    if (mounted) setState(() {});
+    if (uid == null || !mounted) return;
+    // The sheet closes so the offer is seen, and the unblock waits for the
+    // window: Undo means she was never unblocked at all.
+    final l10n = AppL10n.of(context);
+    final name = widget.nameOf?.call(uid) ?? '';
+    offerUndo(
+      context,
+      bus: _bus,
+      describe: name.isEmpty ? l10n.unblocked : l10n.unblockedName(name),
+      commit: () async {
+        await widget.blockService.unblock(uid);
+        // Counted from the same service, so the row is re-read.
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   Future<void> _openWhatHappens() => showAppSheet<void>(
@@ -247,6 +277,18 @@ class _SafetyCentreViewState extends State<SafetyCentreView> {
             trailing: _chevron,
             onTap: _openWhatHappens,
           ),
+
+          if (widget.onReadRules != null)
+            AppListItem(
+              leading: const Icon(
+                Icons.handshake_outlined,
+                size: 24,
+                color: AppColors.primaryDim,
+              ),
+              title: l10n.readTheThreeRules,
+              trailing: _chevron,
+              onTap: widget.onReadRules,
+            ),
         ],
 
         // Drawn only when the support page has an address. An empty link would
@@ -297,10 +339,8 @@ class _BlockedMembersSheet extends StatefulWidget {
 }
 
 class _BlockedMembersSheetState extends State<_BlockedMembersSheet> {
-  Future<void> _unblock(String uid) async {
-    await widget.service.unblock(uid);
-    if (mounted) setState(() {});
-  }
+  /// Closes the sheet with her choice. A04 unblocks, with Undo.
+  void _unblock(String uid) => Navigator.of(context).pop(uid);
 
   @override
   Widget build(BuildContext context) {
