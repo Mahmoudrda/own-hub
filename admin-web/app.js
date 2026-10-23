@@ -2119,9 +2119,15 @@ function tabHints() {
   strip.classList.toggle("more-right", right);
 }
 
+// Brings the first tab hidden under the fade to the middle, which is where the strip snaps.
 function scrollTabs(dir) {
   const strip = $("tabs");
-  strip.scrollBy({ left: dir * strip.clientWidth * 0.7, behavior: calmScroll() });
+  const box = strip.getBoundingClientRect();
+  const tabs = [...strip.querySelectorAll('[role="tab"]:not([hidden])')];
+  const target = dir > 0
+    ? tabs.find((t) => t.getBoundingClientRect().right > box.right - 56)
+    : tabs.findLast((t) => t.getBoundingClientRect().left < box.left + 56);
+  target?.scrollIntoView({ inline: "center", block: "nearest", behavior: calmScroll() });
 }
 
 function ensureCoaching() {

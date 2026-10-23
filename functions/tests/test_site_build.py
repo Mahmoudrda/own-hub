@@ -632,3 +632,47 @@ def test_the_policy_does_not_promise_a_phone_backup_forgets_the_profile_photo():
         with open(os.path.join(folder, "privacy.html"), encoding="utf-8") as f:
             text = " ".join(f.read().split())
         assert needle in text, folder
+
+
+# ------------------------------------------- Hairline line drawings
+
+
+def _figures(html):
+    return re.findall(r'<span class="hl hl-([a-z]+)[^"]*" data-hairline="\1"><svg ([^>]*)>', html)
+
+
+def test_every_line_drawing_is_decoration_only():
+    seen = 0
+    for rel, path in _outputs(_SITE).items():
+        if not rel.endswith(".html"):
+            continue
+        html = open(path, encoding="utf-8").read()
+        assert html.count('data-hairline="') == len(_figures(html)), rel
+        for name, attrs in _figures(html):
+            assert 'aria-hidden="true"' in attrs and 'focusable="false"' in attrs, (rel, name)
+            seen += 1
+    assert seen > 0
+
+
+def test_both_home_pages_carry_the_same_drawings():
+    en = [name for name, _ in _figures(_home(_SITE, "en"))]
+    ar = [name for name, _ in _figures(_home(_SITE, "ar"))]
+    assert en == ar and "lockers" in en, (en, ar)
+    for lang in ("en", "ar"):
+        assert len(_figures(_page(*(("ar",) if lang == "ar" else ()), "404"))) == 1
+
+
+def test_the_drawings_draw_in_and_stay_still_when_motion_is_reduced():
+    css = open(os.path.join(_SITE, "assets", "site.css"), encoding="utf-8").read()
+    assert "@keyframes hl-draw" in css and "stroke-dashoffset" in css
+    assert re.search(r"\.hl \[pathLength\] \{\s*animation: hl-draw", css)
+    reduced = re.findall(r"@media \(prefers-reduced-motion: reduce\) \{(.*?)\n\}", css, re.S)
+    assert any("animation-duration: 0.001ms" in block for block in reduced)
+    assert any(".hl [pathLength]" in block and "animation: none" in block for block in reduced)
+
+
+def test_the_hairline_licence_and_credit_are_kept():
+    licence = open(os.path.join(_SITE, "_build", "hairline", "LICENSE"), encoding="utf-8").read()
+    assert "MIT License" in licence and "Lucas Marques" in licence
+    for prefix in ((), ("ar",)):
+        assert 'href="https://github.com/lucasmarkes/hairline"' in _page(*prefix, "support")
