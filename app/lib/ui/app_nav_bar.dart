@@ -24,6 +24,7 @@ import 'package:flutter/material.dart';
 import '../domain/identity/user_roles.dart';
 import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
+import '../routing/app_routes.dart';
 import '../theme/app_tokens.dart';
 import 'hand/hand.dart';
 
@@ -35,7 +36,7 @@ class NavDestination {
     required this.icon,
     required this.activeIcon,
     required this.label,
-    this.emphasis = false,
+    this.isAction = false,
   });
 
   final String screenId;
@@ -45,23 +46,21 @@ class NavDestination {
   /// Resolved per locale — the tab labels are translated like everything else.
   final String Function(AppL10n) label;
 
-  /// A quiet always-on mark behind the icon, for the tab that does the most
-  /// work (Eat: logging a meal lives there). The tab is still a tab: it takes
-  /// the same marker, filled icon and pen line as the others when it is active.
-  final bool emphasis;
+  /// A button in the bar that opens a screen over the current tab instead of
+  /// being a place. It is drawn as a filled pink disc and is never active.
+  final bool isAction;
 }
 
-/// Her tabs: Home, Train, Eat, Community, Insights.
+/// Her bar: Home, Train, the centre "+ Log food" (D59), Eat, You.
 ///
-/// Eat is one tab: logging a meal, finding a recipe and the week's dinners are
-/// segments inside it, so the bar has no floating button.
+/// "Log food" is an action, not a place: it opens the food search over the tab
+/// she is on and is never marked active. Events and the community have no tab;
+/// both are rows on You. Insights and her profile are inside You too.
 ///
 /// **Coaching is deliberately absent, and was deliberately not deleted.** It was
-/// the fifth tab and it pointed at `H01` — `F53 — Find a coach`, which is a
-/// *trainee* feature shipping at launch. D11 moves it into her profile instead:
-/// hiring a coach and being a coach are different things, and only the second
-/// one is a role. Removing the tab and the capability together would have
-/// quietly dropped a launch feature nobody asked to lose.
+/// once a fifth tab pointing at `H01` — `F53 — Find a coach`, a *trainee*
+/// feature. D11 moved it off the bar: hiring a coach and being a coach are
+/// different things, and only the second one is a role. It lives on You.
 const List<NavDestination> traineeTabs = [
   NavDestination(
     screenId: 'T01',
@@ -75,33 +74,28 @@ const List<NavDestination> traineeTabs = [
     activeIcon: Icons.fitness_center,
     label: _trainLabel,
   ),
+  logFoodAction,
   NavDestination(
     screenId: 'E01',
     icon: Icons.restaurant_outlined,
     activeIcon: Icons.restaurant,
     label: _eatLabel,
-    emphasis: true,
-  ),
-  NavDestination(
-    screenId: 'M01',
-    icon: Icons.groups_outlined,
-    activeIcon: Icons.groups,
-    label: _communityLabel,
   ),
   NavDestination(
     screenId: 'P01',
-    icon: Icons.insights_outlined,
-    activeIcon: Icons.insights,
-    label: _insightsLabel,
+    icon: Icons.person_outline,
+    activeIcon: Icons.person,
+    label: _youLabel,
   ),
 ];
 
-/// Events, in the community's slot while the community is switched off.
-const NavDestination eventsTab = NavDestination(
-  screenId: 'T09',
-  icon: Icons.event_outlined,
-  activeIcon: Icons.event,
-  label: _eventsLabel,
+/// The centre "+": opens the food search (`E02`) from any tab.
+const NavDestination logFoodAction = NavDestination(
+  screenId: 'E02',
+  icon: Icons.add,
+  activeIcon: Icons.add,
+  label: _logFoodLabel,
+  isAction: true,
 );
 
 /// A coach's tabs: Today, Clients, Chats, Earnings.
@@ -135,10 +129,9 @@ const List<NavDestination> coachTabs = [
 // Top-level functions, because a const list cannot hold a closure.
 String _homeLabel(AppL10n l) => l.home;
 String _trainLabel(AppL10n l) => l.train;
-String _communityLabel(AppL10n l) => l.community;
 String _eatLabel(AppL10n l) => l.eat;
-String _insightsLabel(AppL10n l) => l.insights;
-String _eventsLabel(AppL10n l) => l.events;
+String _youLabel(AppL10n l) => l.you;
+String _logFoodLabel(AppL10n l) => l.logFood;
 String _todayLabel(AppL10n l) => l.today;
 String _clientsLabel(AppL10n l) => l.clients;
 String _chatsLabel(AppL10n l) => l.chats;
@@ -147,25 +140,21 @@ String _earningsLabel(AppL10n l) => l.earnings;
 /// The bar a given role sees, minus anything this build has switched off.
 ///
 /// The filter is not a detail. A tab whose feature is dark renders, takes a
-/// quarter of the bar, and lands on the "not in this build" panel: a door
-/// drawn on a wall. The first release ships without the community, so this is
-/// the difference between a full bar and one with a dead tab.
-///
-/// While the community is dark, its slot goes to Events when Events is on, so
-/// a member's bar keeps its length and the owner's events have a door of their
-/// own. With the community on, the community keeps the slot.
+/// fifth of the bar, and lands on the "not in this build" panel: a door drawn
+/// on a wall.
 List<NavDestination> tabsFor(AppRole role) {
   final all = role == AppRole.coach ? coachTabs : traineeTabs;
   return [
     for (final tab in all)
-      if (_isOn(tab))
-        tab
-      else if (role != AppRole.coach &&
-          tab.screenId == 'M01' &&
-          AppRouter.screenIsOn(eventsTab.screenId))
-        eventsTab,
+      if (_isOn(tab)) tab,
   ];
 }
+
+/// The tab that owns [screenId]: You also carries the screens opened from it.
+String _tabOwning(String screenId) =>
+    const {'progress', 'community'}.contains(appRoutes[screenId]?.flow)
+    ? 'P01'
+    : screenId;
 
 bool _isOn(NavDestination tab) => AppRouter.screenIsOn(tab.screenId);
 
@@ -199,8 +188,8 @@ class AppNavBar extends StatelessWidget {
       child: _Tab(
         tab: tab,
         label: tab.label(l10n),
-        active: tab.screenId == activeScreenId,
-        // The active tab is not a link to itself.
+        active: !tab.isAction && tab.screenId == _tabOwning(activeScreenId),
+        // The tab she is on is not a link to itself; a screen opened from it is.
         onTap: tab.screenId == activeScreenId || onSelect == null
             ? null
             : () => onSelect!(tab.screenId),
@@ -291,23 +280,32 @@ class _Tab extends StatelessWidget {
                         ),
                         child: Center(child: iconWidget),
                       )
-                    : tab.emphasis
-                    // Eat wears a small pink chip with a petrol edge when it
-                    // is not the page she is on: it is where food is logged,
-                    // and pink alone is not a graphic.
-                    ? DecoratedBox(
-                        key: const ValueKey('nav-tab-emphasis'),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppColors.onPrimaryContainer.withValues(
-                              alpha: 0.55,
+                    : tab.isAction
+                    // "+ Log food": a pink disc with a petrol edge, the one
+                    // filled mark on the bar.
+                    ? Center(
+                        child: DecoratedBox(
+                          key: const ValueKey('nav-log-food'),
+                          decoration: BoxDecoration(
+                            color: AppColors.actionPrimary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.onActionPrimary.withValues(
+                                alpha: 0.55,
+                              ),
+                              width: 1.2,
                             ),
-                            width: 1.2,
+                          ),
+                          child: const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Icon(
+                              Icons.add,
+                              size: 22,
+                              color: AppColors.onActionPrimary,
+                            ),
                           ),
                         ),
-                        child: Center(child: iconWidget),
                       )
                     : Center(child: iconWidget),
               ),

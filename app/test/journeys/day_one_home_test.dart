@@ -195,6 +195,9 @@ void main() {
     testWidgets('it says what is next, in the week\'s terms', (tester) async {
       await _open(tester, 'R10');
 
+      // Behind See details: the celebration itself stays one picture.
+      expect(find.byKey(const ValueKey('r10-next-step')), findsNothing);
+      await _tap(tester, find.byKey(const ValueKey('r10-see-details')));
       expect(find.byKey(const ValueKey('r10-next-step')), findsOneWidget);
       // Nothing logged in this binary, so the next one is her first.
       expect(
@@ -211,7 +214,7 @@ void main() {
       navigator.currentState!.pushNamed(_name('R10'));
       await tester.pumpAndSettle();
 
-      await _tap(tester, find.text('Back to today'));
+      await _tap(tester, find.text('Done'));
       expect(stack.names, [_name('T01')]);
     });
   });

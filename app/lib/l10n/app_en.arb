@@ -4238,16 +4238,6 @@
   "noSwapForThisMoveRightNow": "No swap for this move right now",
   "tryFewerFiltersToSeeMoreWorkouts": "Try fewer filters to see more workouts.",
   "gladYouShowedUpToday": "Glad you showed up today.",
-  "countPluralOne1MoreAndThe": "{count, plural, one{1 more and the week counts.} other{{count} more and the week counts.}}",
-  "@countPluralOne1MoreAndThe": {
-    "description": "T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "3"
-      }
-    }
-  },
   "dayOneStartsWithYourNextSession": "Day one starts with your next session.",
   "ramadanModeOn": "Ramadan mode on",
   "dangerZone": "Danger zone",
@@ -5242,9 +5232,6 @@
       }
     }
   },
-  "scanYourMealWithTheCamera": "Scan your meal with the camera",
-  "onePhotoForCaloriesAndProtein": "One photo for calories and protein",
-  "scanWithTheCameraInstead": "Scan with the camera instead",
   "scan": "Scan",
   "yourCoachRepliedToYourReview": "Your coach replied to your review",
   "yourGroupReachedANewMilestone": "Your group reached a new milestone",
@@ -5320,7 +5307,6 @@
       }
     }
   },
-  "switchPlanOrPickAnySession": "Switch plan or pick any session",
   "saveAsMyWorkout": "Save as my workout",
   "myWorkouts": "My workouts",
   "myWorkout": "My workout",
@@ -5354,7 +5340,6 @@
       }
     }
   },
-  "editThisMove": "Edit this move",
   "moveEarlier": "Move earlier",
   "moveLater": "Move later",
   "workoutName": "Workout name",
@@ -5590,7 +5575,6 @@
   "eatingDinnerSoonLogItInOne": "Eating dinner soon? Log it in one tap and it joins your day.",
   "openEventLink": "Open event link",
   "nothingLoggedSoThisOneIsNot": "Nothing logged, so this one is not counted.",
-  "dontShowThisKindAgain": "Don't show this kind again",
   "onlyMovesScreenedForYouAndStop": "Only moves screened for you, and stop if anything feels off.",
   "todayCanBeAGentleDay": "Today can be a gentle day.",
   "yourLastSession": "Your last session",
@@ -5985,8 +5969,6 @@
     }
   },
   "previewOfYourWorkoutCard": "Preview of your workout card",
-  "editWorkout": "Edit workout",
-  "swapRemoveReorderOrAddMoves": "Swap, remove, reorder or add moves.",
   "reset": "Reset",
   "setsAndReps": "Sets and reps",
   "dragToReorder": "Drag to reorder",
@@ -5998,8 +5980,6 @@
   "justThisTime": "Just this time",
   "updatedInYourPlan": "Updated in your plan",
   "useThisMove": "Use this move",
-  "buildMyOwnPlan": "Build my own plan",
-  "startWithABlankPlanOrChange": "Start with a blank plan, or change one of the three splits to suit you.",
   "startFromScratch": "Start from scratch",
   "editOneOfTheThreeSplits": "Edit one of the three splits",
   "customizeThisPlan": "Customize this plan",
@@ -6807,7 +6787,6 @@
       }
     }
   },
-  "iUnderstandMyAnswersAreStoredIn": "I understand my answers are stored in Frankfurt, Germany.",
   "sendRequest": "Send request",
   "answerEveryQuestionAndTickTheBoxes": "Answer every question and tick the boxes at the end.",
   "requestSent": "Request sent",
@@ -8195,5 +8174,65 @@
   "pm": "PM",
   "pickHerNameIfSheKnowsYou_akwt2": "Pick her name if she knows you. Your request goes to her.",
   "nameYourCoachSees": "Name your coach sees",
-  "yourFirstNameIsOptionalYourCoach": "Your first name is optional. Your coach sees it next to your answers."
+  "yourFirstNameIsOptionalYourCoach": "Your first name is optional. Your coach sees it next to your answers.",
+  "iAgreeThatMyAnswersAreSent": "I agree that my answers are sent to Own Hub's servers in Frankfurt, Germany, outside Egypt, and stored there.",
+  "aPictureOfYourClientsWrittenAgreement": "A picture of your client's written agreement",
+  "onlyAWomanReviewerAtOwnHub": "Only a woman reviewer at Own Hub sees this. Add it before you send.",
+  "addHerWrittenAgreement": "Add her written agreement",
+  "beforeYourFirstMessage": "Before your first message",
+  "beRespectfulInsultsHarassmentAndHatefulWords": "Be respectful. Insults, harassment and hateful words are not allowed.",
+  "keepTheChatInOwnHubPhone": "Keep the chat in Own Hub. Phone numbers, links and payment details are not allowed, and the app stops these messages.",
+  "yourCoachSharesTrainingAndFoodIdeas": "Your coach shares training and food ideas. It is not medical advice. Ask your doctor about any health problem.",
+  "messagesAreStoredOnOwnHubsServers": "Messages are stored on Own Hub's servers. If a message is reported, Own Hub staff can read it. You can report or block anyone from the menu.",
+  "iHaveReadTheseRulesAndI": "I have read these rules and I agree to follow them.",
+  "agreeAndSend": "Agree and send",
+  "weCouldNotSaveYourAnswerTry": "We could not save your answer. Try again.",
+  "onTurnOffAndYourMealPhotos": "On. Turn off and your meal photos stop going to Google.",
+  "offYouAreAskedAgainBeforeYour": "Off. You are asked again before your next meal photo.",
+  "weCouldNotTurnThisOffTry": "We could not turn this off. Try again.",
+  "progress": "Progress",
+  "activities": "Activities",
+  "seeMore": "See more",
+  "sessionsThisWeek": "Sessions this week",
+  "addAPictureOfYourClientsWritten": "Add a picture of your client's written agreement.",
+  "mealPhotosSentToGoogleToRead": "Meal photos sent to Google to read the food",
+  "editToday": "Edit today",
+  "shortVersion": "Short version",
+  "a10MinuteWalk": "A 10-minute walk",
+  "doMyOwnPlanInstead": "Do my own plan instead",
+  "eatenOfTargetKcal": "{eaten} of {target} kcal",
+  "@eatenOfTargetKcal": {
+    "description": "Home's one Eat line: calories eaten so far against today's target, in Western digits, e.g. 1,240 of 1,624 kcal.",
+    "placeholders": {
+      "eaten": {
+        "type": "String",
+        "example": "1,240"
+      },
+      "target": {
+        "type": "String",
+        "example": "1,624"
+      }
+    }
+  },
+  "setNOfTotal": "Set {n} of {total}",
+  "@setNOfTotal": {
+    "description": "R07: which set of the move she is on.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "plates": "Plates",
+  "allMoves": "All moves",
+  "nextMove": "Next move",
+  "seeDetails": "See details",
+  "editMoves": "Edit moves",
+  "yourPlan": "Your plan",
+  "gentler": "Gentler"
 }

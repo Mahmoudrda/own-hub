@@ -211,11 +211,13 @@ void main() {
 
       await _home(tester);
       expect(
-        find.text('Koshari bowl'),
+        find.descendant(
+          of: find.byKey(const ValueKey('today-eat-line')),
+          matching: find.textContaining('540 of'),
+        ),
         findsOneWidget,
-        reason: "Home's meal card lists the plate she actually logged",
+        reason: "Home's one Eat line counts the plate she actually logged",
       );
-      expect(find.text('540 kcal'), findsOneWidget);
     });
 
     testWidgets('undo inside the window takes it back everywhere', (
@@ -251,7 +253,7 @@ void main() {
   });
 
   group('one tap logs a plate', () {
-    testWidgets('logged twice, it becomes a one-tap row on E01', (
+    testWidgets('logged twice, it becomes a one-tap row in Find and add', (
       tester,
     ) async {
       _phone(tester);
@@ -262,7 +264,12 @@ void main() {
       await _typeAndLog(tester, 'koshari');
       await _windowCloses(tester);
 
+      // That meal now holds it, so E01 does not offer it again; Recent in E02
+      // does, at the portion she had.
       await _open(tester, 'E01');
+      expect(find.byTooltip('Add Koshari bowl'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('eat-hub-search')));
+      await tester.pumpAndSettle();
       final plate = find.byTooltip('Add Koshari bowl').first;
       expect(
         plate,
@@ -282,7 +289,7 @@ void main() {
     });
 
     for (final scale in [1.0, 2.0]) {
-      testWidgets("Home's plate logs, with the five seconds"
+      testWidgets("Home's Eat line opens Eat on the day she logged"
           '${scale == 1.0 ? '' : ' (text scale $scale)'}', (tester) async {
         _phone(tester);
         tester.platformDispatcher.textScaleFactorTestValue = scale;
@@ -292,24 +299,15 @@ void main() {
         await _windowCloses(tester);
         await _home(tester);
 
-        // Home is a scrolling page and its bottom bar sits over the foot of it,
-        // so the plate has to be clear of the bar before it can be pressed.
-        await tester.ensureVisible(find.text('Koshari bowl'));
+        final line = find.byKey(const ValueKey('today-eat-line'));
+        await tester.ensureVisible(line);
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Koshari bowl'));
+        await tester.tap(line);
         await tester.pumpAndSettle();
 
-        // It logged, and it landed on the logged day rather than merely
-        // navigating there.
-        expect(find.byType(AppUndoBar), findsOneWidget);
-        // One offer, here too: Home used to raise a snackbar of its own and then
-        // carry the same handle to E04's bar.
-        expect(find.byType(SnackBar), findsNothing);
-        expect(find.text('Undo'), findsOneWidget);
-        expect(find.text('36 of 108 g'), findsOneWidget);
-
-        await _windowCloses(tester);
-        expect(_written.length, 2);
+        expect(find.byKey(const ValueKey('eat-diary-lunch')), findsOneWidget);
+        expect(find.text('18 of 108 g'), findsOneWidget);
+        expect(_written.length, 1);
       });
     }
   });
@@ -472,7 +470,7 @@ void main() {
       await _boot(tester);
 
       // Before: the pack is offered and a meal logs.
-      await _open(tester, 'E01');
+      await _open(tester, 'E02');
       expect(find.text('Ful and baladi'), findsWidgets);
       await _home(tester);
 
@@ -508,7 +506,7 @@ void main() {
 
       // Unknown allergen data is allowed: the dishes are still offered.
       await _home(tester);
-      await _open(tester, 'E01');
+      await _open(tester, 'E02');
       expect(
         find.text('Ful and baladi'),
         findsWidgets,

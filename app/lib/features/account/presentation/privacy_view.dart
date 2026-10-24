@@ -72,6 +72,7 @@ import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/app_toggle.dart';
 import '../../signup/domain/review_request.dart';
+import '../data/callable_consent_choice_store.dart';
 import '../domain/health_backup.dart';
 import '../domain/media_blur_policy.dart';
 import '../domain/privacy_settings.dart';
@@ -94,8 +95,17 @@ class PrivacyView extends StatefulWidget {
     this.onCrashReportsChanged,
     this.analyticsAllowed = false,
     this.onAnalyticsChanged,
+    this.mealPhotoAllowed,
+    this.onMealPhotoWithdrawn,
     this.community,
   });
+
+  /// Whether she has agreed to send meal photos to Google. Null hides the row.
+  final Future<bool> Function()? mealPhotoAllowed;
+
+  /// Takes that agreement back. Throws when the server cannot be reached. It
+  /// can only be turned off here; she is asked again at her next meal photo.
+  final Future<void> Function()? onMealPhotoWithdrawn;
 
   /// Her choice to offer the dishes she logs from a photo to the shared list.
   /// Null hides the row.
@@ -152,11 +162,39 @@ class _PrivacyViewState extends State<PrivacyView> {
 
   late bool _analytics = widget.analyticsAllowed;
 
+  bool _mealPhoto = false;
+  bool _mealPhotoFailed = false;
+
   @override
   void initState() {
     super.initState();
     final community = widget.community;
     if (community != null) unawaited(community.loadSettings());
+    unawaited(flushPendingConsentChoices());
+    final asked = widget.mealPhotoAllowed;
+    if (asked != null) {
+      unawaited(
+        asked().then((on) {
+          if (mounted) setState(() => _mealPhoto = on);
+        }),
+      );
+    }
+  }
+
+  Future<void> _stopMealPhotos() async {
+    final withdraw = widget.onMealPhotoWithdrawn;
+    if (withdraw == null || !_mealPhoto) return;
+    try {
+      await withdraw();
+      if (mounted) {
+        setState(() {
+          _mealPhoto = false;
+          _mealPhotoFailed = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _mealPhotoFailed = true);
+    }
   }
 
   Future<void> _toggleAnalytics(bool value) async {
@@ -523,6 +561,33 @@ class _PrivacyViewState extends State<PrivacyView> {
               onChanged: (value) => _toggleAnalytics(value),
             ),
             onTap: () => _toggleAnalytics(!_analytics),
+          ),
+
+        // Meal photos go to Google's AI only with her consent, asked when she
+        // first takes one. Here she can take it back; turning it on again
+        // happens at the next meal photo, where it is asked.
+        if (widget.mealPhotoAllowed != null)
+          AppListItem(
+            leading: const Icon(
+              Icons.photo_camera_outlined,
+              size: 24,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.mealPhotosSentToGoogleToRead,
+            subtitle: _mealPhotoFailed
+                ? l10n.weCouldNotTurnThisOffTry
+                : _mealPhoto
+                ? l10n.onTurnOffAndYourMealPhotos
+                : l10n.offYouAreAskedAgainBeforeYour,
+            trailing: AppToggle(
+              key: const ValueKey('meal-photo-toggle'),
+              value: _mealPhoto,
+              semanticLabel: l10n.mealPhotosSentToGoogleToRead,
+              onChanged: _mealPhoto
+                  ? (_) => unawaited(_stopMealPhotos())
+                  : null,
+            ),
+            onTap: _mealPhoto ? () => unawaited(_stopMealPhotos()) : null,
           ),
 
         // The shared dish list: on until she turns it off, and it can be turned

@@ -96,7 +96,7 @@ void main() {
       AppRouter.featureFlags = saved;
     });
 
-    testWidgets('fifteen dark screens do it, and this is the whole list', (
+    testWidgets('six dark screens do it, and this is the whole list', (
       t,
     ) async {
       phone(t);
@@ -109,7 +109,7 @@ void main() {
       }
       // Reported, not tolerated. Every one of these is behind a dark flag
       // today, so none of them can reach a woman in this release; the list is
-      // pinned so that an eighteenth — or a shipping one — cannot arrive
+      // pinned so that a seventh — or a shipping one — cannot arrive
       // quietly. The shipping case above is the one that blocks.
       //
       // W02 left when the coach's client page got her tab bar with the rest of
@@ -126,15 +126,6 @@ void main() {
         'G05',
         'G11',
         'G16',
-        'M03',
-        'M04',
-        'M05',
-        'M07',
-        'M09',
-        'M10',
-        'M12',
-        'M14',
-        'M15',
         'K19',
       }, reason: liars.join('\n'));
     });

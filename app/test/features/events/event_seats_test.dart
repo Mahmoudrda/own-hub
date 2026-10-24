@@ -13,6 +13,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:own_hub/domain/rewards/rewards.dart';
+import 'package:own_hub/domain/rewards/weekly_goal.dart';
+import 'package:own_hub/features/progress/presentation/progress_view_model.dart';
+import 'package:own_hub/features/progress/presentation/you_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
@@ -577,34 +581,26 @@ void main() {
       for (final t in tabsFor(role)) t.screenId,
     ];
 
-    test('Events takes the community\'s slot while the community is off', () {
+    test('Events has no tab: it is a row on You and a card on Home', () {
       AppRouter.featureFlags = FeatureFlags.allOff.with_({
         Feature.today: true,
         Feature.train: true,
         Feature.eat: true,
-        Feature.events: true,
-      });
-      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E01', 'T09']);
-    });
-
-    test('the community keeps its slot when it is on', () {
-      AppRouter.featureFlags = FeatureFlags.allOff.with_({
-        Feature.today: true,
-        Feature.train: true,
-        Feature.eat: true,
+        Feature.progress: true,
         Feature.events: true,
         Feature.community: true,
       });
-      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E01', 'M01']);
+      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E02', 'E01', 'P01']);
     });
 
-    test('with Events off too, the bar is three tabs', () {
+    test('with Events off the bar is the same', () {
       AppRouter.featureFlags = FeatureFlags.allOff.with_({
         Feature.today: true,
         Feature.train: true,
         Feature.eat: true,
+        Feature.progress: true,
       });
-      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E01']);
+      expect(tabIds(AppRole.trainee), ['T01', 'R01', 'E02', 'E01', 'P01']);
     });
 
     test('a coach\'s bar is not touched', () {
@@ -620,17 +616,27 @@ void main() {
       ]);
     });
 
-    testWidgets('the tab is labelled Events', (tester) async {
+    testWidgets('You lists Events when it is on, and opens it', (tester) async {
       AppRouter.featureFlags = FeatureFlags.allOff.with_({
         Feature.today: true,
-        Feature.train: true,
-        Feature.eat: true,
         Feature.events: true,
       });
+      var opened = false;
       await tester.pumpWidget(
-        _host(const Scaffold(body: AppNavBar(activeScreenId: 'T09'))),
+        _host(
+          YouView(
+            summary: ProgressSummary.from(
+              goal: const WeeklyGoal(sessionsTarget: 3),
+              rewards: const Rewards(),
+            ),
+            activities: const SizedBox.shrink(),
+            onOpenEvents: () => opened = true,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('you-events')));
+      expect(opened, isTrue);
       expect(find.text('Events'), findsOneWidget);
     });
 

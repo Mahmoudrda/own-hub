@@ -37,32 +37,6 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('SnapMealCard names the camera and routes onSnap', (
-    tester,
-  ) async {
-    final handle = tester.ensureSemantics();
-    var taps = 0;
-    await tester.pumpWidget(
-      _host(
-        SnapMealCard(
-          title: 'Scan your meal with the camera',
-          subtitle: 'One photo for calories and protein',
-          onPressed: () => taps++,
-        ),
-      ),
-    );
-    expect(find.byIcon(Icons.camera_alt_rounded), findsOneWidget);
-    expect(find.text('Scan your meal with the camera'), findsOneWidget);
-    expect(find.text('One photo for calories and protein'), findsOneWidget);
-    final node = tester.getSemantics(
-      find.byKey(const ValueKey('eat-snap-card')),
-    );
-    expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
-    await tester.tap(find.byKey(const ValueKey('eat-snap-card')));
-    expect(taps, 1);
-    handle.dispose();
-  });
-
   group('the Home eat card scan chip', () {
     testWidgets('calls onScanMeal', (tester) async {
       var scans = 0;

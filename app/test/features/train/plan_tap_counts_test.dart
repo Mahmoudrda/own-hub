@@ -1,7 +1,8 @@
 // How far each way of changing a plan is from Home, counted in taps, with the
 // screens wired by hand (the router's wiring is a separate pass): Edit is one
-// tap, Change plan is one tap to the plan, and from Train every way in is the
-// next tap. A change she keeps forks the split; one she does not forks nothing.
+// tap, Change plan is one tap to the programme page, and from there every way
+// in is the "…" and a row. A change she keeps forks the split; one she does
+// not forks nothing.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,7 +16,7 @@ import 'package:own_hub/features/train/domain/workout_library.dart';
 import 'package:own_hub/features/train/presentation/my_plan_day.dart';
 import 'package:own_hub/features/train/presentation/plan_editor_view.dart';
 import 'package:own_hub/features/train/presentation/plan_entry_cards.dart';
-import 'package:own_hub/features/train/presentation/train_view.dart';
+import 'package:own_hub/features/train/presentation/program_view.dart';
 import 'package:own_hub/features/train/presentation/workout_day_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -121,7 +122,8 @@ class _AppState extends State<_App> {
                 ? _editor(home)
                 : _push(
                     home,
-                    (train) => TrainView(
+                    (train) => ProgramView(
+                      days: const [ProgramDay(title: 'Day a')],
                       hasMyPlan: state.hasPlan,
                       onCustomizePlan: () {
                         state.preview(_template(), LifeStage.none);
@@ -225,31 +227,36 @@ void main() {
     expect(find.byKey(const ValueKey('r03-add')), findsOneWidget);
   });
 
-  testWidgets('Customize this plan: two taps from Home to the plan editor', (
+  Future<void> pickFromMenu(WidgetTester tester, String label) async {
+    await tester.tap(find.byKey(const ValueKey('overflow-menu'))); // 2
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ValueKey('overflow-row-$label'))); // 3
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('Customize this plan: three taps from Home to the plan editor', (
     tester,
   ) async {
     _phone(tester);
     await tester.pumpWidget(_host(const _App()));
     await tester.tap(find.byKey(const ValueKey('home-change-plan'))); // 1
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('r01-build-plan-card')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('r01-customize-plan'))); // 2
-    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('r01-build-plan-card')), findsNothing);
+    await pickFromMenu(tester, 'Customize this plan');
     expect(find.byKey(const ValueKey('plan-day-0')), findsOneWidget);
     expect(find.byKey(const ValueKey('plan-day-1')), findsOneWidget);
     // Looking at it keeps nothing.
     expect(MyPlanState.instance.hasPlan, isFalse);
   });
 
-  testWidgets('Start from scratch: two taps to an empty editor', (
+  testWidgets('Start from scratch: three taps to an empty editor', (
     tester,
   ) async {
     _phone(tester);
     await tester.pumpWidget(_host(const _App()));
     await tester.tap(find.byKey(const ValueKey('home-change-plan')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('r01-plan-scratch')));
-    await tester.pumpAndSettle();
+    await pickFromMenu(tester, 'Start from scratch');
     expect(find.text('No days yet. Add your first day.'), findsOneWidget);
   });
 
@@ -273,7 +280,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r03-edit-toggle')));
+      await tester.tap(find.byKey(const ValueKey('r03-edit-done')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('r03-update-no')));
       await tester.pumpAndSettle();
@@ -290,7 +297,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r03-edit-toggle')));
+      await tester.tap(find.byKey(const ValueKey('r03-edit-done')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('r03-update-yes')));
       await tester.pumpAndSettle();

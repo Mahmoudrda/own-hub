@@ -119,6 +119,8 @@ void main() {
     );
     expect(find.text('How do you feel today?'), findsOneWidget);
 
+    // The card sits under the Eat line now, so scroll to its answers.
+    await tester.ensureVisible(find.text('Very sore'));
     await tester.tap(find.text('Very sore'));
     await tester.pumpAndSettle();
 
@@ -193,6 +195,7 @@ void main() {
     expect(find.byKey(const ValueKey('follow-up-weekReview')), findsOneWidget);
     expect(find.textContaining('Sessions: 1'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('3 quick questions'));
     await tester.tap(find.text('3 quick questions'));
     await tester.pumpAndSettle();
     final chips = find.byKey(const ValueKey('week-review-sheet'));

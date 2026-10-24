@@ -2,6 +2,10 @@
 /// the contract's `requestKeys`.
 library;
 
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import 'coach_application.dart';
 import 'coaching_contract.dart';
 import 'parse.dart';
@@ -27,16 +31,43 @@ abstract final class CoachingRequests {
 
   static Json payoutChange(CoachPayoutAccount account) => account.toMap();
 
+  /// What she ticked on the request form: the version and a hash of each text
+  /// as she read it, so the record shows which words she agreed to.
+  static Json requestConsent({
+    required String shareText,
+    required String transferText,
+    required String appVersion,
+  }) => <String, Object?>{
+    'version': 2,
+    'shareHash': sha256.convert(utf8.encode(shareText)).toString(),
+    'transferHash': sha256.convert(utf8.encode(transferText)).toString(),
+    if (appVersion.isNotEmpty) 'appVersion': appVersion,
+  };
+
+  /// Her tick on the chat rules: the version and a hash of the words she saw.
+  static Json acceptChatRules({
+    required String rulesText,
+    required String locale,
+    required String appVersion,
+  }) => <String, Object?>{
+    'version': 1,
+    'textHash': sha256.convert(utf8.encode(rulesText)).toString(),
+    'locale': locale,
+    if (appVersion.isNotEmpty) 'appVersion': appVersion,
+  };
+
   static Json requestCoaching({
     required String coachUid,
     required String packageId,
     required Intake intake,
+    required Json consent,
     required String locale,
     String clientName = '',
   }) => <String, Object?>{
     'coachUid': coachUid,
     'packageId': packageId,
     'intake': intake.toRequest(),
+    'consent': consent,
     'locale': locale,
     'clientName': clientName,
   };

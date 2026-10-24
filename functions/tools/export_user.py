@@ -81,6 +81,7 @@ SECTIONS: dict[int, str] = {
     57: "coaching",
     58: "coaching",
     59: "coaching",
+    61: "coaching",
 }
 
 # Manifest row -> why it is not in the copy.
@@ -99,6 +100,7 @@ EXPORT_EXCLUSIONS: dict[int, str] = {
     41: "Single-use selfie sessions, deleted after five minutes.",
     50: "A scheduling slot for a review call. The booked time is already in her verification record.",
     51: "A reviewer's own availability settings and the slots booked with her; they are staff data, not a member's.",
+    60: "The copy of what was reported (the text of the message, or the portfolio name and headline) is part of a safety case, not her account. It is deleted when the woman who reported deletes her account, and kept with her name taken out when the woman reported deletes hers.",
     54: "A keyed hash of your account id stored under the shared food you confirmed. It holds nothing you wrote and is removed when you delete your account.",
     52: "A phone number a reviewer pre-approved. It is removed when she signs in or deletes her account, and it is not part of her account.",
     # APL-16: the rows naming row 26's data one by one. The rules refuse every
@@ -483,7 +485,7 @@ class FirestoreReader:
         private_rows = {}
         if private.get().exists:
             private_rows["account"] = private.get().to_dict() or {}
-        for name in ("prices", "ledger", "payouts"):
+        for name in ("prices", "ledger", "payouts", "mediaConsents"):
             for key, value in rows(private.collection(name)).items():
                 private_rows[f"{name}/{key}"] = value
         return {

@@ -132,8 +132,20 @@ def intake(**over):
     return row
 
 
+def hash_of(locale, part, name="Coach One"):
+    return common.sha(common.CONTRACT["consentTexts"]["coachingRequest2"][locale][part][0].replace("{name}", name))
+
+
+def consent(locale="en", name="Coach One", **over):
+    row = {"version": 2, "shareHash": hash_of(locale, "share", name), "transferHash": hash_of(locale, "transfer"), "appVersion": "1.1.0+5"}
+    row.update(over)
+    return row
+
+
 def ask(db, pushes, *, uid=CLIENT, now=NOW, **over):
     data = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "en"}
+    locale = over.get("locale", "en")
+    data["consent"] = consent(locale if locale in ("en", "ar") else "en")
     data.update(over)
     source = codes()
     return subscriptions.request(
@@ -238,25 +250,54 @@ def test_request_waits_for_the_coach_when_auto_accept_is_off(db, pushes):
 
 def test_request_creates_relationship_terms_and_consents(db, pushes):
     seed(db, auto=False)
-    out = ask(db, pushes, locale="ar")
+    out = ask(db, pushes, locale="ar", consent=consent("ar"))
     rel = db.document(f"relationships/{COACH}__{CLIENT}").get().to_dict()
     assert rel["status"] == "none" and rel["chatOpen"] is False
     assert rel["coachUid"] == COACH and rel["clientUid"] == CLIENT
     terms = db.document(f"subscriptions/{out['subId']}/private/terms").get().to_dict()
     assert terms["coachPriceEgp"] == COACH_PRICE and terms["packageId"] == PACKAGE
-    for name in ("coaching-share-v1", "transfer-abroad-v1"):
-        consent = db.document(f"users/{CLIENT}/consents/{name}").get().to_dict()
-        assert consent == {"version": 1, "at": NOW, "locale": "ar"}
+    record = db.document(f"users/{CLIENT}/consents/coaching-request-v2-{out['subId']}").get().to_dict()
+    assert record == {
+        "version": 2, "shareHash": hash_of("ar", "share"), "transferHash": hash_of("ar", "transfer"),
+        "appVersion": "1.1.0+5",
+        "at": NOW, "locale": "ar", "coachUid": COACH, "subId": out["subId"],
+    }
 
 
-def test_request_keeps_an_earlier_consent_and_relationship(db, pushes):
+def test_each_request_keeps_its_own_consent_record(db, pushes):
     seed(db, auto=False)
-    first = ask(db, pushes, locale="ar")
+    first = ask(db, pushes, locale="ar", consent=consent("ar"))
     db.document(f"subscriptions/{first['subId']}").update({"status": "declined"})
     db.document(f"relationships/{COACH}__{CLIENT}").update({"status": "ended"})
-    ask(db, pushes, now=later(days=1), locale="en")
-    assert db.document(f"users/{CLIENT}/consents/coaching-share-v1").get().to_dict()["locale"] == "ar"
+    second = ask(db, pushes, now=later(days=1), locale="en")
+    one = db.document(f"users/{CLIENT}/consents/coaching-request-v2-{first['subId']}").get().to_dict()
+    two = db.document(f"users/{CLIENT}/consents/coaching-request-v2-{second['subId']}").get().to_dict()
+    assert one["locale"] == "ar" and two["locale"] == "en" and two["at"] == later(days=1)
     assert db.document(f"relationships/{COACH}__{CLIENT}").get().to_dict()["status"] == "ended"
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "yes",
+        {},
+        consent(version=1),
+        consent(version=True),
+        consent(shareHash="x"),
+        consent(transferHash="Z" * 64),
+        consent(appVersion="v" * 33),
+        consent(shareHash="a" * 64),
+        consent(transferHash="b" * 64),
+        consent("ar"),
+        {k: v for k, v in consent().items() if k != "shareHash"},
+    ],
+)
+def test_a_request_without_both_ticks_recorded_is_refused_and_writes_nothing(db, pushes, bad):
+    seed(db, auto=False)
+    refuse(lambda: ask(db, pushes, consent=bad), errors.INVALID, errors.BAD_REQUEST)
+    assert list(db.collection("subscriptions").stream()) == []
+    assert list(db.collection(f"users/{CLIENT}/consents").stream()) == []
+    assert pushes == []
 
 
 def test_the_coach_price_never_reaches_a_client_readable_document(db, pushes, blobs):
@@ -684,7 +725,7 @@ def test_a_payment_code_another_subscription_has_is_not_reused(db, pushes):
     first = ask(db, pushes, uid="c1")
     options = iter([CODE, CODE, "OHFRESH2"])
     second = subscriptions.request(
-        db, "c2", {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "en"},
+        db, "c2", {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "consent": consent(), "locale": "en"},
         live=True, payments_live=True, verified=True, now=NOW, notify=pushes, code=lambda: next(options),
     )
     assert sub_of(db, first["subId"])["paymentCode"] == CODE
@@ -722,3 +763,18 @@ def test_a_suspended_coach_cannot_answer_a_request_on_a_valid_claim(db, pushes):
     db.document(f"coachPrivate/{COACH}").update({"suspended": True})
     refuse(lambda: answer(db, pushes, sub_id), errors.PERMISSION, errors.COACH_SUSPENDED)
     assert sub_of(db, sub_id)["status"] == "requested"
+
+
+def test_the_app_1_0_0_request_has_no_consent_field_and_records_the_version_1_ticks(db, pushes):
+    """The exact body 1.0.0 sends: coachUid, packageId, intake, locale, clientName."""
+    seed(db, auto=False)
+    body = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "ar", "clientName": "Mona"}
+    source = codes()
+    out = subscriptions.request(
+        db, CLIENT, body, live=True, payments_live=True, verified=True, now=NOW, notify=pushes,
+        code=lambda: next(source),
+    )
+    assert out["status"] == "requested"
+    for name in ("coaching-share-v1", "transfer-abroad-v1"):
+        assert db.document(f"users/{CLIENT}/consents/{name}").get().to_dict() == {"version": 1, "at": NOW, "locale": "ar"}
+    assert db.document(f"users/{CLIENT}/consents/coaching-request-v2-{out['subId']}").get().to_dict() is None

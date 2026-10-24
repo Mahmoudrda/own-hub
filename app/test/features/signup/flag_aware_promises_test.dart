@@ -19,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/auth_repository.dart';
+import 'package:own_hub/features/progress/presentation/you_view.dart';
 import 'package:own_hub/features/signup/presentation/look_around_view.dart';
 import 'package:own_hub/features/signup/presentation/phone_number_view.dart';
 import 'package:own_hub/features/signup/presentation/pledge_view.dart';
@@ -231,7 +232,7 @@ void main() {
       expect(find.text(en.coaches), findsNothing);
     });
 
-    testWidgets('community on: the real bar carries it, behind the join', (
+    testWidgets('community on: it has no tab, You is the progress stop', (
       tester,
     ) async {
       await _pump(
@@ -239,10 +240,11 @@ void main() {
         const LookAroundView(),
         on: {...product, ..._community},
       );
-      expect(find.text(en.community), findsOneWidget);
-      await tester.tap(find.text(en.community));
+      expect(find.text(en.community), findsNothing);
+      await tester.tap(find.text(en.you));
       await tester.pumpAndSettle();
-      expect(find.text(en.joinToMakeThisYours), findsOneWidget);
+      expect(find.byType(YouView), findsOneWidget);
+      expect(find.text(en.joinToMakeThisYours), findsNothing);
     });
   });
 

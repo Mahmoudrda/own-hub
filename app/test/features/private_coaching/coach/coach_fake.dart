@@ -147,8 +147,11 @@ class CoachRepo implements CoachingRepository {
       _record('removePortfolioMedia', {'mediaId': mediaId});
 
   @override
-  Future<void> confirmMediaConsent(String mediaId) async =>
-      _record('confirmMediaConsent', {'mediaId': mediaId});
+  Future<void> confirmMediaConsent(String mediaId, String consentPath) async =>
+      _record('confirmMediaConsent', {
+        'mediaId': mediaId,
+        'consentPath': consentPath,
+      });
 
   @override
   dynamic noSuchMethod(Invocation invocation) =>

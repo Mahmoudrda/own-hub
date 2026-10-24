@@ -104,7 +104,16 @@ abstract final class AnalyticsSession {
   /// Counts an opening after a week or more away. Only while statistics are
   /// on, and the days away leave the phone as a range.
   static Future<void> noteOpened(DateTime now) async {
+    final first = await AnalyticsConsent.instance.firstOpen(now);
     final days = await AnalyticsConsent.instance.daysSinceLastOpen(now);
+    // Once per calendar day: days is null on the first counted opening.
+    if (first != null && (days == null || days > 0)) {
+      await AppRouter.analytics.track(AnalyticsEvent.appOpened, {
+        AnalyticsProp.installAge: AnalyticsValue.token(
+          installAgeToken(first, now),
+        ),
+      });
+    }
     if (days == null || days < quietDays) return;
     await AppRouter.analytics.track(AnalyticsEvent.quietWeekReturn, {
       AnalyticsProp.durationBucket: AnalyticsValue.bucket(days, [
@@ -113,6 +122,51 @@ abstract final class AnalyticsSession {
         30,
         90,
       ]),
+    });
+  }
+
+  /// The retention cohort word for an install that began at [first].
+  @visibleForTesting
+  static String installAgeToken(DateTime first, DateTime now) {
+    final a = first.toUtc();
+    final b = now.toUtc();
+    final d = DateTime.utc(
+      b.year,
+      b.month,
+      b.day,
+    ).difference(DateTime.utc(a.year, a.month, a.day)).inDays;
+    if (d <= 1) return d <= 0 ? 'd0' : 'd1';
+    if (d < 7) return 'd2_6';
+    if (d == 7) return 'd7';
+    if (d < 30) return 'd8_29';
+    return d == 30 ? 'd30' : 'd31p';
+  }
+
+  /// A counted workout finished. The first one ever, while statistics are
+  /// on, sends the hours since her first counted opening. With no earlier
+  /// counted opening (she turned statistics on after workouts) it is skipped,
+  /// never sent as 0 hours.
+  ///
+  /// [earlierWorkout] is true when a finished workout existed before this one
+  /// (an upgrade from 1.0.0, or statistics turned on later): activation is
+  /// then used up without being sent.
+  static Future<void> noteWorkoutFinished(
+    DateTime now, {
+    bool earlierWorkout = false,
+  }) async {
+    final first = await AnalyticsConsent.instance.firstOpen(now, create: false);
+    if (first != null && earlierWorkout) {
+      await AnalyticsConsent.instance.claimActivation();
+      return;
+    }
+    if (first == null || !await AnalyticsConsent.instance.claimActivation()) {
+      return;
+    }
+    await AppRouter.analytics.track(AnalyticsEvent.firstWorkoutDone, {
+      AnalyticsProp.durationBucket: AnalyticsValue.bucket(
+        now.difference(first).inHours,
+        [1, 6, 24, 48],
+      ),
     });
   }
 

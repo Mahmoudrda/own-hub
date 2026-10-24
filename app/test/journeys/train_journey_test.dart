@@ -8,12 +8,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/first_gym_guide_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/week/week_key.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+
+import '../helpers/pause_menu.dart';
 
 Future<void> _open(WidgetTester tester, String id) async {
   await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
@@ -105,29 +108,12 @@ void main() {
     // Log every move at once, which is the "I did all of it" path.
     var guard = 0;
     while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-      final all = find.textContaining('I did');
-      if (all.evaluate().isEmpty) break;
-      await tester.tap(all.first);
-      await tester.pumpAndSettle();
-      // R13 — next move, or the end.
-      final next = find.text('Next move');
-      if (next.evaluate().isNotEmpty) {
-        await tester.tap(next);
-        await tester.pumpAndSettle();
-      } else {
-        break;
-      }
+      // The next move opens at once; a hold move (R06) has no such button.
+      if (!await logWholeMove(tester)) break;
     }
 
-    // However she got here, finishing is one tap and counts once.
-    // Ending early asks for a second tap ("Finish now · n moves left").
-    final finish = find.byKey(const ValueKey('r13-finish-here'));
-    if (finish.evaluate().isNotEmpty) {
-      await tester.tap(finish);
-      await tester.pump();
-      if (finish.evaluate().isNotEmpty) await tester.tap(finish);
-      await tester.pumpAndSettle();
-    }
+    // However she got here, finishing counts once.
+    if (WorkoutSessionState.instance.day != null) await finishEarly(tester);
 
     expect(_weekOnHome, homeBefore + 1, reason: "Home's copy of the week");
     expect(_weekInProgress, progressBefore + 1, reason: 'the week document');
@@ -138,7 +124,7 @@ void main() {
     );
 
     // A second finish credits nothing: the session is over.
-    await tester.tap(find.text('Back to today'));
+    await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
     expect(_weekOnHome, homeBefore + 1);
     expect(_weekInProgress, progressBefore + 1);
@@ -190,15 +176,9 @@ void main() {
     expect(number(live) - number(liveBefore), 1);
 
     // Log the whole first move and finish at once, inside the undo window.
-    await tester.tap(find.textContaining('I did').first);
-    // Through R13's page transition, and well inside the five seconds.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    await tester.tap(find.text('Finish here'));
-    await tester.pump();
-    // The second tap that confirms it, still inside the window.
-    await tester.tap(find.byKey(const ValueKey('r13-finish-here')));
-    await tester.pumpAndSettle();
+    await logWholeMove(tester);
+    // Well inside the five seconds.
+    await finishEarly(tester);
 
     // The move she logged a moment before finishing was written, and R10
     // was told about it.
@@ -206,6 +186,8 @@ void main() {
     final summary = WorkoutSessionState.instance.lastSummary;
     expect(summary, isNotNull);
     expect(summary!.sets, greaterThan(0));
+    await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+    await tester.pumpAndSettle();
     expect(find.textContaining('Moves: 1'), findsOneWidget);
   });
 
@@ -218,17 +200,15 @@ void main() {
     await _open(tester, 'R03');
     await tester.tap(find.textContaining('Start'));
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('I did').first);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
-    await tester.tap(find.text('Finish here'));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('r13-finish-here')));
-    await tester.pumpAndSettle();
+    await logWholeMove(tester);
+    await finishEarly(tester);
 
-    expect(find.text('This week'), findsOneWidget, reason: 'on R10');
+    // The hero figure is on the page; the rest is behind See details.
+    expect(find.text('Sessions this week'), findsOneWidget, reason: 'on R10');
     expect(find.text('${before + 1} of 3'), findsOneWidget);
     expect(find.text('$before of 3'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+    await tester.pumpAndSettle();
     if (before + 1 < 3) {
       expect(
         find.textContaining('Next: session ${before + 2}'),
@@ -259,5 +239,31 @@ void main() {
     expect(state.loggedSetCount, 0);
     expect(find.text("I'm ready, next set"), findsNothing, reason: 'off R09');
     expect(find.textContaining('Done ·'), findsWidgets, reason: 'on R07');
+  });
+
+  testWidgets('Home to the first set is one tap, and All moves keeps it live', (
+    tester,
+  ) async {
+    // Past day one, so Home is the working Home with its one Start, and past
+    // the first-gym guide, which opens before the first set when it is unseen.
+    FirstGymGuideState.instance.seen = true;
+    AppRouter.todayRepository.reset();
+    await AppRouter.todayRepository.countWalk();
+    await _open(tester, 'T01');
+    expect(WorkoutSessionState.instance.day, isNull);
+
+    final start = find.textContaining('Start, everything');
+    expect(start, findsOneWidget);
+    await tester.tap(start);
+    await tester.pumpAndSettle();
+    final state = WorkoutSessionState.instance;
+    expect(state.day, isNotNull, reason: 'the session started');
+    expect(find.byKey(const ValueKey('pause')), findsOneWidget, reason: 'R07');
+    expect(find.text('Set 1 of 3'), findsOneWidget);
+
+    // "All moves" opens R03 over the set and does not end the session.
+    await pickMore(tester, 'All moves');
+    expect(find.textContaining('Start, everything'), findsOneWidget);
+    expect(state.day, isNotNull);
   });
 }

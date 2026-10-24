@@ -929,7 +929,36 @@ def purge_health_data(uid: str) -> None:
     )
 
 
-MEAL_PHOTO_CONSENT_FIELDS = ("version", "at", "locale", "appVersion")
+def write_choice_consent(
+    uid: str,
+    purpose: str,
+    granted: bool,
+    locale: Optional[str] = None,
+    app_version: Optional[str] = None,
+) -> None:
+    """users/{uid}/consents/{purpose}-v{N}: her optional choice now. `state` is
+    granted or withdrawn, `at` the time of this change, and `grantedAt` and
+    `withdrawnAt` keep the latest of each. Server-written only."""
+    version = config.CHOICE_CONSENT_VERSIONS[purpose]
+    stamp = firestore.SERVER_TIMESTAMP
+    payload = {
+        "version": version,
+        "state": "granted" if granted else "withdrawn",
+        "at": stamp,
+        "grantedAt" if granted else "withdrawnAt": stamp,
+    }
+    payload.update(consent_extras(locale, app_version))
+    (
+        db()
+        .collection(config.COL_USERS)
+        .document(uid)
+        .collection(config.COL_CONSENTS)
+        .document(f"{purpose}-v{version}")
+        .set(payload, merge=True)
+    )
+
+
+MEAL_PHOTO_CONSENT_FIELDS = ("version", "at", "locale", "appVersion", "withdrawnAt")
 """Every field a meal-photo consent record may hold, and nothing else."""
 
 
@@ -944,7 +973,19 @@ def _meal_photo_consent_ref(uid: str):
 
 
 def has_meal_photo_consent(uid: str) -> bool:
-    return _meal_photo_consent_ref(uid).get().exists
+    snapshot = _meal_photo_consent_ref(uid).get()
+    return snapshot.exists and "withdrawnAt" not in (snapshot.to_dict() or {})
+
+
+def withdraw_meal_photo_consent(uid: str) -> bool:
+    """She takes the meal-photo consent back: the record stays, marked with
+    when, and analyze_meal_photo refuses again until she consents anew.
+    Returns True when a consent was standing."""
+    ref = _meal_photo_consent_ref(uid)
+    if not has_meal_photo_consent(uid):
+        return False
+    ref.set({"withdrawnAt": firestore.SERVER_TIMESTAMP}, merge=True)
+    return True
 
 
 def write_meal_photo_consent(
@@ -955,7 +996,7 @@ def write_meal_photo_consent(
     file is left as it was. Returns True when written. Lives under users/{uid},
     so account deletion's recursive delete removes it."""
     ref = _meal_photo_consent_ref(uid)
-    if ref.get().exists:
+    if has_meal_photo_consent(uid):
         return False
     payload = {
         "version": config.MEAL_PHOTO_CONSENT_VERSION,
@@ -963,7 +1004,7 @@ def write_meal_photo_consent(
     }
     payload.update(consent_extras(locale, app_version))
     assert set(payload) <= set(MEAL_PHOTO_CONSENT_FIELDS)
-    ref.set(payload)
+    ref.set(payload)  # a whole new record: a withdrawn one is replaced
     return True
 
 

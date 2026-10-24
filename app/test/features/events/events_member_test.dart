@@ -89,7 +89,6 @@ TodayView _today({HubEvent? next, VoidCallback? onOpenEvents}) => TodayView(
   onStartSession: () {},
   onRecall: () {},
   onOpenMeal: () {},
-  onOpenPlate: () {},
   onOpenWeek: () {},
   onOpenCycle: () {},
   onAsk: () {},

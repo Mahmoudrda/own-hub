@@ -16,6 +16,7 @@ import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/screen_art_strip.dart';
 
 import '../../helpers/exercise_library_fixture.dart';
+import '../../helpers/pause_menu.dart';
 
 Widget _host(Widget child) => MaterialApp(
   localizationsDelegates: AppL10n.localizationsDelegates,
@@ -40,7 +41,7 @@ void main() {
 
   setUp(FakeClipPlayer.made.clear);
 
-  testWidgets('a move with a clip shows it, with its cues in a drawer', (
+  testWidgets('a move with a clip shows it, with its cues in the "…"', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -57,11 +58,10 @@ void main() {
 
     expect(find.byType(ExerciseClipFrame), findsOneWidget);
     expect(tester.getSize(find.byKey(const ValueKey('r07-clip'))).height, 220);
-    expect(find.text('Form cues'), findsOneWidget);
+    // The cues are in the "…", not drawn under the clip.
     expect(find.text('Ribs down'), findsNothing);
 
-    await tester.tap(find.byKey(const ValueKey('r07-form-cues')));
-    await tester.pumpAndSettle();
+    await pickMore(tester, 'Form cues');
     expect(find.text('Ribs down'), findsOneWidget);
     expect(find.text('Squeeze at the top'), findsOneWidget);
   });

@@ -161,7 +161,9 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
 
-    testWidgets('R10 counts the streak up to her days, once', (tester) async {
+    testWidgets('R10 keeps her streak in See details, and states her days', (
+      tester,
+    ) async {
       AppRouter.featureFlags = FeatureFlags.everything;
       await tester.pumpWidget(
         _host(
@@ -180,23 +182,10 @@ void main() {
           bare: true,
         ),
       );
-      final seen = <int>[];
-      for (var i = 0; i < 120; i++) {
-        await tester.pump(const Duration(milliseconds: 50));
-        final shown = find.textContaining('Training streak:');
-        if (shown.evaluate().isEmpty) continue;
-        final text = tester.widget<Text>(shown).data!;
-        final n = int.parse(RegExp(r'\d+').firstMatch(text)!.group(0)!);
-        if (seen.isEmpty || seen.last != n) seen.add(n);
-      }
-      // The place holds the final figure unseen, then the count runs up from
-      // one to her days and never goes back.
-      final start = seen.indexOf(1);
-      expect(start, isNonNegative);
-      final run = seen.sublist(start);
-      expect(run.last, 4);
-      expect([...run]..sort(), run);
-      expect(run.toSet().length, run.length);
+      await tester.pumpAndSettle();
+      // Not on the celebration itself: behind See details.
+      expect(find.textContaining('Training streak:'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('r10-see-details')));
       await tester.pumpAndSettle();
       expect(find.text('Training streak: 4 days'), findsOneWidget);
       expect(find.byType(AppWeekSegments), findsOneWidget);

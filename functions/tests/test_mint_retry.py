@@ -80,9 +80,12 @@ def test_the_hourly_job_runs_the_retry(monkeypatch):
     review.decide(fake, "rev", flag_id, True)
     monkeypatch.setattr(main.store, "FirestoreReviewStore", lambda: fake)
     monkeypatch.setattr(approvals, "revoked_since_approval", lambda uid: False)
+    purged = []
+    monkeypatch.setattr(approvals, "_live_preapproved", lambda: purged.append(1) or [])
     main.expire_stale_reviews.__wrapped__(None)
     assert fake.minted == ["her"]
     assert not fake.flags[flag_id].get("mintPending")
+    assert purged, "removed pre-approved numbers are purged by the hourly job"
 
 
 def test_the_firestore_store_marks_lists_and_clears(monkeypatch):

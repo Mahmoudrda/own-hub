@@ -750,3 +750,66 @@ def test_an_unverified_account_cannot_scan():
         https_fn.FunctionsErrorCode.PERMISSION_DENIED,
     )
     assert error.message == reasons.NOT_VERIFIED
+
+
+# ------------------------------------------------- withdrawal and optional choices
+
+
+def test_withdrawing_the_meal_photo_consent_blocks_the_scan_until_she_agrees_again(fs):
+    path = f"{config.COL_USERS}/her/{config.COL_CONSENTS}/meal-photo-v1"
+    assert store.withdraw_meal_photo_consent("her") is False
+    store.write_meal_photo_consent("her", "ar", "1.0.0+12")
+    assert store.withdraw_meal_photo_consent("her") is True
+    assert "withdrawnAt" in fs.docs[path] and fs.docs[path]["locale"] == "ar"
+    assert store.has_meal_photo_consent("her") is False
+    assert store.withdraw_meal_photo_consent("her") is False
+    assert store.write_meal_photo_consent("her", "en", None) is True
+    assert store.has_meal_photo_consent("her") is True
+    assert "withdrawnAt" not in fs.docs[path] and fs.docs[path]["locale"] == "en"
+
+
+def test_the_withdraw_callable_reaches_the_store(monkeypatch):
+    seen = []
+    monkeypatch.setattr(main.store, "withdraw_meal_photo_consent", lambda uid: seen.append(uid))
+    assert inner("withdraw_meal_photo_consent")(request({})) == {"ok": True}
+    assert seen == ["uid-1"]
+
+
+def test_a_choice_is_kept_with_its_state_and_every_change_is_stamped(fs):
+    path = f"{config.COL_USERS}/her/{config.COL_CONSENTS}/analytics-v2"
+    store.write_choice_consent("her", "analytics", True, "ar", "1.1.0+5")
+    record = fs.docs[path]
+    assert record["state"] == "granted" and record["version"] == 2
+    assert {"at", "grantedAt", "locale", "appVersion"} <= set(record) and "withdrawnAt" not in record
+    store.write_choice_consent("her", "analytics", False, "ar", "1.1.0+5")
+    record = fs.docs[path]
+    assert record["state"] == "withdrawn" and {"grantedAt", "withdrawnAt"} <= set(record)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"purpose": "ads", "granted": True, "consentVersion": 1},
+        {"purpose": "crash", "granted": "yes", "consentVersion": 1},
+        {"purpose": "crash", "granted": True},
+    ],
+)
+def test_a_bad_choice_is_refused(monkeypatch, body):
+    seen = []
+    monkeypatch.setattr(main.store, "write_choice_consent", lambda *a: seen.append(a))
+    with pytest.raises(https_fn.HttpsError):
+        inner("record_consent_choice")(request(body))
+    assert seen == []
+
+
+def test_a_choice_with_the_current_version_is_recorded(monkeypatch):
+    seen = []
+    monkeypatch.setattr(main.store, "write_choice_consent", lambda *a: seen.append(a))
+    body = {"purpose": "analytics", "granted": False, "consentVersion": 2, "locale": "en"}
+    assert inner("record_consent_choice")(request(body)) == {"ok": True}
+    assert seen == [("uid-1", "analytics", False, "en", None)]
+    error = raises(
+        lambda: inner("record_consent_choice")(request({**body, "consentVersion": 1})),
+        https_fn.FunctionsErrorCode.FAILED_PRECONDITION,
+    )
+    assert error.message == reasons.CONSENT_MISSING

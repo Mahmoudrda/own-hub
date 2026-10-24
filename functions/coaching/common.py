@@ -9,6 +9,7 @@ it, so a test can run the whole journey on a fixed clock.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import logging
 import os
@@ -40,6 +41,10 @@ CONTRACT = _load_contract()
 """contracts/coaching_contract.json, read from the copy beside this file,
 because only functions/ is deployed. A test keeps the two identical."""
 
+def sha(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 LIMITS: dict = CONTRACT["limits"]
 ENUMS: dict = CONTRACT["enums"]
 RAILS: dict = CONTRACT["rails"]
@@ -55,6 +60,8 @@ class Blobs(Protocol):
     def write(self, path: str, data: bytes, content_type: str) -> None: ...
 
     def delete(self, path: str) -> None: ...
+
+    def lock(self, path: str) -> None: ...
 
 
 Notify = Callable[[str, str], None]

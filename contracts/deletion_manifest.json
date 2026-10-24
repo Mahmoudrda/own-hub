@@ -294,6 +294,16 @@
       "number": 59,
       "path": "receipts and paymentProofs where clientUid or coachUid == uid",
       "method": "pseudonymised"
+    },
+    {
+      "number": 60,
+      "path": "reports/{id}/evidence/content where the report's reporterUid or subjectUid == uid",
+      "method": "pseudonymised"
+    },
+    {
+      "number": 61,
+      "path": "coachPrivate/{uid}/mediaConsents/{id}",
+      "method": "groupHook"
     }
   ]
 }

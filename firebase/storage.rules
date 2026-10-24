@@ -207,6 +207,22 @@ service firebase.storage {
       return request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp'];
     }
 
+    function locked() {
+      return resource != null && resource.metadata != null
+          && resource.metadata.get('locked', 'false') == 'true';
+    }
+
+    function coachFileWrite(uid, folder) {
+      return coachPortfolioLive()
+          && isOwner(uid)
+          && request.auth.token.get('verified', false) == true
+          && folder in ['photo', 'education', 'certificates',
+                        'testimonials', 'transformations', 'gallery']
+          && (isCoachImage()
+              || (isPdf() && folder in ['education', 'certificates']))
+          && request.resource.size <= 10 * 1024 * 1024;
+    }
+
     match /coach-docs/{uid}/{folder}/{file} {
       allow read: if coachPortfolioLive()
                   && isOwner(uid)
@@ -218,15 +234,12 @@ service firebase.storage {
       allow read: if coachPortfolioLive()
                   && isWomanReviewer()
                   && folder in ['testimonials', 'transformations', 'gallery'];
-      allow create, update: if coachPortfolioLive()
-                    && isOwner(uid)
-                    && request.auth.token.get('verified', false) == true
-                    && folder in ['photo', 'education', 'certificates',
-                                  'testimonials', 'transformations', 'gallery']
-                    && (isCoachImage()
-                        || (isPdf() && folder in ['education', 'certificates']))
-                    && request.resource.size <= 10 * 1024 * 1024;
-      allow delete: if isOwner(uid);
+      allow create, update: if coachFileWrite(uid, folder) && !locked();
+      // A file the service has attached to a portfolio item (the two photos
+      // and the client's written release) carries the metadata locked=true, so
+      // she cannot delete or replace the evidence. A draft she has not
+      // submitted is not locked and she can still delete it.
+      allow delete: if isOwner(uid) && !locked();
     }
 
     // What the public coach page shows (her photo, checked and resized by the

@@ -42,6 +42,14 @@ Widget _app(String screenId) => MaterialApp(
   initialRoute: appRoutes[screenId]!.name,
 );
 
+/// A row of the programme page's "…".
+Future<void> _fromMenu(WidgetTester tester, String label) async {
+  await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ValueKey('overflow-row-$label')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   final savedFlags = AppRouter.featureFlags;
 
@@ -156,8 +164,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 600));
       expect(AppRouter.intakeRepository.read().days, 3);
 
-      await tester.tap(find.text('Change program'));
-      await tester.pumpAndSettle();
+      await _fromMenu(tester, 'Change program');
       await tester.tap(find.byKey(const ValueKey('program-choose')).at(1));
       await tester.pumpAndSettle();
 
@@ -169,12 +176,9 @@ void main() {
 
   group('Editing a split', () {
     Future<void> openChooser(WidgetTester tester) async {
-      await tester.pumpWidget(_app('R01'));
+      await tester.pumpWidget(_app('R02'));
       await tester.pump(const Duration(milliseconds: 600));
-      final edit = find.byKey(const ValueKey('r01-edit-split'));
-      await tester.ensureVisible(edit);
-      await tester.tap(edit);
-      await tester.pumpAndSettle();
+      await _fromMenu(tester, 'Edit one of the three splits');
     }
 
     testWidgets('backing out of the editor leaves her on the split she had', (
@@ -232,7 +236,7 @@ void main() {
 
       expect(ChosenProgramme.family, 'split_5day');
       expect(AppRouter.intakeRepository.read().days, 5);
-      expect(find.byKey(const ValueKey('r03-edit-toggle')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r03-edit-done')), findsOneWidget);
     });
 
     Future<void> withPlanOfFiveDays(WidgetTester tester) async {
@@ -284,16 +288,14 @@ void main() {
       await tester.pumpWidget(_app('T01'));
       await tester.pump(const Duration(milliseconds: 600));
 
-      final change = find.byKey(const ValueKey('home-change-plan'));
-      await tester.ensureVisible(change);
-      await tester.tap(change);
+      // Change plan is a row in the Today card's Change sheet.
+      await tester.tap(find.byKey(const ValueKey('today-change')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('r01-build-plan-card')), findsOneWidget);
-
-      final customize = find.byKey(const ValueKey('r01-customize-plan'));
-      await tester.ensureVisible(customize);
-      await tester.tap(customize);
+      await tester.tap(find.byKey(const ValueKey('change-plan')));
       await tester.pumpAndSettle();
+      // The plan page: its "…" holds the ways to change the plan.
+      expect(find.byKey(const ValueKey('overflow-menu')), findsOneWidget);
+      await _fromMenu(tester, 'Customize this plan');
 
       expect(find.byKey(const ValueKey('plan-day-0')), findsOneWidget);
       expect(MyPlanState.instance.hasPlan, isFalse);
@@ -308,26 +310,24 @@ void main() {
       final before = AppRouter.herProgramme!.content.programId;
       expect(before, isNot('my_plan'));
 
-      final change = find.byKey(const ValueKey('home-change-plan'));
-      await tester.ensureVisible(change);
-      await tester.tap(change);
+      // Change plan is a row in the Today card's Change sheet.
+      await tester.tap(find.byKey(const ValueKey('today-change')));
       await tester.pumpAndSettle();
-      final customize = find.byKey(const ValueKey('r01-customize-plan'));
-      await tester.ensureVisible(customize);
-      await tester.tap(customize);
+      await tester.tap(find.byKey(const ValueKey('change-plan')));
       await tester.pumpAndSettle();
+      await _fromMenu(tester, 'Customize this plan');
 
       final edit = find.byKey(const ValueKey('plan-edit-0'));
       await tester.ensureVisible(edit);
       await tester.tap(edit);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('r03-edit-toggle')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r03-edit-done')), findsOneWidget);
       expect(find.byKey(const ValueKey('r03-remove-0')), findsOneWidget);
       final moves = MyPlanState.instance.current!.days[0].session.moves.length;
 
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r03-edit-toggle')));
+      await tester.tap(find.byKey(const ValueKey('r03-edit-done')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('r03-update-yes')));
       await tester.pumpAndSettle();

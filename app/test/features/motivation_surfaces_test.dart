@@ -158,10 +158,12 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
     expect(find.text('0:58'), findsOneWidget);
     await tester.tap(find.byTooltip('Pause'));
-    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 2));
     expect(find.text('0:58'), findsOneWidget);
-    expect(find.byTooltip('Resume'), findsOneWidget);
-    await tester.tap(find.byTooltip('Resume'));
+    expect(find.byKey(const ValueKey('pause-resume')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('pause-resume')));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('0:57'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());

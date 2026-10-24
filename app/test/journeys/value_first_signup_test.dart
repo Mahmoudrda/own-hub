@@ -408,7 +408,9 @@ void main() {
       final (stack, _) = await _open(tester, 'C01');
       await _tap(tester, 'Show me around');
 
-      await _tap(tester, 'Count it');
+      // Start is the sample's refused action; its refusal opens the sheet.
+      await tester.tap(find.textContaining('Start, everything'));
+      await tester.pumpAndSettle();
       expect(find.text('Join to make this yours'), findsOneWidget);
       expect(stack.names, [
         _name('C01'),

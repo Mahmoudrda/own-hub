@@ -104,21 +104,20 @@ void main() {
     expect(_written.length, 2);
   }
 
-  testWidgets('there is no floating Log food button: Eat is a tab', (
+  testWidgets('the centre + in the bar is the one way to log food (D59)', (
     tester,
   ) async {
     await boot(tester);
     await _open(tester, 'E01');
 
-    expect(find.byKey(const ValueKey('nav-log-food')), findsNothing);
-    expect(find.text('Log food'), findsNothing);
+    expect(find.byKey(const ValueKey('nav-log-food')), findsOneWidget);
   });
 
-  testWidgets('the bar is Home, Train, Eat and Insights', (tester) async {
+  testWidgets('the bar is Home, Train, Log food, Eat and You', (tester) async {
     await boot(tester);
     await _open(tester, 'E01');
     final bar = find.byType(AppNavBar);
-    for (final tab in ['Home', 'Train', 'Eat', 'Insights']) {
+    for (final tab in ['Home', 'Train', 'Log food', 'Eat', 'You']) {
       expect(
         find.descendant(of: bar, matching: find.text(tab)),
         findsOneWidget,
@@ -299,35 +298,37 @@ void main() {
     expect(item.fiberG, isNull);
   });
 
-  testWidgets('the ring moves the moment a meal is logged, inside the undo '
+  testWidgets('the hero moves the moment a meal is logged, inside the undo '
       'window', (tester) async {
     await boot(tester);
     await eatKoshariTwice(tester);
     await _open(tester, 'E01');
 
-    Finder ring() => find.byKey(const ValueKey('eat-kcal-ring'));
+    Finder hero() => find.byKey(const ValueKey('eat-kcal-hero'));
     // Two koshari bowls already written: 2 x 540 kcal.
     expect(
-      find.descendant(of: ring(), matching: find.text('1,080')),
+      find.descendant(of: hero(), matching: find.text('1,080')),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: ring(), matching: find.text('of 1,861 kcal')),
+      find.descendant(of: hero(), matching: find.text('of 1,861 kcal')),
       findsOneWidget,
     );
 
+    // Recent, in E02, is where a plate she has had twice today is one tap.
+    await _tap(tester, find.byKey(const ValueKey('eat-hub-search')));
     await _tap(tester, find.byTooltip('Add Koshari bowl').first);
-    // Still inside the five seconds: nothing is written, the ring has moved.
+    // Still inside the five seconds: nothing is written, the hero has moved.
     expect(_written.length, 2);
     expect(
-      find.descendant(of: ring(), matching: find.text('1,620')),
+      find.descendant(of: hero(), matching: find.text('1,620')),
       findsOneWidget,
     );
 
     // Taking it back puts the ring back.
     await _tap(tester, find.text('Undo'));
     expect(
-      find.descendant(of: ring(), matching: find.text('1,080')),
+      find.descendant(of: hero(), matching: find.text('1,080')),
       findsOneWidget,
     );
     await _closeWindow(tester);

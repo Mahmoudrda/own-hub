@@ -6,7 +6,7 @@ class AppRoute {
   const AppRoute({required this.name, required this.flow, required this.title});
 }
 
-/// 196 screens across 17 flows.
+/// 197 screens across 17 flows.
 const Map<String, AppRoute> appRoutes = {
   'C01': AppRoute(name: '/signup/c01', flow: 'signup', title: "Welcome"),
   'C02': AppRoute(name: '/signup/c02', flow: 'signup', title: "Language"),
@@ -69,12 +69,13 @@ const Map<String, AppRoute> appRoutes = {
   'E11': AppRoute(name: '/eat/e11', flow: 'eat', title: "A message from Rahma"),
   'E12': AppRoute(name: '/eat/e12', flow: 'eat', title: "Snap your meal"),
   'E13': AppRoute(name: '/eat/e13', flow: 'eat', title: "Check your meal"),
-  'P01': AppRoute(name: '/progress/p01', flow: 'progress', title: "Your progress"),
+  'P01': AppRoute(name: '/progress/p01', flow: 'progress', title: "You"),
   'P02': AppRoute(name: '/progress/p02', flow: 'progress', title: "Milestones"),
   'P03': AppRoute(name: '/progress/p03', flow: 'progress', title: "Personal bests"),
   'P04': AppRoute(name: '/progress/p04', flow: 'progress', title: "Body, privately"),
   'P05': AppRoute(name: '/progress/p05', flow: 'progress', title: "Your progress card"),
   'P06': AppRoute(name: '/progress/p06', flow: 'progress', title: "Your muscles"),
+  'P07': AppRoute(name: '/progress/p07', flow: 'progress', title: "Insights"),
   'Y01': AppRoute(name: '/cycle/y01', flow: 'cycle', title: "Set up My cycle"),
   'Y02': AppRoute(name: '/cycle/y02', flow: 'cycle', title: "Dates and preferences"),
   'Y03': AppRoute(name: '/cycle/y03', flow: 'cycle', title: "My cycle today"),

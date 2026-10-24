@@ -47,7 +47,7 @@
 ///
 /// # Her rest, her length
 ///
-/// Fifteen seconds less, fifteen more and skip sit under the ready button. The
+/// Fifteen seconds less and fifteen more sit under the ready button. The
 /// new total is handed to [RestingView.onTotalChanged] so the next rest after
 /// this move starts there. The ring and the deadline given to
 /// [RestingView.onBackgrounded] both come from the clock those buttons change,
@@ -82,7 +82,6 @@ import 'train_widgets.dart';
 class RestingView extends StatefulWidget {
   const RestingView({
     super.key,
-    this.onClose,
     this.onPause,
     this.onReady,
     this.onTotalChanged,
@@ -101,7 +100,11 @@ class RestingView extends StatefulWidget {
     this.sets,
     this.end,
     this.liveBest,
+    this.nextIsNewMove = false,
   });
+
+  /// The next set is the first of the next move: the button says so.
+  final bool nextIsNewMove;
 
   /// A personal best the set she just saved set, drawn as a small chip under
   /// the saved bar. Null draws nothing.
@@ -120,7 +123,7 @@ class RestingView extends StatefulWidget {
   final int? moveNumber;
   final int? moveCount;
 
-  final VoidCallback? onClose;
+  /// Told when Pause opens, with the clock held until she is back.
   final VoidCallback? onPause;
 
   /// Back to R07 for the next set.
@@ -195,14 +198,16 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
   set _remaining(Duration value) =>
       _clock.value = (remaining: value, total: _total);
 
-  void _togglePause() {
-    setState(() => _paused = !_paused);
-    if (_paused) {
-      _stop();
-    } else if (widget.autoStart) {
-      _start();
-    }
+  /// Holds the clock while the Pause sheet is open. Resume, or closing the
+  /// sheet, starts it again from where it stopped; ending the workout does not.
+  Future<void> _pause() async {
+    _stop();
+    setState(() => _paused = true);
     widget.onPause?.call();
+    await showPauseSheet(context, end: widget.end);
+    if (!mounted || !_isOnTop) return;
+    setState(() => _paused = false);
+    if (widget.autoStart) _start();
   }
 
   @override
@@ -365,25 +370,13 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
       footerScrollsWhenLarge: true,
       appBar: TrainTopBar(
         title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
-        onClose: widget.onClose,
         sets: widget.sets,
-        actions: [
-          // Her rest, held. The clock stops where it is and starts again
-          // from there; the icon said pause for every woman and paused
-          // nothing.
-          IconButton(
-            onPressed: _togglePause,
-            iconSize: 24,
-            color: AppColors.onSurfaceVariant,
-            tooltip: _paused ? l10n.resume : l10n.pause,
-            icon: Icon(_paused ? Icons.play_arrow : Icons.pause),
-          ),
-          if (widget.end case final end?) SessionEndButton(end: end),
-        ],
+        // Her rest, held: Pause is the only control up here, as on R07.
+        actions: [PauseButton(onPressed: () => unawaited(_pause()))],
       ),
       footer: [
         AppButton(
-          l10n.imReadyNextSet,
+          widget.nextIsNewMove ? l10n.nextMove : l10n.imReadyNextSet,
           onPressed: widget.onReady == null ? null : _ready,
         ),
         // Bound to the handlers here, not to optional callbacks: the router
@@ -392,7 +385,6 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
           clock: _clock,
           onShorter: () => _adjust(-kRestStep),
           onLonger: () => _adjust(kRestStep),
-          onSkip: widget.onReady == null ? null : _ready,
         ),
       ],
       children: [

@@ -118,6 +118,17 @@ export function pruneSelection(selected, rows) {
   return new Set([...selected].filter((id) => live.has(id)));
 }
 
+// Undo of a removed pre-approved number: the server brings back the exact record it
+// removed (who confirmed her age, and when). The browser never sends adultSeen for it.
+export function restorePhonesRequest(phones) {
+  return { restore: [...phones] };
+}
+
+// Old numbers saved before the 18+ tick was recorded approve no one until it is added again.
+export function phoneAgeNote(phone, needing) {
+  return (needing ?? []).includes(phone) ? "Needs the 18+ tick again: add this number again to approve women with it." : "";
+}
+
 export function createUndo(uids, now, ms = UNDO_MS) {
   return { uids: [...uids], expiresAt: now + ms, ms };
 }

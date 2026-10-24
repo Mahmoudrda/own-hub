@@ -11,9 +11,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
+import 'package:own_hub/features/train/presentation/end_workout_sheet.dart';
 import 'package:own_hub/features/train/presentation/mid_set_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+
+import '../../helpers/pause_menu.dart';
 
 Widget _host(
   Widget child, {
@@ -44,10 +47,11 @@ void main() {
     expect(find.text('Goblet squat'), findsOneWidget);
     // Was "Set 2 of 3" from a fixed string, whatever the move prescribed; it
     // is now counted off `move.sets`, which is also what draws the rows below.
-    expect(find.text('2 of 3'), findsWidgets);
+    expect(find.text('Set 2 of 3'), findsOneWidget);
     // And no "Last Tuesday": see the group below.
     expect(find.textContaining('Last Tuesday'), findsNothing);
-    expect(find.text('This move'), findsOneWidget);
+    // The other sets and the move's other tools are not on the page.
+    expect(find.text('This move'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -392,7 +396,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('I did all 3 sets'));
+      await pickMore(tester, 'I did all 3 sets');
       await tester.pump(const Duration(seconds: 6));
 
       expect(moveHandles, hasLength(1));
@@ -418,7 +422,8 @@ void main() {
     expect(find.text('الحركة 2 من 5'), findsNothing);
     expect(find.text('تمام · 12 كجم × 10'), findsOneWidget);
     expect(find.textContaining('لسه مفيش سجل'), findsNothing);
-    expect(find.text('خلّصت الـ 3 مجموعات'), findsOneWidget);
+    expect(find.text('المجموعة 2 من 3'), findsOneWidget);
+    expect(await moreRow(tester, 'خلّصت الـ 3 مجموعات'), isNotNull);
     expect(find.text('Done · 12 kg × 10'), findsNothing);
   });
 
@@ -438,26 +443,19 @@ void main() {
   });
 
   for (final locale in const [Locale('en'), Locale('ar')]) {
-    testWidgets('the move note row and its sheet fit at text scale 2.0 in '
-        '${locale.languageCode}', (tester) async {
+    testWidgets('the Pause sheet, its "…" and the note sheet fit at text scale '
+        '2.0 in ${locale.languageCode}', (tester) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(
         _host(const MidSetView(), locale: locale, textScale: 2),
       );
       await tester.pumpAndSettle();
-      final row = find.byKey(const ValueKey('r07-note'));
-      expect(row, findsOneWidget);
-      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
-      expect(
-        tester.getSemantics(row),
-        matchesSemantics(
-          isButton: true,
-          hasTapAction: true,
-          hasFocusAction: true,
-          isFocusable: true,
-          label: AppL10n.of(tester.element(row)).addNote,
-        ),
-      );
+      final l10n = AppL10n.of(tester.element(find.byType(MidSetView)));
+
+      final row = await moreRow(tester, l10n.addNote);
+      expect(row, isNotNull);
+      expect(tester.getSize(row!).height, greaterThanOrEqualTo(48));
+      expect(find.bySemanticsLabel(RegExp(l10n.addNote)), findsWidgets);
 
       await tester.tap(row);
       await tester.pumpAndSettle();
@@ -467,4 +465,78 @@ void main() {
       semantics.dispose();
     });
   }
+
+  testWidgets('the top bar has only Pause, and Pause has Resume and End', (
+    tester,
+  ) async {
+    var ended = 0;
+    await tester.pumpWidget(
+      _host(
+        MidSetView(
+          end: SessionEnd(
+            setsLogged: 0,
+            onFinish: () {},
+            onDiscard: () => ended++,
+          ),
+          onClose: () {},
+          onChange: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('pause')), findsOneWidget);
+    expect(find.byKey(const ValueKey('session-end')), findsNothing);
+    expect(find.byIcon(Icons.close), findsNothing);
+    expect(find.byKey(const ValueKey('r07-change')), findsNothing);
+    expect(find.text('Resume'), findsNothing);
+
+    await openPause(tester);
+    expect(find.byKey(const ValueKey('pause-resume')), findsOneWidget);
+    expect(find.text('End workout'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('pause-resume')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('pause-resume')), findsNothing);
+
+    await openPause(tester);
+    await tester.tap(find.byKey(const ValueKey('pause-end')));
+    await tester.pumpAndSettle();
+    // Nothing logged yet, so End offers Discard and Keep going.
+    await tester.tap(find.byKey(const ValueKey('end-discard')));
+    await tester.pumpAndSettle();
+    expect(ended, 1);
+  });
+
+  testWidgets('every other tool is in the "…": change, all moves, cues', (
+    tester,
+  ) async {
+    var changed = 0;
+    var allMoves = 0;
+    await tester.pumpWidget(
+      _host(
+        MidSetView(
+          onChange: () => changed++,
+          onClose: () => allMoves++,
+          move: PlannedMove(
+            exerciseId: 'glute_bridge',
+            name: 'Glute bridge',
+            prescriptionLabel: '3 × 12',
+            cues: const ['Ribs down'],
+            sets: [
+              for (var i = 1; i <= 3; i++)
+                PrescribedSet(exerciseId: 'glute_bridge', order: i, reps: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Ribs down'), findsNothing);
+
+    await pickMore(tester, 'Change');
+    expect(changed, 1);
+    await pickMore(tester, 'All moves');
+    expect(allMoves, 1);
+    await pickMore(tester, 'Form cues');
+    expect(find.text('Ribs down'), findsOneWidget);
+  });
 }

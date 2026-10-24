@@ -1,4 +1,5 @@
-/// R09's rest controls: fifteen seconds less, fifteen more, and skip.
+/// R09's rest controls: fifteen seconds less, and fifteen more. "I'm ready" is
+/// the way to end the rest early.
 ///
 /// Each is a 48 point target with a spoken label that says what it does. They
 /// wrap onto a second line instead of overflowing at the largest text size or
@@ -20,13 +21,11 @@ class RestAdjustRow extends StatelessWidget {
     required this.clock,
     required this.onShorter,
     required this.onLonger,
-    required this.onSkip,
   });
 
   final ValueListenable<({Duration remaining, Duration total})> clock;
   final VoidCallback onShorter;
   final VoidCallback onLonger;
-  final VoidCallback? onSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +52,6 @@ class RestAdjustRow extends StatelessWidget {
               label: l10n.secondsSMore(step),
               semanticLabel: l10n.addSecondsSecondsToTheRest(step),
               onPressed: longer ? onLonger : null,
-            ),
-            _RestButton(
-              key: const ValueKey('r09-skip-rest'),
-              label: l10n.skipTimer,
-              semanticLabel: l10n.skipTimer,
-              onPressed: onSkip,
             ),
           ],
         );

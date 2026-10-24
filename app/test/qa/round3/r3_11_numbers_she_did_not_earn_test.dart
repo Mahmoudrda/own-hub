@@ -98,13 +98,28 @@ void main() {
         // may appear at exactly one remaining and nowhere else. R12 had this
         // guard already; R10, the screen she sees the moment she finishes a
         // workout, printed it at 0, 1, 2, 3 and 4 remaining.
-        expect(
-          claim.isNotEmpty,
-          AppRouter.progressStore.goal.sessionsTarget - done == 1,
-          reason:
-              '$id with $done of 4 done says '
-              '${claim.isEmpty ? "nothing" : claim.first}',
-        );
+        final target = AppRouter.progressStore.goal.sessionsTarget;
+        final oneLeft = target - done == 1;
+        if (id == 'R10') {
+          // R10 states the count itself, as its one hero figure ("3 of 4");
+          // the sentence is only ever allowed at exactly one remaining.
+          expect(
+            painted.contains('$done of $target'),
+            isTrue,
+            reason: 'R10 with $done of $target done shows "$week"',
+          );
+          if (claim.isNotEmpty) {
+            expect(oneLeft, isTrue, reason: 'R10 says ${claim.first}');
+          }
+        } else {
+          expect(
+            claim.isNotEmpty,
+            oneLeft,
+            reason:
+                '$id with $done of 4 done says '
+                '${claim.isEmpty ? "nothing" : claim.first}',
+          );
+        }
       }
     }
 

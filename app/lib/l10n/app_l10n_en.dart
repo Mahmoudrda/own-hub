@@ -9711,17 +9711,6 @@ class AppL10nEn extends AppL10n {
   String get gladYouShowedUpToday => 'Glad you showed up today.';
 
   @override
-  String countPluralOne1MoreAndThe(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count more and the week counts.',
-      one: '1 more and the week counts.',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get dayOneStartsWithYourNextSession =>
       'Day one starts with your next session.';
 
@@ -11067,16 +11056,6 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get scanYourMealWithTheCamera => 'Scan your meal with the camera';
-
-  @override
-  String get onePhotoForCaloriesAndProtein =>
-      'One photo for calories and protein';
-
-  @override
-  String get scanWithTheCameraInstead => 'Scan with the camera instead';
-
-  @override
   String get scan => 'Scan';
 
   @override
@@ -11256,9 +11235,6 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get switchPlanOrPickAnySession => 'Switch plan or pick any session';
-
-  @override
   String get saveAsMyWorkout => 'Save as my workout';
 
   @override
@@ -11281,9 +11257,6 @@ class AppL10nEn extends AppL10n {
   String deletedName(String name) {
     return 'Deleted $name';
   }
-
-  @override
-  String get editThisMove => 'Edit this move';
 
   @override
   String get moveEarlier => 'Move earlier';
@@ -11631,9 +11604,6 @@ class AppL10nEn extends AppL10n {
   @override
   String get nothingLoggedSoThisOneIsNot =>
       'Nothing logged, so this one is not counted.';
-
-  @override
-  String get dontShowThisKindAgain => 'Don\'t show this kind again';
 
   @override
   String get onlyMovesScreenedForYouAndStop =>
@@ -12137,13 +12107,6 @@ class AppL10nEn extends AppL10n {
   String get previewOfYourWorkoutCard => 'Preview of your workout card';
 
   @override
-  String get editWorkout => 'Edit workout';
-
-  @override
-  String get swapRemoveReorderOrAddMoves =>
-      'Swap, remove, reorder or add moves.';
-
-  @override
   String get reset => 'Reset';
 
   @override
@@ -12177,13 +12140,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get useThisMove => 'Use this move';
-
-  @override
-  String get buildMyOwnPlan => 'Build my own plan';
-
-  @override
-  String get startWithABlankPlanOrChange =>
-      'Start with a blank plan, or change one of the three splits to suit you.';
 
   @override
   String get startFromScratch => 'Start from scratch';
@@ -13120,10 +13076,6 @@ class AppL10nEn extends AppL10n {
   String iShareTheseAnswersWithNameMy(String name) {
     return 'I share these answers with $name, my coach.';
   }
-
-  @override
-  String get iUnderstandMyAnswersAreStoredIn =>
-      'I understand my answers are stored in Frankfurt, Germany.';
 
   @override
   String get sendRequest => 'Send request';
@@ -14822,4 +14774,124 @@ class AppL10nEn extends AppL10n {
   @override
   String get yourFirstNameIsOptionalYourCoach =>
       'Your first name is optional. Your coach sees it next to your answers.';
+
+  @override
+  String get iAgreeThatMyAnswersAreSent =>
+      'I agree that my answers are sent to Own Hub\'s servers in Frankfurt, Germany, outside Egypt, and stored there.';
+
+  @override
+  String get aPictureOfYourClientsWrittenAgreement =>
+      'A picture of your client\'s written agreement';
+
+  @override
+  String get onlyAWomanReviewerAtOwnHub =>
+      'Only a woman reviewer at Own Hub sees this. Add it before you send.';
+
+  @override
+  String get addHerWrittenAgreement => 'Add her written agreement';
+
+  @override
+  String get beforeYourFirstMessage => 'Before your first message';
+
+  @override
+  String get beRespectfulInsultsHarassmentAndHatefulWords =>
+      'Be respectful. Insults, harassment and hateful words are not allowed.';
+
+  @override
+  String get keepTheChatInOwnHubPhone =>
+      'Keep the chat in Own Hub. Phone numbers, links and payment details are not allowed, and the app stops these messages.';
+
+  @override
+  String get yourCoachSharesTrainingAndFoodIdeas =>
+      'Your coach shares training and food ideas. It is not medical advice. Ask your doctor about any health problem.';
+
+  @override
+  String get messagesAreStoredOnOwnHubsServers =>
+      'Messages are stored on Own Hub\'s servers. If a message is reported, Own Hub staff can read it. You can report or block anyone from the menu.';
+
+  @override
+  String get iHaveReadTheseRulesAndI =>
+      'I have read these rules and I agree to follow them.';
+
+  @override
+  String get agreeAndSend => 'Agree and send';
+
+  @override
+  String get weCouldNotSaveYourAnswerTry =>
+      'We could not save your answer. Try again.';
+
+  @override
+  String get onTurnOffAndYourMealPhotos =>
+      'On. Turn off and your meal photos stop going to Google.';
+
+  @override
+  String get offYouAreAskedAgainBeforeYour =>
+      'Off. You are asked again before your next meal photo.';
+
+  @override
+  String get weCouldNotTurnThisOffTry =>
+      'We could not turn this off. Try again.';
+
+  @override
+  String get progress => 'Progress';
+
+  @override
+  String get activities => 'Activities';
+
+  @override
+  String get seeMore => 'See more';
+
+  @override
+  String get sessionsThisWeek => 'Sessions this week';
+
+  @override
+  String get addAPictureOfYourClientsWritten =>
+      'Add a picture of your client\'s written agreement.';
+
+  @override
+  String get mealPhotosSentToGoogleToRead =>
+      'Meal photos sent to Google to read the food';
+
+  @override
+  String get editToday => 'Edit today';
+
+  @override
+  String get shortVersion => 'Short version';
+
+  @override
+  String get a10MinuteWalk => 'A 10-minute walk';
+
+  @override
+  String get doMyOwnPlanInstead => 'Do my own plan instead';
+
+  @override
+  String eatenOfTargetKcal(String eaten, String target) {
+    return '$eaten of $target kcal';
+  }
+
+  @override
+  String setNOfTotal(String n, String total) {
+    return 'Set $n of $total';
+  }
+
+  @override
+  String get plates => 'Plates';
+
+  @override
+  String get allMoves => 'All moves';
+
+  @override
+  String get nextMove => 'Next move';
+
+  @override
+  String get seeDetails => 'See details';
+
+  @override
+  String get editMoves => 'Edit moves';
+
+  @override
+  String get yourPlan => 'Your plan';
+
+  @override
+  String get gentler => 'Gentler';
 }

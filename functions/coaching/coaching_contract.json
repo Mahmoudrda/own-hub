@@ -437,11 +437,42 @@
       "other"
     ]
   },
+  "consentTexts": {
+    "about": "Words the app shows beside each tick, per consent version and language, oldest first. The server accepts only the hash of one of these; when a text changes, add the new text to the end and keep the old one for the app versions still in use. The share text has {name}, the coach's display name.",
+    "coachingRequest2": {
+      "en": {
+        "share": [
+          "I share these answers with {name}, my coach."
+        ],
+        "transfer": [
+          "I agree that my answers are sent to Own Hub's servers in Frankfurt, Germany, outside Egypt, and stored there."
+        ]
+      },
+      "ar": {
+        "share": [
+          "أنا بشارك الإجابات دي مع {name}، مدرّبتي."
+        ],
+        "transfer": [
+          "موافقة إن إجاباتي تتبعت وتتخزّن على سيرفرات Own Hub في فرانكفورت بألمانيا، يعني برّه مصر."
+        ]
+      }
+    },
+    "chatRules1": {
+      "en": [
+        "Before your first message\nBe respectful. Insults, harassment and hateful words are not allowed.\nKeep the chat in Own Hub. Phone numbers, links and payment details are not allowed, and the app stops these messages.\nYour coach shares training and food ideas. It is not medical advice. Ask your doctor about any health problem.\nMessages are stored on Own Hub's servers. If a message is reported, Own Hub staff can read it. You can report or block anyone from the menu.\nI have read these rules and I agree to follow them."
+      ],
+      "ar": [
+        "قبل أول رسالة ليكي\nاحترمي التانيين. الشتيمة والمضايقة والكلام الكاره مش مسموحين.\nخلّي الكلام جوّه Own Hub. أرقام التليفون واللينكات وبيانات الدفع مش مسموحة، والتطبيق بيوقّف الرسايل دي.\nالمدرّبة بتشاركك أفكار تمرين وأكل. ده مش نصيحة طبية. اسألي دكتورك عن أي مشكلة صحية.\nالرسايل بتتحفظ على سيرفرات Own Hub. لو حد بلّغ عن رسالة، فريق Own Hub يقدر يقراها. تقدري تبلّغي أو تحظري أي حد من القايمة.\nقرأت القواعد دي وموافقة ألتزم بيها.",
+        "قبل أول رسالة ليكي\nاحترمي التانيين. الشتيمة والمضايقة والكلام الكاره مش مسموحين.\nخلّي الكلام جوّه Own Hub. أرقام التليفون واللينكات وبيانات الدفع مش مسموحة، والتطبيق بيوقّف الرسايل دي.\nالمدرّبة بتشاركك أفكار تمرين وأكل. ده مش نصيحة طبية. اسألي دكتورك عن أي مشكلة صحية.\nالرسايل بتتحفظ على سيرفرات Own Hub. لو حد بلّغ عن رسالة، فريق Own Hub يقدر يقراها. تقدري تبلّغي أو تحظري أي حد من القايمة.\nقريت القواعد دي وموافقة ألتزم بيها."
+      ]
+    }
+  },
   "consents": {
     "coachTerms": "users/{uid}/consents/coach-terms-v1",
     "coachingShare": "users/{uid}/consents/coaching-share-v1",
-    "paymentProof": "users/{uid}/consents/payment-proof-v1",
     "transferAbroad": "users/{uid}/consents/transfer-abroad-v1",
+    "coachingRequest": "users/{uid}/consents/coaching-request-v2-{subId}",
+    "paymentProof": "users/{uid}/consents/payment-proof-v1",
     "fields": [
       "version",
       "at",
@@ -1120,6 +1151,7 @@
         "coachUid",
         "packageId",
         "intake",
+        "consent",
         "locale",
         "clientName"
       ],
@@ -1422,6 +1454,20 @@
         "ok"
       ]
     },
+    "accept_chat_rules": {
+      "who": "verified member, before her first coaching message",
+      "module": "coaching.chat.accept_rules",
+      "requestKeys": [
+        "version",
+        "textHash",
+        "locale",
+        "appVersion"
+      ],
+      "responseKeys": [
+        "ok"
+      ],
+      "note": "Recorded once at users/{uid}/consents/chat-rules-v1; ticking again changes nothing."
+    },
     "add_portfolio_media": {
       "who": "coach (active)",
       "module": "coaching.media.add",
@@ -1429,6 +1475,7 @@
         "kind",
         "beforePath",
         "afterPath",
+        "consentPath",
         "weeks",
         "note",
         "clientConsentPublic",
@@ -1456,7 +1503,8 @@
       "who": "coach (active)",
       "module": "coaching.media.confirm_consent",
       "requestKeys": [
-        "mediaId"
+        "mediaId",
+        "consentPath"
       ],
       "responseKeys": [
         "status"

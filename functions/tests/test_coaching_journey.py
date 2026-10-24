@@ -19,6 +19,7 @@ from tests.test_coaching_applications import all_paths, valid
 from tests.test_coaching_plans import IDS, meal, workout
 from tests.test_coaching_subscriptions import (
     codes,
+    consent,
     intake,
     keep,
     make_jpeg,
@@ -99,7 +100,7 @@ class World:
     def request(self, uid, package_id, now=T0):
         source = codes()
         return subscriptions.request(
-            self.db, uid, {"coachUid": COACH, "packageId": package_id, "intake": intake(), "locale": "en"},
+            self.db, uid, {"coachUid": COACH, "packageId": package_id, "intake": intake(), "consent": consent(name="Mona"), "locale": "en"},
             live=True, payments_live=True, verified=True, now=now, notify=self.pushes, code=lambda: next(source),
         )
 

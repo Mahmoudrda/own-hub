@@ -417,6 +417,37 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
   }
 
   @override
+  Future<bool> chatRulesAccepted() async {
+    final me = _requireUid();
+    try {
+      final snap = await _db
+          .collection('users')
+          .doc(me)
+          .collection('consents')
+          .doc('chat-rules-v1')
+          .get();
+      return snap.exists;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> acceptChatRules({
+    required String rulesText,
+    required String locale,
+  }) async {
+    await _call(
+      CoachingCallables.acceptChatRules,
+      CoachingRequests.acceptChatRules(
+        rulesText: rulesText,
+        locale: locale,
+        appVersion: kAppVersion,
+      ),
+    );
+  }
+
+  @override
   Future<void> markThreadRead(String relId) async {
     try {
       await _call(CoachingCallables.markThreadRead, <String, Object?>{
@@ -681,6 +712,7 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
     required String coachUid,
     required String packageId,
     required Intake intake,
+    required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
   }) async {
@@ -690,6 +722,7 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
         coachUid: coachUid,
         packageId: packageId,
         intake: intake,
+        consent: consent,
         locale: locale,
         clientName: clientName,
       ),
@@ -921,9 +954,10 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
   }
 
   @override
-  Future<void> confirmMediaConsent(String mediaId) async {
+  Future<void> confirmMediaConsent(String mediaId, String consentPath) async {
     await _call(PortfolioMediaCallables.confirmConsent, <String, Object?>{
       'mediaId': mediaId,
+      'consentPath': consentPath,
     });
   }
 

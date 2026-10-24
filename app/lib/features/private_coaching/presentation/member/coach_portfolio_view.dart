@@ -5,10 +5,12 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../../../app_state/private_coaching_state.dart';
+import '../../../account/domain/safety.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
+import '../../../../ui/app_overflow_menu.dart';
 import '../../../../ui/app_pill.dart';
 import '../../../../ui/app_scaffold.dart';
 import '../../../../ui/hand/skeleton.dart';
@@ -16,6 +18,7 @@ import '../../data/coaching_repository.dart';
 import '../../domain/approved_media.dart';
 import '../../domain/portfolio_media.dart';
 import '../../domain/coach_profile.dart';
+import '../chat/chat_sheets.dart' show confirmBlock;
 import '../coaching_when.dart';
 import 'coach_card.dart';
 import 'coach_image.dart';
@@ -32,6 +35,7 @@ class CoachPortfolioView extends StatelessWidget {
     this.preview = false,
     this.repository,
     this.declaredAllergies = const <String>[],
+    this.blocks,
     this.onBack,
   });
 
@@ -51,7 +55,24 @@ class CoachPortfolioView extends StatelessWidget {
 
   /// Wire names of the allergies on her profile, to prefill the join sheet.
   final List<String> declaredAllergies;
+
+  /// The app's block list. Without it the menu has no Block.
+  final BlockService? blocks;
   final VoidCallback? onBack;
+
+  Future<void> _block(BuildContext context) async {
+    final service = blocks;
+    if (service == null) return;
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final navigator = Navigator.of(context);
+    if (!await confirmBlock(context, coach.displayName)) return;
+    await service.block(coach.uid, BlockSource.profile);
+    messenger?.showSnackBar(
+      SnackBar(content: Text(l10n.nameIsBlocked(coach.displayName))),
+    );
+    await navigator.maybePop();
+  }
 
   Widget _heading(String text) => Semantics(
     header: true,
@@ -75,7 +96,23 @@ class CoachPortfolioView extends StatelessWidget {
       for (final k in coach.languages) languageLabel(l10n, k),
     ].join(coachListSep(l10n));
     return AppScaffold(
-      appBar: AppTopBar(title: l10n.coachProfile, onBack: onBack),
+      appBar: AppTopBar(
+        title: l10n.coachProfile,
+        onBack: onBack,
+        actions: [
+          if (!ownPage && blocks != null)
+            AppOverflowMenu(
+              color: AppColors.ink,
+              items: [
+                AppOverflowItem(
+                  icon: Icons.block,
+                  label: l10n.block,
+                  onTap: () => _block(context),
+                ),
+              ],
+            ),
+        ],
+      ),
       children: [
         if (preview)
           AppCard(
@@ -440,10 +477,12 @@ class LiveCoachPortfolioView extends StatelessWidget {
     this.repository,
     this.declaredAllergies = const <String>[],
     this.preview = false,
+    this.blocks,
     this.onBack,
   });
 
   final String coachUid;
+  final BlockService? blocks;
   final CoachingRepository? repository;
   final List<String> declaredAllergies;
   final bool preview;
@@ -481,6 +520,7 @@ class LiveCoachPortfolioView extends StatelessWidget {
               repository: repo,
               declaredAllergies: declaredAllergies,
               preview: preview,
+              blocks: blocks,
               onBack: onBack,
             ),
           ),

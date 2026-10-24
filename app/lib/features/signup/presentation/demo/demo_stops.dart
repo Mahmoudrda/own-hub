@@ -17,6 +17,7 @@ import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
+import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_pill.dart';
 import '../../../../ui/app_scaffold.dart';
 
@@ -25,7 +26,11 @@ import '../../../eat/domain/allergy_guard.dart';
 import '../../../eat/domain/recipe.dart';
 import '../../../eat/presentation/recipes_view.dart';
 import '../../../eat/presentation/week_plan_view.dart';
-import '../../../progress/presentation/progress_view.dart';
+import '../../../../domain/format/day_key.dart';
+import '../../../../domain/format/number_label.dart';
+import '../../../progress/presentation/you_view.dart';
+import '../../../train/presentation/move_history_sheet.dart'
+    show sessionDateLabel;
 import '../../../today/presentation/today_view.dart';
 import '../../../train/presentation/mid_set_view.dart';
 import '../../../train/presentation/workout_day_view.dart';
@@ -130,12 +135,13 @@ class DemoWiring {
   /// Opens the first of Rahma's recipes, or the join sheet for any other.
   final ValueChanged<String> openRecipe;
 
-  /// The bottom bar, as the tour reads it: Home, Train and Eat are stops, and
-  /// anything else is a door she joins to open.
+  /// The bottom bar, as the tour reads it: Home, Train, Eat and You are
+  /// stops, and anything else is a door she joins to open.
   void tab(String screenId) => switch (screenId) {
     'T01' => show(DemoStop.home),
     'R01' => show(DemoStop.workoutDay),
     'E01' => show(DemoStop.recipes),
+    'P01' => show(DemoStop.progress),
     _ => join(),
   };
 }
@@ -155,11 +161,12 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
       onStartSession: () => w.show(DemoStop.workoutDay),
       onRecall: join,
       onOpenMeal: join,
-      onOpenPlate: join,
-      onLogPlate: (_) => join(),
+      // Joining is asked for, never the real plan editor or Train.
+      onEditToday: join,
+      onChangePlan: join,
+      onShortVersion: join,
       onOpenWeek: () => w.show(DemoStop.progress),
       onOpenCycle: () => w.show(DemoStop.cycle),
-      onOpenProfile: join,
       onAsk: join,
       onNotifications: join,
       onOpenFirstWeek: join,
@@ -235,16 +242,34 @@ Widget buildDemoStop(BuildContext context, DemoStop stop, DemoWiring w) {
       onBack: () => w.show(DemoStop.weekPlan),
       onJoin: join,
     ),
-    DemoStop.progress => ProgressView(
+    // P01 is You, the last tab. Its figures and its sessions are the sample's:
+    // one session this week, and the earlier ones the progress counts. Every
+    // door in it is the join sheet.
+    DemoStop.progress => YouView(
       summary: sample.progress,
-      firstWeek: sample.today.day.arc,
-      onBack: () => w.show(DemoStop.cycle),
-      onOpenMilestones: join,
-      onOpenBests: join,
-      onOpenBody: join,
-      onOpenFirstWeek: join,
-      onOpenRestWeek: join,
-      onOpenTierSlip: join,
+      minutesThisWeek:
+          DemoSample.sessionMinutes * sample.progress.sessionsThisWeek,
+      activities: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: kStackGap,
+        children: [
+          for (final ago in DemoSample.sessionDaysAgo)
+            AppListItem(
+              key: ValueKey('demo-session-$ago'),
+              title: day.title,
+              subtitle:
+                  '${sessionDateLabel(l10n, dayKey(sample.now.subtract(Duration(days: ago))))} · '
+                  '${l10n.nMin(countLabel(DemoSample.sessionMinutes))}',
+              leading: const Icon(
+                Icons.history,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: join,
+            ),
+        ],
+      ),
+      onOpenSettings: join,
+      onOpenInsights: join,
       onSelectTab: w.tab,
     ),
   };

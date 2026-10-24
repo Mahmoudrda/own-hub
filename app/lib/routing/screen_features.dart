@@ -88,6 +88,7 @@ const Map<String, Feature> kScreenFeatures = {
   'P04': Feature.bodyPrivately,
   'P05': Feature.shareCard,
   'P06': Feature.muscleMap,
+  'P07': Feature.progress,
 
   // My cycle. Settings (`Y12`) and logging a period (`Y09`) stay on the
   // cycle itself, so switching a part off never takes her settings away.

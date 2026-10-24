@@ -17,15 +17,14 @@ import 'round1_harness.dart';
 
 void main() {
   useShippingApp();
-  testWidgets('R1-19/R1-20 log a meal from E01 and read E04', (t) async {
+  testWidgets('R1-19/R1-20 log a meal from E02 and read E04', (t) async {
     phone(t);
     final s = t.ensureSemantics();
     AppRouter.intakeRepository.markSetupDone();
-    await open(t, appDestinations['E01']!.name, locale: const Locale('en'));
-    final row = tappables(t).firstWhere(
-      (e) => e.label.startsWith('Add ') && e.label.contains('Koshari'),
-    );
-    t.semantics.tap(find.semantics.byPredicate((n) => n.id == row.id));
+    await open(t, appDestinations['E02']!.name, locale: const Locale('en'));
+    await t.tap(find.byKey(const ValueKey('result-koshari_bowl')));
+    await settle(t);
+    await t.tap(find.byKey(const ValueKey('portion-add')));
     await settle(t);
     print(
       'after tapping the Koshari row: top=${topScreen(t)} snacks=${find.byType(SnackBar).evaluate().length}',

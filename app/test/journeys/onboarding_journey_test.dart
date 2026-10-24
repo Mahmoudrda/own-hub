@@ -31,6 +31,7 @@ import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/ui/app_button.dart';
+import 'package:own_hub/ui/app_nav_bar.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
@@ -43,6 +44,15 @@ Future<void> _launch(WidgetTester tester) async {
   _phone(tester);
   await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
   await tester.pumpAndSettle();
+}
+
+/// Her profile: the You tab, then the gear at the top of it.
+Future<void> _openProfile(WidgetTester tester) async {
+  await _tap(
+    tester,
+    find.descendant(of: find.byType(AppNavBar), matching: find.text('You')),
+  );
+  await _tap(tester, find.byKey(const ValueKey('you-settings')));
 }
 
 Future<void> _tap(WidgetTester tester, Finder target) async {
@@ -258,7 +268,7 @@ void main() {
       expect(AppRouter.intakeRepository.setupDone, isTrue);
 
       // Her profile, and the row that deletes everything.
-      await _tap(tester, find.bySemanticsLabel('Your profile'));
+      await _openProfile(tester);
       expect(find.byType(ProfileView), findsOneWidget);
       await _tap(tester, find.text('Privacy and data'));
       await _tap(tester, find.text('Your data'));
@@ -355,7 +365,7 @@ void main() {
       await _launch(tester);
       expect(find.byType(TodayView), findsOneWidget);
 
-      await _tap(tester, find.bySemanticsLabel('Your profile'));
+      await _openProfile(tester);
       expect(find.text('Your profile'), findsWidgets);
 
       await _tap(tester, find.text('Your training'));
@@ -391,7 +401,7 @@ void main() {
       // dead on the screen a woman most often wants to leave.
       AppRouter.intakeRepository.markSetupDone();
       await _launch(tester);
-      await _tap(tester, find.bySemanticsLabel('Your profile'));
+      await _openProfile(tester);
       expect(find.byType(ProfileView), findsOneWidget);
 
       await _tap(tester, find.text('Home'));

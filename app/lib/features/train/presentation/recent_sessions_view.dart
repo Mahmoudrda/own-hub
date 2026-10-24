@@ -26,7 +26,11 @@ class RecentSessionsView extends StatefulWidget {
     required this.nameFor,
     required this.onSessionEdited,
     this.onBack,
+    this.embedded = false,
   });
+
+  /// True inside another screen (You › Activities): only the rows, no page.
+  final bool embedded;
 
   final InMemoryTrainRepository repository;
   final String Function(String exerciseId) nameFor;
@@ -98,33 +102,41 @@ class _RecentSessionsViewState extends State<RecentSessionsView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final rows = _rows();
+    final items = <Widget>[
+      if (rows.isEmpty)
+        AppEmptyState(
+          icon: Icons.history,
+          title: l10n.noFinishedSessionsYet,
+          body: l10n.sessionsYouFinishShowUpHereAnd,
+        )
+      else
+        for (final r in rows)
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: AppListItem(
+              key: ValueKey('recent-${r.session.id}'),
+              title: r.title,
+              subtitle:
+                  '${sessionDateLabel(l10n, r.session.dateKey)} · '
+                  '${l10n.movesMovesSetsSets(countLabel(r.moves), countLabel(r.sets))}',
+              leading: const Icon(
+                Icons.history,
+                color: AppColors.onSurfaceVariant,
+              ),
+              onTap: () => _open(r.session, r.title),
+            ),
+          ),
+    ];
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: items,
+      );
+    }
     return AppScaffold(
       appBar: AppTopBar(title: l10n.recentSessions, onBack: widget.onBack),
-      children: [
-        if (rows.isEmpty)
-          AppEmptyState(
-            icon: Icons.history,
-            title: l10n.noFinishedSessionsYet,
-            body: l10n.sessionsYouFinishShowUpHereAnd,
-          )
-        else
-          for (final r in rows)
-            ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 48),
-              child: AppListItem(
-                key: ValueKey('recent-${r.session.id}'),
-                title: r.title,
-                subtitle:
-                    '${sessionDateLabel(l10n, r.session.dateKey)} · '
-                    '${l10n.movesMovesSetsSets(countLabel(r.moves), countLabel(r.sets))}',
-                leading: const Icon(
-                  Icons.history,
-                  color: AppColors.onSurfaceVariant,
-                ),
-                onTap: () => _open(r.session, r.title),
-              ),
-            ),
-      ],
+      children: items,
     );
   }
 }

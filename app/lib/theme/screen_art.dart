@@ -172,6 +172,7 @@ abstract final class ScreenArt {
     // What she has at home.
     'O06': [AppArt.dumbbells],
     'P01': [AppArt.running],
+    'P07': [AppArt.running],
     'P02': [AppArt.strongArms],
     'P03': [AppArt.overheadRaise],
     'P04': [AppArt.meditation],

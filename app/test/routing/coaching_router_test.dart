@@ -148,11 +148,11 @@ void main() {
   });
 
   group('the member side', () {
-    testWidgets('Train -> Find a coach -> portfolio', (tester) async {
+    testWidgets('You -> Find a coach -> portfolio', (tester) async {
       _repo.coaches.value = [coach('c9', 'Coach Nour')];
       PrivateCoachingState.instance.start(_repo);
       await _boot(tester);
-      await _open(tester, 'R01');
+      await _open(tester, 'P01');
       final l10n = await AppL10n.delegate.load(const Locale('en'));
       await tester.scrollUntilVisible(
         find.text(l10n.findACoach),

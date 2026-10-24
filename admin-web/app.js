@@ -27,6 +27,7 @@ const state = {
   calDay: L.cairoDayKey(new Date().toISOString()),
   settings: { firstName: "", listed: false, availability: [], slotMinutes: 15 },
   phones: [],
+  phonesNeedTick: [],
   phonesLoaded: false,
   reschedule: null,
   declineArmed: null,
@@ -283,12 +284,21 @@ function card(row, i) {
 
 /* approve and revoke: each handler has exactly one call site per callable */
 
+/* Nothing here checks an ID number, so the reviewer says she saw proof of age. */
+function confirmAdult(id = "adult-seen") {
+  const box = $(id);
+  if (box.checked) return true;
+  notice("Tick the box to say you have seen proof of age 18 or older.");
+  box.focus();
+  return false;
+}
+
 async function approveOne(uid, reason) {
-  return call("approve_user", { uid, reason });
+  return call("approve_user", { uid, reason, adultSeen: true });
 }
 
 async function approveMany(uids) {
-  return call("approve_users", { uids });
+  return call("approve_users", { uids, adultSeen: true });
 }
 
 async function revokeOne(uid) {
@@ -304,11 +314,12 @@ async function onKnown(uid) {
 }
 
 async function runApproval(uid, reason) {
-  if (state.busy.has(uid)) return;
+  if (state.busy.has(uid) || !confirmAdult()) return;
   state.busy.add(uid);
   renderQueue();
   try {
     await approveOne(uid, reason);
+    $("adult-seen").checked = false;
     startUndo([uid], "Approved.");
   } catch (e) {
     notice(friendly(e));
@@ -320,11 +331,12 @@ async function runApproval(uid, reason) {
 
 async function onApproveSelected() {
   const uids = [...state.selected];
-  if (!uids.length) return;
+  if (!uids.length || !confirmAdult()) return;
   uids.forEach((u) => state.busy.add(u));
   renderQueue();
   try {
     const result = await approveMany(uids);
+    $("adult-seen").checked = false;
     const done = result?.approved ?? [];
     const failed = result?.failed ?? [];
     state.selected = new Set();
@@ -538,7 +550,9 @@ async function loadPhones() {
     setBusy($("phones-list"), true);
   }
   try {
-    state.phones = (await call("list_preapproved_phones", {})).phones ?? [];
+    const listed = await call("list_preapproved_phones", {});
+    state.phones = listed.phones ?? [];
+    state.phonesNeedTick = listed.needsAgeTick ?? [];
     state.phonesLoaded = true;
     notice("");
   } catch (e) {
@@ -548,12 +562,18 @@ async function loadPhones() {
   renderPhones();
 }
 
+function setPhones(res) {
+  state.phones = res.phones ?? state.phones;
+  state.phonesNeedTick = res.needsAgeTick ?? state.phonesNeedTick;
+}
+
 function renderPhones() {
   const list = $("phones-list");
   setBusy(list, false);
   list.replaceChildren(...state.phones.map((p, i) => h("li", { class: "item", vars: { "--i": Math.min(i, 8) } },
     h("div", { class: "item-head" },
-      h("div", { class: "who" }, h("div", { class: "name phone", text: p })),
+      h("div", { class: "who" }, h("div", { class: "name phone", text: p }),
+        L.phoneAgeNote(p, state.phonesNeedTick) ? h("div", { class: "sub", text: L.phoneAgeNote(p, state.phonesNeedTick) }) : null),
       h("button", { class: "btn", type: "button", "aria-label": `Remove ${p}`, onclick: () => removePhone(p) }, "Remove")))));
   if (state.phones.length) $("phones-empty").hidden = true;
   else setEmpty($("phones-empty"), { title: "No numbers yet.", hint: "Paste the numbers above and press Add numbers. Anyone who signs in with one of them is approved at once.", art: "drawer" });
@@ -563,9 +583,11 @@ function renderPhones() {
 async function addPhones() {
   const phones = L.parsePhoneList($("phones-input").value);
   if (!phones.length) { notice("No valid numbers found. A number has 7 to 15 digits, with or without +."); $("phones-input").focus(); return; }
+  if (!confirmAdult("adult-seen-phones")) return;
   try {
-    state.phones = (await call("set_preapproved_phones", { add: phones.join(", ") })).phones ?? state.phones;
+    setPhones(await call("set_preapproved_phones", { add: phones.join(", "), adultSeen: true }));
     $("phones-input").value = "";
+    $("adult-seen-phones").checked = false;
     $("phones-preview").textContent = "";
     notice(`Added ${phones.length}.`, true);
   } catch (e) {
@@ -576,9 +598,9 @@ async function addPhones() {
 
 async function removePhone(phone) {
   try {
-    state.phones = (await call("set_preapproved_phones", { remove: [phone] })).phones ?? state.phones;
+    setPhones(await call("set_preapproved_phones", { remove: [phone] }));
     startUndo([phone], `Removed ${phone}.`, async () => {
-      state.phones = (await call("set_preapproved_phones", { add: phone })).phones ?? state.phones;
+      setPhones(await call("set_preapproved_phones", L.restorePhonesRequest([phone])));
     });
   } catch (e) {
     notice(friendly(e));

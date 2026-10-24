@@ -31,6 +31,8 @@ USER_CALLABLES = (
     "create_coach_invite",
     "accept_coach_invite",
     "record_meal_photo_consent",
+    "withdraw_meal_photo_consent",
+    "record_consent_choice",
     "analyze_meal_photo",
     "claim_fast_verification",
     "list_reviewers",

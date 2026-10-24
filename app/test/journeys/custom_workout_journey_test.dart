@@ -10,6 +10,8 @@ import 'package:own_hub/features/train/domain/custom_workout.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 
+import '../helpers/pause_menu.dart';
+
 Future<void> _open(WidgetTester tester, String id) async {
   tester.view.physicalSize = const Size(1170, 4200);
   tester.view.devicePixelRatio = 3.0;
@@ -46,8 +48,14 @@ void main() {
     tester,
   ) async {
     await _open(tester, 'R03');
-    await tester.tap(find.byKey(const ValueKey('r03-edit-0')));
+    // Move 0 offers Sets and reps (and more), in the sheet its row opens.
+    await tester.tap(find.byKey(const ValueKey('r03-move-0')));
     await tester.pumpAndSettle();
+    final sets = find.byKey(const ValueKey('r03-move-Sets and reps'));
+    if (sets.evaluate().isNotEmpty) {
+      await tester.tap(sets);
+      await tester.pumpAndSettle();
+    }
     await tester.tap(find.byKey(const ValueKey('edit-sets-up')));
     await tester.pumpAndSettle();
 
@@ -68,8 +76,11 @@ void main() {
 
   testWidgets('Save as my workout keeps a copy under her name', (tester) async {
     await _open(tester, 'R03');
-    await tester.ensureVisible(find.byKey(const ValueKey('r03-save-mine')));
-    await tester.tap(find.byKey(const ValueKey('r03-save-mine')));
+    await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('overflow-row-Save as my workout')),
+    );
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const ValueKey('name-sheet-field')),
@@ -100,6 +111,9 @@ void main() {
       ),
     );
     await _open(tester, 'R01');
+    // Her list opens from the "My workouts" row.
+    await tester.tap(find.byKey(const ValueKey('r01-open-my-workouts')));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const ValueKey('r01-mine-mine1')));
     await tester.tap(find.byKey(const ValueKey('r01-mine-mine1')));
     await tester.pumpAndSettle();
@@ -111,22 +125,9 @@ void main() {
 
     var guard = 0;
     while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-      final all = find.textContaining('I did');
-      if (all.evaluate().isEmpty) break;
-      await tester.tap(all.first);
-      await tester.pumpAndSettle();
-      final next = find.text('Next move');
-      if (next.evaluate().isEmpty) break;
-      await tester.tap(next);
-      await tester.pumpAndSettle();
+      if (!await logWholeMove(tester)) break;
     }
-    final finish = find.byKey(const ValueKey('r13-finish-here'));
-    if (finish.evaluate().isNotEmpty) {
-      await tester.tap(finish);
-      await tester.pump();
-      if (finish.evaluate().isNotEmpty) await tester.tap(finish);
-      await tester.pumpAndSettle();
-    }
+    if (WorkoutSessionState.instance.day != null) await finishEarly(tester);
 
     expect(_weekOnHome, before + 1, reason: 'a custom session is a session');
     expect(state.draft, isNull);

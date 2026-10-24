@@ -87,9 +87,9 @@ const bytes = (n) => new Uint8Array(n);
 const put = (s, path, n, contentType) =>
   uploadBytes(ref(s, path), bytes(n), contentType ? { contentType } : undefined);
 
-async function seed(path, contentType = 'image/jpeg') {
+async function seed(path, contentType = 'image/jpeg', customMetadata = undefined) {
   await env.withSecurityRulesDisabled(async (ctx) => {
-    await uploadBytes(ref(store(ctx), path), bytes(16), { contentType });
+    await uploadBytes(ref(store(ctx), path), bytes(16), { contentType, customMetadata });
   });
 }
 
@@ -209,6 +209,19 @@ test('only the owner deletes a coach file', async () => {
   await assertFails(deleteObject(ref(admin(), `coach-docs/${HER}/certificates/a.jpg`)));
   await assertFails(deleteObject(ref(reviewer(), `coach-docs/${HER}/certificates/a.jpg`)));
   await assertSucceeds(deleteObject(ref(her({}), `coach-docs/${HER}/certificates/a.jpg`)));
+});
+
+test('a coach file the service locked (attached to a portfolio item) cannot be deleted or replaced, a draft can', async () => {
+  const locked = `coach-docs/${HER}/transformations/release.jpg`;
+  const draft = `coach-docs/${HER}/transformations/draft.jpg`;
+  await seed(locked, 'image/jpeg', { locked: 'true' });
+  await seed(draft);
+  await assertFails(deleteObject(ref(her(), locked)));
+  await assertFails(put(her(), locked, 1024, 'image/jpeg'));
+  await assertSucceeds(getBytes(ref(her(), locked)));
+  await assertSucceeds(put(her(), draft, 1024, 'image/jpeg'));
+  await assertSucceeds(deleteObject(ref(her(), draft)));
+  await assertSucceeds(put(her(), `coach-docs/${HER}/transformations/new.jpg`, 1024, 'image/jpeg'));
 });
 
 // ----------------------------------------------------------- coach-public

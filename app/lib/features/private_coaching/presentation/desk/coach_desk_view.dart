@@ -239,7 +239,9 @@ class _CoachDeskViewState extends State<CoachDeskView> {
           _RequestCard(
             request: request,
             busy: _busy.contains(request.id),
-            onAccept: () => _respond(request, accept: true),
+            onAccept: () => (request.intake?.anyHealthYes ?? false)
+                ? _openRequest(request)
+                : _respond(request, accept: true),
             onDecline: () => _decline(request),
             onOpen: () => _openRequest(request),
           ),

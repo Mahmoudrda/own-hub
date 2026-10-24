@@ -10,10 +10,12 @@ import '../../../../ui/app_button.dart';
 import '../../../../ui/app_chip_row.dart';
 import '../../../../ui/app_sheet.dart';
 import '../../../account/presentation/allergen_labels.dart';
+import '../../../signup/domain/legal_acceptance.dart' show kAppVersion;
 import '../../data/coaching_repository.dart';
 import '../../domain/coach_profile.dart';
 import '../../domain/coaching_contract.dart';
 import '../../domain/coaching_failure.dart';
+import '../../domain/requests.dart';
 import '../../domain/subscription.dart';
 import 'coach_labels.dart';
 
@@ -153,6 +155,13 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
         coachUid: widget.coach.uid,
         packageId: widget.package.id,
         intake: _intake(),
+        consent: CoachingRequests.requestConsent(
+          shareText: l10n.iShareTheseAnswersWithNameMy(
+            widget.coach.displayName,
+          ),
+          transferText: l10n.iAgreeThatMyAnswersAreSent,
+          appVersion: kAppVersion,
+        ),
         locale: locale,
         clientName: _name.text.trim(),
       );
@@ -385,7 +394,7 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
           ),
           _tick(
             _stored,
-            l10n.iUnderstandMyAnswersAreStoredIn,
+            l10n.iAgreeThatMyAnswersAreSent,
             (v) => setState(() => _stored = v),
           ),
           if (!_ready)

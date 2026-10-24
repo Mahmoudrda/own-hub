@@ -132,6 +132,7 @@ abstract class CoachingRepository {
     required String coachUid,
     required String packageId,
     required Intake intake,
+    required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
   });
@@ -224,7 +225,7 @@ abstract class CoachingRepository {
 
   /// She confirms her client agreed in writing, for an item that came from
   /// her application.
-  Future<void> confirmMediaConsent(String mediaId);
+  Future<void> confirmMediaConsent(String mediaId, String consentPath);
 
   /// Uploads a file to `coach-docs/{uid}/{folder}/{random}.{ext}` in the
   /// personal bucket and returns the path.

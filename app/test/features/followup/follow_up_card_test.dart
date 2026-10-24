@@ -245,24 +245,21 @@ void main() {
   });
 
   group('the way out', () {
-    testWidgets('Not now hides the kind until tomorrow', (tester) async {
+    testWidgets('the one close hides the kind until tomorrow', (tester) async {
       _phone(tester);
       await tester.pumpWidget(_host(_card(_back)));
-      await tester.tap(find.text('Not now'));
+      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.text('Not now'), findsNothing);
+      expect(find.text("Don't show this kind again"), findsNothing);
+      await tester.tap(
+        find.byKey(const ValueKey('follow-up-not-now-comeBack')),
+      );
       await tester.pump();
       expect(
         FollowUpState.instance.notBefore[FollowUpKind.comeBack],
         '2026-10-17',
       );
       expect(FollowUpState.instance.muted, isEmpty);
-    });
-
-    testWidgets("Don't show this kind again mutes it", (tester) async {
-      _phone(tester);
-      await tester.pumpWidget(_host(_card(_food)));
-      await tester.tap(find.text("Don't show this kind again"));
-      await tester.pump();
-      expect(FollowUpState.instance.muted, {FollowUpKind.food});
     });
   });
 

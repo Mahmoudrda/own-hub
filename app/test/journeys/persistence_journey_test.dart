@@ -35,6 +35,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../qa/round6/history_fixture.dart';
 
+import '../helpers/pause_menu.dart';
+
+import 'package:own_hub/ui/app_nav_bar.dart';
+
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532);
   tester.view.devicePixelRatio = 3.0;
@@ -89,24 +93,11 @@ Future<void> _trainAndFinish(WidgetTester tester) async {
 
   var guard = 0;
   while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-    final all = find.textContaining('I did');
-    if (all.evaluate().isEmpty) break;
-    await tester.tap(all.first);
-    await tester.pumpAndSettle();
-    final next = find.text('Next move');
-    if (next.evaluate().isEmpty) break;
-    await tester.tap(next);
-    await tester.pumpAndSettle();
+    if (!await logWholeMove(tester)) break;
   }
 
   // Ending early asks for a second tap ("Finish now · n moves left").
-  final finish = find.byKey(const ValueKey('r13-finish-here'));
-  if (finish.evaluate().isNotEmpty) {
-    await tester.tap(finish);
-    await tester.pump();
-    if (finish.evaluate().isNotEmpty) await tester.tap(finish);
-    await tester.pumpAndSettle();
-  }
+  if (WorkoutSessionState.instance.day != null) await finishEarly(tester);
 }
 
 /// A meal, through E02: type it, log it, let the five seconds close.
@@ -262,11 +253,15 @@ void main() {
         reason: 'the plate she ate is still one of her plates',
       );
 
-      // And the first screen she sees says so, rather than the app's defaults.
+      // And Eat's usual row says so, rather than the app's defaults.
+      await tester.tap(
+        find.descendant(of: find.byType(AppNavBar), matching: find.text('Eat')),
+      );
+      await tester.pumpAndSettle();
       expect(
         find.text('Koshari bowl'),
-        findsOneWidget,
-        reason: "Home's meal card opens on the meal she logged yesterday",
+        findsWidgets,
+        reason: "Eat's usual row opens on the meal she logged yesterday",
       );
     });
 

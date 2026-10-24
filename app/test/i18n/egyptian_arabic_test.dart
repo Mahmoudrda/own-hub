@@ -142,7 +142,7 @@ void main() {
       expect(move.name, en.donkeyKick);
       expect(find.text(en.donkeyKick), findsWidgets);
       expect(find.text(ar.donkeyKick), findsNothing);
-      expect(find.byTooltip(ar.change), findsWidgets);
+      expect(find.byTooltip(ar.pause), findsWidgets);
     });
   });
 }

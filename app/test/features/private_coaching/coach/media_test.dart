@@ -78,6 +78,7 @@ void main() {
       const ok = MediaDraft.transformation(
         beforePath: 'a',
         afterPath: 'b',
+        consentPath: 'c',
         weeks: 8,
         clientConsentPublic: true,
       );
@@ -86,16 +87,26 @@ void main() {
         'kind': 'transformation',
         'beforePath': 'a',
         'afterPath': 'b',
+        'consentPath': 'c',
         'weeks': 8,
         'clientConsentPublic': true,
       });
       const noTick = MediaDraft.transformation(
         beforePath: 'a',
         afterPath: 'b',
+        consentPath: 'c',
         weeks: 8,
         clientConsentPublic: false,
       );
       expect(noTick.problems(), ['clientConsentPublic']);
+      const noRelease = MediaDraft.transformation(
+        beforePath: 'a',
+        afterPath: 'b',
+        consentPath: '',
+        weeks: 8,
+        clientConsentPublic: true,
+      );
+      expect(noRelease.problems(), ['consentPath']);
     });
 
     test('feedback and photo requests carry the server field names', () {
@@ -173,10 +184,14 @@ void main() {
         tester,
         media: [_m('4', MediaKind.transformation, needsConsent: true)],
       );
-      await tester.tap(find.text('Confirm my client agreed'));
+      await tester.tap(find.text('Add her written agreement'));
       await tester.pumpAndSettle();
+      expect(repo.uploads, ['transformations:image/jpeg']);
       expect(repo.calls.last.$1, 'confirmMediaConsent');
-      expect(repo.calls.last.$2, {'mediaId': '4'});
+      expect(repo.calls.last.$2, {
+        'mediaId': '4',
+        'consentPath': 'coach-docs/me/transformations/f1.jpg',
+      });
     });
 
     testWidgets('remove asks first, then removes', (tester) async {
@@ -202,7 +217,7 @@ void main() {
       );
     });
 
-    testWidgets('a transformation uploads both pictures, then sends', (
+    testWidgets('a transformation uploads three pictures, then sends', (
       tester,
     ) async {
       final repo = await _open(tester);
@@ -217,20 +232,23 @@ void main() {
       expect(tester.widget<AppButton>(send).onPressed, isNull);
       await tester.tap(find.text(consent));
       await tester.pumpAndSettle();
-      expect(tester.widget<AppButton>(send).onPressed, isNotNull);
-      await tester.tap(send);
-      await tester.pumpAndSettle();
-      expect(repo.callNames, isNot(contains('addPortfolioMedia')));
-      expect(find.text('Add both photos.'), findsWidgets);
+      // The tick alone is not enough: her written agreement is needed too.
+      expect(tester.widget<AppButton>(send).onPressed, isNull);
+      expect(
+        find.text("A picture of your client's written agreement"),
+        findsOneWidget,
+      );
 
-      await tester.tap(find.text('Choose a photo').first);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Choose a photo').first);
-      await tester.pumpAndSettle();
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.text('Choose a photo').first);
+        await tester.pumpAndSettle();
+      }
+      expect(tester.widget<AppButton>(send).onPressed, isNotNull);
       await tester.tap(find.text('Send for Own Hub\'s check'));
       await tester.pumpAndSettle();
 
       expect(repo.uploads, [
+        'transformations:image/jpeg',
         'transformations:image/jpeg',
         'transformations:image/jpeg',
       ]);
@@ -240,6 +258,7 @@ void main() {
       expect(call['kind'], 'transformation');
       expect(call['beforePath'], 'coach-docs/me/transformations/f1.jpg');
       expect(call['afterPath'], 'coach-docs/me/transformations/f2.jpg');
+      expect(call['consentPath'], 'coach-docs/me/transformations/f3.jpg');
       expect(call['weeks'], 8);
       expect(call['clientConsentPublic'], isTrue);
       expect(
@@ -414,7 +433,7 @@ void main() {
           'coach-public/me/media/p1_image.jpg',
         ]),
       );
-      expect(find.text('Confirm my client agreed'), findsOneWidget);
+      expect(find.text('Add her written agreement'), findsOneWidget);
     });
 
     testWidgets('a member never loads a private file', (tester) async {

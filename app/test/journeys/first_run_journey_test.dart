@@ -26,6 +26,7 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/today/presentation/today_cards.dart';
+import 'package:own_hub/ui/hand/hand.dart' show HandPressable;
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -299,27 +300,21 @@ void main() {
         // A 358×159 point paragraph with no chevron, no card and no underline
         // was the only door to Progress, personal bests, milestones, body, the
         // rest-week explainer and the tier-slip explainer.
-        expect(
-          find.descendant(
-            of: find.byType(WeekCard),
-            matching: find.byIcon(Icons.chevron_right),
-          ),
-          findsOneWidget,
-        );
+        // The strip is one tap target (a HandPressable) with the one week
+        // on Home, not a paragraph with no door.
+        final strip = find.byKey(const ValueKey('today-week-strip'));
+        expect(find.byType(HomeWeekStrip), findsOneWidget);
+        expect(strip, findsOneWidget);
+        expect(tester.widget(strip), isA<HandPressable>());
 
-        // Home grows with the tier facts and her training row, so the block can
-        // sit under the bottom bar until it is scrolled into the clear.
-        await tester.ensureVisible(find.text('This week, 0 of 3'));
+        // Home grows with her training row, so the strip can sit under the
+        // bottom bar until it is scrolled into the clear.
+        await tester.ensureVisible(strip);
         await tester.pumpAndSettle();
-        await tester.tap(find.text('This week, 0 of 3'));
+        await tester.tap(strip);
         await tester.pumpAndSettle();
-        expect(
-          find.descendant(
-            of: find.byType(AppBar),
-            matching: find.text('Insights'),
-          ),
-          findsOneWidget,
-        );
+        // The week strip opens You, the last tab.
+        expect(find.text('Sessions this week'), findsOneWidget);
       });
     }
 
@@ -329,7 +324,7 @@ void main() {
         _phone(tester);
         await _boot(tester);
 
-        _nav(tester).pushNamed(appDestinations['P01']!.name);
+        _nav(tester).pushNamed(appDestinations['P07']!.name);
         await tester.pumpAndSettle();
 
         expect(find.text('Your first week'), findsOneWidget);

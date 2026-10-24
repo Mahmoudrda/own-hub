@@ -9667,20 +9667,6 @@ class AppL10nAr extends AppL10n {
   String get gladYouShowedUpToday => 'مبسوطة إنك جيتي النهارده.';
 
   @override
-  String countPluralOne1MoreAndThe(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count تمرين كمان والأسبوع يتحسب.',
-      many: '$count تمرين كمان والأسبوع يتحسب.',
-      few: '$count تمارين كمان والأسبوع يتحسب.',
-      two: 'تمرينين كمان والأسبوع يتحسب.',
-      one: 'تمرين واحد كمان والأسبوع يتحسب.',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get dayOneStartsWithYourNextSession =>
       'أول يوم بيبدأ مع تمرينك الجاي.';
 
@@ -11046,16 +11032,6 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String get scanYourMealWithTheCamera => 'صوّري وجبتك بالكاميرا';
-
-  @override
-  String get onePhotoForCaloriesAndProtein =>
-      'صورة واحدة تحسبلك السعرات والبروتين';
-
-  @override
-  String get scanWithTheCameraInstead => 'صوّري الوجبة بالكاميرا';
-
-  @override
   String get scan => 'صوّري';
 
   @override
@@ -11230,9 +11206,6 @@ class AppL10nAr extends AppL10n {
   }
 
   @override
-  String get switchPlanOrPickAnySession => 'غيّري النظام أو اختاري أي تمرينة';
-
-  @override
   String get saveAsMyWorkout => 'احفظيها كتمرينة ليا';
 
   @override
@@ -11255,9 +11228,6 @@ class AppL10nAr extends AppL10n {
   String deletedName(String name) {
     return 'مسحنا $name';
   }
-
-  @override
-  String get editThisMove => 'عدّلي الحركة دي';
 
   @override
   String get moveEarlier => 'قدّميها';
@@ -11615,9 +11585,6 @@ class AppL10nAr extends AppL10n {
   @override
   String get nothingLoggedSoThisOneIsNot =>
       'ما سجلتيش حاجة، فالجلسة دي مش هتتحسب.';
-
-  @override
-  String get dontShowThisKindAgain => 'بلاش أشوف النوع ده تاني';
 
   @override
   String get onlyMovesScreenedForYouAndStop =>
@@ -12146,13 +12113,6 @@ class AppL10nAr extends AppL10n {
   String get previewOfYourWorkoutCard => 'معاينة كارت تمرينك';
 
   @override
-  String get editWorkout => 'عدّلي التمرين';
-
-  @override
-  String get swapRemoveReorderOrAddMoves =>
-      'بدّلي أو شيلي أو رتّبي أو ضيفي تمارين.';
-
-  @override
   String get reset => 'رجّعيه زي الأول';
 
   @override
@@ -12186,13 +12146,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get useThisMove => 'استخدمي التمرين ده';
-
-  @override
-  String get buildMyOwnPlan => 'ابني خطتي بنفسي';
-
-  @override
-  String get startWithABlankPlanOrChange =>
-      'ابدئي بخطة فاضية، أو عدّلي واحدة من التلات خطط على مزاجك.';
 
   @override
   String get startFromScratch => 'ابدئي من الصفر';
@@ -13114,10 +13067,6 @@ class AppL10nAr extends AppL10n {
   String iShareTheseAnswersWithNameMy(String name) {
     return 'أنا بشارك الإجابات دي مع $name، مدرّبتي.';
   }
-
-  @override
-  String get iUnderstandMyAnswersAreStoredIn =>
-      'فاهمة إن إجاباتي محفوظة بأمان على سيرفرات Own Hub في ألمانيا.';
 
   @override
   String get sendRequest => 'ابعتي الطلب';
@@ -14826,4 +14775,121 @@ class AppL10nAr extends AppL10n {
   @override
   String get yourFirstNameIsOptionalYourCoach =>
       'اسمك الأول اختياري. المدرّبة بتشوفه جنب إجاباتك.';
+
+  @override
+  String get iAgreeThatMyAnswersAreSent =>
+      'موافقة إن إجاباتي تتبعت وتتخزّن على سيرفرات Own Hub في فرانكفورت بألمانيا، يعني برّه مصر.';
+
+  @override
+  String get aPictureOfYourClientsWrittenAgreement =>
+      'صورة اتفاق عميلتك المكتوب';
+
+  @override
+  String get onlyAWomanReviewerAtOwnHub =>
+      'مراجِعة من Own Hub بس هي اللي بتشوفها. ضيفيها قبل ما تبعتي.';
+
+  @override
+  String get addHerWrittenAgreement => 'ضيفي اتفاقها المكتوب';
+
+  @override
+  String get beforeYourFirstMessage => 'قبل أول رسالة ليكي';
+
+  @override
+  String get beRespectfulInsultsHarassmentAndHatefulWords =>
+      'احترمي التانيين. الشتيمة والمضايقة والكلام الكاره مش مسموحين.';
+
+  @override
+  String get keepTheChatInOwnHubPhone =>
+      'خلّي الكلام جوّه Own Hub. أرقام التليفون واللينكات وبيانات الدفع مش مسموحة، والتطبيق بيوقّف الرسايل دي.';
+
+  @override
+  String get yourCoachSharesTrainingAndFoodIdeas =>
+      'المدرّبة بتشاركك أفكار تمرين وأكل. ده مش نصيحة طبية. اسألي دكتورك عن أي مشكلة صحية.';
+
+  @override
+  String get messagesAreStoredOnOwnHubsServers =>
+      'الرسايل بتتحفظ على سيرفرات Own Hub. لو حد بلّغ عن رسالة، فريق Own Hub يقدر يقراها. تقدري تبلّغي أو تحظري أي حد من القايمة.';
+
+  @override
+  String get iHaveReadTheseRulesAndI => 'قريت القواعد دي وموافقة ألتزم بيها.';
+
+  @override
+  String get agreeAndSend => 'موافقة وهبعت';
+
+  @override
+  String get weCouldNotSaveYourAnswerTry => 'معرفناش نحفظ ردّك. جرّبي تاني.';
+
+  @override
+  String get onTurnOffAndYourMealPhotos =>
+      'شغّال. لو قفلتيه صور وجباتك مش هتتبعت لـ Google.';
+
+  @override
+  String get offYouAreAskedAgainBeforeYour =>
+      'مقفول. هنسألك تاني قبل صورة وجبتك الجاية.';
+
+  @override
+  String get weCouldNotTurnThisOffTry => 'معرفناش نقفل ده. جرّبي تاني.';
+
+  @override
+  String get progress => 'تقدمك';
+
+  @override
+  String get activities => 'الأنشطة';
+
+  @override
+  String get seeMore => 'شوفي المزيد';
+
+  @override
+  String get sessionsThisWeek => 'تمارين الأسبوع ده';
+
+  @override
+  String get addAPictureOfYourClientsWritten =>
+      'ضيفي صورة موافقة عميلتك المكتوبة.';
+
+  @override
+  String get mealPhotosSentToGoogleToRead =>
+      'صور الوجبات اللي بتتبعت لـ Google عشان يتعرّف على الأكل';
+
+  @override
+  String get editToday => 'عدّلي تمرين النهارده';
+
+  @override
+  String get shortVersion => 'نسخة قصيرة';
+
+  @override
+  String get a10MinuteWalk => 'مشي 10 دقايق';
+
+  @override
+  String get doMyOwnPlanInstead => 'هعمل خطتي أنا بدل كده';
+
+  @override
+  String eatenOfTargetKcal(String eaten, String target) {
+    return '$eaten من $target سعرة';
+  }
+
+  @override
+  String setNOfTotal(String n, String total) {
+    return 'المجموعة $n من $total';
+  }
+
+  @override
+  String get plates => 'الطارات';
+
+  @override
+  String get allMoves => 'كل الحركات';
+
+  @override
+  String get nextMove => 'الحركة الجاية';
+
+  @override
+  String get seeDetails => 'شوفي التفاصيل';
+
+  @override
+  String get editMoves => 'عدّلي الحركات';
+
+  @override
+  String get yourPlan => 'خطتك';
+
+  @override
+  String get gentler => 'أخف';
 }

@@ -76,6 +76,7 @@
           <button class="chip" type="button" data-status="approved" aria-pressed="false">Approved <span class="count"></span></button>
         </div>
       </div>
+      <label class="check"><input type="checkbox" id="adult-seen"> <span>I have seen proof that the women I approve are 18 or older.</span></label>
       <div class="bulk" id="bulk" hidden>
         <label class="check"><input type="checkbox" id="select-all"> <span>Select all</span></label>
         <button class="btn primary" id="approve-selected" type="button">Approve selected</button>
@@ -129,6 +130,7 @@
         <p class="about">Anyone who signs in with one of these numbers is approved at once. Paste numbers separated by commas or new lines.</p>
         <label for="phones-input">Numbers to add</label>
         <textarea id="phones-input" rows="4" placeholder="+201012345678, 01012345679"></textarea>
+        <label class="check"><input type="checkbox" id="adult-seen-phones"> <span>I have seen proof that these women are 18 or older.</span></label>
         <p class="muted" id="phones-preview" aria-live="polite"></p>
         <button class="btn primary" id="phones-add" type="button">Add numbers</button>
       </div>

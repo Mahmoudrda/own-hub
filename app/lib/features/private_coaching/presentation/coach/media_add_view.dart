@@ -45,6 +45,7 @@ class _MediaAddViewState extends State<MediaAddView> {
   final TextEditingController _caption = TextEditingController();
   CoachImage? _before;
   CoachImage? _after;
+  CoachImage? _release;
   CoachImage? _single;
   int _weeks = 8;
   bool _consent = false;
@@ -89,6 +90,7 @@ class _MediaAddViewState extends State<MediaAddView> {
     MediaKind.transformation => MediaDraft.transformation(
       beforePath: _before == null ? '' : 'x',
       afterPath: _after == null ? '' : 'x',
+      consentPath: _release == null ? '' : 'x',
       weeks: _weeks,
       note: westernDigits(_note.text),
       clientConsentPublic: _consent,
@@ -118,6 +120,10 @@ class _MediaAddViewState extends State<MediaAddView> {
           draft = MediaDraft.transformation(
             beforePath: await _upload(CoachDocFolder.transformations, _before!),
             afterPath: await _upload(CoachDocFolder.transformations, _after!),
+            consentPath: await _upload(
+              CoachDocFolder.transformations,
+              _release!,
+            ),
             weeks: _weeks,
             note: westernDigits(_note.text),
             clientConsentPublic: _consent,
@@ -201,7 +207,9 @@ class _MediaAddViewState extends State<MediaAddView> {
           AppButton(
             l10n.sendForOwnHubsCheck,
             onPressed:
-                _busy || (widget.kind == MediaKind.transformation && !_consent)
+                _busy ||
+                    (widget.kind == MediaKind.transformation &&
+                        (!_consent || _release == null))
                 ? null
                 : _send,
           ),
@@ -244,6 +252,15 @@ class _MediaAddViewState extends State<MediaAddView> {
               label: l10n.noteOptional_1l0x9,
               maxLines: 3,
               onChanged: (_) => setState(() {}),
+            ),
+            _picker(
+              l10n,
+              l10n.aPictureOfYourClientsWrittenAgreement,
+              _release,
+              (i) => _release = i,
+              error: problems.contains('consentPath')
+                  ? l10n.addAPictureOfYourClientsWritten
+                  : '',
             ),
             CoachSwitchRow(
               title: l10n.myClientAgreedInWritingThatOwn_c2wgd,

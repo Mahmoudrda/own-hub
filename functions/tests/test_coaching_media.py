@@ -47,7 +47,7 @@ def db():
 def blobs():
     b = FakeBlobs()
     for path in (
-        BASE + "transformations/b1.jpg", BASE + "transformations/a1.jpg",
+        BASE + "transformations/b1.jpg", BASE + "transformations/a1.jpg", BASE + "transformations/r1.jpg",
         BASE + "testimonials/s1.jpg", BASE + "photo/me.jpg", BASE + "gallery/g1.jpg",
         f"coach-docs/{OTHER}/gallery/g2.jpg",
     ):
@@ -58,7 +58,7 @@ def blobs():
 def transformation(**over):
     data = {
         "kind": "transformation", "beforePath": BASE + "transformations/b1.jpg",
-        "afterPath": BASE + "transformations/a1.jpg", "weeks": 12, "note": "Three days a week",
+        "afterPath": BASE + "transformations/a1.jpg", "consentPath": BASE + "transformations/r1.jpg", "weeks": 12, "note": "Three days a week",
         "clientConsentPublic": True,
     }
     data.update(over)
@@ -318,31 +318,37 @@ def test_a_waiting_transformation_cannot_be_decided_until_she_confirms(db, blobs
     assert [i["mediaId"] for i in listed["items"]] == ["app-f0"]
 
 
-def confirm(db, media_id, *, uid=UID, live=True, coach_v="active"):
-    return media.confirm_consent(db, uid, {"mediaId": media_id}, live=live, coach_v=coach_v, now=NOW)
+def confirm(db, blobs, media_id, *, uid=UID, live=True, coach_v="active"):
+    return media.confirm_consent(
+        db, uid, {"mediaId": media_id, "consentPath": BASE + "transformations/r1.jpg"},
+        live=live, coach_v=coach_v, blobs=blobs, now=NOW,
+    )
 
 
 def test_confirming_consent_stores_the_tick_and_moves_it_to_review(db, blobs):
     media.seed_from_application(db, UID, application(), now=NOW)
     later = NOW + dt.timedelta(days=2)
-    media.confirm_consent(db, UID, {"mediaId": "app-t0"}, live=True, coach_v="active", now=later)
+    media.confirm_consent(
+        db, UID, {"mediaId": "app-t0", "consentPath": BASE + "transformations/r1.jpg"},
+        live=True, coach_v="active", blobs=blobs, now=later,
+    )
     row = doc(db, "app-t0")
     assert row["status"] == "pending" and row["clientConsentPublic"] is True
     assert row["consent"] == {"at": later, "termsVersion": 1}
     assert decide(db, blobs, "app-t0") == {"status": "approved"}
 
 
-def test_confirm_consent_refusals(db):
+def test_confirm_consent_refusals(db, blobs):
     media.seed_from_application(db, UID, application(), now=NOW)
-    assert refusal(lambda: confirm(db, "app-t0", uid=OTHER))[1] == "media_not_found"
-    assert refusal(lambda: confirm(db, "nope"))[1] == "media_not_found"
-    assert refusal(lambda: confirm(db, "app-f0")) == (errors.PRECONDITION, errors.WRONG_STATUS)
-    assert refusal(lambda: confirm(db, "app-t0", live=False))[1] == errors.COACH_APP_CLOSED
-    assert refusal(lambda: confirm(db, "app-t0", coach_v=None))[1] == errors.NOT_A_COACH
-    assert refusal(lambda: confirm(db, "app-t0", coach_v="suspended"))[1] == errors.COACH_SUSPENDED
+    assert refusal(lambda: confirm(db, blobs, "app-t0", uid=OTHER))[1] == "media_not_found"
+    assert refusal(lambda: confirm(db, blobs, "nope"))[1] == "media_not_found"
+    assert refusal(lambda: confirm(db, blobs, "app-f0")) == (errors.PRECONDITION, errors.WRONG_STATUS)
+    assert refusal(lambda: confirm(db, blobs, "app-t0", live=False))[1] == errors.COACH_APP_CLOSED
+    assert refusal(lambda: confirm(db, blobs, "app-t0", coach_v=None))[1] == errors.NOT_A_COACH
+    assert refusal(lambda: confirm(db, blobs, "app-t0", coach_v="suspended"))[1] == errors.COACH_SUSPENDED
     assert doc(db, "app-t0")["status"] == "needsConsent"
-    confirm(db, "app-t0")
-    assert refusal(lambda: confirm(db, "app-t0")) == (errors.PRECONDITION, errors.WRONG_STATUS)
+    confirm(db, blobs, "app-t0")
+    assert refusal(lambda: confirm(db, blobs, "app-t0")) == (errors.PRECONDITION, errors.WRONG_STATUS)
 
 
 # -------------------------------------------------------------------- review
@@ -542,9 +548,101 @@ def test_removing_an_approved_item_deletes_its_public_copy_only(db, blobs):
 
 def test_files_of_an_item_seeded_from_the_application_survive_every_decision(db, blobs):
     media.seed_from_application(db, UID, application(), now=NOW)
-    confirm(db, "app-t0")
+    confirm(db, blobs, "app-t0")
     decide(db, blobs, "app-t0")
     decide(db, blobs, "app-f0", "reject", reason="unclear")
     media.remove(db, UID, {"mediaId": "app-f0"}, live=True, coach_v="active", blobs=blobs, now=NOW)
     for path in (BASE + "transformations/b1.jpg", BASE + "transformations/a1.jpg", BASE + "testimonials/s1.jpg"):
         assert path not in blobs.deleted and blobs.exists(path)
+
+
+# ------------------------------------------------- the client's written release
+
+
+def test_a_transformation_with_a_bad_written_release_is_refused(db, blobs):
+    for bad in ("", BASE + "transformations/missing.jpg", BASE + "photo/me.jpg",
+                BASE + "transformations/b1.jpg", BASE + "transformations/a1.jpg"):
+        assert refusal(lambda: add(db, blobs, transformation(consentPath=bad)))[0] == errors.INVALID, bad
+    assert not any(k.startswith(f"coaches/{UID}/media/") for k in db.docs)
+
+
+def test_approval_needs_the_release_and_moves_it_out_of_the_member_readable_doc(db, blobs):
+    out = add(db, blobs, transformation())
+    assert doc(db, out["mediaId"])["consentPath"] == BASE + "transformations/r1.jpg"
+    assert decide(db, blobs, out["mediaId"]) == {"status": "approved"}
+    assert doc(db, out["mediaId"])["consentPath"] is None
+    evidence = db.docs[f"coachPrivate/{UID}/mediaConsents/{out['mediaId']}"]
+    assert evidence["path"] == BASE + "transformations/r1.jpg" and evidence["consent"] == {"at": NOW, "termsVersion": 1}
+    assert blobs.exists(BASE + "transformations/r1.jpg")
+
+
+def test_an_older_transformation_without_a_release_cannot_be_approved_until_she_adds_one(db, blobs):
+    out = add(db, blobs, transformation())
+    db.docs[f"coaches/{UID}/media/{out['mediaId']}"].pop("consentPath")
+    assert refusal(lambda: decide(db, blobs, out["mediaId"])) == (errors.PRECONDITION, errors.WRONG_STATUS)
+    confirm(db, blobs, out["mediaId"])
+    assert decide(db, blobs, out["mediaId"]) == {"status": "approved"}
+
+
+def test_confirming_with_a_missing_release_file_is_refused(db, blobs):
+    media.seed_from_application(db, UID, application(), now=NOW)
+    got = refusal(lambda: media.confirm_consent(
+        db, UID, {"mediaId": "app-t0", "consentPath": BASE + "transformations/none.jpg"},
+        live=True, coach_v="active", blobs=blobs, now=NOW))
+    assert got == (errors.INVALID, errors.FILE_NOT_UPLOADED)
+    assert doc(db, "app-t0")["status"] == "needsConsent"
+
+
+def test_a_rejection_deletes_the_release_and_a_removal_deletes_the_evidence(db, blobs):
+    out = add(db, blobs, transformation())
+    decide(db, blobs, out["mediaId"], "reject", reason="unclear")
+    assert not blobs.exists(BASE + "transformations/r1.jpg") and doc(db, out["mediaId"])["consentPath"] is None
+    for name in ("b1", "a1", "r1"):
+        blobs.put(BASE + f"transformations/{name}.jpg", b"x", "image/jpeg")
+    out = add(db, blobs, transformation())
+    decide(db, blobs, out["mediaId"])
+    media.remove(db, UID, {"mediaId": out["mediaId"]}, live=True, coach_v="active", blobs=blobs, now=NOW)
+    assert not blobs.exists(BASE + "transformations/r1.jpg")
+    assert f"coachPrivate/{UID}/mediaConsents/{out['mediaId']}" not in db.docs
+
+
+def test_app_1_0_0_sends_no_release_it_is_accepted_but_cannot_be_approved_until_one_is_attached(db, blobs):
+    body = transformation()
+    body.pop("consentPath")
+    out = add(db, blobs, body)
+    assert "consentPath" not in doc(db, out["mediaId"])
+    assert refusal(lambda: decide(db, blobs, out["mediaId"])) == (errors.PRECONDITION, errors.WRONG_STATUS)
+    media.seed_from_application(db, UID, application(), now=NOW)
+    media.confirm_consent(db, UID, {"mediaId": "app-t0"}, live=True, coach_v="active", blobs=blobs, now=NOW)
+    assert doc(db, "app-t0")["status"] == "pending" and "consentPath" not in doc(db, "app-t0")
+    assert refusal(lambda: decide(db, blobs, "app-t0")) == (errors.PRECONDITION, errors.WRONG_STATUS)
+    confirm(db, blobs, "app-t0")
+    assert decide(db, blobs, "app-t0") == {"status": "approved"}
+
+
+def test_submitted_transformation_files_are_locked_against_the_coach(db, blobs):
+    out = add(db, blobs, transformation())
+    assert set(blobs.locked) == {BASE + "transformations/b1.jpg", BASE + "transformations/a1.jpg", BASE + "transformations/r1.jpg"}
+    blobs.locked.clear()
+    media.seed_from_application(db, UID, application(), now=NOW)
+    confirm(db, blobs, "app-t0")
+    assert BASE + "transformations/r1.jpg" in blobs.locked
+
+
+def test_attaching_a_release_to_a_pending_item_keeps_its_consent_stamp_and_needs_the_file(db, blobs):
+    out = add(db, blobs, transformation())
+    mid = out["mediaId"]
+    db.docs[f"coaches/{UID}/media/{mid}"].pop("consentPath")
+    stamp = dict(doc(db, mid)["consent"])
+    later = NOW + dt.timedelta(days=2)
+    got = refusal(lambda: media.confirm_consent(
+        db, UID, {"mediaId": mid}, live=True, coach_v="active", blobs=blobs, now=later))
+    assert got is not None
+    assert "consentPath" not in doc(db, mid)
+    blobs.locked.clear()
+    media.confirm_consent(
+        db, UID, {"mediaId": mid, "consentPath": " " + BASE + "transformations/r1.jpg "},
+        live=True, coach_v="active", blobs=blobs, now=later)
+    assert doc(db, mid)["consent"] == stamp
+    assert doc(db, mid)["consentPath"] == BASE + "transformations/r1.jpg"
+    assert BASE + "transformations/r1.jpg" in blobs.locked

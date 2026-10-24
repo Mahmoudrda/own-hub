@@ -6,7 +6,7 @@ import pathlib
 
 import pytest
 
-from coaching import chat
+from coaching import chat, common
 from tests import fake_firestore
 from tests.coaching_helpers import Notes, _txn  # noqa: F401
 
@@ -219,3 +219,43 @@ def test_a_screened_message_loses_its_words_but_keeps_the_reason():
     _run(db, "m1", row)
     message = db.docs[f"relationships/{REL}/messages/m1"]
     assert message["text"] == "" and message["hiddenReason"] == "contact"
+
+
+# ------------------------------------------------------------ the chat rules tick
+
+def _hash(locale):
+    return common.sha(common.CONTRACT["consentTexts"]["chatRules1"][locale][0])
+
+
+def _rules(**over):
+    data = {"version": 1, "textHash": _hash("ar"), "locale": "ar", "appVersion": "1.1.0+5"}
+    data.update(over)
+    return data
+
+
+def test_the_first_rules_tick_is_recorded_and_a_second_changes_nothing():
+    db = fake_firestore.FakeFirestore()
+    assert chat.accept_rules(db, "u1", _rules(), live=True, now=NOW) == {"ok": True}
+    later = NOW + dt.timedelta(days=1)
+    chat.accept_rules(db, "u1", _rules(locale="en", textHash=_hash("en")), live=True, now=later)
+    record = db.document("users/u1/consents/chat-rules-v1").get().to_dict()
+    assert record == {"version": 1, "at": NOW, "locale": "ar", "textHash": _hash("ar"), "appVersion": "1.1.0+5"}
+
+
+@pytest.mark.parametrize("locale", ["en", "ar"])
+def test_every_listed_rules_text_is_accepted(locale):
+    for text in common.CONTRACT["consentTexts"]["chatRules1"][locale]:
+        db = fake_firestore.FakeFirestore()
+        data = _rules(locale=locale, textHash=common.sha(text))
+        assert chat.accept_rules(db, "u1", data, live=True, now=NOW) == {"ok": True}
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [{"version": 2}, {"version": True}, {"textHash": "short"}, {"textHash": "G" * 64}, {"textHash": "c" * 64}, {"textHash": _hash("en")}, {"locale": "fr"}, {"appVersion": "x" * 33}],
+)
+def test_a_wrong_rules_tick_is_refused_and_writes_nothing(bad):
+    db = fake_firestore.FakeFirestore()
+    with pytest.raises(Exception):
+        chat.accept_rules(db, "u1", _rules(**bad), live=True, now=NOW)
+    assert db.document("users/u1/consents/chat-rules-v1").get().to_dict() is None

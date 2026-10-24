@@ -12,6 +12,8 @@ import 'package:own_hub/features/train/presentation/mid_set_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
+import '../../helpers/pause_menu.dart';
+
 Widget _host(
   Widget child, {
   Locale locale = const Locale('en'),
@@ -84,10 +86,12 @@ void main() {
   );
 
   group('the switch', () {
-    testWidgets('is not drawn when nothing handles a warm-up', (tester) async {
+    testWidgets('is not offered when nothing handles a warm-up', (
+      tester,
+    ) async {
       await tester.pumpWidget(_host(view()));
       await tester.pumpAndSettle();
-      expect(find.text('Warm-up set'), findsNothing);
+      expect(await moreRow(tester, 'Warm-up set'), isNull);
       expect(find.text(_hint), findsNothing);
     });
 
@@ -96,7 +100,10 @@ void main() {
     ) async {
       await tester.pumpWidget(_host(view(onWarmUpLogged: (_, _) {})));
       await tester.pumpAndSettle();
-      expect(find.text('Warm-up set'), findsOneWidget);
+      // Offered in the "…", and not drawn on the set until she turns it on.
+      expect(find.byKey(const ValueKey('r07-warm-up')), findsNothing);
+      expect(await moreRow(tester, 'Warm-up set'), isNotNull);
+      await closeSheets(tester);
       expect(find.text('Done · 20 kg × 8'), findsOneWidget);
     });
 
@@ -105,10 +112,14 @@ void main() {
     ) async {
       await tester.pumpWidget(_host(view(onWarmUpLogged: (_, _) {})));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
-      await tester.pumpAndSettle();
+      await pickMore(tester, 'Warm-up set');
       expect(find.text('Done · warm-up 10 kg × 8'), findsOneWidget);
       expect(find.text('Done · 20 kg × 8'), findsNothing);
+      // Where she can see this set will not count, one tap turns it off.
+      expect(find.byKey(const ValueKey('r07-warm-up')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
+      await tester.pumpAndSettle();
+      expect(find.text('Done · 20 kg × 8'), findsOneWidget);
     });
 
     testWidgets('the warm-up weight comes from her last weight', (
@@ -129,8 +140,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
-      await tester.pumpAndSettle();
+      await pickMore(tester, 'Warm-up set');
       expect(find.text('Done · warm-up 9 kg × 8'), findsOneWidget);
     });
 
@@ -147,9 +157,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      final row = await moreRow(tester, 'سيت إحماء');
+      expect(row, isNotNull);
+      expect(tester.getSize(row!).height, greaterThanOrEqualTo(48));
+      await tester.tap(row);
+      await tester.pumpAndSettle();
       final size = tester.getSize(find.byKey(const ValueKey('r07-warm-up')));
       expect(size.height, greaterThanOrEqualTo(48));
-      expect(find.text('سيت إحماء'), findsOneWidget);
       expect(find.bySemanticsLabel('سيت إحماء'), findsOneWidget);
       expect(tester.takeException(), isNull);
       semantics.dispose();
@@ -168,8 +182,7 @@ void main() {
     ) async {
       await tester.pumpWidget(_host(view(onWarmUpLogged: (_, _) {})));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
-      await tester.pumpAndSettle();
+      await pickMore(tester, 'Warm-up set');
       expect(find.text(_hint), findsNothing);
     });
 
@@ -202,7 +215,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('r07-warm-up-hint')), findsNothing);
-      expect(find.text('Warm-up set'), findsOneWidget);
+      expect(await moreRow(tester, 'Warm-up set'), isNotNull);
     });
   });
 
@@ -225,8 +238,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
-      await tester.pumpAndSettle();
+      await pickMore(tester, 'Warm-up set');
       await tester.tap(find.text('Done · warm-up 10 kg × 8'));
       await tester.pump();
 
@@ -244,8 +256,7 @@ void main() {
     ) async {
       await tester.pumpWidget(_host(view(onWarmUpLogged: (_, _) {})));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
-      await tester.pumpAndSettle();
+      await pickMore(tester, 'Warm-up set');
       await tester.tap(find.text('Done · warm-up 10 kg × 8'));
       await tester.pump(const Duration(seconds: 10));
 
@@ -274,8 +285,7 @@ void main() {
         _host(view(onWarmUpLogged: (h, _) => handle = h)),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('r07-warm-up')));
-      await tester.pumpAndSettle();
+      await pickMore(tester, 'Warm-up set');
       await tester.tap(find.text('Done · warm-up 10 kg × 8'));
       await tester.pump();
 

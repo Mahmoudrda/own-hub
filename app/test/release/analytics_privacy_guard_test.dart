@@ -42,6 +42,7 @@ const Set<String> _allowedFiles = {
   'lib/app_state/debug_analytics_sink.dart',
   'lib/app_state/firebase_analytics_sink.dart',
   'lib/app_state/analytics_session.dart',
+  'lib/app_state/workout_session_state.dart',
   'lib/app_state/posthog_analytics.dart',
   'lib/app_state/analytics_consent.dart',
   'lib/app_state/firebase_boot.dart',

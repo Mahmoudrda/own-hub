@@ -565,7 +565,6 @@ if (fs.existsSync(dictPath)) {
     "Last time you did {weight}. Stay there until every set is done.": {"description": "R07 and R08: why the weight is not going up yet.", "placeholders": {"weight": {"type": "String", "example": "10 kg"}}},
     "It has been a while since {weight}. Start a little lighter and build back.": {"description": "R07 and R08: she is coming back to a loaded move after a break.", "placeholders": {"weight": {"type": "String", "example": "10 kg"}}},
     "Swap to {name}": {"description": "R05 confirm button, names the move she picked.", "placeholders": {"name": {"type": "String", "example": "Glute bridge"}}},
-    "{count, plural, one{1 more and the week counts.} other{{count} more and the week counts.}}": {"description": "T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.", "placeholders": {"count": {"type": "int", "example": "3"}}},
     "Your first week: {done} of {total} steps": {"description": "Home: the first-week arc, counted in steps so it is never read against this week's sessions.", "placeholders": {"done": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "3"}}},
     "{days} days a week · {minutes} min a session": {"description": "O05 headline: her days and minutes.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
     "{days} days a week · {minutes} min a session · At home": {"description": "Her answers read back: days and minutes, trained at home.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
@@ -823,6 +822,8 @@ if (fs.existsSync(dictPath)) {
     "Duration: {days, plural, one{1 day} other{{days} days}}": {"description": "A package length on a coach's page. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.", "placeholders": {"days": {"type": "int", "example": "28"}}},
     "Over {weeks, plural, one{1 week} other{{weeks} weeks}}": {"description": "A transformation's length on a coach's page. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.", "placeholders": {"weeks": {"type": "int", "example": "12"}}},
     "Transformation, {weeks, plural, one{1 week} other{{weeks} weeks}}": {"description": "A transformation's title in the coach's list. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.", "placeholders": {"weeks": {"type": "int", "example": "12"}}},
+    "{eaten} of {target} kcal": {"description": "Home's one Eat line: calories eaten so far against today's target, in Western digits, e.g. 1,240 of 1,624 kcal.", "placeholders": {"eaten": {"type": "String", "example": "1,240"}, "target": {"type": "String", "example": "1,624"}}},
+    "Set {n} of {total}": {"description": "R07: which set of the move she is on.", "placeholders": {"n": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "3"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

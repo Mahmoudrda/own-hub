@@ -148,7 +148,7 @@ def test_files_are_written_once_and_private(tmp_path):
 def test_the_coaching_section_holds_her_application_coaching_and_messages():
     export = export_user.build_export(HER, FakeReader(), "en", NOW)
     coaching = export["sections"]["coaching"]
-    assert coaching["source"] == [47, 48, 49, 55, 56, 57, 58, 59]
+    assert coaching["source"] == [47, 48, 49, 55, 56, 57, 58, 59, 61]
     data = coaching["data"]
     assert data["application"]["status"] == "approved"
     assert data["asClient"]["sub-1"]["intake"] == {"goal": "strength"}

@@ -37,3 +37,10 @@ class PersonalBlobs:
         except Exception as error:
             if type(error).__name__ != "NotFound":
                 raise
+
+    def lock(self, path: str) -> None:
+        """Marks a coach's file as evidence: storage rules then refuse to let her
+        delete or replace it. Removing the portfolio item deletes it from here."""
+        blob = self._bucket.blob(path)
+        blob.metadata = {"locked": "true"}
+        blob.patch()

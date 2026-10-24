@@ -25,6 +25,8 @@ import '../../../domain/format/number_label.dart';
 import '../../../domain/training/prescribed_set.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_list_item.dart';
+import '../../../ui/app_overflow_menu.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../onboarding/domain/intake.dart' show LifeStage;
@@ -262,6 +264,7 @@ class WorkoutDayView extends StatefulWidget {
     this.onBack,
     this.onStart,
     this.onOpenMove,
+    this.onOpenHistory,
     this.canOpenMove,
     this.onMore,
     this.day,
@@ -380,6 +383,9 @@ class WorkoutDayView extends StatefulWidget {
   final VoidCallback? onStart;
 
   final ValueChanged<PlannedMove>? onOpenMove;
+
+  /// Opens a move's history. Null leaves History out of the move's sheet.
+  final ValueChanged<PlannedMove>? onOpenHistory;
 
   /// Whether a move has a demo to open. Null means every move does; a move
   /// with none is not tappable, and the hint under the list is dropped when no
@@ -812,6 +818,72 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
     );
   }
 
+  /// What tapping move [i] does. One thing on offer (watching it) does it at
+  /// once; more than one opens a sheet: watch, swap, history, edit its sets.
+  /// Null when there is nothing to do, so the row is not a dead button.
+  VoidCallback? _moveActions(
+    AppL10n l10n,
+    int i,
+    List<PlannedMove> moves,
+    bool Function(PlannedMove) canOpen,
+  ) {
+    final move = moves[i];
+    final watch = AppRouter.screenIsOn('R04') && canOpen(move);
+    final swappable =
+        _editable &&
+        widget.canSwapMove?.call(move.exerciseId) != false &&
+        (widget.alternativesFor != null || widget.repository != null);
+    final actions = <({String label, IconData icon, VoidCallback run})>[
+      if (watch)
+        (
+          label: l10n.watchTheClip,
+          icon: Icons.play_circle_outline,
+          run: () => widget.onOpenMove?.call(move),
+        ),
+      if (swappable)
+        (
+          label: l10n.swap,
+          icon: Icons.swap_horiz,
+          run: () => unawaited(_swapMove(i)),
+        ),
+      if (widget.onOpenHistory != null)
+        (
+          label: l10n.history,
+          icon: Icons.show_chart,
+          run: () => widget.onOpenHistory!(move),
+        ),
+      if (_editable)
+        (
+          label: l10n.setsAndReps,
+          icon: Icons.tune,
+          run: () => setState(() => _open = _open == i ? null : i),
+        ),
+    ];
+    if (actions.isEmpty) return null;
+    if (actions.length == 1) return actions.single.run;
+    return () => unawaited(
+      showAppSheet<void>(
+        context: context,
+        gap: 8,
+        children: [
+          Text(move.name, style: AppText.titleL),
+          for (final action in actions)
+            Builder(
+              builder: (sheet) => AppListItem(
+                key: ValueKey('r03-move-${action.label}'),
+                title: action.label,
+                leading: Icon(action.icon, color: AppColors.onSurface),
+                onTap: () {
+                  Navigator.of(sheet).pop();
+                  action.run();
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -864,22 +936,35 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
                 // An icon with no name is announced as "button" and nothing else.
                 tooltip: l10n.more,
                 icon: const Icon(Icons.more_vert),
+              )
+            else if (_editable)
+              AppOverflowMenu(
+                items: [
+                  if (!_editing)
+                    AppOverflowItem(
+                      icon: Icons.edit_outlined,
+                      label: l10n.editMoves,
+                      onTap: () => _setEditing(true),
+                    ),
+                  if (widget.onSaveAsMine != null && moves.isNotEmpty)
+                    AppOverflowItem(
+                      icon: Icons.bookmark_add_outlined,
+                      label: l10n.saveAsMyWorkout,
+                      onTap: () => widget.onSaveAsMine?.call(moves),
+                    ),
+                ],
               ),
           ],
         ),
         footer: _editing && _editable
             ? [
-                // The bar for editing: keep the changes as a workout of her own,
-                // or put the day back. Start is on the other side of the switch.
-                if (widget.onSaveAsMine != null)
-                  AppButton(
-                    l10n.saveAsMyWorkout,
-                    key: const ValueKey('r03-save-mine'),
-                    icon: Icons.bookmark_add_outlined,
-                    onPressed: moves.isEmpty
-                        ? null
-                        : () => widget.onSaveAsMine?.call(moves),
-                  ),
+                // Leaving edit mode: the moves are as she left them, and the
+                // day is one tap from Start again.
+                AppButton(
+                  l10n.done_54ca1,
+                  key: const ValueKey('r03-edit-done'),
+                  onPressed: () => _setEditing(false),
+                ),
                 AppButton(
                   l10n.reset,
                   key: const ValueKey('r03-reset'),
@@ -973,20 +1058,6 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
                 ),
               ],
             ),
-          if (_editable)
-            SwitchListTile(
-              key: const ValueKey('r03-edit-toggle'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.editWorkout, style: AppText.titleM),
-              subtitle: Text(
-                l10n.swapRemoveReorderOrAddMoves,
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              value: _editing,
-              onChanged: _setEditing,
-            ),
           // A long stretch before the moves begin, still; it blinks once the
           // second time she opens the day in a run.
           const Align(
@@ -1012,81 +1083,51 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
                 mainAxisSize: MainAxisSize.min,
                 spacing: kStackGap,
                 children: [
-                  for (var i = 0; i < moves.length; i++)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 6,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: MoveRow(
-                                name: moves[i].name,
-                                detail: moves[i].prescriptionLabel,
-                                // The first move is the one she is on. The design
-                                // marked the second, which is a claim that she is
-                                // already one move into a session she has not
-                                // started: R03 is the screen with "Start,
-                                // everything's ready" on it.
-                                current: i == 0,
-                                // This week's challenge, on the move it is about
-                                // (D38).
-                                note:
-                                    moves[i].exerciseId ==
-                                        widget.challengeExerciseId
-                                    ? widget.challengeNote
-                                    : null,
-                                hasClip:
-                                    widget.canOpenMove != null &&
-                                    AppRouter.screenIsOn('R04') &&
-                                    canOpen(moves[i]),
-                                // Not tappable while the move videos are switched
-                                // off.
-                                onTap:
-                                    AppRouter.screenIsOn('R04') &&
-                                        canOpen(moves[i])
-                                    ? () => widget.onOpenMove?.call(moves[i])
-                                    : null,
-                              ),
-                            ),
-                            if (_editable)
-                              IconButton(
-                                key: ValueKey('r03-edit-$i'),
-                                tooltip: l10n.editThisMove,
-                                onPressed: () => setState(
-                                  () => _open = _open == i ? null : i,
-                                ),
-                                icon: Icon(
-                                  _open == i ? Icons.expand_less : Icons.tune,
-                                  color: AppColors.primaryDim,
-                                ),
-                              ),
-                          ],
-                        ),
-                        if (_editable && _open == i)
-                          MoveEditor(
-                            key: ValueKey('r03-editor-$i'),
-                            move: customMoveOf(moves[i]),
-                            showWeight:
-                                moves[i].needsEquipment ||
-                                moves[i].sets.any((s) => s.weightKg != null),
-                            onChanged: (next) => _editMove(i, next),
-                            onSwap:
-                                widget.canSwapMove?.call(moves[i].exerciseId) ==
-                                    false
-                                ? null
-                                : () => _swapMove(i),
-                            onRemove: moves.length > 1
-                                ? () => _removeMove(i)
-                                : null,
-                          ),
-                      ],
+                  // Flat, so the rows sit side by side as one list.
+                  for (var i = 0; i < moves.length; i++) ...[
+                    MoveRow(
+                      key: ValueKey('r03-move-$i'),
+                      name: moves[i].name,
+                      detail: moves[i].prescriptionLabel,
+                      // The first move is the one she is on. The design
+                      // marked the second, which is a claim that she is
+                      // already one move into a session she has not
+                      // started: R03 is the screen with "Start,
+                      // everything's ready" on it.
+                      current: i == 0,
+                      // This week's challenge, on the move it is about
+                      // (D38).
+                      note: moves[i].exerciseId == widget.challengeExerciseId
+                          ? widget.challengeNote
+                          : null,
+                      hasClip:
+                          widget.canOpenMove != null &&
+                          AppRouter.screenIsOn('R04') &&
+                          canOpen(moves[i]),
+                      onTap: _moveActions(l10n, i, moves, canOpen),
                     ),
+                    if (_editable && _open == i)
+                      MoveEditor(
+                        key: ValueKey('r03-editor-$i'),
+                        move: customMoveOf(moves[i]),
+                        showWeight:
+                            moves[i].needsEquipment ||
+                            moves[i].sets.any((s) => s.weightKg != null),
+                        onChanged: (next) => _editMove(i, next),
+                        onSwap:
+                            widget.canSwapMove?.call(moves[i].exerciseId) ==
+                                false
+                            ? null
+                            : () => _swapMove(i),
+                        onRemove: moves.length > 1
+                            ? () => _removeMove(i)
+                            : null,
+                      ),
+                  ],
                 ],
               ),
             ),
-          if (_editable) ...[
+          if (_editable && _editing)
             AppButton(
               l10n.addAMove,
               key: const ValueKey('r03-add'),
@@ -1099,25 +1140,11 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
                   ? null
                   : _addMoves,
             ),
-            if (widget.onSaveAsMine != null && !_editing)
-              AppButton(
-                l10n.saveAsMyWorkout,
-                key: const ValueKey('r03-save-mine'),
-                variant: AppButtonVariant.text,
-                height: 44,
-                fontSize: 15,
-                onPressed: moves.isEmpty
-                    ? null
-                    : () => widget.onSaveAsMine?.call(moves),
-              ),
-            if ((_changed || widget.editedToday) && !_keptInSaved)
-              Text(
-                l10n.changesHereAreForTodayOnly,
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-          ],
+          if (_editable && (_changed || widget.editedToday) && !_keptInSaved)
+            Text(
+              l10n.changesHereAreForTodayOnly,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
           if (AppRouter.screenIsOn('R04') && moves.any(canOpen))
             Text(
               l10n.tapAnyMoveToWatchItOr,

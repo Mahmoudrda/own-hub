@@ -36,7 +36,7 @@ void main() {
   testWidgets('with no programme, it says so and says what there is', (
     tester,
   ) async {
-    await tester.pumpWidget(_host(const ProgramView()));
+    await tester.pumpWidget(_host(ProgramView(onChangeProgram: () {})));
     await tester.pumpAndSettle();
 
     // The bar names the page, not a programme nobody chose. It read
@@ -69,7 +69,9 @@ void main() {
     // Nothing to download, so nothing offers to spend her data on it.
     expect(find.byIcon(Icons.download), findsNothing);
     // And "Change program" with no programme is an instruction she cannot
-    // follow. Same door, named for what is behind it.
+    // follow. Same door, in the "…", named for what is behind it.
+    await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+    await tester.pumpAndSettle();
     expect(find.text('Change program'), findsNothing);
     expect(find.text('All workouts'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -90,6 +92,7 @@ void main() {
           week: 2,
           totalWeeks: 6,
           onDownloadWeek: () {},
+          onChangeProgram: () {},
         ),
       ),
     );
@@ -106,6 +109,8 @@ void main() {
     expect(find.byType(AppEmptyState), findsNothing);
     // The week is hers to download once there is one and something fetches it.
     expect(find.byIcon(Icons.download), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+    await tester.pumpAndSettle();
     expect(find.text('Change program'), findsOneWidget);
   });
 
@@ -206,9 +211,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text("Start today's session"));
-    // The library door is the last row of a scrolling body, so on a short
-    // viewport it starts below the fold and a tap would never land on it.
-    await tester.ensureVisible(find.text('All workouts'));
+    // The library door is in the "…".
+    await tester.tap(find.byKey(const ValueKey('overflow-menu')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('All workouts'));
     await tester.pumpAndSettle();

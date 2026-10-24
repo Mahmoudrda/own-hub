@@ -365,7 +365,7 @@ void main() {
   });
 
   group('diary rows', () {
-    testWidgets('four meals, each with a Log pill that presets the meal', (
+    testWidgets('four meals, each with a + that presets the meal', (
       tester,
     ) async {
       _phone(tester);
@@ -381,11 +381,21 @@ void main() {
         expect(find.byKey(ValueKey('eat-diary-$meal')), findsOneWidget);
       }
       expect(find.text('Snacks'), findsOneWidget);
-      expect(find.text('Log'), findsNWidgets(4));
+      for (final meal in const ['breakfast', 'lunch', 'dinner', 'snack']) {
+        expect(
+          find.descendant(
+            of: find.byKey(ValueKey('eat-diary-$meal')),
+            matching: find.byType(PlusButton),
+          ),
+          findsOneWidget,
+          reason: meal,
+        );
+      }
+      expect(find.byTooltip('Log Dinner'), findsOneWidget);
 
       final pill = find.descendant(
         of: find.byKey(const ValueKey('eat-diary-dinner')),
-        matching: find.byType(LogPill),
+        matching: find.byType(PlusButton),
       );
       await tester.ensureVisible(pill);
       expect(tester.getSize(pill).height, greaterThanOrEqualTo(48));

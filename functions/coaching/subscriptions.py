@@ -13,7 +13,7 @@ opens.
 from __future__ import annotations
 
 import datetime as dt
-from typing import Callable
+from typing import Callable, Optional
 
 from google.cloud import firestore
 
@@ -79,6 +79,49 @@ def first_name(value) -> str:
     a phone number or an id."""
     words = value.split() if isinstance(value, str) else []
     return words[0][:30] if words and not any(ch.isdigit() for ch in words[0]) else ""
+
+
+CONSENT_VERSION = 2
+"""Version of the two ticks on the request form (sharing her answers with the
+coach, and storing them in Frankfurt). Version 1 was written by the server
+without the client sending anything; version 2 is what she ticked, with the
+hash of the words she saw."""
+_HEX = set("0123456789abcdef")
+
+
+def known_hashes(version_key: str, locale: str, part: str, name: str = "") -> set:
+    """The hashes of every text the app has shown for that tick, language and
+    version (coaching_contract.json, consentTexts)."""
+    texts = common.CONTRACT["consentTexts"][version_key][locale]
+    texts = texts[part] if isinstance(texts, dict) else texts
+    return {common.sha(text.replace("{name}", name)) for text in texts}
+
+
+def consent_of(raw, locale: str, coach_name: str) -> Optional[dict]:
+    """Her ticks as the app sends them: the version, the hash of each text she
+    saw and the app version. None when the app sent none: app 1.0.0 has no
+    such field and its request is recorded with the version 1 ticks instead.
+    shortcut: a modified app can skip the field and get the version 1 record,
+    a weaker proof than none of it being possible; drop the legacy path once
+    1.0.0 is no longer served. Anything else is refused: no ticks, no request."""
+    if raw is None:
+        return None
+    if not isinstance(raw, dict) or raw.get("version") != CONSENT_VERSION or isinstance(raw.get("version"), bool):
+        raise common.bad()
+    out = {"version": CONSENT_VERSION}
+    for key, part in (("shareHash", "share"), ("transferHash", "transfer")):
+        value = raw.get(key)
+        if not isinstance(value, str) or len(value) != 64 or not set(value) <= _HEX:
+            raise common.bad()
+        if value not in known_hashes("coachingRequest2", locale, part, coach_name):
+            raise common.bad()
+        out[key] = value
+    app = raw.get("appVersion")
+    if app is not None:
+        if not isinstance(app, str) or len(app) > 32:
+            raise common.bad()
+        out["appVersion"] = app
+    return out
 
 
 def client_name(given) -> str:
@@ -200,6 +243,7 @@ def request(
     package_id = _id(data.get("packageId"))
     intake = intake_of(data.get("intake"))
     locale = locale_of(data.get("locale"))
+    raw_consent = data.get("consent")
     given_name = data.get("clientName")
     unavailable = common.refuse(errors.PRECONDITION, errors.COACH_UNAVAILABLE)
     if coach_uid == uid:
@@ -231,7 +275,7 @@ def request(
         seen = {
             name: common.consent_ref(db, uid, name).get(transaction=transaction)
             for name in ("coaching-share-v1", "transfer-abroad-v1")
-        }
+        } if raw_consent is None else {}
         row = coach.to_dict() if coach.exists else None
         if (
             row is None
@@ -241,6 +285,7 @@ def request(
             or blocked_coach.exists
         ):
             raise unavailable
+        consent = consent_of(raw_consent, locale, row.get("displayName") or "")
         cap = row.get("maxActiveClients", LIMITS["maxActiveClientsDefault"])
         if row.get("activeClients", 0) >= cap:
             raise unavailable
@@ -305,8 +350,14 @@ def request(
                 "createdAt": now,
             },
         )
-        for name, snap in seen.items():
-            common.record_consent(transaction, common.consent_ref(db, uid, name), snap, locale, now)
+        if consent is None:
+            for name, snap in seen.items():
+                common.record_consent(transaction, common.consent_ref(db, uid, name), snap, locale, now)
+        else:
+            transaction.set(
+                common.consent_ref(db, uid, f"coaching-request-v{CONSENT_VERSION}-{sub_ref.id}"),
+                {**consent, "at": now, "locale": locale, "coachUid": coach_uid, "subId": sub_ref.id},
+            )
         return sub["status"]
 
     status = common.run(db, body)

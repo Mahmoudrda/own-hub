@@ -1,6 +1,6 @@
-// R03's Edit workout switch: every move shows Swap, Remove and a handle, there
-// is an "Add a move" row, and a bar to save the day as a workout of hers or put
-// it back. Swapping shows the move's video first. After a change to a day she
+// R03's Edit moves (in the "…"): every move shows Swap, Remove and a handle,
+// there is an "Add a move" row, a Done to leave and a Reset to put the day back;
+// Save as my workout is in the "…". Swapping shows the move's video first. After a change to a day she
 // keeps she is asked once whether to update it.
 
 import 'dart:async';
@@ -124,8 +124,17 @@ Future<void> _letUndoGo(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _editOn(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('r03-edit-toggle')));
+Future<void> _more(WidgetTester tester, String label) async {
+  await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ValueKey('overflow-row-$label')));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _editOn(WidgetTester tester) => _more(tester, 'Edit moves');
+
+Future<void> _editOff(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('r03-edit-done')));
   await tester.pumpAndSettle();
 }
 
@@ -142,20 +151,21 @@ List<String> _names(WidgetTester tester) => [
 void main() {
   setUp(FakeClipPlayer.made.clear);
 
-  testWidgets('Edit workout is a switch at the top and starts off', (
+  testWidgets('Edit moves is in the "…" and edit mode starts off', (
     tester,
   ) async {
     _tall(tester);
     await tester.pumpWidget(_host(const _Harness()));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('r03-edit-toggle')), findsOneWidget);
-    expect(find.text('Edit workout'), findsOneWidget);
+    expect(find.byKey(const ValueKey('r03-edit-toggle')), findsNothing);
+    expect(find.text('Edit workout'), findsNothing);
+    expect(find.byKey(const ValueKey('overflow-menu')), findsOneWidget);
     expect(find.byKey(const ValueKey('r03-swap-0')), findsNothing);
     expect(find.byKey(const ValueKey('r03-reset')), findsNothing);
     expect(find.text("Start, everything's ready"), findsOneWidget);
   });
 
-  testWidgets('on: Swap, Remove and a handle on every move, Add, Save, Reset', (
+  testWidgets('on: Swap, Remove and a handle on every move, Add, Done, Reset', (
     tester,
   ) async {
     _tall(tester);
@@ -170,12 +180,12 @@ void main() {
       expect(find.byKey(ValueKey('r03-edit-$i')), findsOneWidget);
     }
     expect(find.byKey(const ValueKey('r03-add')), findsOneWidget);
-    expect(find.byKey(const ValueKey('r03-save-mine')), findsOneWidget);
+    expect(find.byKey(const ValueKey('r03-edit-done')), findsOneWidget);
     expect(find.byKey(const ValueKey('r03-reset')), findsOneWidget);
-    // Start waits on the other side of the switch.
+    // Start waits until she is done editing.
     expect(find.text("Start, everything's ready"), findsNothing);
 
-    await _editOn(tester);
+    await _editOff(tester);
     expect(find.byKey(const ValueKey('r03-swap-0')), findsNothing);
     expect(find.text("Start, everything's ready"), findsOneWidget);
   });
@@ -365,7 +375,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
     await tester.pumpAndSettle();
     await _letUndoGo(tester);
-    await tester.tap(find.byKey(const ValueKey('r03-save-mine')));
+    await _more(tester, 'Save as my workout');
     expect(saved!.map((m) => m.exerciseId), [
       'lat_pulldown_wide',
       'dumbbell_hammer_curl',
@@ -394,7 +404,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
       await _letUndoGo(tester);
-      await _editOn(tester);
+      await _editOff(tester);
 
       expect(find.text('Update my plan?'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('r03-update-no')));
@@ -406,7 +416,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
       await _letUndoGo(tester);
-      await _editOn(tester);
+      await _editOff(tester);
       expect(find.text('Update my plan?'), findsNothing);
       expect(updates, 0);
     });
@@ -430,7 +440,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
       await _letUndoGo(tester);
-      await _editOn(tester);
+      await _editOff(tester);
 
       expect(find.text('Update my saved workout?'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('r03-update-yes')));
@@ -448,7 +458,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
       await _letUndoGo(tester);
-      await _editOn(tester);
+      await _editOff(tester);
       await tester.tap(find.byKey(const ValueKey('r03-update-yes')));
       await tester.pumpAndSettle();
       expect(find.text('Updated in your plan'), findsNothing);
@@ -498,7 +508,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(updates, 1);
       // She has left the screen.
-      expect(find.byKey(const ValueKey('r03-edit-toggle')), findsNothing);
+      expect(find.byKey(const ValueKey('r03-edit-done')), findsNothing);
       await _letUndoGo(tester);
     });
 
@@ -538,7 +548,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       await _editOn(tester);
-      await _editOn(tester);
+      await _editOff(tester);
       expect(find.text('Update my plan?'), findsNothing);
     });
 
@@ -555,8 +565,8 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await tester.pumpAndSettle();
       await _letUndoGo(tester);
-      // Leave edit mode by the switch, answer, then start.
-      await _editOn(tester);
+      // Leave edit mode by Done, answer, then start.
+      await _editOff(tester);
       await tester.tap(find.byKey(const ValueKey('r03-update-no')));
       await tester.pumpAndSettle();
       await tester.tap(find.text("Start, everything's ready"));

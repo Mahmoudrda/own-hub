@@ -276,6 +276,8 @@ export function mountCoaching(ctx) {
         h("div", { class: "ba" },
           h("div", {}, h("span", { class: "flabel", text: "Before" }), pic(item.beforePath, "Before photo")),
           h("div", {}, h("span", { class: "flabel", text: "After" }), pic(item.afterPath, "After photo"))),
+        h("div", {}, h("span", { class: "flabel", text: "Her client's written agreement" }),
+          item.consentPath ? pic(item.consentPath, "Written agreement") : h("p", { class: "badge known", text: "No written agreement uploaded: do not approve" })),
         row("Weeks", item.weeks), row("Note", item.note),
         h("p", { class: "badge sage", text: `${L.PORTFOLIO_CONSENT_LINE}${item.consent?.at ? ` · ${dateOnly(item.consent.at)}` : ""}` }));
     } else if (item.kind === "feedback") {

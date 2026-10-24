@@ -14,6 +14,8 @@ import 'package:own_hub/features/train/presentation/resting_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
+import '../../helpers/pause_menu.dart';
+
 Widget _host(
   Widget home, {
   Locale locale = const Locale('en'),
@@ -149,15 +151,14 @@ void main() {
   group('the control on each live screen', () {
     final calls = _Calls();
 
-    testWidgets('R07, R09, R13 and R06 show it when given one', (tester) async {
+    testWidgets('R13 and R06 show it in the bar; R07 and R09 in Pause', (
+      tester,
+    ) async {
       final end = calls.end(1);
-      final screens = <Widget>[
-        MidSetView(move: _move(), end: end),
-        RestingView(end: end, autoStart: false),
+      for (final screen in <Widget>[
         MoveLoggedView(end: end),
         FollowAlongView(end: end),
-      ];
-      for (final screen in screens) {
+      ]) {
         await tester.pumpWidget(_host(screen));
         await tester.pump();
         expect(
@@ -167,15 +168,44 @@ void main() {
         );
         expect(find.text('End workout'), findsOneWidget);
       }
+      for (final screen in <Widget>[
+        MidSetView(move: _move(), end: end),
+        RestingView(end: end, autoStart: false),
+      ]) {
+        await tester.pumpWidget(_host(screen));
+        await tester.pump();
+        // The top bar has only Pause: no End workout beside it.
+        expect(find.byKey(_end), findsNothing);
+        expect(find.text('End workout'), findsNothing);
+        await openPause(tester);
+        expect(
+          find.byKey(const ValueKey('pause-end')),
+          findsOneWidget,
+          reason: screen.runtimeType.toString(),
+        );
+        expect(find.text('End workout'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('pause-resume')));
+        await tester.pumpAndSettle();
+      }
+    });
+
+    testWidgets('Pause > End workout opens the end sheet and acts on it', (
+      tester,
+    ) async {
+      final c = _Calls();
+      await tester.pumpWidget(_host(MidSetView(move: _move(), end: c.end(2))));
+      await tester.pump();
+      await openPause(tester);
+      await tester.tap(find.byKey(const ValueKey('pause-end')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('end-finish')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('end-finish')));
+      await tester.pumpAndSettle();
+      expect(c.finished, 1);
     });
 
     testWidgets('none of them shows it with no workout live', (tester) async {
-      final screens = <Widget>[
-        MidSetView(move: _move()),
-        const RestingView(autoStart: false),
-        const MoveLoggedView(),
-        const FollowAlongView(),
-      ];
+      final screens = <Widget>[const MoveLoggedView(), const FollowAlongView()];
       for (final screen in screens) {
         await tester.pumpWidget(_host(screen));
         await tester.pump();
@@ -184,6 +214,21 @@ void main() {
           findsNothing,
           reason: screen.runtimeType.toString(),
         );
+      }
+      for (final screen in <Widget>[
+        MidSetView(move: _move()),
+        const RestingView(autoStart: false),
+      ]) {
+        await tester.pumpWidget(_host(screen));
+        await tester.pump();
+        await openPause(tester);
+        expect(
+          find.byKey(const ValueKey('pause-end')),
+          findsNothing,
+          reason: screen.runtimeType.toString(),
+        );
+        await tester.tap(find.byKey(const ValueKey('pause-resume')));
+        await tester.pumpAndSettle();
       }
     });
 
@@ -199,7 +244,6 @@ void main() {
             move: _move(),
             moveNumber: 1,
             moveCount: 5,
-            onPause: () {},
             end: calls.end(1),
           ),
           RestingView(
@@ -218,7 +262,15 @@ void main() {
             isNull,
             reason: '${screen.runtimeType} ${locale.languageCode}',
           );
-          expect(find.byKey(_end), findsOneWidget);
+          if (screen is MoveLoggedView) {
+            expect(find.byKey(_end), findsOneWidget);
+          } else {
+            await openPause(tester);
+            expect(find.byKey(const ValueKey('pause-end')), findsOneWidget);
+            expect(tester.takeException(), isNull);
+            await tester.tap(find.byKey(const ValueKey('pause-resume')));
+            await tester.pumpAndSettle();
+          }
         }
       }
     });

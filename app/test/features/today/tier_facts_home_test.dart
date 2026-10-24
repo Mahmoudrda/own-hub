@@ -1,5 +1,6 @@
-// Home shows what the tier she is looking at holds, and it changes when she
-// switches Beginner, Intermediate and Advanced.
+// What the tier she is looking at holds changes when she switches Beginner,
+// Intermediate and Advanced. The tabs and the facts live on the plan screen
+// now; Home shows only that tier's minutes.
 
 import 'dart:io';
 
@@ -52,34 +53,40 @@ Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
   ),
 );
 
-/// Home with the tier tabs wired the way the router wires them: the tab sets
-/// the viewed tier and the facts are worked out again from it.
+/// The tabs and their facts, wired the way the plan screen wires them: the
+/// tab sets the viewed tier and the facts are worked out again from it.
 Widget _home(
   ValueNotifier<TrainingLevel> viewed, {
   TrainingLevel own = TrainingLevel.beginner,
-  int? sessionMinutes = 45,
   String family = 'split_4day',
 }) => ValueListenableBuilder<TrainingLevel>(
   valueListenable: viewed,
-  builder: (context, tier, _) => TodayView(
-    repository: InMemoryTodayRepository(
-      day: InMemoryTodayRepository.defaultDay(date: _tuesday),
+  builder: (context, tier, _) => Scaffold(
+    body: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: TierTabs(
+          selected: tier,
+          onChanged: (t) => viewed.value = t,
+          facts: _facts(tier, own, family: family),
+        ),
+      ),
     ),
-    mealRepository: InMemoryMealRepository(),
-    now: _tuesday,
-    sessionMinutes: sessionMinutes,
-    tierTabs: TierTabs(selected: tier, onChanged: (t) => viewed.value = t),
-    tierFacts: _facts(tier, own, family: family),
-    onStartSession: () {},
-    onRecall: () {},
-    onOpenMeal: () {},
-    onOpenPlate: () {},
-    onOpenWeek: () {},
-    onOpenCycle: () {},
-    onAsk: () {},
-    onNotifications: () {},
-    onSelectTab: (_) {},
   ),
+);
+
+/// Home with the tabs and facts handed to it, as the router used to.
+Widget _homeScreen(TrainingLevel tier) => TodayView(
+  repository: InMemoryTodayRepository(
+    day: InMemoryTodayRepository.defaultDay(date: _tuesday),
+  ),
+  mealRepository: InMemoryMealRepository(),
+  now: _tuesday,
+  sessionMinutes: 45,
+  tierTabs: TierTabs(selected: tier),
+  tierFacts: _facts(tier, TrainingLevel.beginner),
+  onStartSession: () {},
+  onSelectTab: (_) {},
 );
 
 /// The start of the facts line for [f], as Home words it.
@@ -98,7 +105,27 @@ void main() {
   });
   tearDownAll(StartingProgrammes.reset);
 
-  testWidgets('Home shows the facts line, and the minutes it replaces', (
+  testWidgets('Home draws no tabs and no facts block, only the tier minutes', (
+    tester,
+  ) async {
+    _phone(tester);
+    await tester.pumpWidget(_host(_homeScreen(TrainingLevel.advanced)));
+    await tester.pumpAndSettle();
+    final minutes = _facts(
+      TrainingLevel.advanced,
+      TrainingLevel.beginner,
+    ).estimatedMinutes;
+    expect(find.text('Advanced'), findsNothing);
+    expect(find.byKey(const ValueKey('tier-facts-line')), findsNothing);
+    // The viewed tier's minutes, never also her own level's 45.
+    expect(find.text('Week 3 of 8 · $minutes min'), findsOneWidget);
+    expect(
+      find.textContaining('45 min'),
+      minutes == 45 ? findsOneWidget : findsNothing,
+    );
+  });
+
+  testWidgets('the plan screen shows the facts line, and the delta', (
     tester,
   ) async {
     _phone(tester);
@@ -113,8 +140,6 @@ void main() {
       ),
     );
     expect(_line(tester), endsWith(' min'));
-    // "45 min" would sit beside "About 35 min", two answers for one session.
-    expect(find.text('45 min'), findsNothing);
     expect(find.text('This is your level'), findsOneWidget);
     expect(
       find.text('Compared with your level', findRichText: false),

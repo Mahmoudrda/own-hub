@@ -21,8 +21,6 @@ import '../../eat/domain/meal_images.dart';
 import '../../eat/domain/meal_repository.dart' show MealSlot;
 import '../../eat/presentation/eat_day_view_model.dart' show EatDayViewModel;
 import '../../eat/presentation/eat_sample_library.dart' show eatSampleLibrary;
-import '../../train/domain/tier_facts.dart';
-import '../../train/presentation/tier_tabs.dart' show TierFactsBlock;
 import '../domain/today_day.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -30,6 +28,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_chevron.dart';
+import '../../../ui/app_list_item.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_ring_stat.dart';
 import '../../../ui/app_split_row.dart';
@@ -823,9 +822,17 @@ class HomeWeekStrip extends StatelessWidget {
     super.key,
     required this.today,
     this.doneWeekdays = const <int>{},
+    this.caption,
+    this.onTap,
   });
 
   final DateTime today;
+
+  /// One quiet line under the circles, e.g. "This week, 2 of 3".
+  final String? caption;
+
+  /// Opens her progress. The strip is not a control when null.
+  final VoidCallback? onTap;
 
   /// `DateTime.weekday` numbers of the days this week she trained.
   final Set<int> doneWeekdays;
@@ -846,8 +853,7 @@ class HomeWeekStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    return Row(
-      key: const ValueKey('today-week-strip'),
+    final days = Row(
       children: [
         for (final weekday in order)
           Expanded(
@@ -859,6 +865,34 @@ class HomeWeekStrip extends StatelessWidget {
             ),
           ),
       ],
+    );
+    final strip = caption == null
+        ? days
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              days,
+              const SizedBox(height: 4),
+              Text(
+                caption!,
+                textAlign: TextAlign.center,
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          );
+    if (onTap == null) {
+      return KeyedSubtree(
+        key: const ValueKey('today-week-strip'),
+        child: strip,
+      );
+    }
+    return HandPressable(
+      key: const ValueKey('today-week-strip'),
+      onTap: onTap,
+      builder: (_, _) => strip,
     );
   }
 }
@@ -932,8 +966,8 @@ class _DayCircle extends StatelessWidget {
 }
 
 /// Today's session as the page's one big card: a poster, what it is called,
-/// how long it takes, and a single Start. Once it is logged the poster turns
-/// sage and the card says so.
+/// how long it takes, one Start and a quiet "Change". Once it is logged the
+/// poster turns sage and the card says so.
 class TodayHero extends StatelessWidget {
   const TodayHero({
     super.key,
@@ -943,19 +977,13 @@ class TodayHero extends StatelessWidget {
     this.totalWeeks,
     this.art,
     this.onStart,
-    this.onRecall,
-    this.evening = false,
+    this.onChange,
+    this.coached = false,
     this.done = false,
-    this.tierFacts,
   });
 
   final String? title;
   final int? minutes;
-
-  /// What the viewed tier's session holds, and how it differs from her own
-  /// level. When set it stands in for the plain minutes: the facts already say
-  /// about how long the session takes.
-  final TierFacts? tierFacts;
   final int? week;
   final int? totalWeeks;
 
@@ -963,16 +991,17 @@ class TodayHero extends StatelessWidget {
   final Widget? art;
 
   final VoidCallback? onStart;
-  final VoidCallback? onRecall;
-  final bool evening;
+
+  /// Opens the Change sheet. No link when null.
+  final VoidCallback? onChange;
+
+  /// The card is her coach's workout, not her own plan's.
+  final bool coached;
   final bool done;
 
   @override
   Widget build(BuildContext context) {
-    final body = KeyedSubtree(
-      key: ValueKey((done, evening)),
-      child: _body(context),
-    );
+    final body = KeyedSubtree(key: ValueKey(done), child: _body(context));
     // Reduce Motion: the card is replaced, with no size ease to run.
     return handMotionOff(context) ? body : HandSwap(child: body);
   }
@@ -1016,50 +1045,25 @@ class TodayHero extends StatelessWidget {
       );
     }
 
-    final recall = onRecall;
-    final primary = evening && recall != null
-        ? AppButton(
-            l10n.iAlreadyDidIt,
-            height: 56,
-            icon: Icons.check,
-            onPressed: recall,
-          )
-        : AppButton(
-            l10n.startEverythingsReady,
-            height: 56,
-            icon: Icons.play_arrow,
-            onPressed: onStart,
-          );
-    final secondary = recall == null
-        ? null
-        : evening
-        ? AppButton(
-            l10n.startEverythingsReady,
-            variant: AppButtonVariant.outlined,
-            height: 48,
-            fontSize: 15,
-            onPressed: onStart,
-          )
-        : AppButton(
-            l10n.iAlreadyDidIt,
-            variant: AppButtonVariant.text,
-            height: 40,
-            onPressed: recall,
-          );
-
     final facts = [
       if (week != null && totalWeeks != null)
         l10n.weekWeekOfTotal(countLabel(week!), countLabel(totalWeeks!)),
-      if (minutes != null && tierFacts == null) l10n.nMin(countLabel(minutes!)),
+      if (minutes != null) l10n.nMin(countLabel(minutes!)),
     ];
 
     return AppCard(
+      key: const ValueKey('today-card'),
       gap: 12,
       children: [
         _poster(
           color: AppColors.primaryContainer,
           child: art ?? const SizedBox.shrink(),
         ),
+        if (coached)
+          Text(
+            l10n.fromYourCoach,
+            style: AppText.label.copyWith(color: AppColors.primaryDim),
+          ),
         Text(
           title ?? l10n.todaysWorkout,
           style: EditorialType.section.copyWith(fontSize: 26),
@@ -1069,10 +1073,61 @@ class TodayHero extends StatelessWidget {
             facts.join(' · '),
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
-        if (tierFacts != null) TierFactsBlock(facts: tierFacts!),
-        primary,
-        ?secondary,
+        AppButton(
+          l10n.startEverythingsReady,
+          height: 56,
+          icon: Icons.play_arrow,
+          onPressed: onStart,
+        ),
+        if (onChange != null)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: AppButton(
+              l10n.change,
+              key: const ValueKey('today-change'),
+              variant: AppButtonVariant.text,
+              height: 44,
+              fontSize: 15,
+              onPressed: onChange,
+            ),
+          ),
       ],
+    );
+  }
+}
+
+/// Home's one Eat line: what she has eaten against today's target, and a tap
+/// into Eat, where logging lives.
+class HomeEatLine extends StatelessWidget {
+  const HomeEatLine({
+    super.key,
+    this.totals = DayTotals.empty,
+    this.targets,
+    this.onTap,
+  });
+
+  final DayTotals totals;
+  final DailyTargets? targets;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final target = targets?.kcal;
+    final eaten = countLabel(totals.kcalSoFar);
+    final line = target == null || target == 0
+        ? l10n.kcalKcal(eaten)
+        : l10n.eatenOfTargetKcal(eaten, countLabel(target));
+    return AppListItem(
+      key: const ValueKey('today-eat-line'),
+      leading: const Icon(
+        Icons.restaurant_outlined,
+        size: 22,
+        color: AppColors.primaryDim,
+      ),
+      title: line,
+      trailing: const AppChevron(),
+      onTap: onTap,
     );
   }
 }

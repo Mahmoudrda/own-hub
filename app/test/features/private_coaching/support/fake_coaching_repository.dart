@@ -50,6 +50,7 @@ class Feed<T> {
 /// In memory and deterministic. Every call is recorded in [calls]; set
 /// [failWith] to make the named call throw.
 class FakeCoachingRepository implements ChatThreadRepository {
+  Map<String, Object?>? lastConsent;
   FakeCoachingRepository({this.uid = 'me'});
 
   @override
@@ -244,9 +245,11 @@ class FakeCoachingRepository implements ChatThreadRepository {
     required String coachUid,
     required String packageId,
     required Intake intake,
+    required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
   }) async {
+    lastConsent = consent;
     _record('requestCoaching', {
       'coachUid': coachUid,
       'packageId': packageId,
@@ -394,6 +397,22 @@ class FakeCoachingRepository implements ChatThreadRepository {
   Stream<DateTime?> watchOtherReadAt(String relId, String otherUid) =>
       otherReadAt.putIfAbsent(relId, () => Feed<DateTime?>(null)).watch();
 
+  bool rulesAccepted = true;
+  String? rulesText;
+
+  @override
+  Future<bool> chatRulesAccepted() async => rulesAccepted;
+
+  @override
+  Future<void> acceptChatRules({
+    required String rulesText,
+    required String locale,
+  }) async {
+    _record('acceptChatRules', {'locale': locale});
+    this.rulesText = rulesText;
+    rulesAccepted = true;
+  }
+
   @override
   Future<void> markThreadRead(String relId) async {
     _record('markThreadRead', {'relId': relId});
@@ -440,8 +459,11 @@ class FakeCoachingRepository implements ChatThreadRepository {
       _record('removePortfolioMedia', {'mediaId': mediaId});
 
   @override
-  Future<void> confirmMediaConsent(String mediaId) async =>
-      _record('confirmMediaConsent', {'mediaId': mediaId});
+  Future<void> confirmMediaConsent(String mediaId, String consentPath) async =>
+      _record('confirmMediaConsent', {
+        'mediaId': mediaId,
+        'consentPath': consentPath,
+      });
 
   @override
   Future<String> saveDraft(CoachDraft draft) async {

@@ -15,6 +15,7 @@ import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_empty_state.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_list_item.dart';
@@ -110,34 +111,42 @@ class _MovePickerViewState extends State<MovePickerView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AppField(
-                controller: _search,
-                hint: l10n.searchMoves,
-                onChanged: (value) {
-                  _filter.query = value;
-                  _changed();
-                },
-                trailing: const Icon(
-                  Icons.search,
-                  size: 22,
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: kStackGap),
-              ExploreChips(
-                filter: _filter,
-                onChanged: _changed,
-                showFilters: exploreHasSheet(widget.exercises),
-                onOpenFilters: () => showExploreFilters(
-                  context,
-                  filter: _filter,
-                  exercises: widget.exercises,
-                  onChanged: _changed,
-                  matchCount: () => [
-                    for (final e in widget.exercises)
-                      if (_filter.keepMove(e)) e,
-                  ].length,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: AppField(
+                      controller: _search,
+                      hint: l10n.searchMoves,
+                      onChanged: (value) {
+                        _filter.query = value;
+                        _changed();
+                      },
+                      trailing: const Icon(
+                        Icons.search,
+                        size: 22,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  AppChip(
+                    l10n.filters,
+                    key: const ValueKey('r01-filters'),
+                    icon: Icons.tune,
+                    selected: _filter.narrowsBySheet,
+                    onTap: () => showExploreFilters(
+                      context,
+                      filter: _filter,
+                      exercises: widget.exercises,
+                      onChanged: _changed,
+                      matchCount: () => [
+                        for (final e in widget.exercises)
+                          if (_filter.keepMove(e)) e,
+                      ].length,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: kStackGap),
               Expanded(

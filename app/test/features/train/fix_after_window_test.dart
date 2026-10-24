@@ -236,6 +236,10 @@ void main() {
 
       await tester.pumpWidget(_host(FinishedView(onRemove: () {})));
       await tester.pump(const Duration(seconds: 3));
+      // On R10 it is in the "…", so the peak stays the peak.
+      expect(find.text('Remove this session'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
       expect(find.text('Remove this session'), findsOneWidget);
     });
 

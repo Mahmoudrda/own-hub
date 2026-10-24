@@ -99,16 +99,24 @@ def _ledger_ref(uid: str):
     return store.db().collection(config.COL_LEDGER).document(uid)
 
 
-def approve(approved_by: str, uid: Any, via: str) -> str:
+def approve(approved_by: str, uid: Any, via: str, adult_seen: bool = False, confirmed: Optional[dict] = None) -> str:
     """Mint her claim, set her state, close any open flag, drop her booking.
 
     `approved_by` is the reviewer's uid, or "system" for a phone route. The
     flag is closed first (its registry claim can refuse a duplicate card);
     the mint then retries, and a mint that still fails is left to the hourly
-    job exactly as review.decide leaves it."""
+    job exactly as review.decide leaves it.
+
+    A reviewer's approval carries no ID, so it must carry her confirmation that
+    she saw proof the woman is 18 or older (`adult_seen`); the ledger keeps who
+    confirmed and when. The system routes pass `adult_seen` themselves: a
+    pre-approved number only after a reviewer confirmed it when adding it, test
+    numbers and the store review account are not members."""
     uid = _uid(uid)
     if uid == approved_by:
         _fail(review.PRECONDITION, reasons.REVIEWER_IS_SUBJECT)
+    if via in APPROVE_REASONS and adult_seen is not True:
+        _fail(review.INVALID)
     rs = store.FirestoreReviewStore()
     flag_id = rs.open_flag_id(uid)
     if flag_id:
@@ -127,14 +135,17 @@ def approve(approved_by: str, uid: Any, via: str) -> str:
         if not flag_id:
             _fail(review.PRECONDITION)
         rs.mark_mint_pending(flag_id)
-    _ledger_ref(uid).set(
-        {
-            "approvedVia": via,
-            "approvedBy": approved_by,
-            "approvedAt": firestore.SERVER_TIMESTAMP,
-        },
-        merge=True,
-    )
+    ledger = {
+        "approvedVia": via,
+        "approvedBy": approved_by,
+        "approvedAt": firestore.SERVER_TIMESTAMP,
+    }
+    if via in APPROVE_REASONS:
+        ledger["adultConfirmedBy"] = approved_by
+    elif confirmed:  # a pre-approved number: the reviewer who confirmed it, and when
+        ledger["adultConfirmedBy"] = confirmed["by"]
+        ledger["adultConfirmedAt"] = confirmed["at"]
+    _ledger_ref(uid).set(ledger, merge=True)
     rs.log_access(approved_by, flag_id or uid, f"approve:{via}")
     _drop_bookings(uid)
     return review.STATE_APPROVED
@@ -147,14 +158,14 @@ def _drop_bookings(uid: str, keep: Optional[str] = None) -> None:
             bookings.document(snapshot.id).delete()
 
 
-def approve_many(reviewer_uid: str, uids: Any) -> dict:
-    if not isinstance(uids, list) or len(uids) > config.APPROVE_BATCH_MAX:
+def approve_many(reviewer_uid: str, uids: Any, adult_seen: bool = False) -> dict:
+    if not isinstance(uids, list) or len(uids) > config.APPROVE_BATCH_MAX or adult_seen is not True:
         _fail(review.INVALID)
     approved: list[str] = []
     failed: list[str] = []
     for uid in dict.fromkeys(u for u in uids if isinstance(u, str)):
         try:
-            approve(reviewer_uid, uid, "approve")
+            approve(reviewer_uid, uid, "approve", True)
             approved.append(uid)
         except Exception:  # noqa: BLE001 - one bad row must not stop the rest
             failed.append(uid)
@@ -415,34 +426,78 @@ def _approved_rows(limit: int) -> list[dict]:
 # ------------------------------------------------------------ pre-approved
 
 
+PREAPPROVED_UNDO = dt.timedelta(minutes=5)
+"""A removed number stays here this long, marked `removedAt`, so Undo can bring
+back the exact record (who confirmed her age, and when). Any list or edit
+afterwards deletes the ones past this."""
+
+
+def _live_preapproved(now: Optional[dt.datetime] = None) -> list:
+    """The numbers on the list. Removed ones past the undo window are deleted
+    here; the ones inside it are not on the list."""
+    now = now or dt.datetime.now(dt.timezone.utc)
+    live = []
+    for snapshot in store.db().collection(config.COL_PREAPPROVED).limit(2000).stream():
+        removed = (snapshot.to_dict() or {}).get("removedAt")
+        if removed is None:
+            live.append(snapshot)
+        elif now - removed > PREAPPROVED_UNDO:
+            snapshot.reference.delete()
+    return live
+
+
 def list_preapproved() -> list[str]:
-    docs = store.db().collection(config.COL_PREAPPROVED).limit(2000).stream()
-    return sorted(s.id for s in docs)
+    return sorted(s.id for s in _live_preapproved())
 
 
-def set_preapproved(reviewer_uid: str, add: Any, remove: Any) -> list[str]:
+def needing_age_tick() -> list[str]:
+    """Live numbers with no recorded 18+ confirmation: they approve no one."""
+    return sorted(s.id for s in _live_preapproved() if not (s.to_dict() or {}).get("adultConfirmedBy"))
+
+
+def set_preapproved(
+    reviewer_uid: str, add: Any, remove: Any, adult_seen: bool = False, restore: Any = None
+) -> list[str]:
     if add is not None and not isinstance(add, str):
         _fail(review.INVALID)
-    if remove is not None and not isinstance(remove, list):
-        _fail(review.INVALID)
+    for names in (remove, restore):
+        if names is not None and not isinstance(names, list):
+            _fail(review.INVALID)
     additions = parse_numbers(add)
-    if len(additions) > config.PREAPPROVED_ADD_MAX:
+    if len(additions) > config.PREAPPROVED_ADD_MAX or (additions and adult_seen is not True):
         _fail(review.INVALID)
     col = store.db().collection(config.COL_PREAPPROVED)
     for number in additions:
         col.document(number).set(
-            {"phone": number, "addedBy": reviewer_uid, "addedAt": firestore.SERVER_TIMESTAMP}
+            {
+                "phone": number,
+                "addedBy": reviewer_uid,
+                "addedAt": firestore.SERVER_TIMESTAMP,
+                "adultConfirmedBy": reviewer_uid,
+            }
         )
     for raw in remove or []:
         number = normalise_phone(raw)
-        if number:
-            col.document(number).delete()
+        if number and col.document(number).get().exists:
+            col.document(number).set({"removedAt": firestore.SERVER_TIMESTAMP}, merge=True)
+    now = dt.datetime.now(dt.timezone.utc)
+    for raw in restore or []:
+        number = normalise_phone(raw)
+        row = (col.document(number).get().to_dict() or {}) if number else {}
+        removed = row.get("removedAt")
+        if removed is not None and now - removed <= PREAPPROVED_UNDO:
+            row.pop("removedAt")
+            col.document(number).set(row)
     store.FirestoreReviewStore().log_access(reviewer_uid, "*", "preapproved:edit")
     return list_preapproved()
 
 
 def is_preapproved(phone: str) -> bool:
-    return store.db().collection(config.COL_PREAPPROVED).document(phone).get().exists
+    """On the list with a reviewer's 18+ confirmation. A number added before
+    that confirmation existed waits for the normal check instead, and a removed
+    one (waiting out its undo window) is not on the list."""
+    row = store.db().collection(config.COL_PREAPPROVED).document(phone).get().to_dict() or {}
+    return bool(row.get("adultConfirmedBy")) and row.get("removedAt") is None
 
 
 # ------------------------------------------------------------ fast routes
@@ -475,12 +530,16 @@ def claim_fast(uid: str, phone: Optional[str], store_reviewer: bool) -> dict:
     # reviewer can still approve her directly.
     if state == review.STATE_REJECTED and via == VIA_PREAPPROVED:
         return {"state": "none"}
-    approve("system", uid, via)
+    number = normalise_phone(phone)
+    confirmed = None
     if via == VIA_PREAPPROVED:
-        # The number is personal data and has done its one job.
-        number = normalise_phone(phone)
-        if number:
-            store.db().collection(config.COL_PREAPPROVED).document(number).delete()
+        row = store.db().collection(config.COL_PREAPPROVED).document(number).get().to_dict() or {}
+        confirmed = {"by": row.get("adultConfirmedBy"), "at": row.get("addedAt")}
+    approve("system", uid, via, confirmed=confirmed)
+    if via == VIA_PREAPPROVED:
+        # The number is personal data and has done its one job; the ledger
+        # now keeps who confirmed her age.
+        store.db().collection(config.COL_PREAPPROVED).document(number).delete()
     return {"state": review.STATE_APPROVED, "via": via}
 
 

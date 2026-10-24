@@ -552,7 +552,9 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     path: 'verificationPreapproved/{E.164 phone of her Auth account}',
     owner: 'G7',
     method: DeletionMethod.groupHook,
-    note: 'the pre-approval saved against her phone number',
+    note:
+        'the pre-approval saved against her phone number; a removed number is '
+        'purged by the hourly cleanup once its undo window has passed',
   ),
   DeletionRow(
     number: 53,
@@ -613,6 +615,29 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
         'NOT deleted, pseudonymised. A payment record stays for the books '
         'with her uid replaced by a token and her typed names emptied. None '
         'exists while payments are off',
+  ),
+  DeletionRow(
+    number: 60,
+    path:
+        'reports/{id}/evidence/content where the report\'s reporterUid or '
+        'subjectUid == uid',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.pseudonymised,
+    note:
+        'the copy of what was reported (the text of the message, or the '
+        'portfolio name and headline), taken when the report was made. Deleted when the reporter deletes her account; kept, '
+        'pseudonymised, when the reported side deletes hers, until the '
+        'reporter deletes hers or the retention period set with counsel',
+  ),
+  DeletionRow(
+    number: 61,
+    path: 'coachPrivate/{uid}/mediaConsents/{id}',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note:
+        'a coach\'s evidence that a client agreed in writing to her photos '
+        'being shown (the picture of the release), deleted with her coach '
+        'space; the release file is row 24',
   ),
 ];
 

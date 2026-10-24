@@ -1,22 +1,19 @@
-/// E01 — Eat, the one place for food.
+/// E01 and E02 — Eat, the one place for food.
 ///
-/// Logging a meal, finding a recipe and planning the week's dinners used to be
-/// four screens (E01, E02, E05, E07) and a centre button. This is one page: a
-/// search bar that never scrolls away (type it, say it, or snap it) over three
-/// segments.
+/// One page with two states, which the router names E01 and E02.
 ///
-///  * **Log**: the day's ring and macros, the four meals each with a Log pill,
-///    the meal-photo card, then Recent / Frequent / Favourites and her usual
-///    picks. An undo bar for the meal she has just logged (E04's job).
-///  * **Recipes**: search, filters, and the recipes grouped by meal.
-///  * **Plan**: this week's dinners and the grocery list under them.
+///  * **E01, "What I ate today"**: the day's hero, the four meals each with one
+///    "+", and a search field with the camera inside it. Recipes and the week's
+///    plan are two quiet rows under the meals and open in this page, with a
+///    back arrow.
+///  * **E02, "Find and add"**: the same field, focused, over Recent, Frequent
+///    and Favourites, Quick custom and the pack. Typing searches foods right
+///    here; logging returns to the day with the undo bar showing.
 ///
-/// Typing in the bar searches foods right here: while there is text, the food
-/// results replace the segment's content, and logging from them returns to the
-/// day with the undo bar showing.
-///
-/// It reuses the screens that already did each job, in their `embedded` mode,
-/// so every logging path (slots, the five seconds, undo, favourites, portions,
+/// She is in E02 when the router names it, when she taps the field, when text
+/// is in it, or when she taps a "+" that has no usual plate to log. The page
+/// reuses the screens that already did each job, in their `embedded` mode, so
+/// every logging path (slots, the five seconds, undo, favourites, portions,
 /// quick custom foods, allergy guard) is the same code as before. E05, E06,
 /// E07 and E08 stay as pushed screens for deep links and notifications.
 library;
@@ -33,7 +30,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_field.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
-import '../../../ui/app_segmented.dart';
+import '../../../ui/app_list_item.dart';
 import '../../../ui/screen_art_strip.dart';
 import '../../../ui/screen_scope.dart';
 import '../../../ui/hand/hand.dart';
@@ -47,7 +44,6 @@ import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
 import '../domain/recipe.dart';
 import 'eat_view.dart';
-import 'eat_widgets.dart' show SnapMealButton;
 import 'grocery_list_view.dart';
 import 'meal_log_session.dart';
 import 'recipes_view.dart';
@@ -195,6 +191,12 @@ class _EatHubViewState extends State<EatHubView> {
   final ScrollController _scroll = ScrollController();
 
   late EatHubSegment _segment = widget.initialSegment;
+
+  /// E02: the page is for finding and adding. Sticky, so a tap on a tab or a
+  /// row inside it cannot drop her back to the day.
+  bool _finding = false;
+  bool _isE02 = false;
+  bool _scopeRead = false;
   final Set<EatHubSegment> _visited = <EatHubSegment>{};
   MealSlot? _slot;
   LogHandle? _justLogged;
@@ -213,13 +215,46 @@ class _EatHubViewState extends State<EatHubView> {
     _slot = widget.initialSlot;
     _text.text = widget.initialText ?? '';
     _text.addListener(_typed);
+    _focus.addListener(_focusChanged);
+    _finding = _slot != null || _text.text.trim().isNotEmpty;
     _justLogged = widget.justLogged;
     _points = widget.foodPointsFor?.call(_justLogged) ?? 0;
     _visited.add(_segment);
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_scopeRead) return;
+    _scopeRead = true;
+    _isE02 = ScreenScope.of(context) == 'E02';
+    if (_isE02) _finding = true;
+  }
+
+  void _focusChanged() {
+    if (_focus.hasFocus && !_finding && mounted) {
+      setState(() => _finding = true);
+    }
+  }
+
+  /// Leaves E02 for the day: from the close icon, or back. On the routed E02
+  /// this closes the page instead.
+  void _leaveFinding() {
+    if (_isE02 && Navigator.of(context).canPop()) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+    _focus.unfocus();
+    _text.clear();
+    setState(() {
+      _finding = false;
+      _slot = null;
+    });
+  }
+
+  @override
   void dispose() {
+    _focus.removeListener(_focusChanged);
     _text.removeListener(_typed);
     _text.dispose();
     _focus.dispose();
@@ -243,8 +278,6 @@ class _EatHubViewState extends State<EatHubView> {
     widget.onSearch?.call(_text.text);
     if (mounted) setState(() {});
   }
-
-  bool get _searching => _text.text.trim().isNotEmpty;
 
   /// The segments this build has switched on. Log is always there.
   List<EatHubSegment> get _segments => [
@@ -274,6 +307,7 @@ class _EatHubViewState extends State<EatHubView> {
       _points = widget.foodPointsFor?.call(handle) ?? 0;
       _segment = EatHubSegment.log;
       _slot = null;
+      _finding = false;
       _text.clear();
     });
     widget.onLogged?.call(handle);
@@ -281,10 +315,12 @@ class _EatHubViewState extends State<EatHubView> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTop());
   }
 
-  /// A Log pill on a meal row: aim the next food at that meal and start typing.
+  /// A "+" on a meal row with no usual plate: aim the next food at that meal
+  /// and start typing.
   void _logInto(MealSlot slot) {
     setState(() {
       _slot = slot;
+      _finding = true;
       _segment = EatHubSegment.log;
     });
     _scrollToTop();
@@ -310,67 +346,76 @@ class _EatHubViewState extends State<EatHubView> {
     final l10n = AppL10n.of(context);
     final segments = _segments;
     final segment = segments.contains(_segment) ? _segment : segments.first;
-    final searching = _searching;
+    final inLog = segment == EatHubSegment.log;
 
-    final header = _header(l10n, segments, segment);
+    final header = inLog ? _header(l10n) : _subHeader(l10n, segment);
     // At the largest text sizes the header would leave the lists a sliver, so it
     // scrolls with them instead of staying pinned.
     final pinned = MediaQuery.textScalerOf(context).scale(1) <= 1.5;
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      bottomNavigationBar: AppNavBar(
-        // The screen it was opened as. The bar marks a tab active only on the
-        // screen that tab owns, so on E02 or E04 the Eat tab is a way back to
-        // E01 rather than a claim about a page she is not on. Outside the router
-        // there is no scope, and E01 is the right answer there.
-        activeScreenId: ScreenScope.of(context) ?? 'E01',
-        onSelect: (id) {
-          final onTab = widget.onSelectTab;
-          if (onTab != null) {
-            onTab(id);
-            return;
-          }
-          openScreen(context, id);
-        },
-      ),
-      body: PaperPage(
-        color: AppColors.surface,
-        child: SafeArea(
-          child: Column(
-            children: [
-              if (pinned)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: header,
-                ),
-              Expanded(
-                child: SingleChildScrollView(
-                  key: const ValueKey('eat-hub-scroll'),
-                  controller: _scroll,
-                  padding: EdgeInsets.fromLTRB(16, pinned ? 0 : 8, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (!pinned) header,
-                      ..._content(l10n, segment, searching),
-                    ],
+    return PopScope(
+      // Back from Recipes or Plan returns to the day; back from the search on
+      // E01 returns to the day. The routed E02 closes like any pushed page.
+      canPop: inLog && (!_finding || _isE02),
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (!inLog) {
+          _select(EatHubSegment.log);
+        } else {
+          _leaveFinding();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.surface,
+        bottomNavigationBar: AppNavBar(
+          // The screen it was opened as. The bar marks a tab active only on the
+          // screen that tab owns, so on E02 or E04 the Eat tab is a way back to
+          // E01 rather than a claim about a page she is not on. Outside the
+          // router there is no scope, and E01 is the right answer there.
+          activeScreenId: ScreenScope.of(context) ?? 'E01',
+          onSelect: (id) {
+            final onTab = widget.onSelectTab;
+            if (onTab != null) {
+              onTab(id);
+              return;
+            }
+            openScreen(context, id);
+          },
+        ),
+        body: PaperPage(
+          color: AppColors.surface,
+          child: SafeArea(
+            child: Column(
+              children: [
+                if (pinned)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: header,
+                  ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    key: const ValueKey('eat-hub-scroll'),
+                    controller: _scroll,
+                    padding: EdgeInsets.fromLTRB(16, pinned ? 0 : 8, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!pinned) header,
+                        ..._content(l10n, segment),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// The search bar, the meal it is aimed at, and the segments.
-  Widget _header(
-    AppL10n l10n,
-    List<EatHubSegment> segments,
-    EatHubSegment segment,
-  ) {
+  /// The search field with the camera inside it, and the meal it is aimed at.
+  Widget _header(AppL10n l10n) {
     final voice = widget.onSpeak != null && AppRouter.screenIsOn('E03');
     final slot = _slot;
     return Column(
@@ -378,47 +423,45 @@ class _EatHubViewState extends State<EatHubView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: AppField(
-                key: const ValueKey('eat-hub-search'),
-                controller: _text,
-                focusNode: _focus,
-                hint: voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
-                trailing: (voice || _searching)
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_searching)
-                            IconButton(
-                              key: const ValueKey('eat-hub-clear'),
-                              onPressed: _text.clear,
-                              tooltip: l10n.clear,
-                              iconSize: 22,
-                              color: AppColors.onSurfaceVariant,
-                              icon: const Icon(Icons.close),
-                            ),
-                          if (voice)
-                            IconButton(
-                              key: const ValueKey('eat-hub-mic'),
-                              onPressed: widget.onSpeak,
-                              tooltip: l10n.weNeedTheMicrophoneToHearWhat,
-                              iconSize: 22,
-                              color: AppColors.primaryDim,
-                              icon: const Icon(Icons.mic),
-                            ),
-                        ],
-                      )
-                    : null,
-              ),
-            ),
-            if (widget.onSnap case final snap?) ...[
-              const SizedBox(width: 10),
-              SnapMealButton(label: l10n.snapYourMeal, onPressed: snap),
+        AppField(
+          key: const ValueKey('eat-hub-search'),
+          controller: _text,
+          focusNode: _focus,
+          hint: _finding && voice
+              ? l10n.sayOrTypeWhatYouAte
+              : l10n.typeWhatYouAte,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_finding)
+                IconButton(
+                  key: const ValueKey('eat-hub-clear'),
+                  onPressed: _leaveFinding,
+                  tooltip: l10n.clear,
+                  iconSize: 22,
+                  color: AppColors.onSurfaceVariant,
+                  icon: const Icon(Icons.close),
+                ),
+              if (_finding && voice)
+                IconButton(
+                  key: const ValueKey('eat-hub-mic'),
+                  onPressed: widget.onSpeak,
+                  tooltip: l10n.weNeedTheMicrophoneToHearWhat,
+                  iconSize: 22,
+                  color: AppColors.primaryDim,
+                  icon: const Icon(Icons.mic),
+                ),
+              if (widget.onSnap case final snap?)
+                IconButton(
+                  key: const ValueKey('eat-snap-meal'),
+                  onPressed: snap,
+                  tooltip: l10n.snapYourMeal,
+                  iconSize: 22,
+                  color: AppColors.primaryDim,
+                  icon: const Icon(Icons.photo_camera_outlined),
+                ),
             ],
-          ],
+          ),
         ),
         if (slot != null)
           Padding(
@@ -446,15 +489,6 @@ class _EatHubViewState extends State<EatHubView> {
               ],
             ),
           ),
-        if (segments.length > 1) ...[
-          const SizedBox(height: 10),
-          AppSegmented(
-            key: const ValueKey('eat-hub-segments'),
-            items: [for (final s in segments) _segmentLabel(l10n, s)],
-            selectedIndex: segments.indexOf(segment),
-            onChanged: (index) => _select(segments[index]),
-          ),
-        ],
         // Each of these draws only for the screens it serves: E01 sets its
         // drawing inline, E02 and E04 take the strip.
         const Padding(
@@ -466,6 +500,73 @@ class _EatHubViewState extends State<EatHubView> {
         ),
         const ScreenArtStrip(size: 40),
         const SizedBox(height: 4),
+      ],
+    );
+  }
+
+  /// Recipes and Plan open in this page, with a way back to the day.
+  Widget _subHeader(AppL10n l10n, EatHubSegment segment) {
+    return Row(
+      key: const ValueKey('eat-hub-subheader'),
+      children: [
+        IconButton(
+          key: const ValueKey('eat-hub-back'),
+          onPressed: () => _select(EatHubSegment.log),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          icon: const BackButtonIcon(),
+        ),
+        Expanded(
+          child: Text(_segmentLabel(l10n, segment), style: AppText.titleL),
+        ),
+      ],
+    );
+  }
+
+  /// Recipes and Plan, as two quiet rows under the day.
+  Widget _moreRows(AppL10n l10n) {
+    final recipes = AppRouter.screenIsOn('E05');
+    final plan = AppRouter.screenIsOn('E07');
+    if (!recipes && !plan) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8,
+      children: [
+        if (recipes)
+          AppListItem(
+            key: const ValueKey('eat-hub-open-recipes'),
+            leading: const Icon(
+              Icons.menu_book,
+              size: 23,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.recipes,
+            subtitle: l10n.egyptianDishesWithPortionsAndCostPer,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: () => _select(EatHubSegment.recipes),
+          ),
+        if (plan)
+          AppListItem(
+            key: const ValueKey('eat-hub-open-plan'),
+            leading: const Icon(
+              Icons.calendar_view_week,
+              size: 23,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.plan,
+            subtitle: l10n.fiveEgyptianDinnersAndOneShoppingList,
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: AppColors.onSurfaceVariant,
+            ),
+            onTap: () => _select(EatHubSegment.plan),
+          ),
       ],
     );
   }
@@ -483,34 +584,14 @@ class _EatHubViewState extends State<EatHubView> {
     ),
   );
 
-  List<Widget> _content(AppL10n l10n, EatHubSegment segment, bool searching) {
+  List<Widget> _content(AppL10n l10n, EatHubSegment segment) {
     final inLog = segment == EatHubSegment.log;
-    final typeIt = Padding(
-      key: const ValueKey('eat-hub-food'),
-      padding: const EdgeInsets.only(top: kStackGap),
-      child: TypeItView(
-        constraints: widget.constraints,
-        repository: _repo,
-        session: widget.session,
-        library: widget.library,
-        now: widget.now,
-        slot: _slot,
-        targets: widget.targets,
-        history: widget.historyOf?.call(l10n) ?? widget.history,
-        frequent: widget.frequentOf?.call(l10n) ?? widget.frequent,
-        embedded: true,
-        controller: _text,
-        fieldFocus: _focus,
-        onLogged: _logged,
-        onBlocked: widget.onBlocked,
-        requireAccount: widget.requireAccount,
-      ),
-    );
+    final finding = inLog && _finding;
 
     return [
       _kept(
         const ValueKey('eat-hub-day'),
-        inLog && !searching,
+        inLog && !finding,
         EatView(
           constraints: widget.constraints,
           repository: _repo,
@@ -523,18 +604,39 @@ class _EatHubViewState extends State<EatHubView> {
           embedded: true,
           slot: _slot,
           onLogInto: _logInto,
-          onSnap: widget.onSnap,
           onLogged: _logged,
           onBlocked: widget.onBlocked,
           requireAccount: widget.requireAccount,
+          below: _moreRows(l10n),
         ),
       ),
-      if (searching || inLog) typeIt,
+      if (finding)
+        Padding(
+          key: const ValueKey('eat-hub-food'),
+          padding: const EdgeInsets.only(top: kStackGap),
+          child: TypeItView(
+            constraints: widget.constraints,
+            repository: _repo,
+            session: widget.session,
+            library: widget.library,
+            now: widget.now,
+            slot: _slot,
+            targets: widget.targets,
+            history: widget.historyOf?.call(l10n) ?? widget.history,
+            frequent: widget.frequentOf?.call(l10n) ?? widget.frequent,
+            embedded: true,
+            controller: _text,
+            fieldFocus: _focus,
+            onLogged: _logged,
+            onBlocked: widget.onBlocked,
+            requireAccount: widget.requireAccount,
+          ),
+        ),
       if (_visited.contains(EatHubSegment.recipes) &&
           AppRouter.screenIsOn('E05'))
         _kept(
           const ValueKey('eat-hub-recipes'),
-          segment == EatHubSegment.recipes && !searching,
+          segment == EatHubSegment.recipes,
           RecipesPanel(
             book: widget.book,
             constraints: widget.constraints,
@@ -547,7 +649,7 @@ class _EatHubViewState extends State<EatHubView> {
       if (_visited.contains(EatHubSegment.plan) && AppRouter.screenIsOn('E07'))
         _kept(
           const ValueKey('eat-hub-plan'),
-          segment == EatHubSegment.plan && !searching,
+          segment == EatHubSegment.plan,
           _plan(l10n),
         ),
     ];

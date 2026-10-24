@@ -431,7 +431,36 @@ void main() {
       expect(find.text('9:50'), findsOneWidget);
     });
 
-    testWidgets('a paused rest stays paused when she changes it', (
+    testWidgets('Pause holds the clock; Resume goes on from where it stopped', (
+      tester,
+    ) async {
+      var paused = 0;
+      await tester.pumpWidget(
+        _host(
+          RestingView(
+            remaining: const Duration(seconds: 40),
+            total: const Duration(seconds: 60),
+            onPause: () => paused++,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('0:38'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('pause')));
+      await tester.pumpAndSettle();
+      expect(paused, 1);
+      await tester.pump(const Duration(seconds: 5));
+      expect(find.text('0:38'), findsOneWidget, reason: 'held while paused');
+
+      await tester.tap(find.byKey(const ValueKey('pause-resume')));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('0:35'), findsOneWidget);
+    });
+
+    testWidgets('closing the Pause sheet without a choice resumes too', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -443,15 +472,12 @@ void main() {
         ),
       );
       await tester.pump();
-      await tester.tap(find.byTooltip('Pause'));
-      await tester.pump();
-
-      await tester.tap(find.byKey(const ValueKey('r09-more-15')));
-      await tester.pump();
-      expect(find.text('0:55'), findsOneWidget);
-
-      await tester.pump(const Duration(seconds: 3));
-      expect(find.text('0:55'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('pause')));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('0:38'), findsOneWidget);
     });
 
     testWidgets('a running rest goes on counting from the new time', (
@@ -473,16 +499,31 @@ void main() {
       expect(find.text('0:53'), findsOneWidget);
     });
 
-    testWidgets('skip ends the rest and moves on', (tester) async {
+    testWidgets('there is no Skip timer: I\'m ready ends the rest', (
+      tester,
+    ) async {
       var ready = 0;
       await tester.pumpWidget(
         _host(RestingView(autoStart: false, onReady: () => ready++)),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('r09-skip-rest')));
+      expect(find.byKey(const ValueKey('r09-skip-rest')), findsNothing);
+      expect(find.text('Skip timer'), findsNothing);
+      await tester.tap(find.text("I'm ready, next set"));
       await tester.pump();
       expect(ready, 1);
+    });
+
+    testWidgets('after the last set of a move the button says Next move', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(const RestingView(autoStart: false, nextIsNewMove: true)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Next move'), findsOneWidget);
+      expect(find.text("I'm ready, next set"), findsNothing);
     });
 
     testWidgets('the alert is for the time she chose', (tester) async {
@@ -531,11 +572,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        for (final key in const [
-          'r09-less-15',
-          'r09-more-15',
-          'r09-skip-rest',
-        ]) {
+        for (final key in const ['r09-less-15', 'r09-more-15']) {
           final size = tester.getSize(find.byKey(ValueKey(key)));
           expect(size.height, greaterThanOrEqualTo(48), reason: key);
           expect(size.width, greaterThanOrEqualTo(48), reason: key);

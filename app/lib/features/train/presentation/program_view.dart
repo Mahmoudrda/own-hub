@@ -33,6 +33,7 @@ import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_empty_state.dart';
+import '../../../ui/app_overflow_menu.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/hand/hand.dart';
 import 'train_widgets.dart';
@@ -78,7 +79,21 @@ class ProgramView extends StatelessWidget {
     this.onCustomizePlan,
     this.hasMyPlan = false,
     this.onOpenRecentSessions,
+    this.onStartPlanFromScratch,
+    this.onEditSplit,
+    this.onBuildOwn,
   });
+
+  /// "Start from scratch": an empty plan of her own. Offered while she has
+  /// none.
+  final VoidCallback? onStartPlanFromScratch;
+
+  /// "Edit one of the three splits": asks which split to copy. Offered while
+  /// she has no plan of her own.
+  final VoidCallback? onEditSplit;
+
+  /// "Build my own workout": the builder for a single workout.
+  final VoidCallback? onBuildOwn;
 
   /// Opens her last finished sessions, to fix a set. Null draws no button.
   final VoidCallback? onOpenRecentSessions;
@@ -150,6 +165,48 @@ class ProgramView extends StatelessWidget {
     final days = this.days ?? const <ProgramDay>[];
     final hasProgram = days.isNotEmpty;
 
+    final planItems = <AppOverflowItem>[
+      if (hasProgram && onCustomizePlan != null)
+        AppOverflowItem(
+          icon: Icons.tune,
+          label: hasMyPlan ? l10n.editMyPlan : l10n.customizeThisPlan,
+          onTap: onCustomizePlan!,
+        ),
+      if (onStartPlanFromScratch != null && !hasMyPlan)
+        AppOverflowItem(
+          icon: Icons.add,
+          label: l10n.startFromScratch,
+          onTap: onStartPlanFromScratch!,
+        ),
+      if (onEditSplit != null && !hasMyPlan)
+        AppOverflowItem(
+          icon: Icons.splitscreen,
+          label: l10n.editOneOfTheThreeSplits,
+          onTap: onEditSplit!,
+        ),
+      if (onBuildOwn != null)
+        AppOverflowItem(
+          icon: Icons.fitness_center,
+          label: l10n.buildMyOwnWorkout,
+          onTap: onBuildOwn!,
+        ),
+      // "Change program" with no programme to change is an instruction she
+      // cannot follow. The same door, named for what is behind it: the
+      // library, which is where a programme would be chosen.
+      if (AppRouter.screenIsOn('R01') && onChangeProgram != null)
+        AppOverflowItem(
+          icon: Icons.swap_horiz,
+          label: hasProgram ? l10n.changeProgram : l10n.allWorkouts,
+          onTap: onChangeProgram!,
+        ),
+      if (onOpenRecentSessions != null)
+        AppOverflowItem(
+          icon: Icons.history,
+          label: l10n.recentSessions,
+          onTap: onOpenRecentSessions!,
+        ),
+    ];
+
     return AppScaffold(
       appBar: AppTopBar(
         // The programme's name when there is one, and the section's own name
@@ -176,6 +233,9 @@ class ProgramView extends StatelessWidget {
               tooltip: l10n.downloadThisWeek,
               icon: const Icon(Icons.download),
             ),
+          // Every way to change the plan lives in one place, so the page
+          // itself is the programme, her tiers and Start.
+          if (planItems.isNotEmpty) AppOverflowMenu(items: planItems),
         ],
       ),
       footer: [
@@ -281,37 +341,6 @@ class ProgramView extends StatelessWidget {
                   : null,
               onTap: day.onTap ?? () => onOpenDay?.call(day),
             ),
-        if (hasProgram && onCustomizePlan != null)
-          AppButton(
-            hasMyPlan ? l10n.editMyPlan : l10n.customizeThisPlan,
-            key: const ValueKey('r02-customize-plan'),
-            icon: Icons.tune,
-            variant: AppButtonVariant.outlined,
-            height: 52,
-            fontSize: 16,
-            onPressed: onCustomizePlan,
-          ),
-        if (onOpenRecentSessions != null)
-          AppButton(
-            l10n.recentSessions,
-            key: const ValueKey('r02-recent-sessions'),
-            icon: Icons.history,
-            variant: AppButtonVariant.text,
-            height: 48,
-            fontSize: 15,
-            onPressed: onOpenRecentSessions,
-          ),
-        // "Change program" with no programme to change is an instruction she
-        // cannot follow. The same door, named for what is behind it: the
-        // library, which is where a programme would be chosen.
-        if (AppRouter.screenIsOn('R01'))
-          AppButton(
-            hasProgram ? l10n.changeProgram : l10n.allWorkouts,
-            variant: AppButtonVariant.text,
-            height: 44,
-            fontSize: 15,
-            onPressed: onChangeProgram,
-          ),
       ],
     );
   }

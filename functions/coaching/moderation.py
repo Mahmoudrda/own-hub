@@ -9,6 +9,12 @@ does what it says. Every call leaves one line in the staff access log.
 `subjectRef` is written by the reporter, so it is only followed when it has
 exactly the shape its `subjectKind` allows, and only whitelisted fields of the
 subject are returned.
+
+The report only holds a pointer, and the message, plan or page can change or
+go (a hidden message loses its text, ending a coaching deletes the thread). So
+when a report is created `capture_evidence` copies what was reported to
+`reports/{id}/evidence/content`, which no client rule opens. It holds no account
+ids, and staff see it through `list_for_staff` when the live subject is gone.
 """
 
 from __future__ import annotations
@@ -101,6 +107,58 @@ def _snapshot(db, kind: str, ids: list, reporter: Any = None) -> dict:
     return {"name": row.get("name"), "kind": row.get("kind")}
 
 
+EVIDENCE_PATH = "evidence/content"
+
+
+_LINKING_KEYS = {"subid", "relid", "relationshipid", "clientid", "coachid"}
+
+
+def _without_ids(value: Any) -> Any:
+    """A copy with every field that names an account or links to one taken out:
+    the `*uid` fields, the coaching (`subId`) and the relationship id (which is
+    both uids)."""
+    if isinstance(value, dict):
+        return {
+            k: _without_ids(v)
+            for k, v in value.items()
+            if not str(k).lower().endswith("uid") and str(k).lower() not in _LINKING_KEYS
+        }
+    if isinstance(value, list):
+        return [_without_ids(v) for v in value]
+    return value
+
+
+def capture_evidence(db, report_id: str, report: dict, *, now: dt.datetime) -> bool:
+    """Copies what the report points at, as it is now. Returns False when the
+    report has no followable subject or the reporter was not part of it. Safe
+    to run twice: the first copy stays."""
+    target = _target(report)
+    if target is None:
+        return False
+    kind, ids = target
+    ref = db.document(f"reports/{report_id}/{EVIDENCE_PATH}")
+    if ref.get().exists:
+        return True
+    subject = _snapshot(db, kind, ids, report.get("reporterUid"))
+    if subject.get("notParty") or subject.get("missing"):
+        return False
+    content: dict = {"subjectKind": kind, "capturedAt": now, "subject": subject}
+    if kind == "coachMessage":
+        row = _subject_row(db, kind, ids)
+        coach = (db.document(f"relationships/{ids[0]}").get().to_dict() or {}).get("coachUid")
+        content["sentAt"] = row.get("createdAt")
+        content["fromCoach"] = row.get("senderUid") == coach
+    elif kind == "coachPlan":
+        content["plan"] = _without_ids(_subject_row(db, kind, ids))
+    ref.set(content)
+    return True
+
+
+def _frozen(db, report_id: str) -> Optional[dict]:
+    content = db.document(f"reports/{report_id}/{EVIDENCE_PATH}").get().to_dict()
+    return content.get("subject") if content else None
+
+
 def list_for_staff(db, actor_uid: str, data: dict, *, now: dt.datetime) -> dict:
     """Coaching reports, oldest first, 25 a page. `after` is the `next` of the
     page before."""
@@ -134,6 +192,11 @@ def list_for_staff(db, actor_uid: str, data: dict, *, now: dt.datetime) -> dict:
                 "subject": _snapshot(db, *target, report.get("reporterUid")) if target else {"missing": True},
             }
         )
+        live = items[-1]["subject"]
+        if live.get("missing") or live.get("hidden"):
+            frozen = _frozen(db, report_id)
+            if frozen:
+                items[-1]["atReport"] = frozen
     next_token = None
     if more:
         created, report_id, _ = page[-1]

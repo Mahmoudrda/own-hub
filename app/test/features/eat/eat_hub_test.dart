@@ -1,6 +1,7 @@
-// The Eat tab: one page for logging food, finding a recipe and planning the
-// week. A search bar that stays put over Log, Recipes and Plan; typing searches
-// foods in place; every logging path is the one the separate screens had.
+// The Eat tab: E01 "What I ate today" and E02 "Find and add" on one page. A
+// search field with the camera inside it stays put over the day; Recipes and
+// Plan are two rows under the meals; typing searches foods in place; every
+// logging path is the one the separate screens had.
 
 import 'dart:convert';
 import 'dart:io';
@@ -146,6 +147,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Taps the search field: the page becomes E02, "Find and add".
+  Future<void> enterFind(WidgetTester tester) =>
+      tap(tester, find.byKey(const ValueKey('eat-hub-search')));
+
+  Future<void> openRecipes(WidgetTester tester) =>
+      tap(tester, find.byKey(const ValueKey('eat-hub-open-recipes')));
+
+  Future<void> openPlan(WidgetTester tester) =>
+      tap(tester, find.byKey(const ValueKey('eat-hub-open-plan')));
+
+  Future<void> backToDay(WidgetTester tester) =>
+      tap(tester, find.byKey(const ValueKey('eat-hub-back')));
+
   Future<void> settleWindow(WidgetTester tester) async {
     await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle();
@@ -164,24 +178,21 @@ void main() {
   Future<AppL10n> english() => AppL10n.delegate.load(const Locale('en'));
 
   group('the page', () {
-    testWidgets('has Log, Recipes and Plan over a search bar that stays put', (
+    testWidgets('has one search field, two quiet rows and no segments', (
       tester,
     ) async {
       _phone(tester);
       await pump(tester, _host(hub()));
 
       expect(find.byKey(const ValueKey('eat-hub-search')), findsOneWidget);
-      final segments = find.byKey(const ValueKey('eat-hub-segments'));
-      expect(segments, findsOneWidget);
-      for (final label in ['Log', 'Recipes', 'Plan']) {
-        expect(
-          find.descendant(of: segments, matching: find.text(label)),
-          findsOneWidget,
-          reason: label,
-        );
-      }
+      expect(find.byKey(const ValueKey('eat-hub-segments')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('eat-hub-open-recipes')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('eat-hub-open-plan')), findsOneWidget);
       // The Eat tab is the active tab.
-      expect(find.text('Insights'), findsOneWidget);
+      expect(find.text('You'), findsOneWidget);
 
       final before = tester.getTopLeft(
         find.byKey(const ValueKey('eat-hub-search')),
@@ -198,49 +209,64 @@ void main() {
       );
     });
 
-    testWidgets('Log shows the day: ring, four meals, picks', (tester) async {
+    testWidgets('E01 shows the day: hero, four meals, nothing to search yet', (
+      tester,
+    ) async {
       _phone(tester);
       await pump(tester, _host(hub()));
 
       for (final meal in const ['breakfast', 'lunch', 'dinner', 'snack']) {
         expect(find.byKey(ValueKey('eat-diary-$meal')), findsOneWidget);
       }
+      expect(find.byKey(const ValueKey('eat-hero')), findsOneWidget);
+      // Recent, Frequent, Favourites and Quick custom belong to E02.
+      expect(find.byKey(const ValueKey('eat-quick-tabs')), findsNothing);
+      expect(find.byKey(const ValueKey('quick-custom-row')), findsNothing);
+      // No second search box, no second camera and no links to the screens it
+      // replaces.
+      expect(find.byKey(const ValueKey('eat-search-pill')), findsNothing);
+      expect(find.byKey(const ValueKey('eat-snap-card')), findsNothing);
+      expect(find.byKey(const ValueKey('eat-day-one-week-plan')), findsNothing);
+    });
+
+    testWidgets('E02 opens on a tap in the field and closes with its X', (
+      tester,
+    ) async {
+      _phone(tester);
+      await pump(tester, _host(hub()));
+      await enterFind(tester);
+
+      expect(find.byKey(const ValueKey('eat-diary-lunch')), findsNothing);
       expect(find.byKey(const ValueKey('eat-quick-tabs')), findsOneWidget);
       expect(find.text('Recent'), findsOneWidget);
       expect(find.text('Frequent'), findsOneWidget);
       expect(find.text('Favourites'), findsOneWidget);
       expect(find.byKey(const ValueKey('quick-custom-row')), findsOneWidget);
-      // No second search box and no links to the screens it replaces.
-      expect(find.byKey(const ValueKey('eat-search-pill')), findsNothing);
-      expect(find.byKey(const ValueKey('eat-day-one-week-plan')), findsNothing);
+
+      await tap(tester, find.byKey(const ValueKey('eat-hub-clear')));
+      expect(find.byKey(const ValueKey('eat-diary-lunch')), findsOneWidget);
+      expect(find.byKey(const ValueKey('eat-quick-tabs')), findsNothing);
     });
 
-    testWidgets('the segments switch and keep what she did in them', (
+    testWidgets('Recipes and Plan open in the page and the arrow comes back', (
       tester,
     ) async {
       _phone(tester);
       await pump(tester, _host(hub()));
-      final segments = find.byKey(const ValueKey('eat-hub-segments'));
 
-      await tap(
-        tester,
-        find.descendant(of: segments, matching: find.text('Recipes')),
-      );
+      await openRecipes(tester);
       expect(find.byKey(const ValueKey('hub-recipes')), findsOneWidget);
       expect(find.byKey(const ValueKey('eat-diary-lunch')), findsNothing);
+      expect(find.byKey(const ValueKey('eat-hub-search')), findsNothing);
 
-      await tap(tester, find.text('Breakfast').last);
-      await tap(
-        tester,
-        find.descendant(of: segments, matching: find.text('Plan')),
-      );
+      await backToDay(tester);
+      expect(find.byKey(const ValueKey('eat-diary-lunch')), findsOneWidget);
+
+      await openPlan(tester);
       expect(find.byKey(const ValueKey('hub-recipes')), findsNothing);
       expect(find.text('Grocery list'), findsOneWidget);
 
-      await tap(
-        tester,
-        find.descendant(of: segments, matching: find.text('Log')),
-      );
+      await backToDay(tester);
       expect(find.byKey(const ValueKey('eat-diary-lunch')), findsOneWidget);
     });
   });
@@ -289,34 +315,23 @@ void main() {
         expect(session.pending, hasLength(1));
 
         // Moving to Recipes and back does not close the window.
-        final segments = find.byKey(const ValueKey('eat-hub-segments'));
-        await tap(
-          tester,
-          find.descendant(of: segments, matching: find.text('Recipes')),
-        );
+        await openRecipes(tester);
         await tester.pump(const Duration(seconds: 2));
         expect(session.pending, hasLength(1));
-        await tap(
-          tester,
-          find.descendant(of: segments, matching: find.text('Log')),
-        );
+        await backToDay(tester);
         await tap(tester, find.text('Undo'));
         expect(session.pending, isEmpty);
         await settleWindow(tester);
       },
     );
 
-    testWidgets('a Log pill aims the next food at that meal', (tester) async {
+    testWidgets('a + with no usual plate aims the next food at that meal', (
+      tester,
+    ) async {
       _phone(tester);
       await pump(tester, _host(hub()));
 
-      await tap(
-        tester,
-        find.descendant(
-          of: find.byKey(const ValueKey('eat-diary-dinner')),
-          matching: find.text('Log'),
-        ),
-      );
+      await tap(tester, find.byTooltip('Log Dinner'));
       expect(find.byKey(const ValueKey('eat-hub-adding-to')), findsOneWidget);
       expect(find.text('Adding to Dinner'), findsOneWidget);
 
@@ -340,7 +355,7 @@ void main() {
       await settleWindow(tester);
     });
 
-    testWidgets('the camera and the microphone are in the bar when given', (
+    testWidgets('the camera is inside the field, the microphone joins in E02', (
       tester,
     ) async {
       _phone(tester);
@@ -350,11 +365,21 @@ void main() {
         tester,
         _host(hub(onSnap: () => snaps++, onSpeak: () => speaks++)),
       );
-      await tap(tester, find.byKey(const ValueKey('eat-snap-meal')));
+      final camera = find.descendant(
+        of: find.byKey(const ValueKey('eat-hub-search')),
+        matching: find.byKey(const ValueKey('eat-snap-meal')),
+      );
+      expect(camera, findsOneWidget);
+      expect(find.byKey(const ValueKey('eat-hub-mic')), findsNothing);
+      await tap(tester, camera);
+      expect(snaps, 1);
+
+      await enterFind(tester);
       await tap(tester, find.byKey(const ValueKey('eat-hub-mic')));
-      expect((snaps, speaks), (1, 1));
-      // The camera card on the day is there too.
-      expect(find.byKey(const ValueKey('eat-snap-card')), findsOneWidget);
+      expect(speaks, 1);
+      // One camera, never a second card for it.
+      expect(find.byKey(const ValueKey('eat-snap-meal')), findsOneWidget);
+      expect(find.byKey(const ValueKey('eat-snap-card')), findsNothing);
     });
 
     testWidgets('without a camera or a microphone neither is drawn', (
@@ -382,6 +407,7 @@ void main() {
       _phone(tester);
       final l10n = await english();
       await pump(tester, _host(hub(history: [koshari(l10n)])));
+      await enterFind(tester);
 
       await tap(tester, find.byTooltip('Add Koshari bowl').first);
       expect(session.pending, hasLength(1));
@@ -393,6 +419,7 @@ void main() {
       final l10n = await english();
       repository.store.prefs = const EatPrefs(favourites: ['taameya']);
       await pump(tester, _host(hub(frequent: [koshari(l10n)])));
+      await enterFind(tester);
 
       await tap(tester, find.text('Frequent'));
       expect(find.byTooltip('Add Koshari bowl'), findsWidgets);
@@ -447,6 +474,8 @@ void main() {
       recent = [koshari(l10n)];
       await settleWindow(tester);
 
+      // Back on the day after the log; Recent lives in E02.
+      await enterFind(tester);
       expect(hadRows, findsOneWidget);
     });
   });
@@ -462,6 +491,7 @@ void main() {
       expect(expected, 72);
 
       await pump(tester, _host(hub()));
+      await enterFind(tester);
       await tap(tester, find.byKey(const ValueKey('type-it-show-egyptian')));
 
       expect(find.byType(FoodResultRow), findsNWidgets(expected));
@@ -469,16 +499,6 @@ void main() {
   });
 
   group('Recipes', () {
-    Future<void> openRecipes(WidgetTester tester) async {
-      await tap(
-        tester,
-        find.descendant(
-          of: find.byKey(const ValueKey('eat-hub-segments')),
-          matching: find.text('Recipes'),
-        ),
-      );
-    }
-
     int cards(WidgetTester tester) => find
         .byWidgetPredicate((w) => w.runtimeType.toString() == 'BookCard')
         .evaluate()
@@ -714,18 +734,14 @@ void main() {
         Feature.weekPlan: false,
       });
       await pump(tester, _host(hub()));
-      final segments = find.byKey(const ValueKey('eat-hub-segments'));
       expect(
-        find.descendant(of: segments, matching: find.text('Recipes')),
+        find.byKey(const ValueKey('eat-hub-open-recipes')),
         findsOneWidget,
       );
-      expect(
-        find.descendant(of: segments, matching: find.text('Plan')),
-        findsNothing,
-      );
+      expect(find.byKey(const ValueKey('eat-hub-open-plan')), findsNothing);
     });
 
-    testWidgets('with only Log left there is no segmented control', (
+    testWidgets('with Recipes off there are no rows under the meals', (
       tester,
     ) async {
       _phone(tester);
@@ -734,7 +750,8 @@ void main() {
         Feature.recipes: false,
       });
       await pump(tester, _host(hub()));
-      expect(find.byKey(const ValueKey('eat-hub-segments')), findsNothing);
+      expect(find.byKey(const ValueKey('eat-hub-open-recipes')), findsNothing);
+      expect(find.byKey(const ValueKey('eat-hub-open-plan')), findsNothing);
       expect(find.byKey(const ValueKey('eat-diary-lunch')), findsOneWidget);
     });
 
@@ -764,6 +781,15 @@ void main() {
               ),
             );
             expect(tester.takeException(), isNull);
+            if (segment != EatHubSegment.log) {
+              // Recipes and Plan carry their own header with a way back.
+              expect(
+                find.byKey(const ValueKey('eat-hub-back')),
+                findsOneWidget,
+              );
+              await backToDay(tester);
+              expect(tester.takeException(), isNull);
+            }
             expect(
               find.byKey(const ValueKey('eat-hub-search')),
               findsOneWidget,
@@ -808,12 +834,12 @@ void main() {
       });
     }
 
-    testWidgets('Arabic names the segments and reads right to left', (
+    testWidgets('Arabic names the two rows and reads right to left', (
       tester,
     ) async {
       _phone(tester);
       await pump(tester, _host(hub(), locale: const Locale('ar')));
-      expect(find.text('الوصفات'), findsWidgets);
+      expect(find.text('الوصفات'), findsOneWidget);
       expect(find.text('الخطة'), findsOneWidget);
       expect(
         Directionality.of(tester.element(find.byType(EatHubView))),
@@ -844,7 +870,11 @@ void main() {
       _phone(tester);
       await pump(tester, _host(hub(onSnap: () {}, onSpeak: () {})));
       await type(tester, 'k');
-      for (final key in const ['eat-hub-mic', 'eat-hub-clear']) {
+      for (final key in const [
+        'eat-hub-mic',
+        'eat-hub-clear',
+        'eat-snap-meal',
+      ]) {
         final size = tester.getSize(find.byKey(ValueKey(key)));
         expect(size.height, greaterThanOrEqualTo(48), reason: key);
         expect(size.width, greaterThanOrEqualTo(48), reason: key);

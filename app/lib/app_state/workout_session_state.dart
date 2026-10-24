@@ -23,7 +23,7 @@ library;
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart' show listEquals, visibleForTesting;
 
 import '../domain/clock/app_clock.dart';
 import '../domain/logging/log_command_bus.dart';
@@ -38,6 +38,7 @@ import '../features/train/domain/rest_adjust.dart';
 import '../features/train/domain/rest_policy.dart';
 import '../features/train/domain/session_summary.dart';
 import '../features/train/domain/train_repository.dart';
+import 'analytics_session.dart';
 import 'app_changes.dart';
 import 'rest_timer_prefs.dart';
 import 'rewards_state.dart';
@@ -261,6 +262,7 @@ class WorkoutSessionState {
     _lastSwap = null;
     _history.clear();
     _warmUps.clear();
+    _lastLogEndedMove = false;
     _restMoveId = null;
     _restDuration = kRestDuration;
     _liveBest = null;
@@ -319,11 +321,19 @@ class WorkoutSessionState {
     _loggedSets++;
     if (_setIndex + 1 < move.sets.length) {
       _setIndex++;
+      _lastLogEndedMove = false;
     } else {
       _advanceMove();
+      _lastLogEndedMove = true;
     }
     AppChanges.bump();
   }
+
+  bool _lastLogEndedMove = false;
+
+  /// The set just logged was the last of its move, so the rest after it leads
+  /// to a new move (or to the end, which {isComplete} reports).
+  bool get lastLogEndedMove => _lastLogEndedMove;
 
   /// A warm-up set saved for the current move. It is shown with the move but
   /// is not a working set: she stays on the same set, nothing is counted, and
@@ -345,6 +355,7 @@ class WorkoutSessionState {
     _startRest(move);
     _loggedSets += move.sets.length - _setIndex;
     _advanceMove();
+    _lastLogEndedMove = true;
     AppChanges.bump();
   }
 
@@ -392,6 +403,7 @@ class WorkoutSessionState {
     _moveIndex = last.move;
     _setIndex = last.set;
     _loggedSets = last.logged;
+    _lastLogEndedMove = false;
     final warmUp = last.warmUp;
     if (warmUp != null) {
       final saved = _warmUps[warmUp];
@@ -630,9 +642,35 @@ class WorkoutSessionState {
     _liveBest = null;
     _challengeAtStart = null;
     _lastSummary = summary;
+    if (!uncounted) {
+      final earlier = hadEarlierWorkout(credit, repository, session.id);
+      unawaited(
+        AnalyticsSession.noteWorkoutFinished(
+          AppClock.now(),
+          earlierWorkout: earlier,
+        ),
+      );
+    }
     AppChanges.bump();
     return summary;
   }
+
+  /// Whether a counted workout came before [sessionId], for activation.
+  ///
+  /// shortcut: on a reinstall or new phone her older sessions arrive only with
+  /// the async cloud pull, so a workout finished before it lands still counts;
+  /// pre-claim from the account's cloud history when that is cheap to read.
+  @visibleForTesting
+  static bool hadEarlierWorkout(
+    CreditOutcome credit,
+    TrainRepository repository,
+    String sessionId,
+  ) =>
+      credit.loggedBefore > 0 ||
+      (repository is InMemoryTrainRepository &&
+          repository
+              .completedSessions(limit: 1000)
+              .any((s) => s.id != sessionId));
 
   /// Credits one session everywhere it counts. Used by the live session and by
   /// T02's "I already did it", so a recalled session and a trained one take

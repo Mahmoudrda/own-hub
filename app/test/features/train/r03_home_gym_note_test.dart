@@ -95,13 +95,9 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('r03-gym-swap')));
     await tester.pumpAndSettle();
-    // Edit workout is on, and the swap sheet is open on the first machine move.
-    expect(
-      tester
-          .widget<SwitchListTile>(find.byKey(const ValueKey('r03-edit-toggle')))
-          .value,
-      isTrue,
-    );
+    // Edit moves is on (its Done is showing), and the swap sheet is open on the
+    // first machine move.
+    expect(find.byKey(const ValueKey('r03-edit-done')), findsOneWidget);
     expect(find.text('Swap this move'), findsOneWidget);
     expect(find.text('Push-up'), findsWidgets);
   });

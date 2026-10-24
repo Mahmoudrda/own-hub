@@ -405,7 +405,8 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // The facts every event carries (language, kitten, widget, channel), and
     // a return after a quiet week, after the first frame and again whenever
     // she allows statistics. Nothing leaves the phone unless she allowed it.
-    AnalyticsConsent.onGranted = _describeForStatistics;
+    // Granting also counts this opening: the first frame ran before she chose.
+    AnalyticsConsent.onGranted = _onStatisticsGranted;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _describeForStatistics();
       unawaited(AnalyticsSession.noteOpened(DateTime.now()));
@@ -442,6 +443,11 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
 
   void _reportLanguage() =>
       AnalyticsSession.languageChanged(_locale.value.languageCode);
+
+  void _onStatisticsGranted() {
+    _describeForStatistics();
+    unawaited(AnalyticsSession.noteOpened(DateTime.now()));
+  }
 
   void _describeForStatistics() => unawaited(
     AnalyticsSession.describe(languageCode: _locale.value.languageCode),
@@ -527,7 +533,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     _locale.removeListener(_reapplyReminders);
     _locale.removeListener(_relabelWidgets);
     _locale.removeListener(_reportLanguage);
-    if (AnalyticsConsent.onGranted == _describeForStatistics) {
+    if (AnalyticsConsent.onGranted == _onStatisticsGranted) {
       AnalyticsConsent.onGranted = null;
     }
     _locale.dispose();

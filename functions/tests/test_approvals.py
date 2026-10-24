@@ -62,8 +62,12 @@ def world(monkeypatch):
     return w
 
 
+ADULT_CHECKED = ("approve_user", "approve_users", "set_preapproved_phones")
+
+
 def staff(name, data=None, *, uid=REV, **claims):
     claims = claims or {"womanReviewer": True}
+    data = {"adultSeen": True, **(data or {})} if name in ADULT_CHECKED else data
     token = {"firebase": {"sign_in_provider": "password"}, **claims}
     return inner(name)(request(data or {}, uid=uid, token=token))
 
@@ -101,7 +105,30 @@ def test_one_call_approves_with_no_call_no_nid_no_note(world):
     assert world.db.docs[f"verification_flags/{flag_id}"]["state"] == decisions.APPROVED
     ledger = world.db.docs[f"verificationLedger/{HER}"]
     assert ledger["approvedVia"] == "approve" and ledger["approvedBy"] == REV
+    assert ledger["adultConfirmedBy"] == REV
     assert ledger["openFlagId"] is None
+
+
+def test_an_approval_without_the_18_plus_confirmation_is_refused(world):
+    ask(world)
+    raises(lambda: staff("approve_user", {"uid": HER, "adultSeen": False}), INVALID)
+    raises(lambda: staff("approve_user", {"uid": HER, "adultSeen": "yes"}), INVALID)
+    raises(lambda: staff("approve_users", {"uids": [HER], "adultSeen": False}), INVALID)
+    assert world.claims.get(HER) is not True
+    assert user(world).get("verification", {}).get("state") != "approved"
+    assert "approvedVia" not in world.db.docs[f"verificationLedger/{HER}"]
+
+
+def test_a_preapproved_number_needs_the_confirmation_to_be_added(world):
+    raises(lambda: staff("set_preapproved_phones", {"add": "01001234567", "adultSeen": False}), INVALID)
+    assert staff("list_preapproved_phones")["phones"] == []
+    staff("set_preapproved_phones", {"remove": ["01001234567"], "adultSeen": False})
+
+
+def test_a_preapproved_number_added_before_the_confirmation_existed_waits_for_the_check(world):
+    world.db.docs["verificationPreapproved/+201001234567"] = {"phone": "+201001234567"}
+    assert member("claim_fast_verification") == {"state": "none"}
+    assert world.db.docs["verificationPreapproved/+201001234567"]
 
 
 def test_known_person_reason_is_recorded(world):
@@ -288,12 +315,38 @@ def test_a_list_is_split_on_commas_and_lines_and_deduplicated():
 
 def test_preapproved_numbers_add_list_remove(world):
     answer = staff("set_preapproved_phones", {"add": "01001234567, 01112223334, bad"})
-    assert answer == {"phones": ["+201001234567", "+201112223334"]}
+    assert answer["phones"] == ["+201001234567", "+201112223334"]
     answer = staff("set_preapproved_phones", {"remove": ["01001234567", "zzz"]})
-    assert answer == {"phones": ["+201112223334"]}
-    assert staff("list_preapproved_phones") == {"phones": ["+201112223334"]}
+    assert answer["phones"] == ["+201112223334"]
+    assert staff("list_preapproved_phones")["phones"] == ["+201112223334"]
     raises(lambda: staff("set_preapproved_phones", {"add": 5}), INVALID)
     raises(lambda: staff("set_preapproved_phones", {}, other=True), DENIED)
+
+
+def test_undo_of_a_removed_number_restores_the_exact_record_and_never_confirms_a_bare_one(world):
+    world.db.now = dt.datetime.now(dt.timezone.utc)
+    staff("set_preapproved_phones", {"add": "01001234567"})
+    world.db.docs["verificationPreapproved/+201112223334"] = {"phone": "+201112223334", "addedBy": "old"}
+    original = dict(world.db.docs["verificationPreapproved/+201001234567"])
+    answer = staff("set_preapproved_phones", {"remove": ["01001234567", "01112223334"]})
+    assert answer["phones"] == []
+    assert not approvals.is_preapproved("+201001234567")
+    answer = staff("set_preapproved_phones", {"restore": ["01001234567", "01112223334"]}, uid="other-reviewer")
+    assert answer["phones"] == ["+201001234567", "+201112223334"]
+    assert world.db.docs["verificationPreapproved/+201001234567"] == original
+    assert world.db.docs["verificationPreapproved/+201112223334"] == {"phone": "+201112223334", "addedBy": "old"}
+    assert not approvals.is_preapproved("+201112223334")
+    assert answer["needsAgeTick"] == ["+201112223334"]
+
+
+def test_a_removed_number_past_the_undo_window_is_deleted_and_cannot_be_restored(world):
+    world.db.now = dt.datetime.now(dt.timezone.utc)
+    staff("set_preapproved_phones", {"add": "01001234567"})
+    staff("set_preapproved_phones", {"remove": ["01001234567"]})
+    old = dt.datetime.now(dt.timezone.utc) - approvals.PREAPPROVED_UNDO - dt.timedelta(seconds=5)
+    world.db.docs["verificationPreapproved/+201001234567"]["removedAt"] = old
+    assert staff("set_preapproved_phones", {"restore": ["01001234567"]})["phones"] == []
+    assert "verificationPreapproved/+201001234567" not in world.db.docs
 
 
 # ------------------------------------------------ claim_fast_verification
@@ -306,6 +359,8 @@ def test_a_preapproved_number_is_approved_at_sign_in(world):
     assert world.claims[HER] is True
     assert world.db.docs[f"verificationLedger/{HER}"]["approvedBy"] == "system"
     assert world.db.docs[f"verificationLedger/{HER}"]["approvedVia"] == "preapproved"
+    ledger = world.db.docs[f"verificationLedger/{HER}"]
+    assert ledger["adultConfirmedBy"] == REV and ledger["adultConfirmedAt"] is not None
 
 
 def test_an_unlisted_number_gets_none(world):
@@ -857,7 +912,7 @@ def test_member_callables_stay_phone_only(world, name, provider):
 
 
 def test_an_admin_may_use_the_dashboard_callables(world):
-    assert _as("list_preapproved_phones", {"admin": True}, "password") == {"phones": []}
+    assert _as("list_preapproved_phones", {"admin": True}, "password")["phones"] == []
 
 
 def test_revoking_a_coach_takes_her_page_down_and_suspends_her_record(world):

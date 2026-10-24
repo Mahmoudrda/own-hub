@@ -100,7 +100,10 @@ void main() {
     await tester.pumpAndSettle();
     await _scrollTo(tester, find.text('Workouts'));
     expect(find.text('Legs and glutes'), findsOneWidget);
-    await _scrollTo(tester, find.text('Moves'));
+    await _scrollTo(
+      tester,
+      find.byKey(const ValueKey('r01-move-glute_bridge')),
+    );
     expect(find.byKey(const ValueKey('r01-move-glute_bridge')), findsOneWidget);
     expect(find.byIcon(Icons.play_arrow_rounded), findsWidgets);
     expectAtMostOnePrimaryAction(tester, where: 'R01');
@@ -119,21 +122,29 @@ void main() {
     expect(find.text('Upper body'), findsNothing);
   });
 
-  testWidgets('the chip row narrows by kind and by part of the body', (
+  testWidgets('the Filters sheet narrows by kind and by part of the body', (
     tester,
   ) async {
     _phone(tester);
     await tester.pumpWidget(_host(train()));
     await tester.pumpAndSettle();
 
-    await _tap(tester, find.byKey(const ValueKey('r01-chip-2')));
+    await _tap(tester, find.byKey(const ValueKey('r01-filters')));
+    await tester.tap(find.text('Stretches and warm-ups'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('r01-filters-apply')));
+    await tester.pumpAndSettle();
     await _scrollTo(tester, find.text('Standing forward fold'));
     expect(find.byKey(const ValueKey('r01-move-glute_bridge')), findsNothing);
     expect(find.text('Standing forward fold'), findsOneWidget);
     // Workouts carry no body-part data, so a stretch filter leaves them out.
     expect(find.text('Workouts'), findsNothing);
 
-    await _tap(tester, find.byKey(const ValueKey('r01-chip-3')));
+    await _tap(tester, find.byKey(const ValueKey('r01-filters')));
+    await tester.tap(find.text('Glutes'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('r01-filters-apply')));
+    await tester.pumpAndSettle();
     await _scrollTo(tester, find.text('Moves'));
     expect(find.text('Glute bridge'), findsOneWidget);
     expect(find.text('Goblet squat'), findsNothing);
@@ -282,7 +293,7 @@ void main() {
     expect(find.text('Explore'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('Explore')).dy,
-      lessThan(300),
+      lessThan(340),
       reason: 'the page scrolled so Explore is at the top',
     );
     expect(find.text('Goblet squat'), findsNothing);

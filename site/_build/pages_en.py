@@ -134,8 +134,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <div class="panel">
           <div class="prose">
 """ + h2("download", "Get Own Hub", "no-rule") + """
-        <p>Free on iPhone and Android. Open it and tap
-        &ldquo;Show me around&rdquo; first, if you like.</p>
+        <p>Free on iPhone and Android. You can look around it before you
+        sign up, if you like.</p>
         <p><a href=""" + '"' + cfg.store_url("storeUrlIos") + '" rel="noopener">Own Hub on the App Store</a>' + """ &middot; <a href=""" + '"' + cfg.store_url("storeUrlAndroid") + '" rel="noopener">Own Hub on Google Play</a></p>' + """
           </div>
         </div>
@@ -190,15 +190,16 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <div class="lead-row">
         <div class="prose">
 """ + h2("inside", "What is inside it", "no-rule") + """
-          <p class="lede">Want to see it first? Tap &ldquo;Show me around&rdquo; in the app and
-          try everything on a sample week before you join. Nothing is saved.</p>
+          <p class="lede">Want to see it first? Open the app and look around before you
+          sign up: Home, workouts and recipes. What you enter before you sign up
+          stays on your phone.</p>
         </div>
         """ + art.hairline_svg("phone", "mark") + """
         </div>
         <ul class="shots">
           <li><figure>""" + shot(lang, "03-workout", "The workout player: one move, three sets, and a button for the set you just finished.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Train.</b> Every move has a short video. Tap a set when you finish it, and the rest timer starts itself.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card with everything you&rsquo;ve done. Share it if you like.</figcaption></figure></li>
-          <li><figure>""" + shot(lang, "07-tour-dinners", "The week of dinners in the tour: five sample dinners, planned for you.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Eat.</b> A week of dinners planned for you, gentler on harder days.</figcaption></figure></li>
+          <li><figure>""" + shot(lang, "07-tour-dinners", "A week of dinners: five sample dinners, planned for you.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Eat.</b> A week of dinners planned for you, gentler on harder days.</figcaption></figure></li>
         </ul>
         <p class="small">Coaching with Own Hub-reviewed coaches is available, free for
         now. This version has no community or assistant, and nothing in the app
@@ -214,15 +215,16 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           So we check every member once, at the door, and then stay out of her
           way.</p>
           <p>Whatever you note about your body, plus your measurements and weight,
-          stays on your phone unless you choose to back it up. The <a href="/privacy">privacy policy</a>
+          stays on your phone unless you choose to back it up, or to send some
+          of your answers to a coach you ask to join. The <a href="/privacy">privacy policy</a>
           says exactly what the app keeps, where, and for how long.</p>
           """ + art.hairline_svg("lockers", "mark") + """
         </div>
           <ol class="steps card">
             <li>You join with your Egyptian mobile number and a code sent by SMS.</li>
-            <li>You show your national ID card and take a live selfie. If the
-            check can&rsquo;t decide, a woman from Own Hub contacts you to arrange
-            it.</li>
+            <li>Usually you show your national ID card and take a live selfie.
+            If the check can&rsquo;t decide, or you prefer it, a woman from Own Hub
+            checks you instead.</li>
             <li>The check runs on our own server in Frankfurt, Germany. The
             photographs of your card and your face are never stored.</li>
           </ol>
@@ -297,6 +299,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
+          <b>Last updated:</b> {{lastUpdated}}<br>
           <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
           and Android, package <code>com.ownhub.app</code>, and this website.
         </p>
@@ -310,16 +313,22 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <ul>
             <li>Own Hub is a fitness app for women in Egypt aged 18 and over.
             Membership is for women only, for women&rsquo;s safety and privacy.
-            To keep it that way, we check your Egyptian national ID card and a
-            live selfie once, when you join.</li>
+            To keep it that way, we check every member once, when she joins:
+            usually with her Egyptian national ID card and a live selfie,
+            sometimes by a woman on our team instead (sections 3.3 and
+            3.4).</li>
             <li><b>The photographs of your card and your face are never
             stored.</b> Our server in Frankfurt, Germany reads them in memory
             and discards them when the check ends. We keep the result for 180
-            days. We also keep a keyed code made from your ID number, so that
-            one card cannot open two accounts.</li>
+            days. When your ID number is read, we also keep a keyed code made
+            from it, so that one card cannot open two accounts.</li>
             <li><b>Your cycle, check-ins, measurements, weight, pregnancy or
             postpartum stage and allergies stay on your phone,</b> unless you
-            turn on health backup yourself.</li>
+            turn on health backup yourself. The one other exception: if you ask
+            to join a coach, the answers you choose to send her, such as your
+            allergies, your life stage and your answers to seven health
+            questions, are stored on our server in Frankfurt and shown to that
+            coach (section 3.16).</li>
             <li>Once you are verified, your workouts and meals are copied to
             Google Cloud in Frankfurt, so a new phone does not mean starting
             again. No other member can see them, unless you choose to share a
@@ -328,12 +337,20 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             documents and photos, is kept on our server in Frankfurt. Only
             Own Hub&rsquo;s woman reviewer sees all of it, and members see only
             the public portfolio you build (section 3.15).</li>
+            <li>If you join a coach, your chat with her and the plans she shares
+            are stored on our server in Frankfurt, readable by the two of you.
+            Own Hub&rsquo;s team reads a chat only after one of you reports it
+            (sections 3.16 and 3.17).</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
             Usage statistics and crash reports are each sent only if you allow
-            them, and never include your health information.</li>
+            them, and never include your health information. Usage statistics
+            go to Google Analytics and PostHog, including in the United
+            States.</li>
             <li><b>We never use your data to train AI, ours or anyone&rsquo;s.</b></li>
+            <li>You can look around parts of the app before you sign up, and
+            what you enter then stays on your phone (section 3.1).</li>
             <li>You can delete your account in the app at any time, and ask us
             for a copy of your data.</li>
           </ul>
@@ -356,8 +373,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         This reflects the Constitution&rsquo;s protection of women, of private
         life, of health and of everyone&rsquo;s right to sport (Articles 11, 18,
         57, 59 and 84). It is not a judgement about anyone else.</p>
-        <p>Your sex and your age are read from the digits of your national ID
-        number. We never guess them from your face.</p>
+        <p>When your ID card is checked, your sex and your age are read from
+        the digits of your national ID number. We never guess them from your
+        face. A woman can also be approved by a woman on our team, as section
+        3.4 describes.</p>
         <p>We do not knowingly collect data from anyone under 18. If the check
         shows that you are under 18, your application is refused. The refusal
         is kept as section 6 describes.</p>
@@ -367,6 +386,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         Law allows (Law 151/2020, Articles 2, 6 and 12).</p>
 """ + h3("c-account", "3.1 Your account") + """
         <ul>
+          <li><b>Before you sign up.</b> You can use parts of Own Hub without an
+          account: Home, workouts with their videos, food search and recipes.
+          What you enter then, such as your setup answers, stays on your phone
+          and is not sent to our servers. If you try something that needs an
+          account, such as starting a workout or logging a meal, the app keeps
+          it on your phone and finishes it once you are verified.</li>
           <li><b>Your mobile number.</b> Used to create your account and sign
           you in with a code sent by SMS, and to phone you if you ask a woman
           reviewer to check you.</li>
@@ -427,7 +452,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           screen before the camera opens. The face match is biometric data,
           which the law treats as sensitive. Because a face match is sensitive
           data, the law also requires a permit from the Personal Data
-          Protection Centre. Ours is shown in section 1.</li>
+          Protection Centre. Own Hub is applying for this permit under Law
+          151/2020, and will show its number in section 1 once the Centre
+          issues it.</li>
           <li>You can refuse. If you do, you can still ask a woman reviewer to
           check you (section 3.4). Without a check you cannot open a verified
           account, because a women-only membership is the purpose of the
@@ -446,9 +473,34 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           bands. It never holds a photograph or your phone number.</li>
           <li><b>The contact.</b> A woman from Own Hub reviews your case. When
           she is ready to contact you, she looks up your number at that moment.
-          Each lookup is recorded with the reviewer and the time. She phones you
-          within 72 hours of your request to finish your check with you. There
-          is no video call.</li>
+          Each lookup is recorded with the reviewer and the time. She usually
+          phones you within 72 hours of your request, or at the time you book,
+          to finish your check with you. There is no video call for this
+          check.</li>
+          <li><b>A time you book.</b> You can book a time for the call from the
+          free times a reviewer offers. We keep the reviewer, the time and when
+          you booked it. The booking is deleted when you are approved, when you
+          delete your account, or automatically 30 days after the booked
+          time.</li>
+          <li><b>A reviewer you know.</b> If you choose a reviewer under
+          &ldquo;I know one of the reviewers&rdquo;, we note on your account
+          which reviewer you chose, so that your request goes to her.</li>
+          <li><b>How a reviewer approves you.</b> A woman reviewer can approve
+          you after she has talked to you, or without a call, for example
+          when she knows you. An Own Hub administrator can also approve an
+          account, for example when no reviewer is available. We record how
+          you were approved and when, and who approved you.</li>
+          <li><b>A number approved before you join.</b> A reviewer can add a
+          phone number to a pre-approved list before that woman signs up. When
+          you sign in with a number on the list, you are approved without the
+          ID check, unless your check was refused or your approval taken back
+          before, and the number is removed from the list. Until it is used or
+          a reviewer removes it, it is kept on our server, where only the Own
+          Hub team can see it. To have a number removed, write to
+          {{mailto:contactPrivacy}}.</li>
+          <li><b>Without your ID number.</b> If you are approved by a reviewer
+          or from the list and your ID number was never read, no keyed code of
+          an ID number is kept for your account.</li>
           <li><b>Nothing is recorded.</b> The check is not recorded, and the
           reviewer writes down only her decision and the date.</li>
           <li><b>Your ID number.</b> If your case has no ID code yet, the
@@ -457,7 +509,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><b>Our team&rsquo;s alert.</b> When a case enters the queue, our
           team gets an alert containing only the case number and the reason
           codes. It is sent through {{chatService}}.</li>
-          <li><b>Basis:</b> your consent, given when you ask for the review.</li>
+          <li><b>Basis:</b> your consent, given when you ask for the review. For
+          a number added to the pre-approved list before you join, the basis is
+          your request to the reviewer to let you join this way; the number is
+          used only for that and removed once it is used.</li>
         </ul>
 
 """ + h3("c-training", "3.5 Your training and meals") + """
@@ -506,13 +561,22 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         Friday week review stay on this phone. They are never part of the
         backup, even when health backup is on, they are never sent for
         statistics, and <b>Delete everything</b> erases them.</p>
+        <p><b>The exception: a coach you ask to join.</b> If you ask to join a
+        coach, the answers you choose to send with your request are stored on
+        our server in Frankfurt, Germany, and shown to that coach: your goal,
+        level, training days and where you train, your life stage, the
+        allergies you keep on the form, your answers to the seven health
+        questions, whether you have spoken to your doctor, your note, and your
+        first name if you give it (section 3.16). This is separate from health
+        backup, and nothing else from your phone is sent with it.</p>
         <p><b>Your cycle and health information is never used for advertising
         or marketing, never sold, never sent to any analytics service, and
         never used to train AI.</b></p>
         <ul>
           <li><b>Basis:</b> your explicit consent, given in writing in the
-          app, which the law requires for health data, and our permit from the
-          Centre (section 1).</li>
+          app, which the law requires for health data. The law also requires a
+          permit from the Centre, which Own Hub is applying for (section
+          3.3).</li>
         </ul>
 
 """ + h3("c-technical", "3.7 Technical data") + """
@@ -565,6 +629,21 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           advertising uses are switched off. If you turn it off, collection
           stops at once and the identifier on your phone is reset, so what was
           sent before cannot be joined to anything sent later.</li>
+          <li><b>PostHog, with the same switch.</b> When usage statistics are
+          on, PostHog, in the United States, also receives a few app
+          milestones: starting and finishing the tour, starting and finishing
+          sign-up, signing in, starting and finishing a workout, and sending a
+          coaching request. With them come a random identifier for this
+          installation and technical details the PostHog library adds, such as
+          your device model, operating system and app version. Each time the
+          app starts, it also sends one fixed technical line that says only
+          that statistics are working. We send PostHog no account identifier,
+          health information, messages or payment details. For the milestones
+          we ask it not to work out your location from your IP address. It
+          builds no profile of you, and session recording is off. If you turn usage statistics off,
+          collection stops and the identifier is reset. What PostHog already
+          received is not linked to your account, and it is kept as section 6
+          says.</li>
           <li><b>Our server logs.</b> These record outcomes and reason codes.
           They never record your phone number or your ID number, and they never
           place your account identifier beside an outcome.</li>
@@ -573,9 +652,6 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           and usage statistics, which each need your consent. ML Kit runs only on the selfie screen, after
           you have agreed to the check.</li>
         </ul>
-
-<section aria-label="PostHog"><h3>PostHog, only if you allow usage statistics</h3>
-        <p>PostHog receives a small set of app milestones (such as completing setup or a workout), an anonymous app identifier and technical device metadata in the United States. We send no account identifier, health values, messages or payment details, and do not enable session recordings. We send one fixed integration status log per app process while consent is enabled. Usage is optional and turning it off stops new collection and resets the identifier; this does not erase records already received by a provider. PostHog's free plan currently retains analytics for one year and logs for 14 days. The Google Analytics retention period below applies only to Google. New consent is required when this provider is introduced.</p></section>
 
 """ + h3("c-ai", "3.8 Artificial intelligence") + """
         <ul>
@@ -628,8 +704,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         order to deliver the pages.</p>
 
 """ + h3("c-notifications", "3.11 Reminders and notifications") + """
-        <p>Almost every notification Own Hub shows is made on your phone and
-        never comes from our servers.</p>
+        <p>Most notifications Own Hub shows are made on your phone and never
+        come from our servers. Two kinds come from our server: word that your
+        account check is done, and coaching notifications.</p>
         <ul>
           <li><b>Scheduled on your phone.</b> Training reminders, rest-timer
           alerts, the &ldquo;add a session you did&rdquo; nudge and the gentle
@@ -649,16 +726,31 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           never sent from our servers, and we receive nothing about them. You
           can turn them off with Event reminders in Notifications. Quiet hours
           apply.</li>
-          <li><b>The one thing we store for push.</b> A device token, which lets
-          us tell you when your account check is done. We use it for nothing
-          else. It is deleted when you delete your account.</li>
-          <li><b>Quiet hours.</b> Reminders are never shown between 22:00 and
-          08:00. Anything due in that time waits until 08:00. Two things can
-          still reach you then: a rest timer you started yourself, and word
-          that your account check is done.</li>
-          <li><b>Your choice.</b> You can turn each type off in Notifications
-          in the app. You can also turn all of them off in your phone&rsquo;s
-          settings.</li>
+          <li><b>What we store for push.</b> If you ask to be told when your
+          check is done, we store a device token for this phone. We use it to
+          tell you that your check is done and, if you use coaching, to send
+          the coaching notifications below to this phone. We use it for
+          nothing else. It is deleted when you delete your account.</li>
+          <li><b>Coaching notifications.</b> If you apply to coach or use
+          coaching, our server sends notifications through Firebase Cloud
+          Messaging to a phone registered for them: news about your coach
+          application or your portfolio photos, a new coaching request, an
+          answer to a request, a coaching that starts, ends soon or has ended,
+          a new message, a shared plan and a proposed live session. The text on
+          your lock screen is one fixed, general line, such as &ldquo;You have a
+          new message.&rdquo;, and never contains a message, a name, a plan or an
+          amount. They are sent when the event happens, at any time of
+          day.</li>
+          <li><b>Quiet hours.</b> Reminders scheduled on your phone are never
+          shown between 22:00 and 08:00. Anything due in that time waits until
+          08:00. Three things can still reach you then: a rest timer you
+          started yourself, word that your account check is done, and coaching
+          notifications.</li>
+          <li><b>Your choice.</b> You can turn each type of reminder off in
+          Notifications in the app. Notifications from our server have no
+          switch in the app: to stop them, turn off notifications for Own Hub
+          in your phone&rsquo;s settings, which turns off all the others
+          too.</li>
           <li><b>What they never show.</b> Notifications never show health,
           cycle or weight details.</li>
         </ul>
@@ -848,22 +940,71 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           it, goes to the coach you ask, together with your answers. Our server
           stores it with the request, in Frankfurt, Germany.</li>
           <li><b>Who sees it.</b> Only that coach, and only while the coaching
-          lasts. When it ends, she loses access to it. Nobody else sees it.</li>
+          lasts. When it ends, she loses access to it. Nobody else sees it. You
+          can still read it, and it is kept until you or the coach delete your
+          account.</li>
           <li><b>Chat.</b> Once the coach accepts, you and she can exchange text
           messages. They are stored on Google Cloud Firestore in Frankfurt,
           readable by both of you. Own Hub staff read a thread only after one
           of you reports it. When the coaching ends the chat closes, and the
           messages stay until either of you deletes her account, which deletes
-          the coaching and its messages. Messages are filtered for phone and
-          payment details.</li>
+          the coaching and its messages (a reported message is kept as section
+          3.17 describes). Messages that contain a phone number,
+          payment details, a link or abusive words are blocked: the app stops
+          them before they are sent, and if one reaches our server, the server
+          hides it and erases its text.</li>
           <li><b>Plans a coach shares.</b> A workout plan or meal plan she
           shares with you is stored under your account, so you can follow it
           in the app.</li>
+          <li><b>Live sessions.</b> If her package includes live sessions, she
+          proposes a time and a link to a video call in Google Meet, Zoom or
+          Microsoft Teams, and you confirm or decline. Own Hub has no video of
+          its own: the session opens in that service, outside the app, under
+          that service&rsquo;s own privacy terms, and Own Hub receives nothing
+          from the call. With the coaching we store the time, its length, the
+          link, its status and which of you marked it done. You can read them,
+          and the coach can while the coaching lasts.</li>
           <li><b>Reminders.</b> When she writes, we may send you a push
           notification through Firebase Cloud Messaging, at most once every few
-          minutes for a conversation. It does not show the message.</li>
+          minutes for a conversation. It does not show the message (section
+          3.11).</li>
+          <li><b>Report and block.</b> Every coaching chat has Report and Block,
+          and a coach&rsquo;s portfolio has Report (section 3.17).</li>
           <li><b>Basis:</b> your consent, given on the form when you ask to
           join, and performing the free coaching you asked for.</li>
+        </ul>
+
+""" + h3("c-reports", "3.17 Reports and blocks") + """
+        <p>You can report a coach&rsquo;s portfolio or a message, and you can
+        block the coach or the client you are talking to.</p>
+        <ul>
+          <li><b>What a report holds.</b> Who made it and who it is about, by
+          account identifier; what was reported; the reason you chose from a
+          list; any note you write, up to 1,000 characters; and the date, your
+          language and the app version. It also keeps a copy of what was
+          reported as it was at the time: the text of the message, or the
+          portfolio name and headline.</li>
+          <li><b>Who sees it.</b> Only the Own Hub team. The person you report
+          is never told who reported her. You can follow your own reports in
+          the app, under Reports you made.</li>
+          <li><b>What the team does.</b> The team reads the report and, for a
+          chat, the thread it is about. It may hide content or suspend an
+          account (Terms of Use, section 8).</li>
+          <li><b>How long.</b> No deletion period is set. If you delete your
+          account, the reports you made or that are about you are kept for the
+          safety of other members, with your account identifier replaced by a
+          random code wherever it names you, including in the link to what was
+          reported. If you are the woman who reported and you delete your
+          account, the copy of what was reported is deleted. If you are the
+          woman reported and you delete your account, the copy is kept for the
+          safety case with your name, picture and account links removed; the
+          words that were reported stay. No period is set for that copy yet.</li>
+          <li><b>A block.</b> It is kept on your account: whom you blocked,
+          when, and from where. The person you block is never told. It stops
+          new messages, requests and sessions between you. It stays until you
+          unblock her or delete your account.</li>
+          <li><b>Basis:</b> keeping members safe and the service working,
+          which the law allows (Law 151/2020, Article 6, point 4).</li>
         </ul>
 
 """ + h2("where", "4. Who handles your data, and where") + """
@@ -890,7 +1031,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                             "results and the keyed ID code. If you apply to "
                             "coach: your application and its files "
                             "(section 3.15). If you join a coach: your "
-                            "form, chat and shared plans (section 3.16)"),
+                            "form, chat, live session records and shared "
+                            "plans (section 3.16). Reports and blocks "
+                            "(section 3.17)"),
                 ("Where", "Frankfurt, Germany (europe-west3)"),
             ]),
             ("Google Cloud Vision", [
@@ -922,6 +1065,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                 ("Where", "Google data centres worldwide, which include the "
                           "United States"),
             ]),
+            ("PostHog, only if you allow usage statistics", [
+                ("Handles", "App milestones, an installation identifier, "
+                            "device details and one technical line "
+                            "(section 3.7)"),
+                ("Where", "United States"),
+            ]),
             ("{{cap:chatService}}", [
                 ("Handles", "A case number and reason codes only"),
                 ("Where", "{{chatServiceRegion}}"),
@@ -950,7 +1099,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           choose to analyse (and the 30-day repeat answer from it), any dish you
           choose to share, your event seats, and, if you apply to coach, your
           application and portfolio, and, if you join a coach, your form and chat.</li>
-          <li><b>The United States:</b> your phone number, for sign-in.</li>
+          <li><b>The United States:</b> your phone number, for sign-in; and, if
+          you allow usage statistics, what PostHog receives (section 3.7).</li>
           <li><b>Google data centres worldwide, which include the United
           States:</b> the device checks, ML Kit performance data, crash reports
           if you allow them, and usage statistics if you allow them. Google
@@ -962,9 +1112,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         the sign-up screen, naming these countries, before your phone number is
         sent. We ask again, separately, before any health information is backed
         up. Usage statistics have their own consent, the &ldquo;Help improve
-        Own Hub&rdquo; switch, which names Google Analytics and says the data
-        may be processed outside Egypt. Nothing is sent before you turn it
-        on.</p>
+        Own Hub&rdquo; switch, which names Google Analytics and PostHog and says
+        the data goes outside Egypt, including to the United States. Nothing
+        is sent before you turn it on.</p>
         <p>Permit: {{pdpcPermit}}</p>
         <p>Safeguards: {{transferCountries}}</p>
 
@@ -997,9 +1147,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("An application that was not approved, or sent back for changes, and its files",
              "Kept with no automatic deletion date, so that we can tell you why and you can apply again after 30 days. Deleted with your account."),
             ("The form you filled in to join a coach, and the coaching record",
-             "The coach can read the form only while the coaching lasts. It is kept until you or the coach delete your account."),
+             "The coach can read the form only while the coaching lasts; you can still read it after that. No other deletion period is set: it is kept until you or the coach delete your account."),
             ("Chat messages with a coach",
-             "Kept after the coaching ends, readable by you and the coach, until either of you deletes her account. Staff read a thread only after a report."),
+             "Kept after the coaching ends, readable by you and the coach, until either of you deletes her account (a reported message is kept as section 3.17 describes). No other deletion period is set. Staff read a thread only after a report."),
+            ("Live session records (time, length, link, status, who marked it done)",
+             "Kept with the coaching until you or the coach delete your account. The coach can read them only while the coaching lasts."),
+            ("Reports you made or that are about you (section 3.17)",
+             "No deletion period is set. Kept after you delete your account, with your account identifier replaced by a random code wherever it names you. The copy of what was reported is deleted if you were the one who reported, and kept with your name, picture and account links removed if you were the one reported."),
+            ("Your blocks", "Until you unblock or delete your account"),
             ("Plans a coach shared with you", "Until you delete your account"),
             ("Your public coach portfolio and the copy of your photo",
              "While it is published. Deleted with your account."),
@@ -1015,6 +1170,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
              "180 days after the last attempt. Not linked to your account."),
             ("Reviewer access log (which reviewer opened which case, and when)",
              "1 year. It holds no photograph, phone number or ID number."),
+            ("How you were approved (the route, the reviewer and the date), and the reviewer you said you know",
+             "Until you delete your account"),
+            ("A time you booked for a review call (reviewer, time, when booked)",
+             "Until you are approved or delete your account, and at most 30 days after the booked time, then deleted automatically"),
+            ("A phone number on the pre-approved list (section 3.4)",
+             "Until it is used when that number signs in, or a reviewer removes it. It is also removed if the approval is revoked or the account with that number is deleted."),
             ("Your account, settings, training, meals, any health backup and your consent records",
              "Until you delete them or delete your account"),
             ("The record that a deletion was carried out (status and dates only)",
@@ -1022,11 +1183,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("Daily totals of verifications, with no link to any person", "Kept"),
             ("Our server logs", "{{serverLogRetention}}"),
             ("Crash reports, if you allow them", "{{crashReportRetention}}"),
-            ("Usage statistics, if you allow them",
+            ("Usage statistics sent to Google Analytics, if you allow them",
              "2 months for anything tied to the app instance identifier, the "
              "shortest Google Analytics allows, then deleted automatically. "
              "Counts that are not linked to any person, such as how many people "
              "finished the tour, are kept."),
+            ("Usage statistics sent to PostHog, if you allow them",
+             "Kept by PostHog under its retention settings, which on its free "
+             "plan are one year for milestones and 14 days for the technical "
+             "line. Not linked to your account, so turning statistics off or "
+             "deleting your account does not remove what PostHog already "
+             "received."),
             ("Messages you send us", "{{supportRetention}}"),
             ("Waitlist contact",
              "180 days at most. The proof that you agreed is kept for 3 years "
@@ -1060,18 +1227,22 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           ends;</li>
           <li>any dish the team approved after you shared it, which carries no
           link to you (section 3.13);</li>
+          <li>reports you made or that are about you, as section 3.17
+          describes (the copy of what was reported is deleted if you made the
+          report, and kept without your name if it is about you);</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
         <p>If you joined a coach, deleting everything also deletes the
-        coaching, its chat and the plans she shared. If she deletes her account,
+        coaching, your form, its chat, its live session records and the plans
+        she shared. If she deletes her account,
         the same happens to the coaching and chat you had with her.</p>
         <p>If you applied to coach, deleting everything also removes your
         application, its documents and photos, your public portfolio, your
         packages and the copy of your photo.</p>
         <p>Crash reports, usage statistics and ML Kit data are never linked to
         your account. Deleting everything also turns usage statistics off and
-        resets the identifier on your phone. Google deletes this data on the
-        schedule in section 6.</p>
+        resets the identifier on your phone. Google and PostHog delete this
+        data on the schedule in section 6.</p>
         <p><b>Deleting only part of your data:</b></p>
         <ul>
           <li>turn off health backup (this deletes the cloud copy);</li>
@@ -1144,7 +1315,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>No training of AI on your data.</li>
           <li>No access to your contacts, location, microphone, text messages,
           or Apple Health or Health Connect. The app itself never uses your
-          microphone, and there is no video review.</li>
+          microphone and has no video calls: there is no video review, and a
+          live coaching session opens in the coach&rsquo;s video service,
+          outside the app (section 3.16).</li>
           <li>No access to your photo library. If you pick your profile photo
           from your photos, your phone&rsquo;s own picker hands Own Hub only
           the one picture you choose, and that picture stays on your
@@ -1171,6 +1344,24 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>23 October 2026, clarifications:</b> to describe what the app
+          already does. Section 3.1 now describes using parts of the app before
+          you sign up. Sections 3.3 and 3.6 now say that Own Hub is applying for
+          the permit the law requires, instead of saying it is shown in section
+          1. Section 3.4 now describes every way a woman reviewer can approve
+          you, the pre-approved list and booked review times, and section 2 and
+          the short version no longer say that everyone is checked with an ID
+          card. Section 3.6 and the short version now name the one exception to
+          health information staying on your phone: the answers you send a
+          coach you ask to join. Sections 3.7, 4, 5, 6 and 7 now list PostHog
+          with the other providers. Section 3.11 now describes the
+          notifications our server sends for coaching. Section 3.16 now
+          describes live sessions, which open in the coach&rsquo;s video
+          service, and everything the chat filter blocks. Section 3.17 is new
+          and describes reports and blocks. Section 6 now gives the current
+          periods for the coaching form, live sessions, reports, blocks,
+          approvals, booked times and pre-approved numbers. None of this
+          collects anything new, so you are not asked to accept again.</li>
           <li><b>23 October 2026, portfolio photos:</b> section 3.15 now says
           that an approved coach&rsquo;s portfolio can show members feedback
           screenshots, before and after photos of her clients (each with that
@@ -1247,17 +1438,19 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         ("a", "t5", "5. Allergies and food"),
         ("a", "t6", "6. Your account and your data"),
         ("a", "t7", "7. What you may not do"),
-        ("a", "t8", "8. What you make is yours"),
-        ("a", "t9", "9. Free"),
-        ("a", "t10", "10. Ending it"),
-        ("a", "t11", "11. The app is provided as it is"),
-        ("a", "t12", "12. Later features"),
-        ("a", "t13", "13. Limits on what we owe you"),
-        ("a", "t14", "14. Changes to these Terms"),
-        ("a", "t15", "15. Law, disputes and language"),
-        ("a", "t16", "16. Apple and Google"),
-        ("a", "t17", "17. The rest"),
-        ("a", "t18", "18. Contact"),
+        ("a", "t-conduct", "8. How you treat other members"),
+        ("a", "t-coaching", "9. Coaching"),
+        ("a", "t8", "10. What you make is yours"),
+        ("a", "t9", "11. Free"),
+        ("a", "t10", "12. Ending it"),
+        ("a", "t11", "13. The app is provided as it is"),
+        ("a", "t12", "14. Later features"),
+        ("a", "t13", "15. Limits on what we owe you"),
+        ("a", "t14", "16. Changes to these Terms"),
+        ("a", "t15", "17. Law, disputes and language"),
+        ("a", "t16", "18. Apple and Google"),
+        ("a", "t17", "19. The rest"),
+        ("a", "t18", "20. Contact"),
     ])
 
     pages["terms"] = {
@@ -1274,6 +1467,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
+          <b>Last updated:</b> {{lastUpdated}}<br>
           <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
           and Android, package <code>com.ownhub.app</code>.
         </p>
@@ -1302,9 +1496,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><b>A fitness app for women in Egypt.</b> You can follow workouts,
           log what you train and eat, set a weekly goal, track measurements you
           enter yourself, and record your menstrual cycle.</li>
-          <li><b>You need an account, and you are checked once.</b> You sign up
-          with your Egyptian mobile number and a code sent by SMS. There is no
-          password, and there is no profile that anyone else can see.</li>
+          <li><b>You need an account to save anything, and you are checked
+          once.</b> You can look around parts of the app without one. You sign
+          up with your Egyptian mobile number and a code sent by SMS. There is
+          no password. Members have no public profile; a member who applies to
+          coach and is approved has a public portfolio, as described
+          below.</li>
           <li><b>It is free.</b> There are no adverts, no in-app purchases, no
           subscriptions and no payments of any kind.</li>
           <li><b>What is not in this version:</b> no community, no AI
@@ -1333,14 +1530,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           capacity at 21. Own Hub is free and asks nothing of you in money, and
           nothing in these Terms takes away any right the law gives you because
           of your age.</li>
-          <li><b>How membership is confirmed:</b> once, when you join. Your sex
-          and age are read from your national ID number. A live selfie is
-          compared with the portrait on your card. If the automatic check
-          cannot decide, or you choose the niqab route, a woman from Own Hub
-          reviews your case and contacts you by phone within 72 hours to finish
-          your check. The photographs of your
-          card and your face are never stored. We never guess your sex or your
-          age from your face.</li>
+          <li><b>How membership is confirmed:</b> once, when you join. Usually
+          your sex and age are read from your national ID number, and a live
+          selfie is compared with the portrait on your card. If the automatic
+          check cannot decide, you choose the niqab route, or you prefer not to
+          use the camera, a woman from Own Hub reviews your case and can
+          approve you, usually after a phone call within 72 hours or at a time
+          you book. A woman reviewer can also approve a phone number before
+          its owner signs up. The <a href="/privacy#c-review">Privacy Policy,
+          section 3.4</a>, describes each route. The photographs of your card
+          and your face are never stored. We never guess your sex or your age
+          from your face.</li>
           <li>One account per person. You may not use anyone else&rsquo;s
           identity documents, or let anyone else use your account.</li>
         </ul>
@@ -1397,40 +1597,79 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>use Own Hub for anything illegal under Egyptian law.</li>
         </ul>
 
-""" + h2("t8", "8. What you make is yours") + """
+""" + h2("t-conduct", "8. How you treat other members") + """
+        <p>Own Hub has zero tolerance for:</p>
+        <ul>
+          <li>harassment, threats or insults;</li>
+          <li>sexual or hateful content;</li>
+          <li>sharing anyone else&rsquo;s photos or personal data without her
+          consent;</li>
+          <li>asking anyone to pay, or offering to pay, outside the app.</li>
+        </ul>
+        <p>Own Hub can remove such content and suspend or close an account that
+        does any of this, as section 12 describes. Every coaching chat has
+        Report and Block, and a coach&rsquo;s portfolio can be reported. The
+        Own Hub team reads every report, and the person you report is never
+        told who reported her (<a href="/privacy#c-reports">Privacy Policy,
+        section 3.17</a>).</p>
+
+""" + h2("t-coaching", "9. Coaching") + """
+        <ul>
+          <li><b>Who the coaches are.</b> Coaches on Own Hub are independent
+          professionals, not Own Hub&rsquo;s employees. Own Hub&rsquo;s woman
+          reviewer checks each coach&rsquo;s application, certificates and
+          portfolio before members can see her, and coaches follow the
+          <a href="/coach-terms">Coach Terms</a>.</li>
+          <li><b>What coaching is.</b> General fitness and healthy eating. It
+          is not medical advice: a coach does not diagnose or treat any
+          condition, prescribe a medical diet or recommend supplements, and
+          section 4 applies to coaching too.</li>
+          <li><b>Own Hub&rsquo;s role.</b> Own Hub reviews coaches, shows their
+          portfolios, carries your request, your chat, the plans she shares and
+          the times of live sessions, and acts on reports. The coach you choose
+          gives the coaching. Own Hub does not sit in on sessions.</li>
+          <li><b>Live sessions</b> open in the video service the coach chooses
+          (Google Meet, Zoom or Microsoft Teams), outside the app, under that
+          service&rsquo;s own terms.</li>
+          <li><b>Free for now.</b> In this version coaching is free and nobody
+          can pay. Before payments open, you will be asked to accept updated
+          terms that set out prices and how payment works.</li>
+        </ul>
+
+""" + h2("t8", "10. What you make is yours") + """
         <p>What you log is yours, and we do not claim ownership of it. We keep
         a copy only to provide the service, as the Privacy Policy describes.
         The app&rsquo;s content (exercise instructions, programmes, recipes,
         food data, design) belongs to us or to the people who licensed it to
         us.</p>
 
-""" + h2("t9", "9. Free") + """
+""" + h2("t9", "11. Free") + """
         <p>The app is free. If a future version adds anything paid, it will
         come with its own terms, shown before anything is charged, and nothing
         will renew without your clear agreement.</p>
 
-""" + h2("t10", "10. Ending it") + """
+""" + h2("t10", "12. Ending it") + """
         <ul>
           <li><b>You</b> can stop at any time by deleting your account. Deleting
           the app alone does not delete your account.</li>
-          <li><b>We</b> may suspend or close an account that breaks section 3 or
-          section 7. Before we do, we tell you why and give you a chance to
+          <li><b>We</b> may suspend or close an account that breaks section 3,
+          section 7 or section 8. Before we do, we tell you why and give you a chance to
           reply, unless the law, an order from an authority or someone&rsquo;s
           safety prevents it. You keep your right to a copy of your data.</li>
         </ul>
 
-""" + h2("t11", "11. The app is provided as it is") + """
+""" + h2("t11", "13. The app is provided as it is") + """
         <p>We work to keep Own Hub accurate and available, but we do not
         promise that it is free of errors, that it will always be available, or
         that any particular result will follow from using it.</p>
 
-""" + h2("t12", "12. Later features") + """
+""" + h2("t12", "14. Later features") + """
         <p>Community, an AI assistant and payments are not part of this
         version. Each will come with its own rules, published with the
         release that switches it on, and you will be asked to accept them
         before you use it.</p>
 
-""" + h2("t13", "13. Limits on what we owe you") + """
+""" + h2("t13", "15. Limits on what we owe you") + """
         <ul>
           <li>We are not responsible for injury, illness or loss that results
           from exercise you chose to do, food you chose to eat, or following
@@ -1443,7 +1682,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           you have under the Consumer Protection Law.</li>
         </ul>
 
-""" + h2("t14", "14. Changes to these Terms") + """
+""" + h2("t14", "16. Changes to these Terms") + """
         <ul>
           <li><b>Material changes:</b> we ask you to accept them in the app
           before they apply to you. If you do not accept, you can delete your
@@ -1454,7 +1693,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           material change.</li>
         </ul>
 
-""" + h2("t15", "15. Law, disputes and language") + """
+""" + h2("t15", "17. Law, disputes and language") + """
         <ul>
           <li>These Terms are governed by the laws of the Arab Republic of
           Egypt.</li>
@@ -1464,7 +1703,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>Own Hub is made for, and offered in, Egypt.</li>
         </ul>
 
-""" + h2("t16", "16. Apple and Google") + """
+""" + h2("t16", "18. Apple and Google") + """
         <ul>
           <li>These Terms are between you and the publisher only, not Apple or
           Google. The publisher alone, not Apple, is responsible for the app and
@@ -1496,7 +1735,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           own terms.</li>
         </ul>
 
-""" + h2("t17", "17. The rest") + """
+""" + h2("t17", "19. The rest") + """
         <ul>
           <li>If a court finds one clause unenforceable, the rest stays in
           force.</li>
@@ -1511,7 +1750,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           under the SIL Open Font Licence 1.1.</li>
         </ul>
 
-""" + h2("t18", "18. Contact") + """
+""" + h2("t18", "20. Contact") + """
         <p>{{mailto:contactSupport}} &middot; {{legalEntity}}, {{legalAddress}}</p>
 """ + kv([
             ("Version", "3.0"),
@@ -1519,6 +1758,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("What changed",
              "Acceptance at sign-up, Arabic prevails, store terms, AI assistant "
              "listed as a later feature. Replaces version 2.0."),
+            ("23 October 2026",
+             "Clarifications to match the app: you can look around parts of the "
+             "app before you sign up; members have no public profile, and an "
+             "approved coach has a public portfolio; section 3 now says how "
+             "membership is confirmed, including review by a woman and "
+             "pre-approved numbers; new section 8 on how you treat other "
+             "members and new section 9 on coaching. Later sections are "
+             "renumbered."),
         ]) + """
       </div>
     </div>
@@ -1540,6 +1787,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p class="meta">
           <b>Version:</b> 1 (coach-terms-v1)<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
+          <b>Last updated:</b> {{lastUpdated}}<br>
           <b>Applies to:</b> women who apply to coach on Own Hub, in the app.
         </p>
         <p>If the English and Arabic versions of these Terms differ, the Arabic
@@ -1591,6 +1839,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 
 """ + h2("k4", "4. What you may coach") + """
         <ul>
+          <li>You coach as an independent professional. You are not Own
+          Hub&rsquo;s employee.</li>
           <li>General fitness and healthy eating only.</li>
           <li>Do not diagnose or treat any condition, prescribe a medical diet
           or recommend supplements.</li>
@@ -1612,12 +1862,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>Members see the public portfolio described in the Privacy Policy,
           section 3.15, including the photos the reviewer approved, and nothing
           else from your application.</li>
-          <li>A price you set for a package is shown to members as the price.
-          In this version a member can ask to join for free, and nobody can pay
-          yet.</li>
+          <li>While you are a coach, you let Own Hub show your approved
+          portfolio content to members in the app.</li>
+          <li>In this version the price members see includes Own Hub&rsquo;s
+          service fee, and coaching is free for now: nobody can pay. Before
+          payments open you will be asked to accept updated coach terms that
+          set out prices, Own Hub&rsquo;s share and payouts.</li>
           <li>When a member joins you, you can read the form she filled in only
           while the coaching lasts, and you may use it only to coach her.
-          Messages with her stay inside Own Hub.</li>
+          Keep her answers, including her health answers, confidential, and
+          use them only to coach her. When her coaching ends, delete any notes
+          of your own about her. Messages with her stay inside Own Hub.</li>
         </ul>
 
 """ + h2("k7", "7. Reports, hiding and suspension") + """
@@ -1653,6 +1908,16 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>Contact: {{mailto:contactSupport}} &middot; {{legalEntity}},
           {{legalAddress}}</li>
         </ul>
+""" + kv([
+            ("23 October 2026",
+             "Clarifications: section 4 now says you coach as an independent "
+             "professional; section 6 now says that the price members see "
+             "includes Own Hub&rsquo;s service fee and that coaching is free "
+             "for now, that you keep clients&rsquo; answers confidential and "
+             "delete your own notes when a coaching ends, and that Own Hub "
+             "shows your approved portfolio content to members while you are a "
+             "coach."),
+        ]) + """
       </div>
     </div>
 """,
@@ -1669,7 +1934,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>Support</h1>
-        <p class="meta"><b>Last updated:</b> {{effectiveDate}}</p>
+        <p class="meta"><b>Last updated:</b> {{lastUpdated}}</p>
 
         <p class="lede">Write to {{mailto:contactSupport}} and a person will
         answer. There&rsquo;s no ticket system or chatbot in the way.</p>
@@ -1738,11 +2003,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 
 """ + h3("q-signin", "Where do I sign in? Where is the community?") + """
           <p>You sign in with your Egyptian mobile number and a code sent by
-          SMS. There is no password. The first time, you are also checked once
-          with your national ID card and a live selfie; if the automatic check
-          is unsure, or you choose the niqab route, a woman from Own Hub
-          reviews your case and contacts you by phone within 72 hours to finish
-          your check. There is no community and no assistant
+          SMS. There is no password. The first time, you are also checked once,
+          usually with your national ID card and a live selfie; if the
+          automatic check is unsure, or you choose the niqab route, a woman
+          from Own Hub reviews your case and phones you, usually within 72
+          hours or at a time you book, to finish your check. There is no community and no assistant
           in this version, and nothing in it can be bought. Coaching with
           Own Hub-reviewed coaches is available, free for now. If you were expecting
           the community or the assistant, you were reading about a later
@@ -1757,20 +2022,22 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 """ + h3("q-privacy", "What do you know about me?") + """
           <p>Your mobile number, which Google Firebase Authentication holds in
           the United States so that you can sign in. The result of your
-          women-only check, and a one-way keyed code made from your ID number so
-          that one card cannot open two accounts. We never keep the photographs
+          women-only check, and, if your ID number was read, a one-way keyed
+          code made from it so that one card cannot open two accounts. We never keep the photographs
           of your card or your face, and we never keep the ID number itself.
           Once you are verified, your training and meals, kept in Frankfurt,
           Germany, where no other member can see them (unless you choose to
           share a dish, which is shared without your name). Your cycle, check-ins,
           measurements, life stage, allergies and weight only if you turn on
-          health backup yourself.</p>
+          health backup yourself, and the answers you choose to send a coach if
+          you ask to join one.</p>
           <p>If you allow crash reports, Firebase Crashlytics receives a report
           when the app crashes, with no account identifier, name or phone
           number. They are off until you allow them. If you turn on
-          <b>Help improve Own Hub</b>, Google Analytics for Firebase receives
-          usage statistics, such as which screens you open, never your health
-          information and never linked to your account. That is off until you
+          <b>Help improve Own Hub</b>, Google Analytics for Firebase and PostHog
+          receive usage statistics, such as which screens you open or that you
+          finished a workout, never your health information and never linked
+          to your account. That is off until you
           turn it on. There is no advertising library in the app. The
           <a href="/privacy">Privacy Policy</a> sets out every item, who handles
           it and where.</p>
@@ -1806,7 +2073,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>Delete your Own Hub account</h1>
-        <p class="meta"><b>Last updated:</b> {{effectiveDate}}</p>
+        <p class="meta"><b>Last updated:</b> {{lastUpdated}}</p>
 """ + draft_banner + """
 """ + h2("short", "The short version", "no-rule") + """
         <div class="callout calm">
@@ -1883,7 +2150,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           used to join again.</li>
           <li><b>Safety reports</b> you made, or that were made about you, are
           kept for the safety of other members, with your account identifier
-          replaced by a random code.</li>
+          replaced by a random code wherever it names you. The copy of what was
+          reported is deleted if you made the report. If the report is about
+          you, the copy is kept with your name, picture and account links
+          removed, and the words that were reported stay.</li>
           <li><b>A record that your deletion was carried out</b>, reduced to its
           status and dates, as proof that your request was honoured.</li>
         </ul>

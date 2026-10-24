@@ -707,7 +707,7 @@ void _shippingFlagsTests() {
     ) async {
       await _open(tester, 'R10');
       final l10n = await AppL10n.delegate.load(const Locale('en'));
-      expect(find.text(l10n.backToToday), findsOneWidget);
+      expect(find.text(l10n.done_54ca1), findsOneWidget);
       expect(find.text(l10n.shareTheSquatWithYourGroup), findsNothing);
     });
 

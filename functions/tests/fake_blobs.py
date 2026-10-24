@@ -7,6 +7,7 @@ class FakeBlobs:
     def __init__(self, objects: dict | None = None):
         self.objects: dict[str, tuple[bytes, str]] = dict(objects or {})
         self.deleted: list[str] = []
+        self.locked: list[str] = []
 
     def put(self, path: str, data: bytes = b"x", content_type: str = "image/jpeg") -> None:
         self.objects[path] = (data, content_type)
@@ -23,3 +24,6 @@ class FakeBlobs:
     def delete(self, path: str) -> None:
         self.objects.pop(path, None)
         self.deleted.append(path)
+
+    def lock(self, path: str) -> None:
+        self.locked.append(path)

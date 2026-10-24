@@ -843,3 +843,16 @@ test("badge adds applications and photos; portfolio refusals are worded", () => 
   assert.equal(L.coachingMessage({ details: { reason: "media_not_found" } }), L.COACHING_REASON_TEXT.media_not_found);
   assert.equal(L.coachingMessage({ details: { reason: "too_many_media" } }), L.COACHING_REASON_TEXT.too_many_media);
 });
+
+test("undoing a removed pre-approved number asks the server to restore it and confirms nothing itself", () => {
+  const request = L.restorePhonesRequest(["+201001234567"]);
+  assert.deepEqual(request, { restore: ["+201001234567"] });
+  assert.equal("adultSeen" in request, false);
+  assert.equal("add" in request, false);
+});
+
+test("an old number with no recorded 18+ tick is marked, a confirmed one is not", () => {
+  assert.match(L.phoneAgeNote("+201001234567", ["+201001234567"]), /18\+ tick again/);
+  assert.equal(L.phoneAgeNote("+201009999999", ["+201001234567"]), "");
+  assert.equal(L.phoneAgeNote("+201001234567", undefined), "");
+});

@@ -1,11 +1,11 @@
 /// R01 — Train.
 ///
-/// Matches `6-v2/src/screens-train.mjs` → `R01`, then redrawn as the one place
-/// she trains and looks for something to train. Top to bottom: the section's
-/// name set large with her week drawn as marks, a Today card with one Start
-/// button, this week's sessions as a short timeline with the next one tagged,
-/// and Explore, which is every workout and every filmed move behind a search
-/// box, one row of chips and a Filters sheet.
+/// Matches `6-v2/src/screens-train.mjs` → `R01`, then redrawn as one purpose:
+/// pick or start a workout. Top to bottom: the section's name, a Today card
+/// with the one Start button, a "Your plan" row (R02 holds the programme, its
+/// tiers and every way to change the plan), a "My workouts" row, and Explore:
+/// every workout and every filmed move behind a search box and one Filters
+/// button.
 ///
 /// Two notes carried from the plan, neither of them mine to resolve here:
 ///
@@ -37,7 +37,6 @@ import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart' show kBodyPadding, kStackGap;
-import '../../../ui/app_week_segments.dart';
 import '../../../ui/hand/hand.dart';
 import '../../../ui/screen_art_strip.dart';
 import '../../../ui/screen_scope.dart';
@@ -46,47 +45,18 @@ import '../data/exercise_media_store.dart';
 import '../domain/custom_workout.dart';
 import '../domain/exercise_library.dart';
 import '../domain/train_repository.dart';
-import 'plan_entry_cards.dart';
 import 'program_view.dart' show ProgramDay;
 import 'train_explore.dart';
-import 'train_widgets.dart';
-
-/// One of the three short sessions offered above the library.
-class ShortSession {
-  const ShortSession({
-    required this.duration,
-    required this.constraint,
-    this.onTap,
-  });
-
-  /// "10 min".
-  final String duration;
-
-  /// What makes it possible today — "Floor only", "Quiet".
-  final String constraint;
-
-  final VoidCallback? onTap;
-}
 
 class TrainView extends StatefulWidget {
   const TrainView({
     super.key,
     this.onContinue,
     this.onSeeProgram,
-    this.onOpenToday,
-    this.onGentlerOption,
-    this.showGentlerOption = true,
-    this.onFollowAlong,
-    this.onShortSession,
-    this.onOpenMuscles,
     this.onSelectTab,
     this.onOpenWorkout,
     this.onOpenExercise,
-    this.shortSessions,
     this.programTitle,
-    this.programWeek,
-    this.sessionsThisWeek = 0,
-    this.sessionsPrescribed = 3,
     this.week = const <ProgramDay>[],
     this.workouts = const <LibraryWorkout>[],
     this.exercises = const <LibraryExercise>[],
@@ -94,29 +64,12 @@ class TrainView extends StatefulWidget {
     this.media = const NoExerciseMedia(),
     this.focus,
     this.workoutIsFilmed,
-    this.tierTabs,
     this.myWorkouts = const <CustomWorkout>[],
     this.onBuildOwn,
-    this.onSwitchPlan,
-    this.onFindCoach,
     this.onStartMine,
     this.onEditMine,
     this.onDeleteMine,
-    this.hasMyPlan = false,
-    this.onCustomizePlan,
-    this.onStartPlanFromScratch,
-    this.onEditSplit,
   });
-
-  /// She has a plan of her own.
-  final bool hasMyPlan;
-
-  /// The card at the top: copy the plan she follows into hers (or open hers),
-  /// start an empty one, or pick which of the three splits to copy. Give
-  /// either of the first two to draw the card.
-  final VoidCallback? onCustomizePlan;
-  final VoidCallback? onStartPlanFromScratch;
-  final VoidCallback? onEditSplit;
 
   /// The workouts she built herself, newest first.
   final List<CustomWorkout> myWorkouts;
@@ -124,47 +77,16 @@ class TrainView extends StatefulWidget {
   /// "Build my own workout": opens the builder.
   final VoidCallback? onBuildOwn;
 
-  /// "Switch plan or pick any session": the programme chooser, then Explore.
-  final VoidCallback? onSwitchPlan;
-
-  /// "Find a coach". Null hides the row.
-  final VoidCallback? onFindCoach;
-
   final ValueChanged<CustomWorkout>? onStartMine;
   final ValueChanged<CustomWorkout>? onEditMine;
   final ValueChanged<CustomWorkout>? onDeleteMine;
 
-  /// The Beginner / Intermediate / Advanced tabs, above Today's card.
-  final Widget? tierTabs;
-
   /// See OQ-12 above. The router owns where this goes.
   final VoidCallback? onContinue;
 
+  /// "Your plan": R02, where the programme, its tiers and every way to change
+  /// the plan are. Null (or R02 switched off) draws no row.
   final VoidCallback? onSeeProgram;
-
-  /// Where the week strip's "Today" chip went. Kept because the router and
-  /// the tests pass it; Home is one tap away on the bar below either way.
-  final VoidCallback? onOpenToday;
-
-  final VoidCallback? onGentlerOption;
-
-  /// False when the library has no swap for the move she is on: the row is
-  /// not drawn rather than opening an empty sheet.
-  final bool showGentlerOption;
-
-  /// The timed follow-along short session — `R06`.
-  ///
-  /// The design puts this on the FIRST of the three "Short ones that still
-  /// count" tiles, and only that one: a follow-along logs itself as the timer
-  /// runs out, which is why R06's own note reads "0 taps to log". The other two
-  /// are ordinary sessions and open the workout day.
-  final VoidCallback? onFollowAlong;
-
-  /// The other short sessions — an ordinary workout day, `R03`.
-  final VoidCallback? onShortSession;
-
-  /// Her muscles on a body she can turn (`P06`).
-  final VoidCallback? onOpenMuscles;
 
   final ValueChanged<String>? onSelectTab;
 
@@ -174,17 +96,12 @@ class TrainView extends StatefulWidget {
   /// A move from Explore (`R15`).
   final ValueChanged<LibraryExercise>? onOpenExercise;
 
-  /// Injectable so the real library can supply these later.
-  final List<ShortSession>? shortSessions;
-
+  /// Her programme's name for the "Your plan" row's second line, or nothing:
+  /// no title is invented for her.
   final String? programTitle;
-  final String? programWeek;
 
-  final int sessionsThisWeek;
-  final int sessionsPrescribed;
-
-  /// This week's sessions in order. Empty draws no timeline and a Today card
-  /// that carries on with whatever she was in.
+  /// This week's sessions in order. Empty draws a Today card that carries on
+  /// with whatever she was in.
   final List<ProgramDay> week;
 
   /// Every workout Explore may list. Narrowed here to the ones she can watch.
@@ -213,7 +130,6 @@ class _TrainViewState extends State<TrainView> {
   late final ExploreFilter _filter = ExploreFilter(widget.focus);
   final GlobalKey _exploreKey = GlobalKey();
   final TextEditingController _search = TextEditingController();
-  final GlobalKey _mineKey = GlobalKey();
 
   @override
   void initState() {
@@ -242,24 +158,16 @@ class _TrainViewState extends State<TrainView> {
 
   void _changed() => setState(() {});
 
-  bool get _showPlanCard =>
-      widget.onCustomizePlan != null || widget.onStartPlanFromScratch != null;
+  /// "My workouts" is open: her list shows under the row.
+  bool _mineOpen = false;
 
-  /// "My workouts": the list further down, or the builder when there is none
-  /// yet.
+  /// "My workouts": opens her list, or the builder when there is none yet.
   void _openMyWorkouts() {
-    final target = _mineKey.currentContext;
-    if (widget.myWorkouts.isEmpty || target == null) {
+    if (widget.myWorkouts.isEmpty) {
       widget.onBuildOwn?.call();
       return;
     }
-    Scrollable.ensureVisible(
-      target,
-      duration: handMotionOff(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
-    );
+    setState(() => _mineOpen = !_mineOpen);
   }
 
   List<LibraryExercise> _shownMoves() =>
@@ -277,28 +185,6 @@ class _TrainViewState extends State<TrainView> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final art = ScreenArt.headerFor(ScreenScope.of(context));
-
-    final shorts =
-        widget.shortSessions ??
-        [
-          // The follow-along tile, only while follow-along is on.
-          if (AppRouter.screenIsOn('R06'))
-            ShortSession(
-              duration: l10n.n10Min,
-              constraint: l10n.floorOnly,
-              onTap: widget.onFollowAlong,
-            ),
-          ShortSession(
-            duration: l10n.n15Min,
-            constraint: l10n.quiet,
-            onTap: widget.onShortSession,
-          ),
-          ShortSession(
-            duration: l10n.n20Min,
-            constraint: l10n.dumbbells,
-            onTap: widget.onShortSession,
-          ),
-        ];
 
     final moves = _shownMoves();
     final workouts = _shownWorkouts();
@@ -338,86 +224,52 @@ class _TrainViewState extends State<TrainView> {
           ),
         ],
       ),
-      if (_showPlanCard)
-        BuildOwnPlanCard(
-          hasMyPlan: widget.hasMyPlan,
-          onCustomizePlan: widget.onCustomizePlan,
-          onStartFromScratch: widget.onStartPlanFromScratch,
-          onEditSplit: widget.onEditSplit,
-          onBuildWorkout: widget.onBuildOwn,
-          onMyWorkouts: _openMyWorkouts,
-        ),
-      _WeekStrip(
-        title: widget.programWeek ?? l10n.thisWeek,
-        programTitle: widget.programTitle,
-        done: widget.sessionsThisWeek,
-        total: widget.sessionsPrescribed,
-      ),
-      ?widget.tierTabs,
       _TodayCard(
         title: next?.title ?? l10n.startTodaysSession,
         detail: next?.detail ?? '',
         onStart: next?.onTap ?? widget.onContinue,
       ),
-      if (widget.week.isNotEmpty)
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (final day in widget.week)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: MoveRow(
-                  name: day.title,
-                  detail: day.detail,
-                  done: day.done,
-                  current: identical(day, next),
-                  note: identical(day, next) ? l10n.upNext : null,
-                  onTap: day.onTap,
+      // One row each: the plan (R02 holds its tiers and every way to change
+      // it) and her own workouts. Side by side they are one list.
+      if (AppRouter.screenIsOn('R02') && widget.onSeeProgram != null)
+        AppListItem(
+          key: const ValueKey('r01-your-plan'),
+          title: l10n.yourPlan,
+          subtitle: widget.programTitle ?? '',
+          leading: const Icon(
+            Icons.event_note_outlined,
+            size: 24,
+            color: AppColors.primaryDim,
+          ),
+          trailing: const AppChevron(),
+          onTap: widget.onSeeProgram,
+        ),
+      if (widget.onBuildOwn != null || widget.myWorkouts.isNotEmpty)
+        AppListItem(
+          key: const ValueKey('r01-open-my-workouts'),
+          title: l10n.myWorkouts,
+          subtitle: widget.myWorkouts.isEmpty
+              ? l10n.buildMyOwnWorkout
+              : countLabel(widget.myWorkouts.length),
+          leading: const Icon(
+            Icons.fitness_center,
+            size: 24,
+            color: AppColors.primaryDim,
+          ),
+          trailing: widget.myWorkouts.isEmpty
+              ? const AppChevron()
+              : Icon(
+                  _mineOpen ? Icons.expand_less : Icons.expand_more,
+                  color: AppColors.onSurfaceVariant,
                 ),
-              ),
-          ],
+          onTap: _openMyWorkouts,
         ),
-      if (AppRouter.screenIsOn('R02'))
-        AppButton(
-          l10n.seeTheWholeProgram,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: widget.onSeeProgram,
-        ),
-      if (widget.onBuildOwn != null && !_showPlanCard)
-        AppButton(
-          l10n.buildMyOwnWorkout,
-          key: const ValueKey('r01-build-own'),
-          icon: Icons.add,
-          variant: AppButtonVariant.outlined,
-          height: 48,
-          fontSize: 15,
-          onPressed: widget.onBuildOwn,
-        ),
-      if (widget.onSwitchPlan != null)
-        AppButton(
-          l10n.switchPlanOrPickAnySession,
-          key: const ValueKey('r01-switch-plan'),
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: widget.onSwitchPlan,
-        ),
-      if (widget.myWorkouts.isNotEmpty)
+      if (_mineOpen && widget.myWorkouts.isNotEmpty)
         Column(
           key: const ValueKey('r01-my-workouts'),
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 6,
           children: [
-            Semantics(
-              header: true,
-              child: Text(
-                l10n.myWorkouts,
-                key: _mineKey,
-                style: AppText.titleM,
-              ),
-            ),
             for (final mine in widget.myWorkouts)
               AppListItem(
                 key: ValueKey('r01-mine-${mine.id}'),
@@ -450,89 +302,59 @@ class _TrainViewState extends State<TrainView> {
                 ),
                 onTap: () => widget.onStartMine?.call(mine),
               ),
-          ],
-        ),
-      if (shorts.isNotEmpty)
-        Text(l10n.shortOnesThatStillCount, style: AppText.titleM),
-      if (shorts.isNotEmpty)
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final session in shorts)
-              AppChip(
-                '${session.duration} · ${session.constraint}',
-                onTap: session.onTap,
+            if (widget.onBuildOwn != null)
+              AppButton(
+                l10n.buildMyOwnWorkout,
+                key: const ValueKey('r01-build-own'),
+                icon: Icons.add,
+                variant: AppButtonVariant.text,
+                height: 48,
+                fontSize: 15,
+                onPressed: widget.onBuildOwn,
               ),
           ],
-        ),
-      if (AppRouter.screenIsOn('P06') && widget.onOpenMuscles != null)
-        AppListItem(
-          key: const ValueKey('r01-muscles'),
-          title: l10n.yourMuscles,
-          subtitle: l10n.whatYouTrainedOnABodyMap,
-          leading: const Icon(
-            Icons.accessibility_new,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          trailing: const AppChevron(),
-          onTap: widget.onOpenMuscles,
-        ),
-      if (widget.onFindCoach != null)
-        AppListItem(
-          key: const ValueKey('r01-find-coach'),
-          title: l10n.findACoach,
-          leading: const Icon(
-            Icons.sports_outlined,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          trailing: const AppChevron(),
-          onTap: widget.onFindCoach,
-        ),
-      if (AppRouter.screenIsOn('R05') && widget.showGentlerOption)
-        AppListItem(
-          title: l10n.notFeelingItToday,
-          subtitle: l10n.seeAGentlerOptionBasedOnYour,
-          leading: const Icon(
-            Icons.self_improvement,
-            size: 24,
-            color: AppColors.primaryDim,
-          ),
-          trailing: const AppChevron(),
-          onTap: widget.onGentlerOption,
         ),
       const HandRule(seed: 41, height: 14),
       Semantics(
         header: true,
         child: Text(l10n.explore, key: _exploreKey, style: AppText.headline),
       ),
-      AppField(
-        controller: _search,
-        hint: l10n.search,
-        onChanged: (value) {
-          _filter.query = value;
-          _changed();
-        },
-        trailing: const Icon(
-          Icons.search,
-          size: 22,
-          color: AppColors.onSurfaceVariant,
-        ),
-      ),
-      ExploreChips(
-        filter: _filter,
-        onChanged: _changed,
-        showFilters: exploreHasSheet(widget.exercises),
-        onOpenFilters: () => showExploreFilters(
-          context,
-          filter: _filter,
-          exercises: widget.exercises,
-          onChanged: _changed,
-          workouts: widget.workouts,
-          matchCount: () => _shownMoves().length + _shownWorkouts().length,
-        ),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: AppField(
+              controller: _search,
+              hint: l10n.search,
+              onChanged: (value) {
+                _filter.query = value;
+                _changed();
+              },
+              trailing: const Icon(
+                Icons.search,
+                size: 22,
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // The one Filters button: what she trains, where, with what, and
+          // how gentle, in one sheet that keeps the count of what it leaves.
+          AppChip(
+            l10n.filters,
+            key: const ValueKey('r01-filters'),
+            icon: Icons.tune,
+            selected: _filter.narrowsBySheet,
+            onTap: () => showExploreFilters(
+              context,
+              filter: _filter,
+              exercises: widget.exercises,
+              onChanged: _changed,
+              workouts: widget.workouts,
+              matchCount: () => _shownMoves().length + _shownWorkouts().length,
+            ),
+          ),
+        ],
       ),
       if (widget.hiddenFor != null)
         AppSageNote(
@@ -585,62 +407,6 @@ class _TrainViewState extends State<TrainView> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Her week as marks, one circle for each session it asks for, ticked as they
-/// are logged. A count beside them, so she is never left to count circles.
-class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({
-    required this.title,
-    required this.programTitle,
-    required this.done,
-    required this.total,
-  });
-
-  final String title;
-  final String? programTitle;
-  final int done;
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppL10n.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Her programme, or nothing: no title is invented for her.
-              if (programTitle != null)
-                Text(
-                  programTitle!,
-                  style: AppText.bodyM.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              Text(title, style: AppText.titleL),
-              Text(
-                l10n.countOfTotal(countLabel(done), countLabel(total)),
-                style: AppText.bodyM.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 136,
-          child: AppWeekSegments(
-            total: total,
-            filled: done,
-            style: WeekStyle.marks,
-          ),
-        ),
-      ],
     );
   }
 }

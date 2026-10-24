@@ -40,7 +40,6 @@ Widget _home({
     onStartSession: () {},
     onRecall: () {},
     onOpenMeal: () {},
-    onOpenPlate: () {},
     onOpenWeek: () {},
     onOpenCycle: () {},
     onAsk: () {},
@@ -50,12 +49,18 @@ Widget _home({
 );
 
 void main() {
-  const row = ValueKey('today-your-training');
+  const row = ValueKey('change-training');
+
+  Future<void> openChange(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('today-change')));
+    await tester.pumpAndSettle();
+  }
 
   testWidgets('no callback, no row', (tester) async {
     _phone(tester);
     await tester.pumpWidget(_home());
     await tester.pumpAndSettle();
+    await openChange(tester);
     expect(find.byKey(row), findsNothing);
   });
 
@@ -77,11 +82,15 @@ void main() {
       _home(onChangeTraining: () => taps++, trainingLine: line),
     );
     await tester.pumpAndSettle();
+    await openChange(tester);
 
     expect(find.text('Your training'), findsOneWidget);
     expect(find.text('Split · 4 days · Intermediate'), findsOneWidget);
     await tester.tap(find.byKey(row));
     expect(taps, 1);
+    // The sheet closes before the action runs.
+    await tester.pumpAndSettle();
+    expect(find.byKey(row), findsNothing);
   });
 }
 

@@ -58,6 +58,7 @@ const List<String> shippingScreens = [
   'E12',
   'E13',
   'P01',
+  'P07',
   'P02',
   'P03',
   'P04',

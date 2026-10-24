@@ -12,12 +12,12 @@ import pytest
 from coaching import chat, common, errors, subscriptions
 from tests.coaching_helpers import _txn  # noqa: F401
 from tests.test_coaching_subscriptions import (  # noqa: F401
-    CLIENT, COACH, NOW, PACKAGE, db, intake, later, pushes, refuse, seed, sub_of,
+    CLIENT, COACH, NOW, PACKAGE, consent, db, intake, later, pushes, refuse, seed, sub_of,
 )
 
 
 def ask(db, pushes, *, uid=CLIENT, payments=False, live=True, now=NOW, **over):
-    data = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "en"}
+    data = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "consent": consent(), "locale": "en"}
     data.update(over)
     return subscriptions.request(
         db, uid, data, live=live, payments_live=payments, verified=True, now=now, notify=pushes

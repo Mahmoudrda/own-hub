@@ -391,10 +391,10 @@ Future<void> _render(
         await _home(tester);
       }
 
-      // 2. Home, with the week under way: on the pinned Monday, with both
-      // breakfasts filed under Breakfast rather than whatever the hour was.
+      // 2. Home, with the week under way: on the pinned Monday, its one Eat
+      // line counting both breakfasts she logged.
       expect(find.text(weekdayLabel(l10n, pinnedMorning)), findsWidgets);
-      expect(find.textContaining(l10n.breakfast), findsWidgets);
+      expect(find.textContaining('kcal'), findsWidgets);
       await _shootBoth(tester, set, '02-home');
 
       // 4. Eat: the recipes, scrolled to Rahma's book.

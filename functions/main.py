@@ -1164,9 +1164,10 @@ def decide_verification_flag(request: https_fn.CallableRequest) -> dict:
 
 @https_fn.on_call()
 def approve_user(request: https_fn.CallableRequest) -> dict:
-    """{uid, reason?: "approve" | "knownPerson"} -> {state: "approved"}.
+    """{uid, reason?: "approve" | "knownPerson", adultSeen: true} -> {state: "approved"}.
 
-    One click. No ID number, no call, no note, no confirmation: the claim is
+    One click, with her confirmation that she saw proof the woman is 18 or
+    older (recorded in the ledger). No ID number, no call, no note: the claim is
     minted, her state set, any open flag closed, and the ledger records who and
     how. A reviewer cannot approve herself.
     """
@@ -1178,18 +1179,22 @@ def approve_user(request: https_fn.CallableRequest) -> dict:
         raise https_fn.HttpsError(
             https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
         )
-    state = _review_call(approvals.approve, reviewer_uid, data.get("uid"), reason)
+    state = _review_call(
+        approvals.approve, reviewer_uid, data.get("uid"), reason, data.get("adultSeen") is True
+    )
     logs.decision("approve_user", outcome=state, state=state, latencyMs=_ms(started))
     return {"state": state}
 
 
 @https_fn.on_call()
 def approve_users(request: https_fn.CallableRequest) -> dict:
-    """{uids: [...]} -> {approved: [...], failed: [...]}; one bad row never
+    """{uids: [...], adultSeen: true} -> {approved: [...], failed: [...]}; one bad row never
     stops the rest."""
     reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
     data = _body(request)
-    result = _review_call(approvals.approve_many, reviewer_uid, data.get("uids"))
+    result = _review_call(
+        approvals.approve_many, reviewer_uid, data.get("uids"), data.get("adultSeen") is True
+    )
     logs.decision("approve_users", outcome="approved", count=len(result["approved"]))
     return result
 
@@ -1234,20 +1239,25 @@ def list_review_queue(request: https_fn.CallableRequest) -> list:
 
 @https_fn.on_call()
 def set_preapproved_phones(request: https_fn.CallableRequest) -> dict:
-    """{add?: "comma list", remove?: [...]} -> {phones: [...]}, E.164."""
+    """{add?: "comma list", remove?: [...], restore?: [removed numbers, within 5 minutes], adultSeen: true when adding} -> {phones: [...]}, E.164."""
     reviewer_uid = _require_woman_reviewer(request, allow_admin=True)
     data = _body(request)
     phones = _review_call(
-        approvals.set_preapproved, reviewer_uid, data.get("add"), data.get("remove")
+        approvals.set_preapproved,
+        reviewer_uid,
+        data.get("add"),
+        data.get("remove"),
+        data.get("adultSeen") is True,
+        data.get("restore"),
     )
-    return {"phones": phones}
+    return {"phones": phones, "needsAgeTick": approvals.needing_age_tick()}
 
 
 @https_fn.on_call()
 def list_preapproved_phones(request: https_fn.CallableRequest) -> dict:
     """{} -> {phones: [...]}."""
     _require_woman_reviewer(request, allow_admin=True)
-    return {"phones": approvals.list_preapproved()}
+    return {"phones": approvals.list_preapproved(), "needsAgeTick": approvals.needing_age_tick()}
 
 
 @https_fn.on_call()
@@ -1356,6 +1366,8 @@ def expire_stale_reviews(event: scheduler_fn.ScheduledEvent) -> None:
     )
     if minted:
         logs.decision("expire_stale_reviews", outcome=decisions.APPROVED, count=minted)
+    # Removed pre-approved numbers past their undo window (a list read does it too).
+    approvals._live_preapproved()
 
 
 # ------------------------------------------------------------- the console
@@ -1981,7 +1993,7 @@ def confirm_portfolio_consent(request: https_fn.CallableRequest) -> dict:
 
     return _coaching_call(
         media.confirm_consent, store.db(), uid, data,
-        live=_portfolio_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"), blobs=_PersonalBlobs(), now=_coaching_now(),
     )
 
 
@@ -2364,6 +2376,20 @@ def mark_thread_read(request: https_fn.CallableRequest) -> dict:
     )
 
 
+@https_fn.on_call()
+def accept_chat_rules(request: https_fn.CallableRequest) -> dict:
+    """She ticked the chat and conduct rules before her first coaching message;
+    the version, a hash of the words and the time are kept."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import chat
+
+    return _coaching_call(
+        chat.accept_rules, store.db(), uid, data, live=_clients_live(), now=_coaching_now()
+    )
+
+
 @firestore_fn.on_document_created(
     document="relationships/{relId}/messages/{messageId}", region=config.REGION
 )
@@ -2381,6 +2407,22 @@ def on_coaching_message(event) -> None:
         )
     except Exception:
         logs.error("coaching_message_trigger_failed")
+        raise
+
+
+@firestore_fn.on_document_created(document="reports/{reportId}", region=config.REGION)
+def on_coaching_report(event) -> None:
+    """Keeps a copy of the reported coaching content, for staff only."""
+    if event.data is None:
+        return
+    from coaching import moderation
+
+    try:
+        moderation.capture_evidence(
+            store.db(), event.params["reportId"], event.data.to_dict() or {}, now=_coaching_now()
+        )
+    except Exception:
+        logs.error("coaching_report_trigger_failed")
         raise
 
 
@@ -2453,6 +2495,40 @@ def record_meal_photo_consent(request: https_fn.CallableRequest) -> dict:
         )
     store.write_meal_photo_consent(uid, data.get("locale"), data.get("appVersion"))
     return {"ok": True, "consentVersion": config.MEAL_PHOTO_CONSENT_VERSION}
+
+
+@https_fn.on_call()
+def withdraw_meal_photo_consent(request: https_fn.CallableRequest) -> dict:
+    """She takes back her consent to send meal photos to Google Vertex AI. The
+    record stays with the time she withdrew; analyze_meal_photo refuses until
+    she consents again."""
+    uid = _require_auth(request)
+    _body(request)
+    store.withdraw_meal_photo_consent(uid)
+    return {"ok": True}
+
+
+@https_fn.on_call()
+def record_consent_choice(request: https_fn.CallableRequest) -> dict:
+    """Her optional choice to share usage statistics or crash reports, or to
+    stop. Request {purpose: "analytics" | "crash", granted: bool,
+    consentVersion, locale?, appVersion?}. The version must be the current one
+    for the purpose (config.CHOICE_CONSENT_VERSIONS). Every change is kept
+    with its time; the choice itself is applied on her phone."""
+    uid = _require_auth(request)
+    data = _body(request)
+    purpose, granted = data.get("purpose"), data.get("granted")
+    version = data.get("consentVersion")
+    if purpose not in config.CHOICE_CONSENT_VERSIONS or not isinstance(granted, bool):
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR
+        )
+    if isinstance(version, bool) or version != config.CHOICE_CONSENT_VERSIONS[purpose]:
+        raise https_fn.HttpsError(
+            https_fn.FunctionsErrorCode.FAILED_PRECONDITION, reasons.CONSENT_MISSING
+        )
+    store.write_choice_consent(uid, purpose, granted, data.get("locale"), data.get("appVersion"))
+    return {"ok": True}
 
 
 @https_fn.on_call()

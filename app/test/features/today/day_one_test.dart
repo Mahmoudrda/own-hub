@@ -123,13 +123,13 @@ void main() {
       await tester.pumpWidget(_host(_dayOne()));
       await tester.pumpAndSettle();
       expect(find.text('Nothing added yet'), findsOneWidget);
-      expect(find.text('Walk this morning · 32 min'), findsNothing);
+      expect(find.byKey(const ValueKey('today-card')), findsNothing);
 
       // Same TodayView, one log later.
       await tester.pumpWidget(_host(_populated()));
       await tester.pumpAndSettle();
       expect(find.text('Nothing added yet'), findsNothing);
-      expect(find.text('Walk this morning · 32 min'), findsOneWidget);
+      expect(find.byKey(const ValueKey('today-card')), findsOneWidget);
     });
   });
 

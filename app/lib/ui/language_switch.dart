@@ -192,7 +192,7 @@ const Set<String> kNoChromeScreens = {
 
 /// Screens that already show her own picture in their page, so the chrome
 /// adds only the switch there.
-const Set<String> _ownPictureScreens = {'A02'};
+const Set<String> _ownPictureScreens = {'A02', 'P01'};
 
 /// Her profile picture and the language switch, side by side, for the end of
 /// a header. Drawn on every routed screen except [kNoChromeScreens].
@@ -241,7 +241,12 @@ class AppChrome extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final id = ScreenScope.of(context);
-    final open = onOpenProfile ?? (() => openScreen(context, 'A02'));
+    // On Home her picture opens You, the tab that holds her profile.
+    final open =
+        onOpenProfile ??
+        (id == 'T01'
+            ? () => AppRouter.goToTab(context, 'P01')
+            : () => openScreen(context, 'A02'));
     final picture = !_ownPictureScreens.contains(id);
     // The label is a few characters: past 1.3 it stops growing so the title
     // keeps its room, and its 48 point target does not change.

@@ -15,6 +15,17 @@ abstract interface class ChatThreadRepository implements CoachingRepository {
   /// open.
   Future<void> markThreadRead(String relId);
 
+  /// Whether she has already ticked the chat rules
+  /// (`users/{uid}/consents/chat-rules-v1`).
+  Future<bool> chatRulesAccepted();
+
+  /// Records her tick on the chat rules before her first message. [rulesText]
+  /// is the words she read, so the record can say which words she agreed to.
+  Future<void> acceptChatRules({
+    required String rulesText,
+    required String locale,
+  });
+
   /// Reports one chat line: one write to `reports/{id}` with
   /// `subjectKind: coachMessage`. [reason] is one of
   /// `CoachingEnums.reportReasons`.

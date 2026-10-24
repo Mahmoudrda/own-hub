@@ -251,7 +251,7 @@ def test_a_failure_part_way_is_recorded_and_a_rerun_finishes(step):
 
 def test_every_manifest_row_has_a_server_action():
     rows = manifest.load(_JSON)
-    assert [r.number for r in rows] == list(range(1, 60))
+    assert [r.number for r in rows] == list(range(1, 62))
     assert set(manifest.ACTIONS) == {r.number for r in rows}
     manifest.check(rows)
 
@@ -389,3 +389,56 @@ def test_the_coaching_rows_are_named_and_run_in_the_group_hook():
     # Payment records survive on purpose, with her uid replaced.
     assert rows[59].method == "pseudonymised"
     assert manifest.ACTIONS[59] == manifest.GROUP_HOOK
+
+
+def test_rows_60_and_61_the_report_evidence_and_the_release_evidence_are_named():
+    rows = {r.number: r for r in manifest.load(_JSON)}
+    assert rows[60].path.startswith("reports/{id}/evidence/content")
+    assert manifest.ACTIONS[60] == manifest.REPORTS
+    assert rows[61].path == "coachPrivate/{uid}/mediaConsents/{id}"
+    assert manifest.ACTIONS[61] == manifest.GROUP_HOOK
+
+
+def _reports_backend():
+    from tests.fake_firestore import FakeFirestore
+
+    db = FakeFirestore()
+    db.docs["reports/r1"] = {"reporterUid": "her", "subjectUid": "x"}
+    db.docs["reports/r1/evidence/content"] = {"subject": {"text": "hello"}}
+    db.docs["reports/r1"]["subjectRef"] = "relationships/x__her/messages/m1"
+    db.docs["reports/r2"] = {"reporterUid": "y", "subjectUid": "her", "subjectRef": "relationships/her__y/messages/m2"}
+    db.docs["reports/r2/evidence/content"] = {
+        "subject": {"displayName": "Her Name", "headline": "Coach Her", "text": "kept", "name": "Plan A"},
+        "plan": {"coachName": "Her Name", "coachUid": "her", "subId": "s1", "name": "Plan A", "body": {"note": "reported words"}},
+    }
+    db.docs["reports/r3"] = {"reporterUid": "y", "subjectUid": "z"}
+    db.docs["reports/r3/evidence/content"] = {"subject": {"text": "other"}}
+    backend = deletion.FirebaseBackend.__new__(deletion.FirebaseBackend)
+    backend.db = db
+    return backend, db
+
+
+def test_the_reporter_deleting_hers_deletes_the_evidence_on_the_real_backend():
+    backend, db = _reports_backend()
+    backend.pseudonymise_reports("her", "tok")
+    assert db.docs["reports/r1"]["reporterUid"] == "tok"
+    assert "reports/r1/evidence/content" not in db.docs
+    assert "reports/r3/evidence/content" in db.docs
+
+
+def test_the_reported_side_deleting_hers_keeps_the_evidence_pseudonymised():
+    backend, db = _reports_backend()
+    backend.pseudonymise_reports("her", "tok")
+    assert db.docs["reports/r2"]["subjectUid"] == "tok"
+    kept = db.docs["reports/r2/evidence/content"]["subject"]
+    assert kept == {"displayName": None, "headline": "Coach Her", "text": "kept", "name": "Plan A"}
+    plan = db.docs["reports/r2/evidence/content"]["plan"]
+    assert plan == {"coachName": None, "name": "Plan A", "body": {"note": "reported words"}}
+
+
+def test_the_kept_report_no_longer_links_to_the_deleted_account():
+    backend, db = _reports_backend()
+    backend.pseudonymise_reports("her", "tok")
+    assert db.docs["reports/r2"]["subjectRef"] == "relationships/tok__y/messages/m2"
+    assert db.docs["reports/r1"]["subjectRef"] == "relationships/x__tok/messages/m1"
+    assert "her" not in str(db.docs["reports/r2"]) and "her" not in str(db.docs["reports/r1"])

@@ -7,10 +7,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/follow_up_state.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/account/domain/notifications.dart';
 import 'package:own_hub/features/account/presentation/account_view_models.dart';
 import 'package:own_hub/features/account/presentation/notifications_view.dart';
+import 'package:own_hub/features/followup/domain/follow_up_plan.dart';
 import 'package:own_hub/features/train/domain/notification_plan.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -344,6 +346,57 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byType(AppEmptyState), findsOneWidget);
+    });
+  });
+  group("'Don't show this kind' lives here, one switch per kind", () {
+    setUp(FollowUpState.instance.reset);
+    tearDown(FollowUpState.instance.reset);
+
+    Future<void> pumpView(WidgetTester tester, {Locale? locale}) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          NotificationsView(followUpsOn: true, onFollowUpsChanged: (_) {}),
+          locale: locale ?? const Locale('en'),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      testWidgets('turning a kind off mutes it, on lets it back '
+          '(${locale.languageCode})', (tester) async {
+        await pumpView(tester, locale: locale);
+        for (final kind in FollowUpKind.values) {
+          expect(
+            find.byKey(ValueKey('a01-follow-up-kind-${kind.name}')),
+            findsOneWidget,
+          );
+        }
+        final food = find.byKey(const ValueKey('a01-follow-up-kind-food'));
+        await tester.ensureVisible(food);
+        await tester.tap(food);
+        await tester.pumpAndSettle();
+        expect(FollowUpState.instance.muted, {FollowUpKind.food});
+
+        await tester.tap(food);
+        await tester.pumpAndSettle();
+        expect(FollowUpState.instance.muted, isEmpty);
+      });
+    }
+
+    testWidgets('no kind switches while follow-ups are off', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          NotificationsView(followUpsOn: false, onFollowUpsChanged: (_) {}),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('a01-follow-up-kind-food')),
+        findsNothing,
+      );
     });
   });
 }

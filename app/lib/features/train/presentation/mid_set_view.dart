@@ -44,6 +44,7 @@ import '../../../ui/app_big_button.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_field.dart';
+import '../../../ui/app_overflow_menu.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
@@ -129,6 +130,8 @@ class MidSetView extends StatefulWidget {
   /// above the move so it never covers the button she taps next.
   final SessionNotice? notice;
 
+  /// The way back to the move list, offered as "All moves" in the Pause
+  /// sheet's "…". The top bar carries no close button.
   final VoidCallback? onClose;
 
   /// Why the weight is what it is, for a loaded move she has trained before:
@@ -136,8 +139,8 @@ class MidSetView extends StatefulWidget {
   /// history by `loadAdviceFor`, and null for a move that has none.
   final String? progressionLine;
 
-  /// Null draws no pause control. A pause icon that did nothing was on this
-  /// screen, R09 and R13 for every woman.
+  /// What Pause does when a caller wants its own answer (the tour sends her to
+  /// join). Null opens the Pause sheet.
   final VoidCallback? onPause;
 
   /// Sets of today's session behind her, for the bar under the title.
@@ -200,12 +203,6 @@ class _MidSetViewState extends State<MidSetView> {
   TrainRepository? _fallbackRepository;
   LogCommandBus? _fallbackBus;
 
-  /// Whether the sets other than the current one are drawn.
-  bool _allSets = false;
-
-  /// Whether the move's cues are open under its clip.
-  bool _cuesOpen = false;
-
   /// Whether the next set is a warm-up. Off whenever this screen opens.
   bool _warmUp = false;
 
@@ -227,7 +224,6 @@ class _MidSetViewState extends State<MidSetView> {
   void didUpdateWidget(MidSetView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.move?.exerciseId != widget.move?.exerciseId) {
-      _cuesOpen = false;
       _warmUp = false;
     }
   }
@@ -485,18 +481,21 @@ class _MidSetViewState extends State<MidSetView> {
         // `move2Of5`, so the bar read "Move 2 of 5" above the first move of a
         // four-move session. A caller that does not know says nothing.
         title: moveTitle(l10n, widget.moveNumber, widget.moveCount),
-        onClose: widget.onClose,
         sets: widget.sets,
+        // Pause is the only control up here: Resume, End workout and the
+        // rest of what a set can do are in its sheet.
         actions: [
-          if (widget.onPause != null)
-            IconButton(
-              onPressed: widget.onPause,
-              iconSize: 24,
-              color: AppColors.onSurfaceVariant,
-              tooltip: l10n.pause,
-              icon: const Icon(Icons.pause),
-            ),
-          if (widget.end case final end?) SessionEndButton(end: end),
+          PauseButton(
+            onPressed:
+                widget.onPause ??
+                () => unawaited(
+                  showPauseSheet(
+                    context,
+                    end: widget.end,
+                    more: _moreItems(l10n, move, prescribed),
+                  ),
+                ),
+          ),
         ],
       ),
       footer: [
@@ -529,23 +528,6 @@ class _MidSetViewState extends State<MidSetView> {
           // that crashes her session.
           onPressed: prescribed == null ? null : () => _logOneSet(move),
         ),
-        // For the woman training with the phone on the floor: the whole move in
-        // one tap, and she stays in the session.
-        //
-        // "I did all 3 sets, log them" names three, and `_logWholeMove` logs
-        // `move.sets.length` — so a four-set move offered to log three and
-        // wrote four. The named figure is only offered to the woman it is true
-        // of; everyone else gets the plain action, which is what the button
-        // does either way. The dictionary gap is a `{sets}` form of this label.
-        AppButton(
-          statesHerFigure(states: 3, hers: move.sets.length)
-              ? l10n.iDidAll3Sets
-              : l10n.iDidThemAll,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          onPressed: () => _logWholeMove(move),
-        ),
       ],
       children: [
         if (widget.notice case final notice?)
@@ -569,47 +551,35 @@ class _MidSetViewState extends State<MidSetView> {
                   if (mounted) setState(() => _unplayable.add(library.id));
                 },
               ),
-              if (move.cues.isNotEmpty)
-                _FormCues(
-                  label: l10n.formCues,
-                  cues: move.cues,
-                  open: _cuesOpen,
-                  onTap: () => setState(() => _cuesOpen = !_cuesOpen),
-                ),
             ] else
               const ScreenArtStrip(size: 76),
-        Row(
-          children: [
-            Expanded(
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: MoveName(move.name, style: AppText.headline),
-              ),
-            ),
-            IconButton(
-              key: const ValueKey('r07-change'),
-              tooltip: l10n.change,
-              onPressed: widget.onChange,
-              iconSize: 24,
-              color: AppColors.onSurfaceVariant,
-              icon: const Icon(Icons.tune),
-            ),
-            if (widget.onOpenHistory != null)
-              IconButton(
-                key: const ValueKey('r07-history'),
-                tooltip: l10n.history,
-                onPressed: widget.onOpenHistory,
-                iconSize: 24,
-                color: AppColors.onSurfaceVariant,
-                icon: const Icon(Icons.show_chart),
-              ),
-          ],
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: MoveName(move.name, style: AppText.headline),
         ),
-        if (widget.gymHelpers && move.exerciseId.isNotEmpty)
-          _MoveNoteRow(
-            key: ValueKey('r07-note-${move.exerciseId}'),
-            exerciseId: move.exerciseId,
+        if (prescribed != null)
+          Text(
+            l10n.setNOfTotal(
+              countLabel(_setNumberOf(move)),
+              countLabel(move.sets.length),
+            ),
+            key: const ValueKey('r07-set-of'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
           ),
+        // Turning a warm-up on is in the "…"; turning it off is here, where
+        // she can see that this set will not count.
+        if (warmingUp)
+          WarmUpToggle(
+            value: _warmUp,
+            onChanged: (on) => setState(() => _warmUp = on),
+          ),
+        if (widget.gymHelpers && move.exerciseId.isNotEmpty)
+          if (MoveNotes.instance.forMove(move.exerciseId) case final note?)
+            Text(
+              note,
+              key: const ValueKey('r07-note-text'),
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
         AppCard(
           padding: const EdgeInsets.all(18),
           children: [
@@ -661,47 +631,110 @@ class _MidSetViewState extends State<MidSetView> {
             ?_progressionNote(l10n, prescribed),
           ],
         ),
-        if (widget.gymHelpers &&
-            loadKitFor(widget.equipment) == LoadKit.barbell)
-          PlateHelper(
-            totalKg: warmingUp
-                ? _warmUpOutcome(prescribed).weightKg
-                : prescribed?.weightKg,
-          ),
-        if (canWarmUp) ...[
-          WarmUpToggle(
-            value: _warmUp,
-            onChanged: (on) => setState(() => _warmUp = on),
-          ),
-          if (!_warmUp) ?_warmUpHint(l10n, move, prescribed),
-        ],
-        // The set she is on, and the rest one tap away.
-        _ThisMoveHeading(
-          label: l10n.thisMove,
-          open: _allSets,
-          onTap: () => setState(() => _allSets = !_allSets),
-        ),
-        // One row per set her move prescribes.
-        //
-        // These were three fixed rows, each valued `n12Kg10`, so a two-set
-        // move grew a third set that did not exist and every row read
-        // "12 kg x 10" however little that had to do with her plan.
+        if (canWarmUp && !_warmUp) ?_warmUpHint(l10n, move, prescribed),
         // Warm-ups she has saved, above the working sets and apart from them.
         for (final warm in widget.warmUps)
           SetRow(label: l10n.warmUp, value: _figure(l10n, warm), done: true),
-        for (var i = 0; i < move.sets.length; i++)
-          if (_allSets || i == _setNumberOf(move) - 1)
-            SetRow(
-              label: l10n.countOfTotal(
-                countLabel(i + 1),
-                countLabel(move.sets.length),
-              ),
-              value: _setValue(l10n, move, i),
-              done: i < _setNumberOf(move) - 1,
-              current: i == _setNumberOf(move) - 1,
-            ),
       ],
     );
+  }
+
+  /// Everything a set can do besides log itself, for the Pause sheet's "…".
+  List<AppOverflowItem> _moreItems(
+    AppL10n l10n,
+    PlannedMove move,
+    PrescribedSet? prescribed,
+  ) {
+    final warm = widget.onWarmUpLogged != null && prescribed != null;
+    final note = MoveNotes.instance.forMove(move.exerciseId);
+    return [
+      if (widget.onChange != null)
+        AppOverflowItem(
+          icon: Icons.tune,
+          label: l10n.change,
+          onTap: widget.onChange!,
+        ),
+      if (widget.onOpenHistory != null)
+        AppOverflowItem(
+          icon: Icons.show_chart,
+          label: l10n.history,
+          onTap: widget.onOpenHistory!,
+        ),
+      if (widget.gymHelpers && move.exerciseId.isNotEmpty)
+        AppOverflowItem(
+          icon: Icons.sticky_note_2_outlined,
+          label: note == null ? l10n.addNote : l10n.editNote,
+          onTap: () => unawaited(_editNote(move.exerciseId)),
+        ),
+      if (warm && !_warmUp)
+        AppOverflowItem(
+          icon: Icons.local_fire_department_outlined,
+          label: l10n.warmUpSet,
+          onTap: () => setState(() => _warmUp = true),
+        ),
+      if (widget.gymHelpers && loadKitFor(widget.equipment) == LoadKit.barbell)
+        AppOverflowItem(
+          icon: Icons.fitness_center,
+          label: l10n.plates,
+          onTap: () => unawaited(
+            showAppSheet<void>(
+              context: context,
+              children: [
+                PlateHelper(
+                  totalKg: _warmUp && prescribed != null
+                      ? _warmUpOutcome(prescribed).weightKg
+                      : prescribed?.weightKg,
+                ),
+              ],
+            ),
+          ),
+        ),
+      if (move.cues.isNotEmpty)
+        AppOverflowItem(
+          icon: Icons.checklist,
+          label: l10n.formCues,
+          onTap: () => unawaited(
+            showAppSheet<void>(
+              context: context,
+              children: [
+                Text(l10n.formCues, style: AppText.titleL),
+                for (final cue in move.cues) Text(cue, style: AppText.bodyM),
+              ],
+            ),
+          ),
+        ),
+      // The woman training with the phone on the floor: the whole move in one
+      // tap, and she stays in the session.
+      //
+      // "I did all 3 sets, log them" names three, and `_logWholeMove` logs
+      // `move.sets.length` — so a four-set move offered to log three and
+      // wrote four. The named figure is only offered to the woman it is true
+      // of; everyone else gets the plain action.
+      AppOverflowItem(
+        icon: Icons.done_all,
+        label: statesHerFigure(states: 3, hers: move.sets.length)
+            ? l10n.iDidAll3Sets
+            : l10n.iDidThemAll,
+        onTap: prescribed == null ? () {} : () => _logWholeMove(move),
+      ),
+      if (widget.onClose != null)
+        AppOverflowItem(
+          icon: Icons.list,
+          label: l10n.allMoves,
+          onTap: widget.onClose!,
+        ),
+    ];
+  }
+
+  /// The note she keeps for a move, in a sheet, saved on this phone only.
+  Future<void> _editNote(String exerciseId) async {
+    final saved = await showAppSheet<String>(
+      context: context,
+      children: [_NoteSheet(initial: MoveNotes.instance.forMove(exerciseId))],
+    );
+    if (saved == null) return;
+    MoveNotes.instance.setFor(exerciseId, saved);
+    if (mounted) setState(() {});
   }
 
   static String _warmUpDoneLabel(AppL10n l10n, SetOutcome outcome) {
@@ -725,193 +758,6 @@ class _MidSetViewState extends State<MidSetView> {
       child: Text(
         l10n.warmUpWithAboutWeightFirstAround('${weightLabel(kg)} ${l10n.kg}'),
         style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-      ),
-    );
-  }
-
-  /// One set's own figure, never the whole move's "3 × 30 seconds" repeated on
-  /// every row.
-  static String _setValue(AppL10n l10n, PlannedMove move, int i) {
-    final set = move.sets[i];
-    final figure = setFigure(
-      l10n,
-      weightKg: set.weightKg,
-      reps: set.reps,
-      holdSeconds: set.holdSeconds,
-    );
-    return figure.isEmpty ? move.prescriptionLabel : figure;
-  }
-}
-
-/// "This move", which opens the other sets when tapped.
-class _ThisMoveHeading extends StatelessWidget {
-  const _ThisMoveHeading({
-    required this.label,
-    required this.open,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool open;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      expanded: open,
-      child: InkWell(
-        key: const ValueKey('r07-all-sets'),
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppText.bodyM.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              Icon(
-                open ? Icons.expand_less : Icons.expand_more,
-                size: 22,
-                color: AppColors.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// "Form cues", which opens the move's cues under its clip when tapped.
-class _FormCues extends StatelessWidget {
-  const _FormCues({
-    required this.label,
-    required this.cues,
-    required this.open,
-    required this.onTap,
-  });
-
-  final String label;
-  final List<String> cues;
-  final bool open;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Semantics(
-        button: true,
-        expanded: open,
-        child: InkWell(
-          key: const ValueKey('r07-form-cues'),
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    label,
-                    style: AppText.bodyM.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                Icon(
-                  open ? Icons.expand_less : Icons.expand_more,
-                  size: 22,
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      if (open)
-        for (final cue in cues)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 6),
-            child: Text(cue, style: AppText.bodyM),
-          ),
-    ],
-  );
-}
-
-/// The note she keeps for a move, under its name, with the way to write it.
-class _MoveNoteRow extends StatefulWidget {
-  const _MoveNoteRow({super.key, required this.exerciseId});
-
-  final String exerciseId;
-
-  @override
-  State<_MoveNoteRow> createState() => _MoveNoteRowState();
-}
-
-class _MoveNoteRowState extends State<_MoveNoteRow> {
-  Future<void> _edit() async {
-    final saved = await showAppSheet<String>(
-      context: context,
-      children: [
-        _NoteSheet(initial: MoveNotes.instance.forMove(widget.exerciseId)),
-      ],
-    );
-    if (saved == null) return;
-    MoveNotes.instance.setFor(widget.exerciseId, saved);
-    if (mounted) setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppL10n.of(context);
-    final note = MoveNotes.instance.forMove(widget.exerciseId);
-    return Semantics(
-      button: true,
-      child: InkWell(
-        key: const ValueKey('r07-note'),
-        onTap: _edit,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: Row(
-            children: [
-              const ExcludeSemantics(
-                child: Icon(
-                  Icons.sticky_note_2_outlined,
-                  size: 20,
-                  color: AppColors.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  note ?? l10n.addNote,
-                  key: const ValueKey('r07-note-text'),
-                  style: AppText.bodyM.copyWith(
-                    color: note == null
-                        ? AppColors.primary
-                        : AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              if (note != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 8),
-                  child: Text(
-                    l10n.editNote,
-                    key: const ValueKey('r07-note-edit'),
-                    style: AppText.label.copyWith(color: AppColors.primary),
-                  ),
-                ),
-            ],
-          ),
-        ),
       ),
     );
   }

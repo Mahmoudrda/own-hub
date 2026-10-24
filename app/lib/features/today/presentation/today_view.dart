@@ -24,6 +24,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/custom_workout_state.dart';
 import '../../../app_state/eat_state.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/format/day_key.dart';
@@ -44,6 +45,7 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_pill.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_sheet.dart';
 import '../../../ui/sign_in_pill.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../../../ui/hand/hand.dart';
@@ -69,12 +71,8 @@ class TodayView extends StatefulWidget {
     this.onStartSession,
     this.onRecall,
     this.onOpenMeal,
-    this.onScanMeal,
-    this.onOpenPlate,
-    this.onLogPlate,
     this.onOpenWeek,
     this.onOpenCycle,
-    this.onOpenProfile,
     this.onAsk,
     this.onNotifications,
     this.onOpenFirstWeek,
@@ -108,6 +106,10 @@ class TodayView extends StatefulWidget {
     this.planLinks,
     this.followUp,
     this.coachCard,
+    this.onEditToday,
+    this.onChangePlan,
+    this.onShortVersion,
+    this.onTenMinuteWalk,
   });
 
   /// Her first name, for the greeting and the avatar. Null greets without it.
@@ -127,30 +129,42 @@ class TodayView extends StatefulWidget {
   /// greeting opens it; null draws nothing.
   final VoidCallback? onSignIn;
 
-  /// The Beginner / Intermediate / Advanced tabs under the greeting. Switching
-  /// one changes the session the Today card shows. Null draws nothing.
+  /// Kept so callers compile. The tier tabs live on the plan screen now, so
+  /// Home never draws them.
   final Widget? tierTabs;
 
-  /// What the viewed tier's session holds (moves, sets and reps, rest, about
-  /// how long) and how that differs from her own level. Shown on the Today
-  /// card; null shows the plain minutes as before.
+  /// The viewed tier's session facts. Home reads only the minutes from it.
   final TierFacts? tierFacts;
 
-  /// Opens the "Your training" sheet. Supplied, a row under the tabs shows
+  /// Opens the "Your training" sheet. Supplied, a row in the Change sheet shows
   /// [trainingLine] and calls it; null draws no row.
   final VoidCallback? onChangeTraining;
 
   /// Her place, goal and level in one line, for the "Your training" row.
   final String? trainingLine;
 
-  /// The Edit and Change plan links, drawn under the "Your training" row.
+  /// Kept so callers compile. Edit and Change plan are rows in the Change
+  /// sheet now ([onEditToday], [onChangePlan]).
   final Widget? planLinks;
+
+  /// "Edit today" in the Change sheet. Null opens R03 in edit mode.
+  final VoidCallback? onEditToday;
+
+  /// "Change plan" in the Change sheet. Null opens Train.
+  final VoidCallback? onChangePlan;
+
+  /// "Short version" in the Change sheet. No row when null.
+  final VoidCallback? onShortVersion;
+
+  /// "A 10-minute walk" in the Change sheet. No row when null.
+  final VoidCallback? onTenMinuteWalk;
 
   /// The follow-up card (how she feels after a session, her week review),
   /// or null when there is nothing to ask.
   final Widget? followUp;
 
-  /// Her coach's card, above her plan, while she is coached.
+  /// Her coach's card while she is coached. It is the Today card: D11, her
+  /// coach's workout, with its one Start.
   final Widget? coachCard;
 
   /// Her training streak (D37), or null when it is off — by the build or by
@@ -226,26 +240,8 @@ class TodayView extends StatefulWidget {
   final VoidCallback? onRecall;
   final VoidCallback? onOpenMeal;
 
-  /// Opens the meal photo screen from the eat card. No button when null.
-  final VoidCallback? onScanMeal;
-  final VoidCallback? onOpenPlate;
-
-  /// Logs the plate she tapped, then opens the logged day.
-  ///
-  /// Home's plates were a way into Eat and nothing more: tapping one opened E04
-  /// showing whatever she had logged elsewhere, and the plate she actually
-  /// pressed was never written. Supplied, this takes precedence over
-  /// [onOpenPlate] and carries the plate, so one tap logs it with the same five
-  /// seconds every other log in the product offers.
-  final ValueChanged<PlateSuggestion>? onLogPlate;
-
   final VoidCallback? onOpenWeek;
   final VoidCallback? onOpenCycle;
-
-  /// Where her profile picture goes. The picture itself is page chrome now
-  /// (the strip above Home draws it), and opens A02 on its own; this is kept
-  /// for the router's existing wiring.
-  final VoidCallback? onOpenProfile;
 
   final VoidCallback? onAsk;
   final VoidCallback? onNotifications;
@@ -322,11 +318,6 @@ class _TodayViewState extends State<TodayView> {
     super.dispose();
   }
 
-  /// After 20:00 an unlogged session is likelier to have happened than to be
-  /// about to, so the two buttons swap weight. This is a rendering of the same
-  /// day state, not a sixth state (plan G3 §3.1).
-  bool get _isEvening => (widget.now ?? AppClock.now()).hour >= 20;
-
   /// The walk row's sentence, carrying the duration only when there is one.
   ///
   /// This was the fixed `walkThisMorning32Min` in both places — on the card and
@@ -339,16 +330,6 @@ class _TodayViewState extends State<TodayView> {
     return minutes == null
         ? l10n.walkThisMorning
         : l10n.walkThisMorningMinutesMin(countLabel(minutes));
-  }
-
-  /// What is left of her week, said in the week's own units.
-  ///
-  /// Never a fixed "Two more": a week she has finished says so, and a week she
-  /// has not counts down from her own target rather than from the prototype's.
-  String _weekLine(AppL10n l10n) {
-    final left = _day.week.sessionsTarget - _day.week.sessionsLogged;
-    if (left <= 0) return l10n.thisWeekCounts;
-    return l10n.countPluralOne1MoreAndThe(left);
   }
 
   void _countWalk() {
@@ -437,62 +418,35 @@ class _TodayViewState extends State<TodayView> {
           ),
         ],
       ),
-      ?widget.tierTabs,
-      if (widget.onChangeTraining case final change?)
-        AppListItem(
-          key: const ValueKey('today-your-training'),
-          leading: const Icon(
-            Icons.tune,
-            size: 22,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.yourTraining,
-          subtitle: widget.trainingLine ?? '',
-          trailing: const AppChevron(),
-          onTap: change,
-        ),
-      ?widget.coachCard,
-      ?widget.planLinks,
-      ?widget.followUp,
+      if (widget.coachCard case final coach?)
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            coach,
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: _changeLink(l10n),
+            ),
+          ],
+        )
+      else
+        _hero(l10n, art, done),
       HomeWeekStrip(
         today: _day.date,
         doneWeekdays: {...widget.weekDoneWeekdays, if (done) _day.date.weekday},
+        caption: l10n.thisWeekDoneOfTarget(
+          _day.week.sessionsLogged,
+          _day.week.sessionsTarget,
+        ),
+        onTap: () => openScreen(context, 'P01', widget.onOpenWeek),
       ),
-      // One column with the card, so the walk can leave by easing out and
-      // the gap above the card stays the scaffold's own.
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          HandSwap(
-            child: _day.walkToCount && !_walkClaimed
-                ? Padding(
-                    key: const ValueKey('today-walk'),
-                    padding: const EdgeInsets.only(bottom: kStackGap),
-                    child: _walkCard(l10n),
-                  )
-                : const SizedBox.shrink(key: ValueKey('today-no-walk')),
-          ),
-          _hero(l10n, art, done),
-        ],
-      ),
-      _weekCard(l10n),
-      HomeEatCard(
+      HomeEatLine(
         totals: eat.totalsWithPending(_stored, against: targets),
         targets: targets,
-        onLogFood: () => openScreen(context, 'E02', widget.onOpenMeal),
-        onScanMeal: widget.onScanMeal,
-        loggedAt: _day.mealLoggedAt,
-        // The heading follows the hour: the meal she logged, or the meal she
-        // is likely to be having now.
-        now: widget.now,
-        plates: _day.plates,
-        onTap: () => openScreen(context, 'E02', widget.onOpenMeal),
-        onPlateTap: () => openScreen(context, 'E04', widget.onOpenPlate),
-        onPlateLog: widget.onLogPlate,
+        onTap: () => openScreen(context, 'E01', widget.onOpenMeal),
       ),
-      ..._extras(context, l10n),
-      ?_milestones(l10n),
+      ?_contextual(context, l10n),
     ];
   }
 
@@ -501,85 +455,172 @@ class _TodayViewState extends State<TodayView> {
       // Today's session is logged: the card says so instead of offering the
       // same start again for the rest of the day.
       done: done,
-      evening: _isEvening,
       // What her plan calls today's session, or "Today's workout". Never a
       // programme name she did not choose.
       title: widget.sessionTitle,
-      minutes: widget.sessionMinutes,
-      tierFacts: widget.tierFacts,
+      minutes: widget.tierFacts?.estimatedMinutes ?? widget.sessionMinutes,
       week: _day.programWeek,
       totalWeeks: _day.programTotalWeeks,
       art: AppArt.image(art.length > 1 ? art[1] : AppArt.running, size: 112),
       onStart: () => openScreen(context, 'R07', widget.onStartSession),
-      onRecall: AppRouter.screenIsOn('T02')
-          ? () => openScreen(context, 'T02', widget.onRecall)
-          : null,
+      onChange: _openChange,
     );
   }
 
-  /// Her real count against her real target.
-  Widget _weekCard(AppL10n l10n) {
-    return WeekCard(
-      open: true,
-      title: l10n.thisWeekDoneOfTarget(
-        _day.week.sessionsLogged,
-        _day.week.sessionsTarget,
-      ),
-      // While her first week is open, that arc is the one progress line, so
-      // the week's own count is not said twice.
-      line: _firstWeekOpen ? '' : _weekLine(l10n),
-      total: _day.week.sessionsTarget,
-      filled: _day.week.sessionsLogged,
-      onTap: () => openScreen(context, 'P01', widget.onOpenWeek),
-    );
-  }
+  Widget _changeLink(AppL10n l10n) => AppButton(
+    l10n.change,
+    key: const ValueKey('today-change'),
+    variant: AppButtonVariant.text,
+    height: 44,
+    fontSize: 15,
+    onPressed: _openChange,
+  );
 
-  List<Widget> _extras(BuildContext context, AppL10n l10n) {
-    return [
-      // Only for a woman who actually uses My cycle: skipping it costs
-      // nothing, and a card for the feature she declined is a cost. The title
-      // is `myCycle`, not a string with a sample day baked in.
-      if (_day.showCycleCard)
-        AppListItem(
-          leading: const Icon(
-            Icons.self_improvement,
-            size: 22,
-            color: AppColors.primaryDim,
-          ),
-          title: l10n.myCycle,
+  /// Everything that changes today, in one sheet: the quiet "Change" link on
+  /// the Today card opens it.
+  void _openChange() {
+    final l10n = AppL10n.of(context);
+    final coached = widget.coachCard != null;
+    Widget row(
+      Key key,
+      IconData icon,
+      String title,
+      VoidCallback act, {
+      String subtitle = '',
+    }) {
+      return Builder(
+        builder: (sheet) => AppListItem(
+          key: key,
+          leading: Icon(icon, size: 22, color: AppColors.primaryDim),
+          title: title,
+          subtitle: subtitle,
           trailing: const AppChevron(),
-          onTap: () => openScreen(context, 'Y03', widget.onOpenCycle),
+          onTap: () {
+            Navigator.of(sheet).pop();
+            act();
+          },
         ),
-      // The owner's next event. Off with Feature.events, and absent when
-      // nothing is planned: an empty card would promise events nobody made.
-      if (widget.nextEvent case final next? when AppRouter.screenIsOn('T09'))
-        UpcomingEventsCard(
-          next: next,
-          onOpen: () => openScreen(context, 'T09', widget.onOpenEvents),
-        ),
-      // Asked once, after a session she finished, as one line she can send
-      // away. Her own days and time, and nothing until she taps.
-      if (widget.offerReminders &&
-          (_day.week.sessionsLogged > 0 ||
-              _day.arc.completed.contains(FirstWeekStep.finishSession)))
-        AppListItem(
-          key: const ValueKey('today-reminder-offer'),
-          leading: const Icon(
-            Icons.alarm,
-            size: 22,
-            color: AppColors.primaryDim,
+      );
+    }
+
+    final alreadyDid = AppRouter.screenIsOn('T02')
+        ? row(
+            const ValueKey('change-already-did-it'),
+            Icons.check,
+            l10n.iAlreadyDidIt,
+            () => openScreen(context, 'T02', widget.onRecall),
+          )
+        : null;
+    // After 20:00 an unlogged session has likelier already happened, so that
+    // answer leads the sheet (it used to swap the Start button).
+    final evening = (widget.now ?? AppClock.now()).hour >= 20;
+    showAppSheet<void>(
+      context: context,
+      gap: 8,
+      children: [
+        if (evening) ?alreadyDid,
+        if (coached)
+          row(
+            const ValueKey('change-own-plan'),
+            Icons.fitness_center,
+            l10n.doMyOwnPlanInstead,
+            () => openScreen(context, 'R07', widget.onStartSession),
+          )
+        else ...[
+          row(
+            const ValueKey('change-edit-today'),
+            Icons.edit_outlined,
+            l10n.editToday,
+            () {
+              CustomWorkoutState.instance.editRequested = true;
+              openScreen(context, 'R03', widget.onEditToday);
+            },
           ),
-          title: l10n.aReminderOnYourTrainingDays,
-          trailing: IconButton(
-            key: const ValueKey('today-reminder-not-now'),
-            tooltip: l10n.notNow,
-            icon: const Icon(Icons.close, size: 20),
-            color: AppColors.onSurfaceVariant,
-            onPressed: widget.onDismissReminderOffer,
+          if (widget.onShortVersion case final short?)
+            row(
+              const ValueKey('change-short-version'),
+              Icons.timer_outlined,
+              l10n.shortVersion,
+              short,
+            ),
+          row(
+            const ValueKey('change-plan'),
+            Icons.tune,
+            l10n.changePlan,
+            widget.onChangePlan ?? () => AppRouter.goToTab(context, 'R01'),
           ),
-          onTap: widget.onChooseReminderDays,
+          if (widget.onChangeTraining case final training?)
+            row(
+              const ValueKey('change-training'),
+              Icons.person_outline,
+              l10n.yourTraining,
+              training,
+              subtitle: widget.trainingLine ?? '',
+            ),
+        ],
+        if (!evening) ?alreadyDid,
+        if (_day.walkToCount && !_walkClaimed)
+          row(
+            const ValueKey('change-count-walk'),
+            Icons.directions_walk,
+            _walkLine(l10n),
+            widget.onCountWalk ?? _countWalk,
+            subtitle: l10n.countIt,
+          ),
+        if (widget.onTenMinuteWalk case final walk?)
+          row(
+            const ValueKey('change-ten-minute-walk'),
+            Icons.directions_walk,
+            l10n.a10MinuteWalk,
+            walk,
+          ),
+      ],
+    );
+  }
+
+  /// The one card below the Eat line, by priority: a follow-up, the
+  /// next event, her cycle, a reminder offer, then the lines about her first
+  /// week and streak. Never two.
+  Widget? _contextual(BuildContext context, AppL10n l10n) {
+    // Her coach's card is the Today card, and the one card there is.
+    if (widget.coachCard != null) return null;
+    if (widget.followUp case final follow?) return follow;
+    if (widget.nextEvent case final next? when AppRouter.screenIsOn('T09')) {
+      return UpcomingEventsCard(
+        next: next,
+        onOpen: () => openScreen(context, 'T09', widget.onOpenEvents),
+      );
+    }
+    if (_day.showCycleCard) {
+      return AppListItem(
+        leading: const Icon(
+          Icons.self_improvement,
+          size: 22,
+          color: AppColors.primaryDim,
         ),
-    ];
+        title: l10n.myCycle,
+        trailing: const AppChevron(),
+        onTap: () => openScreen(context, 'Y03', widget.onOpenCycle),
+      );
+    }
+    if (widget.offerReminders &&
+        (_day.week.sessionsLogged > 0 ||
+            _day.arc.completed.contains(FirstWeekStep.finishSession))) {
+      return AppListItem(
+        key: const ValueKey('today-reminder-offer'),
+        leading: const Icon(Icons.alarm, size: 22, color: AppColors.primaryDim),
+        title: l10n.aReminderOnYourTrainingDays,
+        trailing: IconButton(
+          key: const ValueKey('today-reminder-not-now'),
+          tooltip: l10n.notNow,
+          icon: const Icon(Icons.close, size: 20),
+          color: AppColors.onSurfaceVariant,
+          onPressed: widget.onDismissReminderOffer,
+        ),
+        onTap: widget.onChooseReminderDays,
+      );
+    }
+    return _milestones(l10n);
   }
 
   /// Whether her first week is still open. While it is, that arc is the one
@@ -735,67 +776,6 @@ class _TodayViewState extends State<TodayView> {
     );
   }
 
-  /// The walk her phone already counted. One tap claims it.
-  Widget _walkCard(AppL10n l10n) {
-    final line = Text(
-      _walkLine(l10n),
-      style: AppText.titleS.copyWith(color: AppColors.onTertiaryContainer),
-    );
-    // A word, not a second button: the cover has one action, and this is a
-    // note beside it. Underlined in pen, like every text action.
-    final count = IntrinsicWidth(
-      child: AppButton(
-        l10n.countIt,
-        variant: AppButtonVariant.text,
-        height: 44,
-        fontSize: 15,
-        onPressed: widget.onCountWalk ?? _countWalk,
-      ),
-    );
-    final icon = HandIconRing(
-      icon: const Icon(
-        Icons.directions_walk,
-        size: 20,
-        color: AppColors.tertiary,
-      ),
-      seed: 13,
-      size: 34,
-      color: AppColors.tertiary.withValues(alpha: 0.6),
-    );
-    // Side by side at ordinary sizes; at a large text size the action goes
-    // under the words, which would otherwise be squeezed until a word breaks.
-    final stacked = MediaQuery.textScalerOf(context).scale(1) > 1.3;
-
-    // The walk her phone already counted, as one line at the top of the
-    // page — ringed in sage, ruled under in pencil — with one word to keep it.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (stacked) ...[
-          Row(
-            children: [
-              icon,
-              const SizedBox(width: 10),
-              Expanded(child: line),
-            ],
-          ),
-          Align(alignment: AlignmentDirectional.centerEnd, child: count),
-        ] else
-          Row(
-            children: [
-              icon,
-              const SizedBox(width: 10),
-              Expanded(child: line),
-              const SizedBox(width: 8),
-              count,
-            ],
-          ),
-        const HandRule(seed: 37, height: 6),
-      ],
-    );
-  }
-
   // ------------------------------------------------------- T06, unanswered ----
 
   /// Home while nothing has yet said whether she has a history.
@@ -846,15 +826,17 @@ class _TodayViewState extends State<TodayView> {
       AppCard(
         gap: 12,
         children: [
-          Container(
-            height: 128,
-            decoration: BoxDecoration(
-              color: AppColors.primaryContainer,
-              borderRadius: BorderRadius.circular(AppRadius.md),
+          // On a small phone the poster gives way, so Start stays on screen.
+          if (MediaQuery.sizeOf(context).height >= 700)
+            Container(
+              height: 128,
+              decoration: BoxDecoration(
+                color: AppColors.primaryContainer,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              alignment: Alignment.center,
+              child: AppArt.image(AppArt.trainers, size: 112),
             ),
-            alignment: Alignment.center,
-            child: AppArt.image(AppArt.trainers, size: 112),
-          ),
           Text(
             l10n.yourTrainingWeekByWeek,
             style: EditorialType.section.copyWith(fontSize: 26),
@@ -896,6 +878,10 @@ class _TodayViewState extends State<TodayView> {
             l10n.startDay1,
             height: 56,
             icon: Icons.play_arrow,
+            // Her coach's workout is the one filled Start while she has one.
+            variant: widget.coachCard == null
+                ? AppButtonVariant.filled
+                : AppButtonVariant.outlined,
             onPressed: () => openScreen(context, 'R03', widget.onStartSession),
           ),
         ],

@@ -163,7 +163,40 @@ class _ChatThreadViewState extends State<ChatThreadView>
     );
   }
 
-  void _send() {
+  bool _rulesAccepted = false;
+  bool _checkingRules = false;
+
+  /// A client sees the chat rules once, before her first message, and her tick
+  /// is recorded. False when she did not agree or the tick could not be saved.
+  Future<bool> _rulesOk() async {
+    if (_rulesAccepted || !widget.otherIsCoach) return true;
+    if (_checkingRules) return false;
+    _checkingRules = true;
+    final l10n = AppL10n.of(context);
+    try {
+      if (!await widget.repository.chatRulesAccepted()) {
+        if (!mounted || !await showChatRulesSheet(context)) return false;
+        await widget.repository.acceptChatRules(
+          rulesText: chatRulesText(l10n),
+          locale: l10n.localeName.startsWith('ar') ? 'ar' : 'en',
+        );
+      }
+      _rulesAccepted = true;
+      return true;
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(content: Text(l10n.weCouldNotSaveYourAnswerTry)),
+        );
+      }
+      return false;
+    } finally {
+      _checkingRules = false;
+    }
+  }
+
+  Future<void> _send() async {
+    if (!await _rulesOk() || !mounted) return;
     final outcome = _controller.send(_text.text);
     switch (outcome) {
       case Sent():
@@ -532,7 +565,9 @@ class _ChatThreadViewState extends State<ChatThreadView>
                   ),
                   icon: const Icon(Icons.send),
                   color: AppColors.primary,
-                  onPressed: _text.text.trim().isEmpty ? null : _send,
+                  onPressed: _text.text.trim().isEmpty
+                      ? null
+                      : () => unawaited(_send()),
                 ),
               ],
             ),

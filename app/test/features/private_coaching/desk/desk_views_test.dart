@@ -22,7 +22,7 @@ void main() {
   tearDown(CoachClientNotes.instance.reset);
 
   group('Today', () {
-    DeskRepo seeded() {
+    DeskRepo seeded({bool flagged = true}) {
       final repo = DeskRepo()
         ..setSubscriptions([
           deskSub(
@@ -30,7 +30,7 @@ void main() {
             status: SubscriptionStatus.requested,
             name: 'Mona Ali',
             createdAt: ago(1),
-            intake: deskIntake(health: true, ack: true),
+            intake: deskIntake(health: flagged, ack: flagged),
           ),
           deskSub('a', name: 'Nour Hassan', startsAt: ago(10)),
           deskSub('b', name: 'Dina Samir'),
@@ -64,9 +64,36 @@ void main() {
       expect(find.text('Done today!'), findsOneWidget);
     });
 
-    testWidgets('Accept answers the request at once', (tester) async {
+    testWidgets('Accept on a health yes opens her answers first', (
+      tester,
+    ) async {
       deskPhone(tester);
       final repo = seeded();
+      final state = await startedState(tester, repo);
+      await tester.pumpWidget(
+        deskHost(CoachDeskView(state: state, now: () => kDeskNow)),
+      );
+      await tester.pump();
+
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+      expect(repo.responses, isEmpty);
+      final sheet = find.byType(AppSheet);
+      expect(
+        find.descendant(of: sheet, matching: find.text('Her answers')),
+        findsOneWidget,
+      );
+      final accept = find.descendant(of: sheet, matching: find.text('Accept'));
+      await tester.ensureVisible(accept);
+      await tester.pumpAndSettle();
+      await tester.tap(accept);
+      await tester.pumpAndSettle();
+      expect(repo.responses, [('r1', true, null)]);
+    });
+
+    testWidgets('Accept answers an unflagged request at once', (tester) async {
+      deskPhone(tester);
+      final repo = seeded(flagged: false);
       final state = await startedState(tester, repo);
       await tester.pumpWidget(
         deskHost(CoachDeskView(state: state, now: () => kDeskNow)),
@@ -138,7 +165,7 @@ void main() {
 
     testWidgets('a refused answer says so calmly', (tester) async {
       deskPhone(tester);
-      final repo = seeded()
+      final repo = seeded(flagged: false)
         ..failResponse = const CoachingFailure(CoachingRefusal.wrongStatus);
       final state = await startedState(tester, repo);
       await tester.pumpWidget(

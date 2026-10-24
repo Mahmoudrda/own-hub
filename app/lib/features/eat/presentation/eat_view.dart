@@ -138,6 +138,7 @@ class EatView extends StatefulWidget {
     this.embedded = false,
     this.slot,
     this.onLogInto,
+    this.below,
   });
 
   /// Drawn inside the Eat hub: only the page's own content, with no scaffold,
@@ -149,9 +150,13 @@ class EatView extends StatefulWidget {
   /// The meal the hub is logging into, when she has picked one there.
   final MealSlot? slot;
 
-  /// A Log pill on a meal row. Given, it is called instead of opening E02, so
-  /// the hub can aim its own search at that meal.
+  /// A "+" on a meal row with no usual plate. Given, it is called instead of
+  /// opening E02, so the hub can aim its own search at that meal.
   final ValueChanged<MealSlot>? onLogInto;
+
+  /// Drawn under the meals, ahead of the fibre line and the personalise link.
+  /// The hub puts Recipes and Plan here.
+  final Widget? below;
 
   /// What she can and cannot eat.
   ///
@@ -751,6 +756,7 @@ class _EatViewState extends State<EatView> {
         totals: view.totals,
         targets: _targets,
         onPersonalise: _personalise,
+        compact: embedded,
       ),
       Column(
         key: const ValueKey('eat-day-slots'),
@@ -763,12 +769,10 @@ class _EatViewState extends State<EatView> {
           ],
         ],
       ),
-      if (widget.onSnap != null)
-        SnapMealCard(
-          title: l10n.scanYourMealWithTheCamera,
-          subtitle: l10n.onePhotoForCaloriesAndProtein,
-          onPressed: widget.onSnap,
-        ),
+      ?widget.below,
+      if (embedded && view.totals.fiberSoFar != null)
+        FibreLine(totals: view.totals),
+      if (embedded) PersonaliseLink(targets: _targets, onPressed: _personalise),
       if (!embedded) ...[
         _box(l10n),
         FoodCategoryChips(
@@ -1075,8 +1079,8 @@ class _EatViewState extends State<EatView> {
     ],
   );
 
-  /// The day as four meals, each with a "Log" pill that opens the logging flow
-  /// on that meal. Snacks are the fourth row: the hour never makes them the
+  /// The day as four meals, each with one "+": her usual plate for the meal
+  /// in one tap, or the search aimed at the meal. Snacks are the fourth row: the hour never makes them the
   /// meal she is "in" during the day (after 22:00 the hour does read as snack),
   /// so they read "Nothing yet" rather than "Later".
   List<Widget> _diaryRows(AppL10n l10n, EatDayView view) {
@@ -1095,27 +1099,55 @@ class _EatViewState extends State<EatView> {
           : SlotStatus.later,
     );
     return [
-      for (final slot in [...view.slots, snack])
-        MealDiaryRow(
-          key: ValueKey('eat-diary-${slot.slot.name}'),
-          name: slot.slot == MealSlot.snack
-              ? l10n.snacks
-              : _slotName(l10n, slot.slot),
-          value: _slotValue(l10n, slot),
-          status: slot.status,
-          logLabel: l10n.log,
-          logSemanticsLabel: l10n.logMeal(_slotName(l10n, slot.slot)),
-          itemImageAssets: [
-            for (final item in slot.items) MealImages.assetFor(item.foodId),
-          ],
-          // A slot with something in it opens what is there, to take one
-          // out. The five seconds after a log are for Undo; this is for later.
-          onTap: widget.session != null && slot.items.isNotEmpty
-              ? () => _openSlot(slot)
-              : null,
-          onLog: () => _logInto(slot.slot),
-        ),
+      for (final slot in [...view.slots, snack]) _diaryRow(l10n, view, slot),
     ];
+  }
+
+  /// The plate she has most often at [slot], from the screened plates, or null.
+  /// Offered only while the meal is empty, so a second tap cannot log it twice
+  /// by accident, and only in the hub: the full page has the Quick add strip
+  /// for the same job.
+  SuggestionView? _usualFor(EatDayView view, SlotView slot) {
+    if (!widget.embedded || slot.items.isNotEmpty) return null;
+    SuggestionView? best;
+    var bestCount = 0;
+    for (final plate in view.suggestions) {
+      final count = _prefs.plates[plate.plateId]?.slotCounts[slot.slot] ?? 0;
+      if (count > bestCount) {
+        best = plate;
+        bestCount = count;
+      }
+    }
+    return best;
+  }
+
+  Widget _diaryRow(AppL10n l10n, EatDayView view, SlotView slot) {
+    final usual = _usualFor(view, slot);
+    final name = slot.slot == MealSlot.snack
+        ? l10n.snacks
+        : _slotName(l10n, slot.slot);
+    return MealDiaryRow(
+      key: ValueKey('eat-diary-${slot.slot.name}'),
+      name: name,
+      value: usual == null ? _slotValue(l10n, slot) : _titleOf(usual),
+      status: slot.status,
+      plusLabel: usual == null
+          ? l10n.logMeal(_slotName(l10n, slot.slot))
+          : l10n.addName(_titleOf(usual)),
+      itemImageAssets: [
+        for (final item in slot.items) MealImages.assetFor(item.foodId),
+      ],
+      // A meal with something in it opens what is there, to take one out. The
+      // five seconds after a log are for Undo; this is for later. An empty
+      // meal opens the search aimed at it, which is how a woman with a usual
+      // plate logs something else.
+      onTap: slot.items.isNotEmpty
+          ? (widget.session != null ? () => _openSlot(slot) : null)
+          : () => _logInto(slot.slot),
+      onLog: usual == null
+          ? () => _logInto(slot.slot)
+          : () => _log(usual.entries, slot.slot),
+    );
   }
 
   /// Opens the logging flow on [slot]. Screens are opened by name, which

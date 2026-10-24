@@ -9,6 +9,8 @@ import 'package:own_hub/features/private_coaching/presentation/chat/chat_logic.d
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_sheets.dart';
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_thread_view.dart';
 
+import 'package:own_hub/ui/app_button.dart';
+
 import 'chat_support.dart';
 
 const ChatPerson _coach = ChatPerson(
@@ -323,6 +325,66 @@ void main() {
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         isEmpty,
       );
+    });
+
+    testWidgets('the first message waits for the rules and her tick', (
+      tester,
+    ) async {
+      final repo = FakeChatRepository()..rulesAccepted = false;
+      await _thread(tester, lines: _sample(), repo: repo);
+      await tester.enterText(find.byType(TextField), 'Hello coach');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pumpAndSettle();
+      expect(find.text('Before your first message'), findsOneWidget);
+      expect(repo.count('sendText'), 0);
+      final agree = find.widgetWithText(AppButton, 'Agree and send');
+      expect(tester.widget<AppButton>(agree).onPressed, isNull);
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pump();
+      await tester.tap(agree);
+      await tester.pumpAndSettle();
+      expect(repo.count('acceptChatRules'), 1);
+      expect(repo.rulesText, contains('Be respectful'));
+      expect(repo.count('sendText'), 1);
+
+      await tester.enterText(find.byType(TextField), 'Second line');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pumpAndSettle();
+      expect(find.text('Before your first message'), findsNothing);
+      expect(repo.count('sendText'), 2);
+      expect(repo.count('acceptChatRules'), 1);
+    });
+
+    testWidgets('closing the rules sends nothing and records nothing', (
+      tester,
+    ) async {
+      final repo = FakeChatRepository()..rulesAccepted = false;
+      await _thread(tester, lines: _sample(), repo: repo);
+      await tester.enterText(find.byType(TextField), 'Hello coach');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+      expect(repo.count('sendText'), 0);
+      expect(repo.count('acceptChatRules'), 0);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'Hello coach',
+      );
+    });
+
+    testWidgets('the coach side is not asked for the rules', (tester) async {
+      final repo = FakeChatRepository()..rulesAccepted = false;
+      await _thread(tester, lines: _sample(), repo: repo, otherIsCoach: false);
+      await tester.enterText(find.byType(TextField), 'Hello');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send'));
+      await tester.pumpAndSettle();
+      expect(find.text('Before your first message'), findsNothing);
+      expect(repo.count('sendText'), 1);
     });
 
     testWidgets('send is off while the field is blank', (tester) async {

@@ -75,6 +75,9 @@ class ExploreFilter {
   ExercisePlace? place;
   ExploreKit? kit;
 
+  /// Only the quiet ones: the gentler way into a day she is not feeling.
+  bool gentler = false;
+
   /// The chip that is lit: 0 all, 1 strength, 2 stretches, then the sections.
   int get chip {
     if (section != null) return 3 + MuscleSection.values.indexOf(section!);
@@ -93,15 +96,19 @@ class ExploreFilter {
     if (index >= 3) section = MuscleSection.values[index - 3];
   }
 
-  bool get narrowsBySheet => place != null || kit != null;
+  /// Anything the Filters sheet holds is on: the kind or part of the body,
+  /// where, with what, or gentler.
+  bool get narrowsBySheet =>
+      chip != 0 || place != null || kit != null || gentler;
 
-  bool get isActive => chip != 0 || query.trim().isNotEmpty || narrowsBySheet;
+  bool get isActive => query.trim().isNotEmpty || narrowsBySheet;
 
   bool keepMove(LibraryExercise e) {
     if (kind != null && e.kind != kind) return false;
     if (section != null && e.section != section) return false;
     if (place != null && e.place != place) return false;
     if (kit != null && !_uses(e, kit!)) return false;
+    if (gentler && !e.quiet) return false;
     return e.matches(query);
   }
 
@@ -110,6 +117,7 @@ class ExploreFilter {
   bool keepWorkout(LibraryWorkout w) {
     if (section != null || kind == ExerciseKind.stretch) return false;
     if (kit == ExploreKit.nothing && w.needsEquipment) return false;
+    if (gentler && !w.quiet) return false;
     final needle = query.trim().toLowerCase();
     if (needle.isEmpty) return true;
     return w.title.toLowerCase().contains(needle) ||
@@ -117,66 +125,9 @@ class ExploreFilter {
   }
 }
 
-/// The chip row: Filters first, then all, strength, stretches and the
-/// headings. Scrolls sideways, so eleven headings never wrap into a wall.
-class ExploreChips extends StatelessWidget {
-  const ExploreChips({
-    super.key,
-    required this.filter,
-    required this.onChanged,
-    required this.onOpenFilters,
-    required this.showFilters,
-  });
-
-  final ExploreFilter filter;
-  final VoidCallback onChanged;
-  final VoidCallback onOpenFilters;
-  final bool showFilters;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppL10n.of(context);
-    final labels = [
-      l10n.all,
-      l10n.strength,
-      l10n.stretchesAndWarmUps,
-      for (final s in MuscleSection.values) sectionLabel(l10n, s),
-    ];
-    return SingleChildScrollView(
-      key: const ValueKey('r01-explore-chips'),
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          if (showFilters) ...[
-            AppChip(
-              l10n.filters,
-              key: const ValueKey('r01-filters'),
-              icon: Icons.tune,
-              selected: filter.narrowsBySheet,
-              onTap: onOpenFilters,
-            ),
-            const SizedBox(width: 8),
-          ],
-          for (var i = 0; i < labels.length; i++) ...[
-            AppChip(
-              labels[i],
-              key: ValueKey('r01-chip-$i'),
-              selected: filter.chip == i,
-              onTap: () {
-                filter.setChip(i);
-                onChanged();
-              },
-            ),
-            if (i < labels.length - 1) const SizedBox(width: 8),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Where she can do it and what she has, in one sheet. It narrows the list
-/// behind it as she taps, so the sheet keeps its own rebuild.
+/// What she wants, where she can do it, what she has and how gentle, in one
+/// sheet. It narrows the list behind it as she taps, so the sheet keeps its
+/// own rebuild.
 Future<void> showExploreFilters(
   BuildContext context, {
   required ExploreFilter filter,
@@ -203,6 +154,24 @@ Future<void> showExploreFilters(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n.filters, style: AppText.titleL),
+            const SizedBox(height: 14),
+            // One choice: everything, a kind of move, or a part of the body.
+            AppChipRow(
+              key: const ValueKey('r01-focus'),
+              grow: false,
+              items: [
+                l10n.all,
+                l10n.strength,
+                l10n.stretchesAndWarmUps,
+                for (final s in MuscleSection.values) sectionLabel(l10n, s),
+              ],
+              selected: {filter.chip},
+              onTap: (i) {
+                filter.setChip(i);
+                onChanged();
+                setSheet(() {});
+              },
+            ),
             if (places.length > 1) ...[
               const SizedBox(height: 14),
               Text(
@@ -252,6 +221,18 @@ Future<void> showExploreFilters(
                 },
               ),
             ],
+            const SizedBox(height: 14),
+            AppChipRow(
+              key: const ValueKey('r01-gentler'),
+              grow: false,
+              items: [l10n.gentler],
+              selected: {if (filter.gentler) 0},
+              onTap: (_) {
+                filter.gentler = !filter.gentler;
+                onChanged();
+                setSheet(() {});
+              },
+            ),
             const SizedBox(height: 16),
             // The button says how many results the filters leave, and the
             // number moves as she taps. With none, it is drawn as unavailable
@@ -300,17 +281,6 @@ Future<void> showExploreFilters(
       ),
     ],
   );
-}
-
-/// Whether the Filters chip has anything to offer for these moves.
-bool exploreHasSheet(List<LibraryExercise> exercises) {
-  final kits = ExploreKit.values
-      .where((kit) => exercises.any((e) => _uses(e, kit)))
-      .length;
-  final places = ExercisePlace.values
-      .where((place) => exercises.any((e) => e.place == place))
-      .length;
-  return kits > 1 || places > 1;
 }
 
 /// The two groups of results as slivers: workouts, then moves two to a row.

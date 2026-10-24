@@ -18,6 +18,7 @@ import '../../../domain/format/number_label.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
+import '../../../ui/app_overflow_menu.dart';
 import '../../../ui/app_sheet.dart';
 
 enum EndWorkoutChoice { finish, discard, keepGoing }
@@ -108,6 +109,84 @@ class SessionEnd {
         break;
     }
   }
+}
+
+/// The Pause sheet of a live set or rest: Resume (the one filled button), End
+/// workout, and a "…" holding the rest of what the screen can do.
+///
+/// [context] is the screen's own, kept for what she picks: each choice closes
+/// the sheet first and then acts on the screen, so nothing runs under a sheet.
+/// True when she carries on (Resume, or the sheet was dismissed); false when
+/// she ended the workout or picked a row from the "…". It completes once what
+/// she picked has been carried out.
+Future<bool> showPauseSheet(
+  BuildContext context, {
+  SessionEnd? end,
+  List<AppOverflowItem> more = const [],
+}) async {
+  final l10n = AppL10n.of(context);
+  final pick = await showAppSheet<Future<void> Function()>(
+    context: context,
+    gap: 12,
+    children: [
+      Builder(
+        builder: (sheet) => Row(
+          children: [
+            Expanded(child: Text(l10n.pause, style: AppText.titleL)),
+            if (more.isNotEmpty)
+              AppOverflowMenu(
+                items: [
+                  for (final item in more)
+                    AppOverflowItem(
+                      icon: item.icon,
+                      label: item.label,
+                      confirmMessage: item.confirmMessage,
+                      onTap: () =>
+                          Navigator.of(sheet).pop(() async => item.onTap()),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+      Builder(
+        builder: (sheet) => AppButton(
+          l10n.resume,
+          key: const ValueKey('pause-resume'),
+          onPressed: () => Navigator.of(sheet).pop(),
+        ),
+      ),
+      if (end != null)
+        Builder(
+          builder: (sheet) => AppButton(
+            l10n.endWorkout,
+            key: const ValueKey('pause-end'),
+            variant: AppButtonVariant.outlined,
+            onPressed: () => Navigator.of(sheet).pop(() => end.ask(context)),
+          ),
+        ),
+    ],
+  );
+  if (pick == null) return true;
+  if (context.mounted) await pick();
+  return false;
+}
+
+/// The one control in the top bar of a live set or rest.
+class PauseButton extends StatelessWidget {
+  const PauseButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    key: const ValueKey('pause'),
+    onPressed: onPressed,
+    iconSize: 24,
+    color: AppColors.onSurfaceVariant,
+    tooltip: AppL10n.of(context).pause,
+    icon: const Icon(Icons.pause),
+  );
 }
 
 /// "End workout", in the top bar of a live workout screen.

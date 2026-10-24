@@ -50,7 +50,10 @@ void main() {
     // into `O03`, days and minutes on one screen. 193 -> 194 the same day
     // with `P06`, her muscles on a body she can turn. 194 -> 196 with `E12`,
     // a photo of her plate, and `E13`, checking it before it is logged.
-    expect(appRoutes.length, 196);
+    //
+    // 196 -> 197 on 23 October 2026 with `P07`, Insights: P01 became You, the
+    // tab root, and the long record moved one tap behind its "See more".
+    expect(appRoutes.length, 197);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -73,7 +76,7 @@ void main() {
     // 186 -> 185 on 17 October 2026: `O07` was folded into `O03`.
     // 185 -> 186: P06 is a destination, opened from P01 and R01.
     // 186 -> 188: E12 and E13 are destinations, opened from E01, E02 and E04.
-    expect(appDestinations.length, 188);
+    expect(appDestinations.length, 189);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

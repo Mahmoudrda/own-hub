@@ -69,6 +69,11 @@ class FollowUpState {
     AppChanges.bump();
   }
 
+  /// Lets [kind] show again.
+  void unmute(FollowUpKind kind) {
+    if (muted.remove(kind)) AppChanges.bump();
+  }
+
   void setEnabled(bool value) {
     enabled = value;
     AppChanges.bump();

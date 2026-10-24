@@ -1,6 +1,6 @@
-// The doors into changing a plan are big, plain and one tap from the page they
-// sit on: the card at the top of Train, the button on the programme page and
-// the two links under Home's training card.
+// The doors into changing a plan: Train's "Your plan" row opens the programme
+// page, whose "…" holds every way to change the plan, and Home keeps its two
+// links.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +12,6 @@ import 'package:own_hub/features/train/presentation/train_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
-import 'package:own_hub/ui/app_button.dart';
 
 Widget _host(Widget child, {String locale = 'en', double scale = 1}) =>
     MaterialApp(
@@ -44,120 +43,110 @@ void main() {
   );
   tearDown(() => AppRouter.featureFlags = savedFlags);
 
-  testWidgets('the card offers all the ways in, and each is one tap', (
-    tester,
-  ) async {
-    final taps = <String>[];
-    await tester.pumpWidget(
-      _host(
-        Scaffold(
-          body: SingleChildScrollView(
-            child: BuildOwnPlanCard(
-              hasMyPlan: false,
-              onCustomizePlan: () => taps.add('customize'),
-              onStartFromScratch: () => taps.add('scratch'),
-              onEditSplit: () => taps.add('split'),
-              onBuildWorkout: () => taps.add('workout'),
-              onMyWorkouts: () => taps.add('mine'),
-            ),
-          ),
-        ),
-      ),
-    );
-    expect(find.text('Build my own plan'), findsOneWidget);
-    for (final key in [
-      'r01-customize-plan',
-      'r01-plan-scratch',
-      'r01-edit-split',
-      'r01-build-own',
-      'r01-open-my-workouts',
-    ]) {
-      await tester.tap(find.byKey(ValueKey(key)));
-    }
-    expect(taps, ['customize', 'scratch', 'split', 'workout', 'mine']);
-    expect(find.text('Customize this plan'), findsOneWidget);
-  });
-
-  testWidgets('with a plan of her own the card opens it', (tester) async {
-    await tester.pumpWidget(
-      _host(
-        Scaffold(
-          body: BuildOwnPlanCard(
-            hasMyPlan: true,
-            onCustomizePlan: () {},
-            onStartFromScratch: () {},
-            onEditSplit: () {},
-          ),
-        ),
-      ),
-    );
-    expect(find.text('Edit my plan'), findsOneWidget);
-    expect(find.text('Customize this plan'), findsNothing);
-    expect(find.byKey(const ValueKey('r01-edit-split')), findsNothing);
-    // The editor has its own Start from scratch, which asks first.
-    expect(find.byKey(const ValueKey('r01-plan-scratch')), findsNothing);
-  });
-
-  testWidgets('R01 draws the card first, above the week', (tester) async {
-    _phone(tester);
-    await tester.pumpWidget(
-      _host(
-        TrainView(
-          onCustomizePlan: () {},
-          onStartPlanFromScratch: () {},
-          onEditSplit: () {},
-          onBuildOwn: () {},
-          programWeek: 'Week 2 of 6',
-        ),
-      ),
-    );
+  Future<void> pickFromMenu(WidgetTester tester, String label) async {
+    await tester.tap(find.byKey(const ValueKey('overflow-menu')));
     await tester.pumpAndSettle();
-    final card = tester.getTopLeft(
-      find.byKey(const ValueKey('r01-build-plan-card')),
-    );
-    final week = tester.getTopLeft(find.text('Week 2 of 6'));
-    expect(card.dy, lessThan(week.dy));
-    // It is on the first screen, without scrolling.
-    expect(
-      tester.getBottomLeft(find.byKey(const ValueKey('r01-customize-plan'))).dy,
-      lessThan(844),
-    );
-    // One build-your-own door, not two.
-    expect(find.byKey(const ValueKey('r01-build-own')), findsOneWidget);
-  });
+    await tester.tap(find.byKey(ValueKey('overflow-row-$label')));
+    await tester.pumpAndSettle();
+  }
 
-  testWidgets('R01 taps: customize, scratch and split are the first tap', (
+  testWidgets('R02 offers all the ways to change the plan in one menu', (
     tester,
   ) async {
     _phone(tester);
     final taps = <String>[];
     await tester.pumpWidget(
       _host(
-        TrainView(
+        ProgramView(
           onCustomizePlan: () => taps.add('customize'),
           onStartPlanFromScratch: () => taps.add('scratch'),
           onEditSplit: () => taps.add('split'),
           onBuildOwn: () => taps.add('workout'),
+          onChangeProgram: () => taps.add('change'),
+          onOpenRecentSessions: () => taps.add('recent'),
+          days: const [ProgramDay(title: 'Upper')],
         ),
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('r01-customize-plan')));
-    await tester.tap(find.byKey(const ValueKey('r01-plan-scratch')));
-    await tester.tap(find.byKey(const ValueKey('r01-edit-split')));
-    await tester.tap(find.byKey(const ValueKey('r01-build-own')));
-    expect(taps, ['customize', 'scratch', 'split', 'workout']);
+    // None of them is on the page itself.
+    expect(find.text('Customize this plan'), findsNothing);
+    for (final label in [
+      'Customize this plan',
+      'Start from scratch',
+      'Edit one of the three splits',
+      'Build my own workout',
+      'Change program',
+      'Recent sessions',
+    ]) {
+      await pickFromMenu(tester, label);
+    }
+    expect(taps, [
+      'customize',
+      'scratch',
+      'split',
+      'workout',
+      'change',
+      'recent',
+    ]);
   });
 
-  testWidgets('My workouts scrolls to the list when there is one', (
+  testWidgets('with a plan of her own R02 opens it, and offers no blank one', (
     tester,
   ) async {
+    _phone(tester);
+    await tester.pumpWidget(
+      _host(
+        ProgramView(
+          hasMyPlan: true,
+          onCustomizePlan: () {},
+          onStartPlanFromScratch: () {},
+          onEditSplit: () {},
+          days: const [ProgramDay(title: 'Upper')],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit my plan'), findsOneWidget);
+    expect(find.text('Customize this plan'), findsNothing);
+    // The editor has its own Start from scratch, which asks first.
+    expect(find.text('Start from scratch'), findsNothing);
+    expect(find.text('Edit one of the three splits'), findsNothing);
+  });
+
+  testWidgets('R01 has one row for the plan and one for her workouts', (
+    tester,
+  ) async {
+    _phone(tester);
+    var opened = 0;
+    await tester.pumpWidget(
+      _host(
+        TrainView(
+          onSeeProgram: () => opened++,
+          onBuildOwn: () {},
+          programTitle: 'Glutes and strength',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('r01-build-plan-card')), findsNothing);
+    expect(find.text('Glutes and strength'), findsOneWidget);
+    final plan = find.byKey(const ValueKey('r01-your-plan'));
+    final mine = find.byKey(const ValueKey('r01-open-my-workouts'));
+    // On the first screen, without scrolling.
+    expect(tester.getBottomLeft(mine).dy, lessThan(844));
+    await tester.tap(plan);
+    expect(opened, 1);
+  });
+
+  testWidgets('My workouts opens her list when there is one', (tester) async {
     _phone(tester);
     var built = 0;
     await tester.pumpWidget(
       _host(
         TrainView(
-          onCustomizePlan: () {},
           onBuildOwn: () => built++,
           myWorkouts: const [
             CustomWorkout(
@@ -170,10 +159,14 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('r01-mine-w1')), findsNothing);
     await tester.tap(find.byKey(const ValueKey('r01-open-my-workouts')));
     await tester.pumpAndSettle();
     expect(built, 0);
     expect(find.byKey(const ValueKey('r01-mine-w1')), findsOneWidget);
+    // Building another is in the list, not on the page.
+    await tester.tap(find.byKey(const ValueKey('r01-build-own')));
+    expect(built, 1);
   });
 
   testWidgets('My workouts builds the first one when there are none', (
@@ -181,51 +174,10 @@ void main() {
   ) async {
     _phone(tester);
     var built = 0;
-    await tester.pumpWidget(
-      _host(TrainView(onCustomizePlan: () {}, onBuildOwn: () => built++)),
-    );
+    await tester.pumpWidget(_host(TrainView(onBuildOwn: () => built++)));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('r01-open-my-workouts')));
     expect(built, 1);
-  });
-
-  testWidgets('with no new callbacks R01 still shows the old build button', (
-    tester,
-  ) async {
-    _phone(tester);
-    await tester.pumpWidget(_host(TrainView(onBuildOwn: () {})));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('r01-build-plan-card')), findsNothing);
-    expect(find.byKey(const ValueKey('r01-build-own')), findsOneWidget);
-  });
-
-  testWidgets('R02 has Customize this plan, or Edit my plan', (tester) async {
-    _phone(tester);
-    var taps = 0;
-    await tester.pumpWidget(
-      _host(
-        ProgramView(
-          onCustomizePlan: () => taps++,
-          days: const [ProgramDay(title: 'Upper')],
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('r02-customize-plan')));
-    expect(taps, 1);
-    expect(find.text('Customize this plan'), findsOneWidget);
-
-    await tester.pumpWidget(
-      _host(
-        ProgramView(
-          onCustomizePlan: () => taps++,
-          hasMyPlan: true,
-          days: const [ProgramDay(title: 'Upper')],
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('Edit my plan'), findsOneWidget);
   });
 
   testWidgets('Home links: Edit and Change plan', (tester) async {
@@ -248,95 +200,57 @@ void main() {
     expect(find.byKey(const ValueKey('home-plan-links')), findsNothing);
   });
 
-  testWidgets('the card reads right to left in Arabic, every button 48 high', (
-    tester,
-  ) async {
-    _phone(tester);
-    await tester.pumpWidget(
-      _host(
-        Scaffold(
-          body: SingleChildScrollView(
-            child: BuildOwnPlanCard(
-              hasMyPlan: false,
-              onCustomizePlan: () {},
-              onStartFromScratch: () {},
-              onEditSplit: () {},
-              onBuildWorkout: () {},
-              onMyWorkouts: () {},
-            ),
+  testWidgets(
+    'the programme menu reads right to left in Arabic, rows 48 high',
+    (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          ProgramView(
+            onCustomizePlan: () {},
+            onStartPlanFromScratch: () {},
+            onEditSplit: () {},
+            onBuildOwn: () {},
+            days: const [ProgramDay(title: 'Upper')],
           ),
+          locale: 'ar',
         ),
-        locale: 'ar',
-      ),
-    );
-    await tester.pumpAndSettle();
-    final card = find.byKey(const ValueKey('r01-build-plan-card'));
-    expect(Directionality.of(tester.element(card)), TextDirection.rtl);
-    expect(find.text('Build my own plan'), findsNothing);
-    // The icon leads, so in Arabic it sits to the right of the label.
-    final button = find.byKey(const ValueKey('r01-customize-plan'));
-    expect(
-      tester
-          .getCenter(find.descendant(of: button, matching: find.byType(Icon)))
-          .dx,
-      greaterThan(
-        tester
-            .getCenter(find.descendant(of: button, matching: find.byType(Text)))
-            .dx,
-      ),
-    );
-    for (final key in [
-      'r01-customize-plan',
-      'r01-plan-scratch',
-      'r01-edit-split',
-      'r01-build-own',
-      'r01-open-my-workouts',
-    ]) {
-      expect(
-        tester.getSize(find.byKey(ValueKey(key))).height,
-        greaterThanOrEqualTo(48),
-        reason: key,
       );
-    }
-  });
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      final list = find.byKey(const ValueKey('overflow-list'));
+      expect(Directionality.of(tester.element(list)), TextDirection.rtl);
+      expect(find.text('Customize this plan'), findsNothing);
+      final rows = find.descendant(
+        of: list,
+        matching: find.byWidgetPredicate(
+          (w) => w.key.toString().startsWith("[<'overflow-row-"),
+        ),
+      );
+      expect(rows, findsNWidgets(4));
+      for (final e in rows.evaluate()) {
+        expect(
+          tester.getSize(find.byElementPredicate((x) => x == e)).height,
+          greaterThanOrEqualTo(48),
+        );
+      }
+    },
+  );
 
-  testWidgets('every door keeps a 48 high target at text scale 2.0', (
-    tester,
-  ) async {
+  testWidgets('Home keeps a 48 high target at text scale 2.0', (tester) async {
     _phone(tester);
     await tester.pumpWidget(
       _host(
         Scaffold(
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                BuildOwnPlanCard(
-                  hasMyPlan: false,
-                  onCustomizePlan: () {},
-                  onStartFromScratch: () {},
-                  onEditSplit: () {},
-                  onBuildWorkout: () {},
-                  onMyWorkouts: () {},
-                ),
-                PlanLinksRow(onEdit: () {}, onChangePlan: () {}),
-              ],
-            ),
-          ),
+          body: PlanLinksRow(onEdit: () {}, onChangePlan: () {}),
         ),
         locale: 'ar',
         scale: 2,
       ),
     );
     await tester.pumpAndSettle();
-    for (final key in [
-      'r01-customize-plan',
-      'r01-plan-scratch',
-      'r01-edit-split',
-      'r01-build-own',
-      'r01-open-my-workouts',
-      'home-edit-workout',
-      'home-change-plan',
-    ]) {
+    for (final key in ['home-edit-workout', 'home-change-plan']) {
       expect(
         tester.getSize(find.byKey(ValueKey(key))).height,
         greaterThanOrEqualTo(48),
@@ -344,22 +258,6 @@ void main() {
       );
     }
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('Customize is never a filled button beside the screen\'s own', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _host(
-        Scaffold(
-          body: BuildOwnPlanCard(hasMyPlan: false, onCustomizePlan: () {}),
-        ),
-      ),
-    );
-    final button = tester.widget<AppButton>(
-      find.byKey(const ValueKey('r01-customize-plan')),
-    );
-    expect(button.variant, isNot(AppButtonVariant.filled));
   });
 
   for (final locale in ['en', 'ar']) {
@@ -409,22 +307,17 @@ void main() {
   }
 
   for (final locale in ['en', 'ar']) {
-    testWidgets('R01 card fits at text scale 2.0 in $locale', (tester) async {
+    testWidgets('R01 fits at text scale 2.0 in $locale', (tester) async {
       _phone(tester);
       await tester.pumpWidget(
         _host(
-          TrainView(
-            onCustomizePlan: () {},
-            onStartPlanFromScratch: () {},
-            onEditSplit: () {},
-            onBuildOwn: () {},
-          ),
+          TrainView(onSeeProgram: () {}, onBuildOwn: () {}),
           locale: locale,
           scale: 2,
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('r01-customize-plan')), findsOneWidget);
+      expect(find.byKey(const ValueKey('r01-your-plan')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

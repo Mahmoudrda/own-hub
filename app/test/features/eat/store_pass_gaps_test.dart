@@ -217,8 +217,7 @@ void main() {
           name: 'Lunch',
           value: 'x',
           status: SlotStatus.done,
-          logLabel: 'Log',
-          logSemanticsLabel: 'Log Lunch',
+          plusLabel: 'Log Lunch',
           itemImageAssets: assets,
         ),
       );

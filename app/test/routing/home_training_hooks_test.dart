@@ -1,5 +1,5 @@
-// Home through the real router: the tier facts follow the tabs, the "Your
-// training" row opens the quick sheet and applying it changes her plan, and
+// Home through the real router: Home carries no tier tabs, the "Your
+// training" row in the Change sheet opens the quick sheet and applying it changes her plan, and
 // Rahma's recipes are no longer held back before the allergy question.
 
 import 'dart:convert';
@@ -38,9 +38,6 @@ Widget _app(String screenId) => MaterialApp(
   onUnknownRoute: AppRouter.onUnknownRoute,
   initialRoute: appRoutes[screenId]!.name,
 );
-
-String _factsLine(WidgetTester tester) =>
-    tester.widget<Text>(find.byKey(const ValueKey('tier-facts-line'))).data!;
 
 void main() {
   final savedFlags = AppRouter.featureFlags;
@@ -83,26 +80,18 @@ void main() {
     ViewedTier.clear();
   });
 
-  testWidgets('Home shows three different facts lines across the tier tabs', (
-    tester,
-  ) async {
+  testWidgets('Home carries no tier tabs and no facts block', (tester) async {
     _phone(tester);
     await tester.pumpWidget(_app('T01'));
     await tester.pump(const Duration(milliseconds: 600));
-    final lines = <String>[_factsLine(tester)];
-    for (final tab in ['Intermediate', 'Advanced']) {
-      await tester.tap(find.text(tab).first);
-      await tester.pumpAndSettle();
-      lines.add(_factsLine(tester));
-    }
-    expect(lines.toSet(), hasLength(3), reason: '$lines');
-    expect(lines[0], contains(' × 12'));
-    expect(lines[1], contains(' × 10'));
+    expect(find.text('Intermediate'), findsNothing);
+    expect(find.text('Advanced'), findsNothing);
+    expect(find.byKey(const ValueKey('tier-facts-line')), findsNothing);
   });
 
-  testWidgets('Train shows the facts under its tabs', (tester) async {
+  testWidgets('the plan page shows the facts under its tabs', (tester) async {
     _phone(tester);
-    await tester.pumpWidget(_app('R01'));
+    await tester.pumpWidget(_app('R02'));
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.byKey(const ValueKey('tier-facts-line')), findsOneWidget);
   });
@@ -113,11 +102,10 @@ void main() {
     await tester.pumpWidget(_app('T01'));
     await tester.pump(const Duration(milliseconds: 600));
 
+    await tester.tap(find.byKey(const ValueKey('today-change')));
+    await tester.pumpAndSettle();
     expect(find.text('Split · 3 days · Beginner'), findsOneWidget);
-    await tester.ensureVisible(
-      find.byKey(const ValueKey('today-your-training')),
-    );
-    await tester.tap(find.byKey(const ValueKey('today-your-training')));
+    await tester.tap(find.byKey(const ValueKey('change-training')));
     await tester.pumpAndSettle();
 
     final sheet = find.byKey(const ValueKey('quick-goal'));

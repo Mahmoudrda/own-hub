@@ -54,6 +54,17 @@ PlannedMove _move(String id) => PlannedMove(
   ],
 );
 
+/// Taps move [i] and, when it offers more than one thing, Sets and reps.
+Future<void> _openSets(WidgetTester tester, int i) async {
+  await tester.tap(find.byKey(ValueKey('r03-move-$i')));
+  await tester.pumpAndSettle();
+  final sets = find.byKey(const ValueKey('r03-move-Sets and reps'));
+  if (sets.evaluate().isNotEmpty) {
+    await tester.tap(sets);
+    await tester.pumpAndSettle();
+  }
+}
+
 void main() {
   final state = CustomWorkoutState.instance;
   late String blocked;
@@ -187,8 +198,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('r03-edit-0')));
-    await tester.pumpAndSettle();
+    await _openSets(tester, 0);
     await tester.tap(find.byKey(const ValueKey('edit-remove')));
     await tester.pumpAndSettle();
     expect(find.text('Undo'), findsOneWidget);
@@ -233,11 +243,9 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text(AppL10nEn().changesHereAreForTodayOnly), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('r03-edit-1')));
-    await tester.pumpAndSettle();
+    await _openSets(tester, 1);
     expect(find.byKey(const ValueKey('edit-swap')), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('r03-edit-0')));
-    await tester.pumpAndSettle();
+    await _openSets(tester, 0);
     expect(find.byKey(const ValueKey('edit-swap')), findsNothing);
   });
 

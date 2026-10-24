@@ -10,7 +10,6 @@ import 'package:own_hub/features/cycle/presentation/gentler_option_view.dart';
 import 'package:own_hub/features/today/presentation/quiet_week_view.dart';
 import 'package:own_hub/features/train/domain/session_match.dart';
 import 'package:own_hub/features/train/domain/workout_library.dart';
-import 'package:own_hub/features/train/presentation/train_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
@@ -132,15 +131,6 @@ void main() {
         isNull,
       );
     });
-  });
-
-  testWidgets('R01 with no short sessions draws no tiles and no heading', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_host(const TrainView(shortSessions: [])));
-    await tester.pumpAndSettle();
-    expect(find.text('Short ones that still count'), findsNothing);
-    expect(find.textContaining('min ·'), findsNothing);
   });
 
   testWidgets('Y06 with no gentle session offers no option', (tester) async {

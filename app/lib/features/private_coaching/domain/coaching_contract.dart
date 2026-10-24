@@ -512,6 +512,7 @@ abstract final class CoachingCallables {
   static const String endMyCoaching = 'end_my_coaching';
   static const String cancelCoachingRequest = 'cancel_coaching_request';
   static const String markThreadRead = 'mark_thread_read';
+  static const String acceptChatRules = 'accept_chat_rules';
   static const String addPortfolioMedia = 'add_portfolio_media';
   static const String removePortfolioMedia = 'remove_portfolio_media';
   static const String confirmPortfolioConsent = 'confirm_portfolio_consent';
@@ -569,6 +570,7 @@ abstract final class CoachingCallables {
     listCoachingReports,
     decideCoachingReport,
     markThreadRead,
+    acceptChatRules,
     addPortfolioMedia,
     removePortfolioMedia,
     confirmPortfolioConsent,

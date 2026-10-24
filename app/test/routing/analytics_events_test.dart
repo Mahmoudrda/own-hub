@@ -179,10 +179,7 @@ void main() {
       expect(sent, greaterThan(-1));
       expect(block.indexOf('AnalyticsEvent.signUpCodeSent'), greaterThan(sent));
       // Her usage-statistics choice is its own switch on this screen.
-      expect(
-        block,
-        contains('onAnalyticsChosen: AnalyticsConsent.instance.set'),
-      );
+      expect(block, contains('onAnalyticsChosen: chooseAnalytics'));
     });
 
     test(
@@ -477,7 +474,7 @@ void main() {
       expect(copy.indexOf('openExternalLink('), greaterThan(track));
     });
 
-    test('thirty events fire for the launch, and each has a call site', () {
+    test('thirty-two events fire for the launch, and each has a call site', () {
       final src = [
         for (final f in Directory('lib').listSync(recursive: true))
           if (f is File &&
@@ -499,7 +496,7 @@ void main() {
         for (final e in AnalyticsEvent.values)
           if (!dark.contains(e)) e,
       ];
-      expect(live, hasLength(30));
+      expect(live, hasLength(32));
       for (final e in live) {
         expect(
           src.contains('AnalyticsEvent.${e.name}'),

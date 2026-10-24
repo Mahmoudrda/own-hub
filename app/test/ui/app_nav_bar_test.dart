@@ -47,49 +47,79 @@ void main() {
   setUp(() => AppRouter.featureFlags = FeatureFlags.everything);
   tearDown(() => AppRouter.featureFlags = savedFlags);
 
-  group('a woman sees her five destinations', () {
-    testWidgets('all five, labelled, in order', (tester) async {
+  group('a woman sees her destinations', () {
+    testWidgets('Home, Train, the centre +, Eat, You, in order', (
+      tester,
+    ) async {
       await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'R01')));
       await tester.pumpAndSettle();
 
-      for (final label in ['Home', 'Train', 'Eat', 'Community', 'Insights']) {
+      final labels = ['Home', 'Train', 'Log food', 'Eat', 'You'];
+      for (final label in labels) {
         expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(traineeTabs.length, 5);
       expect(
         [for (final t in traineeTabs) t.screenId],
-        ['T01', 'R01', 'E01', 'M01', 'P01'],
+        ['T01', 'R01', 'E02', 'E01', 'P01'],
       );
-      // Left to right in the order of the list.
-      final xs = [
-        for (final label in ['Home', 'Train', 'Eat', 'Community', 'Insights'])
-          tester.getCenter(find.text(label)).dx,
-      ];
+      final xs = [for (final l in labels) tester.getCenter(find.text(l)).dx];
       expect(xs, [...xs]..sort());
     });
 
-    testWidgets('Events takes the community\'s slot while it is dark', (
-      tester,
-    ) async {
-      AppRouter.featureFlags = FeatureFlags.everything.with_({
-        Feature.community: false,
-      });
+    testWidgets('Events and the community have no tab', (tester) async {
       await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'T01')));
       await tester.pumpAndSettle();
 
-      expect(
-        [for (final t in tabsFor(AppRole.trainee)) t.screenId],
-        ['T01', 'R01', 'E01', 'T09', 'P01'],
-      );
-      expect(find.text('Events'), findsOneWidget);
+      expect(find.text('Events'), findsNothing);
       expect(find.text('Community'), findsNothing);
+      expect(find.text('Insights'), findsNothing);
+      expect([
+        for (final t in tabsFor(AppRole.trainee)) t.screenId,
+      ], isNot(anyOf(contains('T09'), contains('M01'))));
     });
 
-    testWidgets('there is no floating Log food button', (tester) async {
-      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'T01')));
+    testWidgets('the centre + is an action: never active, opens E02', (
+      tester,
+    ) async {
+      final selected = <String>[];
+      await tester.pumpWidget(
+        _host(AppNavBar(activeScreenId: 'E02', onSelect: selected.add)),
+      );
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('nav-log-food')), findsNothing);
-      expect(find.text('Log food'), findsNothing);
+      expect(find.byKey(const ValueKey('nav-log-food')), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.text('Eat'),
+          matching: find.byWidgetPredicate(
+            (w) => w is Semantics && w.properties.selected == true,
+          ),
+        ),
+        findsNothing,
+        reason: 'Eat is not selected while the + search is open',
+      );
+
+      await tester.tap(find.text('Log food'));
+      await tester.pumpAndSettle();
+      expect(selected, isEmpty, reason: 'the + is not a link to itself either');
+
+      await tester.pumpWidget(
+        _host(AppNavBar(activeScreenId: 'T01', onSelect: selected.add)),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Log food'));
+      expect(selected, ['E02']);
+    });
+
+    testWidgets('a screen opened from You keeps You marked, and You opens', (
+      tester,
+    ) async {
+      final selected = <String>[];
+      await tester.pumpWidget(
+        _host(AppNavBar(activeScreenId: 'P02', onSelect: selected.add)),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('You'));
+      expect(selected, ['P01']);
     });
 
     testWidgets('Coaching is not one of them', (tester) async {
@@ -117,8 +147,8 @@ void main() {
       // Tab labels are translated like everything else — a nav bar stuck in
       // English is a very visible way to bypass the dictionary.
       expect(find.text('التمرين'), findsOneWidget);
-      expect(find.text('المجتمع'), findsOneWidget);
-      expect(find.text('إحصائياتك'), findsOneWidget);
+      expect(find.text('إنتِ'), findsOneWidget);
+      expect(find.text('سجّلي أكلك'), findsOneWidget);
       expect(find.text('Train'), findsNothing);
     });
   });
@@ -196,7 +226,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(selected, ['E01']);
 
-      await tester.tap(find.text('Insights'));
+      await tester.tap(find.text('You'));
       await tester.pumpAndSettle();
       expect(selected, ['E01', 'P01']);
     });
@@ -245,11 +275,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Community'));
+      await tester.tap(find.text('Eat'));
       await tester.pumpAndSettle();
       expect(
         selected,
-        ['M01'],
+        ['E01'],
         reason:
             'screens are identified the same way in the design, the '
             'plans and the code',
@@ -275,31 +305,7 @@ void main() {
     });
   });
 
-  group('the Eat tab', () {
-    testWidgets('is a normal tab that wears a quiet chip until it is open', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'T01')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('nav-tab-emphasis')), findsOneWidget);
-      expect(traineeTabs.where((t) => t.emphasis).map((t) => t.screenId), [
-        'E01',
-      ]);
-
-      // Open, it takes the marker like every other tab and the chip goes.
-      await tester.pumpWidget(_host(const AppNavBar(activeScreenId: 'E01')));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('nav-tab-emphasis')), findsNothing);
-    });
-
-    testWidgets('a coach does not get it', (tester) async {
-      await tester.pumpWidget(
-        _host(const AppNavBar(activeScreenId: 'K07', destinations: coachTabs)),
-      );
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('nav-tab-emphasis')), findsNothing);
-    });
-
+  group('the bar at large text', () {
     testWidgets('in Arabic at the largest text size five tabs fit', (
       tester,
     ) async {
@@ -312,7 +318,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('الأكل'), findsOneWidget);
-      expect(find.text('إحصائياتك'), findsOneWidget);
+      expect(find.text('إنتِ'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

@@ -13,7 +13,11 @@ import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
 import 'package:own_hub/features/train/presentation/tier_tabs.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
+import 'package:own_hub/features/today/presentation/today_cards.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
+
+import '../../helpers/primary_actions.dart';
+
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_button.dart';
@@ -66,7 +70,7 @@ TodayView _today({
   String? sessionTitle,
   String? firstName,
   int? sessionMinutes,
-  ValueChanged<PlateSuggestion>? onLogPlate,
+  VoidCallback? onOpenMeal,
   MealRepository? mealRepository,
   VoidCallback? onSignIn,
   Widget? tierTabs,
@@ -76,7 +80,6 @@ TodayView _today({
     tierTabs: tierTabs,
     firstName: firstName,
     sessionMinutes: sessionMinutes,
-    onLogPlate: onLogPlate,
     mealRepository: mealRepository ?? InMemoryMealRepository(),
     // The prototype's day, asked for by name. `InMemoryTodayRepository()` now
     // starts on day one, which is what a fresh install must get; these cases
@@ -90,8 +93,7 @@ TodayView _today({
     sessionTitle: sessionTitle,
     onStartSession: () {},
     onRecall: () {},
-    onOpenMeal: () {},
-    onOpenPlate: () {},
+    onOpenMeal: onOpenMeal ?? () {},
     onOpenWeek: () {},
     onOpenCycle: () {},
     onAsk: () {},
@@ -100,11 +102,17 @@ TodayView _today({
   );
 }
 
-/// Taps the walk's "Count it" and lets the undo offer finish animating in.
+/// Opens the Change sheet, taps the walk's "Count it" and lets the undo offer finish animating in.
 /// Until it has, the snackbar sits behind an IgnorePointer and a tap aimed at
 /// Undo falls through to whatever is underneath.
+Future<void> _openChange(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('today-change')));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _countWalk(WidgetTester tester) async {
-  await tester.tap(find.text('Count it'));
+  await _openChange(tester);
+  await tester.tap(find.byKey(const ValueKey('change-count-walk')));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 800));
 }
@@ -128,8 +136,8 @@ void main() {
       expect(find.text('Tuesday'), findsOneWidget);
       // No level was supplied, so no pill is drawn. See the two tests below.
       expect(find.text('Level 7 · Regular'), findsNothing);
-      expect(find.text('Walk this morning · 32 min'), findsOneWidget);
-      expect(find.text('Count it'), findsOneWidget);
+      // The counted walk waits in the Change sheet, not above the card.
+      expect(find.text('Walk this morning · 32 min'), findsNothing);
       // The cover names the thing, not a programme. It was the fixed
       // `l10n.legsAndGlutes`, so Home told every woman the name of a programme
       // she had never chosen — and Train, one tap away, called the same
@@ -138,14 +146,16 @@ void main() {
       expect(find.text('Legs and glutes'), findsNothing);
       expect(find.text('Week 3 of 8'), findsOneWidget);
       expect(find.text("Start, everything's ready"), findsOneWidget);
-      expect(find.text('I already did it'), findsOneWidget);
-      // The meal is headed by the hour it happened, not by a fixed
-      // "Breakfast, your usual" that stayed on the card over a koshari bowl
-      // logged at one in the afternoon. This one really is breakfast: 08:40.
-      expect(find.text('Breakfast'), findsOneWidget);
-      expect(find.text('Breakfast, your usual'), findsNothing);
-      expect(find.text('Ful and baladi'), findsOneWidget);
+      expect(find.text('I already did it'), findsNothing);
+      // The Eat line carries the day so far against the target.
+      expect(find.byKey(const ValueKey('today-eat-line')), findsOneWidget);
       expect(find.text('This week, 1 of 3'), findsOneWidget);
+
+      await _openChange(tester);
+      expect(find.text('I already did it'), findsOneWidget);
+      expect(find.text('Walk this morning · 32 min'), findsOneWidget);
+      expect(find.text('Edit today'), findsOneWidget);
+      expect(find.text('Change plan'), findsOneWidget);
     });
 
     testWidgets('the cover names her plan when there is one', (tester) async {
@@ -164,23 +174,18 @@ void main() {
     testWidgets('the meal heading follows the meal, not the mockup', (
       tester,
     ) async {
-      // Found by driving the real app: log a koshari bowl at lunch and Home
-      // still read "Breakfast, your usual" with the koshari underneath it. The
-      // heading was a constant while everything under it was data.
+      // Found by driving the real app: log a koshari bowl at lunch and the
+      // card still read "Breakfast, your usual" with the koshari under it. The
+      // heading was a constant while everything under it was data. The card
+      // now lives on Eat; the heading rule is pinned on the card itself.
       _phone(tester);
       final lunch = DateTime(2026, 9, 15, 13, 10);
       await tester.pumpWidget(
         _host(
-          _today(
+          HomeEatCard(
+            loggedAt: lunch,
             now: lunch,
-            repository: InMemoryTodayRepository(
-              day: InMemoryTodayRepository.defaultDay(date: _tuesday).copyWith(
-                mealLoggedAt: lunch,
-                plates: const [
-                  PlateSuggestion(foodId: 'koshari_bowl', kcal: 540),
-                ],
-              ),
-            ),
+            plates: const [PlateSuggestion(foodId: 'koshari_bowl', kcal: 540)],
           ),
         ),
       );
@@ -192,33 +197,14 @@ void main() {
       expect(find.text('Breakfast, your usual'), findsNothing);
     });
 
-    // "and says so" used to mean "Dinner, your usual". It does not any more.
-    //
-    // "Your usual" is a claim about a habit, and this fixture is a woman with
-    // no plates at all: nothing she has ever eaten is on the card. The hour is
-    // still guessed and still named, because that part was always right; what
-    // had to earn itself is the word "usual". `MealCard` says it only when it
-    // has a plate of hers to name.
+    // "Your usual" is a claim about a habit: the card says it only when it has
+    // a plate of hers to name, and still guesses the hour.
     testWidgets('with nothing logged it guesses the hour, and says so', (
       tester,
     ) async {
       _phone(tester);
-      final evening = DateTime(2026, 9, 15, 19, 30);
       await tester.pumpWidget(
-        _host(
-          _today(
-            now: evening,
-            repository: InMemoryTodayRepository(
-              // Past day one, but nothing eaten yet today.
-              day: TodayDay(
-                date: _tuesday,
-                state: DayState.nothingDone,
-                arc: const FirstWeekArc(hasAnyLog: true),
-                week: const WeekProgress(sessionsLogged: 0, sessionsTarget: 3),
-              ),
-            ),
-          ),
-        ),
+        _host(HomeEatCard(now: DateTime(2026, 9, 15, 19, 30))),
       );
       await tester.pumpAndSettle();
 
@@ -257,16 +243,13 @@ void main() {
       expect(find.text('This week, 2 of 4'), findsOneWidget);
       expect(find.text('This week, 1 of 3'), findsNothing);
       expect(find.text('This week, 0 of 3'), findsNothing);
-      // And the line beside it counts down from the same two numbers. It was
-      // the fixed "Two more and the week counts." — said beside "0 of 3" on a
-      // fresh install, and said again to a woman who had finished her week.
-      expect(find.text('2 more and the week counts.'), findsOneWidget);
       expect(find.text('Two more and the week counts.'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a week she has finished says so, rather than asking for two '
-        'more', (tester) async {
+    testWidgets('a week she has finished counts three of three', (
+      tester,
+    ) async {
       _phone(tester);
       await tester.pumpWidget(
         _host(
@@ -282,7 +265,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('This week counts.'), findsOneWidget);
+      expect(find.text('This week, 3 of 3'), findsOneWidget);
       expect(find.textContaining('more and the week counts'), findsNothing);
     });
 
@@ -386,23 +369,19 @@ void main() {
   });
 
   group('RULE 3 — weeks, not days', () {
-    testWidgets('the only progress indicator on the screen is the week', (
+    testWidgets('the week is counted in sessions, on the one strip', (
       tester,
     ) async {
-      // A daily counter is the thing this product must never grow. The week
-      // segments are a session target, not seven days.
+      // A daily counter is the thing this product must never grow. The strip
+      // marks the days she trained and its line counts sessions against her
+      // target; the duplicate week card is gone.
       _phone(tester);
       await tester.pumpWidget(_host(_today()));
       await tester.pumpAndSettle();
 
-      final segments = find.byType(AppWeekSegments);
-      expect(segments, findsOneWidget);
-      expect(
-        tester.widget<AppWeekSegments>(segments).total,
-        3,
-        reason: 'sessions the week asks for — never a number of days',
-      );
-      expect(tester.widget<AppWeekSegments>(segments).filled, 1);
+      expect(find.byType(AppWeekSegments), findsNothing);
+      expect(find.byKey(const ValueKey('today-week-strip')), findsOneWidget);
+      expect(find.text('This week, 1 of 3'), findsOneWidget);
     });
   });
 
@@ -421,7 +400,10 @@ void main() {
       expect(find.byType(Dialog), findsNothing);
 
       // The row updated immediately — the log is hers before it is committed.
-      expect(find.text('Count it'), findsNothing);
+      await _openChange(tester);
+      expect(find.byKey(const ValueKey('change-count-walk')), findsNothing);
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
 
       // And the offer to take it back names what she logged.
       expect(find.text('Undo'), findsOneWidget);
@@ -443,7 +425,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 6));
 
-      expect(find.text('Count it'), findsOneWidget);
+      await _openChange(tester);
+      expect(find.byKey(const ValueKey('change-count-walk')), findsOneWidget);
       expect(
         repo.day.walkToCount,
         isTrue,
@@ -463,7 +446,8 @@ void main() {
       await tester.pumpWidget(_host(_today(repository: repo)));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Count it'));
+      await _openChange(tester);
+      await tester.tap(find.byKey(const ValueKey('change-count-walk')));
       await tester.pump(const Duration(seconds: 6));
 
       expect(repo.day.walkToCount, isFalse);
@@ -471,37 +455,12 @@ void main() {
   });
 
   group('after eight in the evening', () {
-    testWidgets('the likelier answer takes the weight', (tester) async {
-      // Not a sixth day state — the same state, rendered for the hour. An
-      // unlogged session at 20:30 has almost certainly already happened.
+    testWidgets('Start stays the one filled button all day', (tester) async {
+      // No swap at 20:00: "I already did it" lives in the Change sheet.
       _phone(tester);
       await tester.pumpWidget(
         _host(_today(now: DateTime(2026, 9, 15, 20, 30))),
       );
-      await tester.pumpAndSettle();
-
-      AppButton buttonFor(String label) => tester.widget<AppButton>(
-        find
-            .ancestor(of: find.text(label), matching: find.byType(AppButton))
-            .first,
-      );
-
-      expect(
-        buttonFor('I already did it').variant,
-        AppButtonVariant.filled,
-        reason: 'the evening answer is the primary one',
-      );
-      expect(
-        buttonFor("Start, everything's ready").variant,
-        AppButtonVariant.outlined,
-      );
-    });
-
-    testWidgets('before eight, starting is still the primary action', (
-      tester,
-    ) async {
-      _phone(tester);
-      await tester.pumpWidget(_host(_today(now: DateTime(2026, 9, 15, 9, 41))));
       await tester.pumpAndSettle();
 
       final start = tester.widget<AppButton>(
@@ -513,6 +472,11 @@ void main() {
             .first,
       );
       expect(start.variant, AppButtonVariant.filled);
+      expect(find.text('I already did it'), findsNothing);
+      expectAtMostOnePrimaryAction(tester, where: 'T01 after 20:00');
+
+      await _openChange(tester);
+      expect(find.text('I already did it'), findsOneWidget);
     });
   });
 
@@ -528,7 +492,6 @@ void main() {
     expect(find.text('الثلاثاء'), findsWidgets);
     expect(find.text('صباح الخير'), findsOneWidget);
     expect(find.text('تمرين النهارده'), findsOneWidget);
-    expect(find.text('احسبيها'), findsOneWidget);
     expect(find.text('الأسبوع ده، 1 من 3'), findsOneWidget);
     // English surviving here is exactly what a hardcoded string looks like.
     expect(find.text("Today's workout"), findsNothing);
@@ -633,31 +596,25 @@ void main() {
       expect(find.text('Week 3 of 8 · 25 min'), findsOneWidget);
     });
 
-    testWidgets('the Eat card shows the day so far and logs a plate in one '
-        'tap', (tester) async {
+    testWidgets('the Eat line shows the day so far and opens Eat', (
+      tester,
+    ) async {
       _phone(tester);
-      PlateSuggestion? logged;
-      await tester.pumpWidget(
-        _host(
-          _today(
-            onLogPlate: (plate) => logged = plate,
-            repository: InMemoryTodayRepository(
-              day: InMemoryTodayRepository.defaultDay(date: _tuesday),
-            ),
-          ),
-        ),
+      var opened = 0;
+      await tester.pumpWidget(_host(_today(onOpenMeal: () => opened++)));
+      await tester.pumpAndSettle();
+      final line = find.byKey(const ValueKey('today-eat-line'));
+      expect(line, findsOneWidget);
+      expect(
+        find.descendant(of: line, matching: find.textContaining(' kcal')),
+        findsOneWidget,
       );
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('today-eat-ring')), findsOneWidget);
-      expect(find.text('Carbs'), findsOneWidget);
-      expect(find.text('Fat'), findsOneWidget);
-      expect(find.byIcon(Icons.add), findsWidgets);
+      // Logging lives on Eat: no plates, no Log food, no Scan on Home.
+      expect(find.byKey(const ValueKey('today-log-food')), findsNothing);
+      expect(find.text('Ful and baladi'), findsNothing);
 
-      await tester.ensureVisible(find.text('Ful and baladi'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Ful and baladi'));
-      await tester.pump();
-      expect(logged?.foodId, 'ful_baladi');
+      await tester.tap(line);
+      expect(opened, 1);
     });
 
     for (final locale in const [Locale('en'), Locale('ar')]) {
@@ -697,22 +654,10 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        expect(find.byType(TierTabs), findsOneWidget);
+        expect(find.byType(TierTabs), findsNothing);
         await tester.tap(find.byKey(const ValueKey('sign-in-pill')));
         expect(signIns, 1);
       });
     }
-
-    testWidgets('the Eat card has a Log food button and a kcal target', (
-      tester,
-    ) async {
-      _phone(tester);
-      await tester.pumpWidget(_host(_today()));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const ValueKey('today-log-food')));
-      expect(find.byKey(const ValueKey('today-log-food')), findsOneWidget);
-      expect(find.textContaining('of '), findsWidgets);
-      expect(find.textContaining(' kcal'), findsWidgets);
-    });
   });
 }

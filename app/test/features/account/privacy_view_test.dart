@@ -233,6 +233,79 @@ void main() {
     });
   });
 
+  group('meal photos sent to Google', () {
+    testWidgets(
+      'shown on only after she agreed, and turning it off withdraws',
+      (tester) async {
+        _phone(tester);
+        var withdrawn = 0;
+        await tester.pumpWidget(
+          _host(
+            PrivacyView(
+              service: PrivacySettingsService(InMemoryPrivacyRepository()),
+              mealPhotoAllowed: () async => true,
+              onMealPhotoWithdrawn: () async => withdrawn++,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final toggle = find.byKey(const ValueKey('meal-photo-toggle'));
+        await tester.ensureVisible(toggle);
+        expect(tester.widget<AppToggle>(toggle).value, isTrue);
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+        expect(withdrawn, 1);
+        expect(tester.widget<AppToggle>(toggle).value, isFalse);
+        expect(
+          find.text('Off. You are asked again before your next meal photo.'),
+          findsOneWidget,
+        );
+        // Off, it cannot be turned on from here: that is asked at the photo.
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+        expect(withdrawn, 1);
+      },
+    );
+
+    testWidgets('a failed withdrawal stays on and says so', (tester) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+            mealPhotoAllowed: () async => true,
+            onMealPhotoWithdrawn: () async => throw StateError('offline'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final toggle = find.byKey(const ValueKey('meal-photo-toggle'));
+      await tester.ensureVisible(toggle);
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(tester.widget<AppToggle>(toggle).value, isTrue);
+      expect(
+        find.text('We could not turn this off. Try again.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('no row when the place to withdraw is not given', (
+      tester,
+    ) async {
+      _phone(tester);
+      await tester.pumpWidget(
+        _host(
+          PrivacyView(
+            service: PrivacySettingsService(InMemoryPrivacyRepository()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('meal-photo-toggle')), findsNothing);
+    });
+  });
+
   group('the switches', () {
     testWidgets('four switches, and only the blur starts on', (tester) async {
       _phone(tester);

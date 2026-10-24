@@ -177,6 +177,8 @@ void main() {
     testWidgets('English: a step up and a hold, no drop words', (tester) async {
       await tester.pumpWidget(host(const Locale('en'), summaryWith(next)));
       await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+      await tester.pumpAndSettle();
       expect(
         find.text('Next time: 22.5 kg on \u2066Hip thrust\u2069'),
         findsOneWidget,
@@ -195,6 +197,8 @@ void main() {
     ) async {
       await tester.pumpWidget(host(const Locale('ar'), summaryWith(next)));
       await settle(tester);
+      await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+      await tester.pumpAndSettle();
       expect(
         find.text('المرة الجاية: 22.5 كجم على \u2066Hip thrust\u2069'),
         findsOneWidget,

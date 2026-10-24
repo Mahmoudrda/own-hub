@@ -48,7 +48,7 @@ void main() {
   final saved = AppRouter.featureFlags;
 
   setUp(() {
-    // The first release: Community dark, so the bar is Home, Train and Eat.
+    // The first release: Community dark, so the bar is Home, Train, +, Eat and You.
     AppRouter.featureFlags = FeatureFlags.allOff.with_({
       Feature.today: true,
       Feature.firstWeek: true,
@@ -122,7 +122,7 @@ void main() {
     // a bar cannot repeat it. Every screen file here opens its library comment
     // with its own id ("/// R05 — Swap a move."), so a file naming a tab
     // root it does not own is the defect, spelled out.
-    const tabRoots = {'T01', 'R01', 'M01', 'E01'};
+    const tabRoots = {'T01', 'R01', 'E01', 'P01'};
     final offenders = <String>[];
 
     for (final directory in const [

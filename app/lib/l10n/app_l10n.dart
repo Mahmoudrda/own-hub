@@ -17353,12 +17353,6 @@ abstract class AppL10n {
   /// **'Glad you showed up today.'**
   String get gladYouShowedUpToday;
 
-  /// T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, one{1 more and the week counts.} other{{count} more and the week counts.}}'**
-  String countPluralOne1MoreAndThe(int count);
-
   /// No description provided for @dayOneStartsWithYourNextSession.
   ///
   /// In en, this message translates to:
@@ -19453,24 +19447,6 @@ abstract class AppL10n {
   /// **'Between {min} and {max} years'**
   String betweenMinAndMaxYears(String min, String max);
 
-  /// No description provided for @scanYourMealWithTheCamera.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan your meal with the camera'**
-  String get scanYourMealWithTheCamera;
-
-  /// No description provided for @onePhotoForCaloriesAndProtein.
-  ///
-  /// In en, this message translates to:
-  /// **'One photo for calories and protein'**
-  String get onePhotoForCaloriesAndProtein;
-
-  /// No description provided for @scanWithTheCameraInstead.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan with the camera instead'**
-  String get scanWithTheCameraInstead;
-
   /// No description provided for @scan.
   ///
   /// In en, this message translates to:
@@ -19789,12 +19765,6 @@ abstract class AppL10n {
   /// **'{minutes} min a session'**
   String minutesMinASession(String minutes);
 
-  /// No description provided for @switchPlanOrPickAnySession.
-  ///
-  /// In en, this message translates to:
-  /// **'Switch plan or pick any session'**
-  String get switchPlanOrPickAnySession;
-
   /// No description provided for @saveAsMyWorkout.
   ///
   /// In en, this message translates to:
@@ -19830,12 +19800,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Deleted {name}'**
   String deletedName(String name);
-
-  /// No description provided for @editThisMove.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit this move'**
-  String get editThisMove;
 
   /// No description provided for @moveEarlier.
   ///
@@ -20394,12 +20358,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Nothing logged, so this one is not counted.'**
   String get nothingLoggedSoThisOneIsNot;
-
-  /// No description provided for @dontShowThisKindAgain.
-  ///
-  /// In en, this message translates to:
-  /// **'Don\'t show this kind again'**
-  String get dontShowThisKindAgain;
 
   /// No description provided for @onlyMovesScreenedForYouAndStop.
   ///
@@ -21137,18 +21095,6 @@ abstract class AppL10n {
   /// **'Preview of your workout card'**
   String get previewOfYourWorkoutCard;
 
-  /// No description provided for @editWorkout.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit workout'**
-  String get editWorkout;
-
-  /// No description provided for @swapRemoveReorderOrAddMoves.
-  ///
-  /// In en, this message translates to:
-  /// **'Swap, remove, reorder or add moves.'**
-  String get swapRemoveReorderOrAddMoves;
-
   /// No description provided for @reset.
   ///
   /// In en, this message translates to:
@@ -21214,18 +21160,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Use this move'**
   String get useThisMove;
-
-  /// No description provided for @buildMyOwnPlan.
-  ///
-  /// In en, this message translates to:
-  /// **'Build my own plan'**
-  String get buildMyOwnPlan;
-
-  /// No description provided for @startWithABlankPlanOrChange.
-  ///
-  /// In en, this message translates to:
-  /// **'Start with a blank plan, or change one of the three splits to suit you.'**
-  String get startWithABlankPlanOrChange;
 
   /// No description provided for @startFromScratch.
   ///
@@ -22756,12 +22690,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'I share these answers with {name}, my coach.'**
   String iShareTheseAnswersWithNameMy(String name);
-
-  /// No description provided for @iUnderstandMyAnswersAreStoredIn.
-  ///
-  /// In en, this message translates to:
-  /// **'I understand my answers are stored in Frankfurt, Germany.'**
-  String get iUnderstandMyAnswersAreStoredIn;
 
   /// No description provided for @sendRequest.
   ///
@@ -25497,6 +25425,210 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Your first name is optional. Your coach sees it next to your answers.'**
   String get yourFirstNameIsOptionalYourCoach;
+
+  /// No description provided for @iAgreeThatMyAnswersAreSent.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree that my answers are sent to Own Hub\'s servers in Frankfurt, Germany, outside Egypt, and stored there.'**
+  String get iAgreeThatMyAnswersAreSent;
+
+  /// No description provided for @aPictureOfYourClientsWrittenAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'A picture of your client\'s written agreement'**
+  String get aPictureOfYourClientsWrittenAgreement;
+
+  /// No description provided for @onlyAWomanReviewerAtOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Only a woman reviewer at Own Hub sees this. Add it before you send.'**
+  String get onlyAWomanReviewerAtOwnHub;
+
+  /// No description provided for @addHerWrittenAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Add her written agreement'**
+  String get addHerWrittenAgreement;
+
+  /// No description provided for @beforeYourFirstMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Before your first message'**
+  String get beforeYourFirstMessage;
+
+  /// No description provided for @beRespectfulInsultsHarassmentAndHatefulWords.
+  ///
+  /// In en, this message translates to:
+  /// **'Be respectful. Insults, harassment and hateful words are not allowed.'**
+  String get beRespectfulInsultsHarassmentAndHatefulWords;
+
+  /// No description provided for @keepTheChatInOwnHubPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the chat in Own Hub. Phone numbers, links and payment details are not allowed, and the app stops these messages.'**
+  String get keepTheChatInOwnHubPhone;
+
+  /// No description provided for @yourCoachSharesTrainingAndFoodIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach shares training and food ideas. It is not medical advice. Ask your doctor about any health problem.'**
+  String get yourCoachSharesTrainingAndFoodIdeas;
+
+  /// No description provided for @messagesAreStoredOnOwnHubsServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages are stored on Own Hub\'s servers. If a message is reported, Own Hub staff can read it. You can report or block anyone from the menu.'**
+  String get messagesAreStoredOnOwnHubsServers;
+
+  /// No description provided for @iHaveReadTheseRulesAndI.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read these rules and I agree to follow them.'**
+  String get iHaveReadTheseRulesAndI;
+
+  /// No description provided for @agreeAndSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and send'**
+  String get agreeAndSend;
+
+  /// No description provided for @weCouldNotSaveYourAnswerTry.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not save your answer. Try again.'**
+  String get weCouldNotSaveYourAnswerTry;
+
+  /// No description provided for @onTurnOffAndYourMealPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'On. Turn off and your meal photos stop going to Google.'**
+  String get onTurnOffAndYourMealPhotos;
+
+  /// No description provided for @offYouAreAskedAgainBeforeYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Off. You are asked again before your next meal photo.'**
+  String get offYouAreAskedAgainBeforeYour;
+
+  /// No description provided for @weCouldNotTurnThisOffTry.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not turn this off. Try again.'**
+  String get weCouldNotTurnThisOffTry;
+
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
+
+  /// No description provided for @activities.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get activities;
+
+  /// No description provided for @seeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'See more'**
+  String get seeMore;
+
+  /// No description provided for @sessionsThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions this week'**
+  String get sessionsThisWeek;
+
+  /// No description provided for @addAPictureOfYourClientsWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a picture of your client\'s written agreement.'**
+  String get addAPictureOfYourClientsWritten;
+
+  /// No description provided for @mealPhotosSentToGoogleToRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal photos sent to Google to read the food'**
+  String get mealPhotosSentToGoogleToRead;
+
+  /// No description provided for @editToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit today'**
+  String get editToday;
+
+  /// No description provided for @shortVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Short version'**
+  String get shortVersion;
+
+  /// No description provided for @a10MinuteWalk.
+  ///
+  /// In en, this message translates to:
+  /// **'A 10-minute walk'**
+  String get a10MinuteWalk;
+
+  /// No description provided for @doMyOwnPlanInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Do my own plan instead'**
+  String get doMyOwnPlanInstead;
+
+  /// Home's one Eat line: calories eaten so far against today's target, in Western digits, e.g. 1,240 of 1,624 kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} of {target} kcal'**
+  String eatenOfTargetKcal(String eaten, String target);
+
+  /// R07: which set of the move she is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n} of {total}'**
+  String setNOfTotal(String n, String total);
+
+  /// No description provided for @plates.
+  ///
+  /// In en, this message translates to:
+  /// **'Plates'**
+  String get plates;
+
+  /// No description provided for @allMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'All moves'**
+  String get allMoves;
+
+  /// No description provided for @nextMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Next move'**
+  String get nextMove;
+
+  /// No description provided for @seeDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'See details'**
+  String get seeDetails;
+
+  /// No description provided for @editMoves.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit moves'**
+  String get editMoves;
+
+  /// No description provided for @yourPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan'**
+  String get yourPlan;
+
+  /// No description provided for @gentler.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentler'**
+  String get gentler;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -770,6 +770,15 @@ users/{uid}/consents/meal-photo-v1 by record_meal_photo_consent;
 analyze_meal_photo refuses with consent_missing until it exists. Bumped
 whenever that wording changes, together with the app."""
 
+CHOICE_CONSENT_VERSIONS = {"analytics": 2, "crash": 1}
+"""Versions of her two optional choices, usage statistics and crash reports.
+Each is off until she turns it on, and the choice itself lives on her phone;
+record_consent_choice keeps a server record of every change at
+users/{uid}/consents/{purpose}-v{N} = {version, state, at, grantedAt?,
+withdrawnAt?, locale?, appVersion?}. The analytics version matches the phone's
+`analytics_allowed_v2` key (version 2 asked again for PostHog). Bumped with
+the wording, together with the app."""
+
 REVIEW_CONSENT_VERSION = 3
 """N7: version of the review-route consent recorded by request_review at
 users/{uid}/consents/review-v3 = {version, at, path, flagId}. Asking for a woman

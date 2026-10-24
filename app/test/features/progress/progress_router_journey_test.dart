@@ -70,7 +70,7 @@ void main() {
 
   testWidgets('P01 counts the milestones that actually exist', (tester) async {
     _phone(tester);
-    await tester.pumpWidget(_app('P01'));
+    await tester.pumpWidget(_app('P07'));
     await tester.pumpAndSettle();
 
     expect(

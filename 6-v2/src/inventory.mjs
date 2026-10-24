@@ -115,7 +115,7 @@ export const screens = [
   { id: 'E12', flow: 'eat', title: 'Snap your meal', noMockup: true },
   { id: 'E13', flow: 'eat', title: 'Check your meal', noMockup: true },
   // Progress
-  { id: 'P01', flow: 'progress', title: 'Your progress' },
+  { id: 'P01', flow: 'progress', title: 'You' },
   { id: 'P02', flow: 'progress', title: 'Milestones' },
   { id: 'P03', flow: 'progress', title: 'Personal bests' },
   { id: 'P04', flow: 'progress', title: 'Body, privately' },
@@ -123,6 +123,7 @@ export const screens = [
   // Her body, turned and tapped, coloured by the sets she logged. Designed
   // in Flutter, after the mockup.
   { id: 'P06', flow: 'progress', title: 'Your muscles', noMockup: true },
+  { id: 'P07', flow: 'progress', title: 'Insights', noMockup: true },
   // My cycle
   { id: 'Y01', flow: 'cycle', title: 'Set up My cycle' },
   { id: 'Y02', flow: 'cycle', title: 'Dates and preferences' },

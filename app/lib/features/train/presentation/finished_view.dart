@@ -52,8 +52,12 @@ import '../../onboarding/domain/body_data.dart';
 import '../../today/presentation/today_cards.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
+import '../../../ui/language_switch.dart' show AppChrome;
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_overflow_menu.dart';
+import '../../../ui/app_sheet.dart';
+import '../../../ui/app_stat_hero.dart';
 import '../../../ui/app_progress.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_week_segments.dart';
@@ -67,6 +71,7 @@ import '../domain/weight_label.dart';
 import 'finish_reveal.dart';
 import 'session_share_card.dart';
 import 'set_labels.dart';
+import 'train_widgets.dart' show TrainTopBar;
 
 // The reveal's order: the day, the effort, the week filling, its figure
 // counting up, a best, the challenge, the kitten's cheer, then the paper.
@@ -93,7 +98,11 @@ class FinishedView extends StatelessWidget {
     this.bodyWeightKg,
     this.displayName,
     this.onShareImage,
+    this.onOpenRecentSessions,
   });
+
+  /// Her last sessions, where a set can be corrected. Offered in See details.
+  final VoidCallback? onOpenRecentSessions;
 
   /// The workout's name for the share card. Null names the day instead.
   final String? workoutName;
@@ -214,31 +223,112 @@ class FinishedView extends StatelessWidget {
       }
     }
 
+    final stats = <AppStat>[
+      if (summary != null && summary.minutes > 0)
+        AppStat(value: countLabel(summary.minutes), label: l10n.minutes),
+      if (summary != null && summary.sets > 0)
+        AppStat(value: countLabel(summary.sets), label: l10n.sets),
+      if (bests.isNotEmpty)
+        AppStat(value: countLabel(bests.length), label: l10n.bests),
+    ];
+
+    Widget details(BuildContext sheet) => _details(
+      sheet,
+      l10n,
+      summary: summary,
+      measured: measured,
+      bests: bests,
+      firstMarks: firstMarks,
+      challenge: challenge,
+      streakStatus: streakStatus,
+      weekDone: weekDone,
+      weekTarget: weekTarget,
+      weekCountedNow: weekCountedNow,
+    );
+
     final page = AppScaffold(
+      appBar: TrainTopBar(
+        actions: [
+          // The card she can screenshot or send: opened from here, so the peak
+          // stays one picture and one button.
+          if (!awaitingSummary &&
+              summary != null &&
+              summary.isLive &&
+              summary.sets > 0)
+            Builder(
+              builder: (bar) => IconButton(
+                key: const ValueKey('r10-share'),
+                tooltip: l10n.share,
+                iconSize: 24,
+                color: AppColors.onSurfaceVariant,
+                icon: const Icon(Icons.ios_share),
+                onPressed: () => unawaited(
+                  showAppSheet<void>(
+                    context: bar,
+                    children: [
+                      SessionSharePanel(
+                        data: ShareCardData.from(
+                          summary: summary,
+                          title:
+                              workoutName ??
+                              l10n.dayWorkout(
+                                weekdayLabel(
+                                  l10n,
+                                  finishedOn ?? AppClock.now(),
+                                ),
+                              ),
+                          date: finishedOn ?? AppClock.now(),
+                          bodyWeightKg:
+                              bodyWeightKg ??
+                              BodyDataStore.instance.read().weightKg,
+                          name: displayName,
+                        ),
+                        onShare: onShareImage ?? AppRouter.shareProgressCard,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          // A session logged by mistake comes off her week, after a
+          // confirmation, with Undo. Only once its credit has landed. The
+          // group link is Community's, and the first release ships without it.
+          if (onRemove != null ||
+              (AppRouter.screenIsOn('M03') && onShare != null))
+            AppOverflowMenu(
+              items: [
+                if (AppRouter.screenIsOn('M03') && onShare != null)
+                  AppOverflowItem(
+                    icon: Icons.groups_outlined,
+                    label: l10n.shareTheSquatWithYourGroup,
+                    onTap: onShare!,
+                  ),
+                if (onRemove != null)
+                  AppOverflowItem(
+                    icon: Icons.delete_outline,
+                    label: l10n.removeThisSession,
+                    confirmMessage: l10n.removeThisSession_1qh67,
+                    onTap: onRemove!,
+                  ),
+              ],
+            ),
+          const AppChrome(routedOnly: true),
+        ],
+      ),
       footer: [
-        AppButton(l10n.backToToday, onPressed: onBackToToday),
-        // A session logged by mistake comes off her week, after a
-        // confirmation, with Undo. Only once its credit has landed.
-        if (onRemove != null)
-          AppButton(
-            l10n.removeThisSession,
-            variant: AppButtonVariant.text,
-            height: 44,
-            fontSize: 15,
-            onPressed: onRemove,
-          ),
-        // The share link is Community's, and the first release ships without
-        // it. Offering a post at the peak moment when there is nowhere to
-        // post it is worse than a quiet link: it is the one screen a woman
-        // reaches by finishing something, and it would end on the
-        // switched-off panel.
-        if (AppRouter.screenIsOn('M03'))
-          AppButton(
-            l10n.shareTheSquatWithYourGroup,
-            variant: AppButtonVariant.text,
-            height: 44,
-            fontSize: 15,
-            onPressed: onShare,
+        AppButton(l10n.done_54ca1, onPressed: onBackToToday),
+        if (!awaitingSummary)
+          Builder(
+            builder: (foot) => AppButton(
+              l10n.seeDetails,
+              key: const ValueKey('r10-see-details'),
+              variant: AppButtonVariant.text,
+              height: 44,
+              fontSize: 15,
+              onPressed: () => unawaited(
+                showAppSheet<void>(context: foot, children: [details(foot)]),
+              ),
+            ),
           ),
       ],
       children: [
@@ -311,207 +401,46 @@ class FinishedView extends StatelessWidget {
           ),
         ),
         if (!awaitingSummary) ...[
-          // Stage 1 — the effort, from what she logged. The second video
-          // study's labour illusion, honestly: the work shown is the work done.
-          if (summary != null && summary.sets > 0 && summary.minutes > 0)
-            RevealStage(
-              index: 1,
-              child: Text(
-                l10n.minutesPluralOneMovesMovesSetsSets(
-                  summary.minutes,
-                  countLabel(summary.moves),
-                  countLabel(summary.sets),
-                ),
-                key: const ValueKey('r10-effort'),
-                style: AppText.titleM.copyWith(color: AppColors.onSurface),
-              ),
-            ),
-          // The picture of her workout, to screenshot or share: card first,
-          // then the Share button and what is on it.
-          if (summary != null && summary.isLive && summary.sets > 0)
-            RevealStage(
-              index: 1,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: SessionSharePanel(
-                  data: ShareCardData.from(
-                    summary: summary,
-                    title:
-                        workoutName ??
-                        l10n.dayWorkout(
-                          weekdayLabel(l10n, finishedOn ?? AppClock.now()),
-                        ),
-                    date: finishedOn ?? AppClock.now(),
-                    bodyWeightKg:
-                        bodyWeightKg ?? BodyDataStore.instance.read().weightKg,
-                    name: displayName,
-                  ),
-                  onShare: onShareImage ?? AppRouter.shareProgressCard,
-                ),
-              ),
-            ),
-          // Stage 2 — the week leads, a circle per session, the one she just did
-          // ticked, because the week is what this product counts.
+          // Stage 1 — one hero figure and at most three more, from what she
+          // logged: the week is what this product counts, and the work shown
+          // is the work done.
           RevealStage(
-            index: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const HandRule(seed: 23, height: 12),
-                Row(
-                  children: [
-                    Expanded(child: Text(l10n.thisWeek, style: AppText.titleM)),
-                    RevealCount(
-                      index: 3,
-                      value: weekDone,
-                      // The same two numbers the marks below are drawn from.
-                      format: (shown) => l10n.countOfTotal(
-                        countLabel(shown),
-                        countLabel(weekTarget),
-                      ),
-                      style: AppText.bodyM.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+            index: 1,
+            child: AppStatHero(
+              key: const ValueKey('r10-hero'),
+              hero: AppStat(
+                value: l10n.countOfTotal(
+                  countLabel(weekDone),
+                  countLabel(weekTarget),
                 ),
-                const SizedBox(height: 12),
-                // Built here so it can read the reveal it is inside.
-                Builder(
-                  builder: (context) => AppWeekSegments(
-                    style: WeekStyle.marks,
-                    total: weekTarget,
-                    filled: weekDone,
-                    lead: revealLead(context, 2),
-                    stagger: HandTiming.staggerStep,
-                    popIndex: credited && weekDone > 0 ? weekDone - 1 : null,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // The session that counted the week says so, in sage. The
-                // biggest moment the week can have, and only on the session it
-                // is true of.
-                if (weekCountedNow)
-                  Row(
-                    key: const ValueKey('r10-week-counts'),
-                    children: [
-                      const HandTick(size: 22, seed: 41),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          l10n.thisWeekCounts,
-                          style: AppText.titleM.copyWith(
-                            color: AppColors.tertiary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                // "One more session and this week counts" states the figure 1,
-                // and `statedLine` renders it only to the woman it is true of.
-                else if (statedLine(
-                      l10n.oneMoreSessionAndThisWeekCounts,
-                      states: 1,
-                      hers: weekTarget - weekDone,
-                    )
-                    case final String line)
-                  Text(
-                    line,
-                    style: AppText.bodyM.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-              ],
+                label: l10n.sessionsThisWeek,
+              ),
+              others: stats,
             ),
           ),
-          // Stage 3 — a best she really beat, with the value it beat, in sage:
-          // done, not won. The amber card and the trophy are gone; they were
-          // drawn after every live session whether or not anything was beaten.
-          if (bests.isNotEmpty || firstMarks > 0)
-            RevealStage(
-              index: 3,
-              child: Column(
-                key: const ValueKey('r10-bests'),
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final best in bests)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.trending_up,
-                            size: 22,
-                            color: AppColors.tertiary,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _bestLine(l10n, summary!, best),
-                              style: AppText.titleS.copyWith(
-                                color: AppColors.tertiary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (firstMarks > 0)
-                    Text(
-                      l10n.countPluralOneFirstMarkSetOn(firstMarks),
-                      style: AppText.bodyM.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          // Stage 4 — the weekly challenge, on the session that met it (D38).
-          if (challenge != null)
-            RevealStage(
-              index: 4,
-              child: Text(
-                _challengeLine(l10n, summary!, challenge),
-                key: const ValueKey('r10-challenge'),
-                style: AppText.titleS.copyWith(color: AppColors.tertiary),
-              ),
-            ),
-          // Stage 5 — her training streak, when she keeps one (D37), and the
-          // kitten: the full cheer on the sessions that earn it, a nod on the
-          // rest.
+          // Stage 5 — the kitten and one warm line: the full cheer on the
+          // sessions that earn it, a nod on the rest. The session that counted
+          // the week says so instead, in sage.
           RevealStage(
             index: _cheerStage,
             child: Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_showsStreak(streakStatus))
-                        // Counts up from one to her days, once.
-                        RevealCount(
-                          key: const ValueKey('r10TrainingStreak'),
-                          index: _cheerStage,
-                          from: 1,
-                          value: streakStatus!.days,
-                          format: l10n.daysPluralOneTrainingStreak1Day,
+                  child: weekCountedNow
+                      ? Text(
+                          l10n.thisWeekCounts,
+                          key: const ValueKey('r10-week-counts'),
+                          style: AppText.titleM.copyWith(
+                            color: AppColors.tertiary,
+                          ),
+                        )
+                      : Text(
+                          l10n.gladYouShowedUpToday,
+                          key: const ValueKey('r10-kitten-caption'),
                           style: AppText.bodyM.copyWith(
-                            color: AppColors.onSurface,
+                            color: AppColors.onSurfaceVariant,
                           ),
                         ),
-                      Text(
-                        l10n.gladYouShowedUpToday,
-                        key: const ValueKey('r10-kitten-caption'),
-                        style: AppText.bodyM.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
                 // Built as its stage arrives, so the one move it is allowed is
                 // the one she sees.
@@ -525,65 +454,6 @@ class FinishedView extends StatelessWidget {
                     sessionBudget: true,
                   ),
                 ),
-              ],
-            ),
-          ),
-          // Stage 6 — the points, quietly, and what comes next.
-          RevealStage(
-            index: 6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _points(context, l10n),
-                // Next time, for the loaded moves she weighed: a step up, or
-                // the same weight. Never a lower one.
-                if (measured && summary != null && summary.nextTime.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Column(
-                      key: const ValueKey('r10-next-time'),
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final move in summary.nextTime)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              _nextTimeLine(l10n, move),
-                              style: AppText.bodyM.copyWith(
-                                color: AppColors.onSurface,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                // The next step, while her week still has sessions left in it.
-                // The reason to come back is her own week, said in the week's
-                // terms: the next session, any day this week. Never a day count.
-                if (weekDone < weekTarget) ...[
-                  const SizedBox(height: 10),
-                  AppCard(
-                    key: const ValueKey('r10-next-step'),
-                    variant: AppCardVariant.sage,
-                    borderRadius: AppRadius.md,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    children: [
-                      Text(
-                        l10n.nextSessionNumberOnAnyDayThis(
-                          countLabel(weekDone + 1),
-                        ),
-                        style: AppText.bodyM.copyWith(
-                          color: AppColors.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ],
             ),
           ),
@@ -607,6 +477,189 @@ class FinishedView extends StatelessWidget {
     // Motion or for a recalled session.
     if (!revealOn || !measured) return reveal(hold: false);
     return _WipedReveal(builder: reveal);
+  }
+
+  /// Everything R10 used to stack under the celebration, in one sheet she
+  /// opens from "See details": the effort, the week's marks, the bests, the
+  /// challenge, the streak, the points and what comes next.
+  Widget _details(
+    BuildContext context,
+    AppL10n l10n, {
+    required SessionSummary? summary,
+    required bool measured,
+    required List<PersonalBest> bests,
+    required int firstMarks,
+    required ChallengeProgress? challenge,
+    required StreakStatus? streakStatus,
+    required int weekDone,
+    required int weekTarget,
+    required bool weekCountedNow,
+  }) {
+    final oneMore = weekCountedNow
+        ? null
+        : statedLine(
+            l10n.oneMoreSessionAndThisWeekCounts,
+            states: 1,
+            hers: weekTarget - weekDone,
+          );
+    return Column(
+      key: const ValueKey('r10-details'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 14,
+      children: [
+        if (summary != null && summary.sets > 0 && summary.minutes > 0)
+          Text(
+            l10n.minutesPluralOneMovesMovesSetsSets(
+              summary.minutes,
+              countLabel(summary.moves),
+              countLabel(summary.sets),
+            ),
+            key: const ValueKey('r10-effort'),
+            style: AppText.titleM.copyWith(color: AppColors.onSurface),
+          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(l10n.thisWeek, style: AppText.titleM)),
+                Text(
+                  l10n.countOfTotal(
+                    countLabel(weekDone),
+                    countLabel(weekTarget),
+                  ),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            AppWeekSegments(
+              style: WeekStyle.marks,
+              total: weekTarget,
+              filled: weekDone,
+            ),
+            // "One more session and this week counts" states the figure 1,
+            // and `statedLine` renders it only to the woman it is true of.
+            if (oneMore != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  oneMore,
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        // A best she really beat, with the value it beat, in sage: done, not
+        // won.
+        if (bests.isNotEmpty || firstMarks > 0)
+          Column(
+            key: const ValueKey('r10-bests'),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final best in bests)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.trending_up,
+                        size: 22,
+                        color: AppColors.tertiary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _bestLine(l10n, summary!, best),
+                          style: AppText.titleS.copyWith(
+                            color: AppColors.tertiary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (firstMarks > 0)
+                Text(
+                  l10n.countPluralOneFirstMarkSetOn(firstMarks),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+            ],
+          ),
+        // The weekly challenge, on the session that met it (D38).
+        if (challenge != null)
+          Text(
+            _challengeLine(l10n, summary!, challenge),
+            key: const ValueKey('r10-challenge'),
+            style: AppText.titleS.copyWith(color: AppColors.tertiary),
+          ),
+        // Her training streak, when she keeps one (D37).
+        if (_showsStreak(streakStatus))
+          Text(
+            l10n.daysPluralOneTrainingStreak1Day(streakStatus!.days),
+            key: const ValueKey('r10TrainingStreak'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+          ),
+        _points(context, l10n),
+        // Next time, for the loaded moves she weighed: a step up, or the same
+        // weight. Never a lower one.
+        if (measured && summary != null && summary.nextTime.isNotEmpty)
+          Column(
+            key: const ValueKey('r10-next-time'),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final move in summary.nextTime)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    _nextTimeLine(l10n, move),
+                    style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+                  ),
+                ),
+            ],
+          ),
+        if (onOpenRecentSessions != null)
+          AppButton(
+            l10n.recentSessions,
+            key: const ValueKey('r10-recent-sessions'),
+            icon: Icons.history,
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: () {
+              Navigator.of(context).pop();
+              onOpenRecentSessions!();
+            },
+          ),
+        // The next step, while her week still has sessions left in it. The
+        // reason to come back is her own week, said in the week's terms: the
+        // next session, any day this week. Never a day count.
+        if (weekDone < weekTarget)
+          AppCard(
+            key: const ValueKey('r10-next-step'),
+            variant: AppCardVariant.sage,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            children: [
+              Text(
+                l10n.nextSessionNumberOnAnyDayThis(countLabel(weekDone + 1)),
+                style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+              ),
+            ],
+          ),
+      ],
+    );
   }
 
   /// The points this session actually earned, as a quiet line with the level

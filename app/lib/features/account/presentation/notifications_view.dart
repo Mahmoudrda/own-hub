@@ -30,6 +30,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/follow_up_state.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
@@ -40,6 +41,7 @@ import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_sage_note.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_toggle.dart';
+import '../../followup/domain/follow_up_plan.dart' show FollowUpKind;
 import '../../train/domain/notification_plan.dart';
 import '../domain/notifications.dart';
 import 'account_view_models.dart';
@@ -80,7 +82,12 @@ class NotificationsView extends StatelessWidget {
     this.onPrefsChanged,
     this.followUpsOn,
     this.onFollowUpsChanged,
+    this.followUpState,
   });
+
+  /// Her follow-up answers and mutes. The shared one unless a test gives its
+  /// own.
+  final FollowUpState? followUpState;
 
   /// The switches under the reminders row, or null before the phone has
   /// agreed to show notifications: there is nothing to switch until then.
@@ -221,6 +228,10 @@ class NotificationsView extends StatelessWidget {
             value: followUpsOn!,
             onChanged: onFollowUpsChanged!,
           ),
+        // "Don't show this kind", moved off the Home card: one switch per kind
+        // of follow-up, so what she turned off can be turned back on.
+        if (followUpsOn == true && onFollowUpsChanged != null)
+          _FollowUpKindSwitches(state: followUpState ?? FollowUpState.instance),
         // The moving kitten and her streak, moved here from My profile.
         const ExtrasRows(),
         if (onOpenReminders == null && view.showsPermissionPrompt)
@@ -277,6 +288,48 @@ class NotificationsView extends StatelessWidget {
           // them off.
           if (onOpenReminders == null)
             AppSageNote(l10n.aFewGentleRemindersTurnAnyOf),
+        ],
+      ],
+    );
+  }
+}
+
+class _FollowUpKindSwitches extends StatefulWidget {
+  const _FollowUpKindSwitches({required this.state});
+
+  final FollowUpState state;
+
+  @override
+  State<_FollowUpKindSwitches> createState() => _FollowUpKindSwitchesState();
+}
+
+class _FollowUpKindSwitchesState extends State<_FollowUpKindSwitches> {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    String name(FollowUpKind kind) => switch (kind) {
+      FollowUpKind.afterSession => l10n.yourLastSession,
+      FollowUpKind.weekReview => l10n.yourWeek,
+      FollowUpKind.comeBack => l10n.welcomeBack,
+      FollowUpKind.food => l10n.proteinIdeas,
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final kind in FollowUpKind.values) ...[
+          const SizedBox(height: 8),
+          _switchRow(
+            key: 'a01-follow-up-kind-${kind.name}',
+            icon: Icons.subdirectory_arrow_right,
+            title: name(kind),
+            value: !widget.state.muted.contains(kind),
+            onChanged: (on) {
+              setState(() {
+                on ? widget.state.unmute(kind) : widget.state.mute(kind);
+              });
+            },
+          ),
         ],
       ],
     );

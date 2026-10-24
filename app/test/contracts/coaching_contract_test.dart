@@ -7,7 +7,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/l10n/app_l10n.dart';
+import 'package:own_hub/l10n/app_l10n_ar.dart';
+import 'package:own_hub/l10n/app_l10n_en.dart';
+import 'package:own_hub/features/private_coaching/presentation/chat/chat_sheets.dart'
+    show chatRulesText;
 import 'package:own_hub/features/private_coaching/data/coaching_repository.dart';
 import 'package:own_hub/features/private_coaching/data/firestore_coaching_repository.dart';
 import 'package:own_hub/features/private_coaching/domain/chat_message.dart';
@@ -29,6 +35,7 @@ Matcher _sameKeys(Object? expected) =>
     unorderedEquals((expected as Iterable).map((e) => e.toString()));
 
 void main() {
+  _consentTextsMatchTheApp();
   final contract = _contract();
   final limits = contract['limits'] as Map<String, dynamic>;
   final enums = contract['enums'] as Map<String, dynamic>;
@@ -208,6 +215,7 @@ void main() {
           coachUid: 'c',
           packageId: 'p',
           intake: const Intake(),
+          consent: const <String, Object?>{},
           locale: 'en',
         ).keys,
         _sameKeys(keysOf('request_coaching')),
@@ -459,5 +467,43 @@ void main() {
       expect(sessionLinkAllowed('http://meet.google.com/abc'), isFalse);
       expect(sessionLinkAllowed('https://example.com/abc'), isFalse);
     });
+  });
+}
+
+void _consentTextsMatchTheApp() {
+  group('the consent texts the app shows are the ones the server accepts', () {
+    final texts = _contract()['consentTexts'] as Map<String, dynamic>;
+    String hash(String text) => sha256.convert(utf8.encode(text)).toString();
+    Set<String> hashes(Object list, {String name = ''}) => {
+      for (final t in (list as List<dynamic>).cast<String>())
+        hash(t.replaceAll('{name}', name)),
+    };
+
+    for (final entry in <String, AppL10n>{
+      'en': AppL10nEn(),
+      'ar': AppL10nAr(),
+    }.entries) {
+      final lang = entry.key;
+      final l10n = entry.value;
+      final request =
+          (texts['coachingRequest2'] as Map<String, dynamic>)[lang]
+              as Map<String, dynamic>;
+      test('$lang share text', () {
+        expect(
+          hashes(request['share'] as Object, name: 'Rahma'),
+          contains(hash(l10n.iShareTheseAnswersWithNameMy('Rahma'))),
+        );
+      });
+      test('$lang transfer text', () {
+        expect(
+          hashes(request['transfer'] as Object),
+          contains(hash(l10n.iAgreeThatMyAnswersAreSent)),
+        );
+      });
+      test('$lang chat rules', () {
+        final rules = (texts['chatRules1'] as Map<String, dynamic>)[lang];
+        expect(hashes(rules as Object), contains(hash(chatRulesText(l10n))));
+      });
+    }
   });
 }

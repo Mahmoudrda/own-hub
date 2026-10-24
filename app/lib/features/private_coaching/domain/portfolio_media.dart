@@ -77,6 +77,7 @@ class PortfolioMedia {
     this.beforePath,
     this.afterPath,
     this.imagePath,
+    this.consentPath,
     this.publicPaths = const <String, String>{},
     this.clientConsentPublic = false,
     this.consentAt,
@@ -91,8 +92,14 @@ class PortfolioMedia {
   final String reason;
 
   /// Her client's consent is still to be confirmed (items from her
-  /// application).
-  bool get needsConsent => status == MediaStatus.needsConsent;
+  /// application), or a transformation waiting without the picture of the
+  /// written release (added with app 1.0.0): she can attach it, and Own Hub
+  /// cannot approve it before.
+  bool get needsConsent =>
+      status == MediaStatus.needsConsent ||
+      (status == MediaStatus.pending &&
+          kind == MediaKind.transformation &&
+          (consentPath ?? '').isEmpty);
   final int? weeks;
   final String note;
   final String text;
@@ -104,6 +111,9 @@ class PortfolioMedia {
   final String? beforePath;
   final String? afterPath;
   final String? imagePath;
+
+  /// The picture of her client's written release, while the item waits.
+  final String? consentPath;
 
   /// Once approved: `before`, `after`, `image` under `coach-public/`.
   final Map<String, String> publicPaths;
@@ -136,6 +146,7 @@ class PortfolioMedia {
       beforePath: readStringOrNull(map['beforePath']),
       afterPath: readStringOrNull(map['afterPath']),
       imagePath: readStringOrNull(map['imagePath']),
+      consentPath: readStringOrNull(map['consentPath']),
       publicPaths: _paths(map['publicPaths']),
       clientConsentPublic: readBool(map['clientConsentPublic']),
       consentAt: readTime(asMap(map['consent'])?['at']),
@@ -159,6 +170,7 @@ class MediaDraft {
   const MediaDraft.transformation({
     required String this.beforePath,
     required String this.afterPath,
+    required String this.consentPath,
     required int this.weeks,
     this.note = '',
     required bool this.clientConsentPublic,
@@ -176,6 +188,7 @@ class MediaDraft {
   }) : kind = MediaKind.feedback,
        beforePath = null,
        afterPath = null,
+       consentPath = null,
        weeks = null,
        note = '',
        clientConsentPublic = null,
@@ -186,6 +199,7 @@ class MediaDraft {
     : kind = MediaKind.photo,
       beforePath = null,
       afterPath = null,
+      consentPath = null,
       weeks = null,
       note = '',
       clientConsentPublic = null,
@@ -196,6 +210,10 @@ class MediaDraft {
   final MediaKind kind;
   final String? beforePath;
   final String? afterPath;
+
+  /// The picture of her client's written agreement, in her transformations
+  /// folder. Only a woman reviewer sees it.
+  final String? consentPath;
   final int? weeks;
   final String note;
   final bool? clientConsentPublic;
@@ -210,6 +228,7 @@ class MediaDraft {
     MediaKind.transformation => <String>[
       if ((beforePath ?? '').isEmpty) 'beforePath',
       if ((afterPath ?? '').isEmpty) 'afterPath',
+      if ((consentPath ?? '').isEmpty) 'consentPath',
       if (weeks == null || weeks! < kMediaWeeksMin || weeks! > kMediaWeeksMax)
         'weeks',
       if (note.trim().length > kMediaNoteMax) 'note',
@@ -234,6 +253,7 @@ class MediaDraft {
       'kind': kind.wire,
       'beforePath': beforePath,
       'afterPath': afterPath,
+      'consentPath': consentPath,
       'weeks': weeks,
       if (note.trim().isNotEmpty) 'note': note.trim(),
       'clientConsentPublic': clientConsentPublic,

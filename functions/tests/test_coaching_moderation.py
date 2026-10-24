@@ -31,7 +31,7 @@ def make_db():
     )
     db.document("coaches/coach1").set({"displayName": "Coach One", "headline": "Strength"})
     db.document("plans/client1/coachPlans/p1").set(
-        {"name": "Phase one", "kind": "workout", "coachUid": "coach1", "body": {"secret": 1}}
+        {"name": "Phase one", "kind": "workout", "coachUid": "coach1", "subId": "sub9", "relId": "coach1__client1", "body": {"secret": 1}}
     )
     return db
 
@@ -446,3 +446,64 @@ def test_the_subject_is_read_once_to_decide(monkeypatch, decision, subject):
     reads = _count_reads(monkeypatch)
     decide(db, decision=decision)
     assert reads.count(ref) == 1
+
+
+# ------------------------------------------------------ evidence at report time
+
+def capture(db, rid):
+    return moderation.capture_evidence(db, rid, db.document(f"reports/{rid}").get().to_dict(), now=NOW)
+
+
+def test_the_reported_message_is_copied_when_the_report_is_made_and_survives_its_removal():
+    db = make_db()
+    report(db, "r1")
+    assert capture(db, "r1") is True
+    saved = db.document("reports/r1/evidence/content").get().to_dict()
+    assert saved["subject"]["text"] == "pay me on instapay" and saved["fromCoach"] is True
+    assert saved["capturedAt"] == NOW
+    assert "coach1" not in repr(saved) and "client1" not in repr(saved)
+    db.document(MSG).delete()
+    item = listing(db)["items"][0]
+    assert item["subject"] == {"missing": True}
+    assert item["atReport"]["text"] == "pay me on instapay"
+
+
+def test_a_hidden_message_still_shows_what_was_said_at_the_report():
+    db = make_db()
+    report(db, "r1")
+    capture(db, "r1")
+    db.document(MSG).update({"hidden": True, "text": ""})
+    item = listing(db)["items"][0]
+    assert item["subject"]["hidden"] is True
+    assert item["atReport"]["text"] == "pay me on instapay"
+
+
+def test_a_second_capture_keeps_the_first_copy():
+    db = make_db()
+    report(db, "r1")
+    capture(db, "r1")
+    db.document(MSG).update({"text": "edited later"})
+    assert capture(db, "r1") is True
+    assert db.document("reports/r1/evidence/content").get().to_dict()["subject"]["text"] == "pay me on instapay"
+
+
+def test_a_plan_is_copied_without_account_ids_and_a_page_needs_no_body():
+    db = make_db()
+    report(db, "p", "coachPlan", "plans/client1/coachPlans/p1")
+    report(db, "c", "coachProfile", "coaches/coach1")
+    assert capture(db, "p") and capture(db, "c")
+    plan = db.document("reports/p/evidence/content").get().to_dict()
+    assert plan["plan"] == {"name": "Phase one", "kind": "workout", "body": {"secret": 1}}
+    assert "subId" not in plan["plan"] and "relId" not in plan["plan"]
+    assert db.document("reports/c/evidence/content").get().to_dict()["subject"]["displayName"] == "Coach One"
+    assert "atReport" not in listing(db)["items"][0]
+
+
+def test_nothing_is_copied_for_a_stranger_a_missing_subject_or_another_kind():
+    db = make_db()
+    report(db, "s", reporterUid="stranger")
+    report(db, "m", ref="relationships/coach1__client1/messages/none")
+    report(db, "o", "post", "posts/x")
+    for rid in ("s", "m", "o"):
+        assert capture(db, rid) is False
+        assert db.document(f"reports/{rid}/evidence/content").get().to_dict() is None

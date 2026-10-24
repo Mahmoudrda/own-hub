@@ -6,6 +6,10 @@ match ios/Runner/PrivacyInfo.xcprivacy, the App Store App Privacy answers and
 the published privacy policy (v3, sections 3 to 5). Wording of the policy is
 pending review by a licensed Egyptian lawyer. After any change, regenerate the
 Xcode privacy report and compare all four line by line before submitting.
+Updated 23 October 2026: the PostHog note is folded into the data types below,
+a member's first name for a coach is under Name, the meal photo is under
+Photos, coaching pushes are under Device or other IDs, and live sessions are
+noted under the video line.
 
 Overview
 --------
@@ -20,8 +24,14 @@ Is data shared with third parties?                                  No
   not count as sharing. Google Analytics for Firebase is a service provider
   on the same terms only while its data-sharing settings stay off, Google
   signals stay off and no Google Ads account is linked (owner action in the
-  Analytics property); if any of those is turned on, this answer changes. There is no video service: a woman from Own Hub
-  reviews the case and contacts her by phone.
+  Analytics property); if any of those is turned on, this answer changes.
+  PostHog receives the optional usage statistics (below) as a service
+  provider; confirm its processor terms before submitting. The app has no
+  video service of its own: a woman from Own Hub reviews the case and
+  contacts her by phone, and a live coaching session opens in the video
+  service the coach chooses (Google Meet, Zoom or Microsoft Teams), outside
+  the app, under that service's terms. Own Hub stores only the session's
+  time, length, link and status.
 Independent security review                                          No
 
 Data types collected
@@ -38,6 +48,9 @@ Personal info
       kept with it for the review and never shown to members. Collected, not
       ephemeral, required for an applicant, linked.
       Purpose: App functionality, Fraud prevention, security and compliance.
+      (3) A member who asks to join a coach: her first name, only if she
+      types it, sent with the request and shown to that coach. Collected,
+      optional, linked. Purpose: App functionality.
   - Phone number
       Collected. Not ephemeral. Required.
       Purpose: Account management, App functionality, Fraud prevention.
@@ -56,11 +69,12 @@ Health and fitness
       Collected for verified accounts (workouts, sessions, meals, plans).
       Required. Purpose: App functionality.
   - Health info
-      Collected ONLY when she turns on "Back up my health data" (off by
-      default, with its own consent): cycle and period dates, daily check-ins,
-      body measurements including weight, pregnancy, postpartum or injury
-      stage, allergies. Optional. Purpose: App functionality.
-      Otherwise this stays on the phone and is not collected.
+      Collected when she turns on "Back up my health data" (off by default,
+      with its own consent): cycle and period dates, daily check-ins, body
+      measurements including weight, pregnancy, postpartum or injury stage,
+      allergies. Also, separately, the health answers she chooses to send a
+      coach she asks to join (see Coaching below). Optional. Purpose: App
+      functionality. Otherwise this stays on the phone and is not collected.
 
 Messages
   - Emails or text messages (in-app messages)
@@ -87,8 +101,13 @@ Coaching (applications, portfolios, joining a coach; no payments yet)
       only for an approved coach. The full name is never shown.
   - Intake form a member sends a coach she asks to join: goal, level, days,
       place, allergies she keeps, life stage, seven health answers (these fall
-      under Health info, already declared), doctor tick, a note. Visible to
-      that coach only while the coaching lasts. Optional. Linked.
+      under Health info, already declared), doctor tick, a note, and her first
+      name if she types it. Visible to that coach only while the coaching
+      lasts; kept until she or the coach deletes her account. Optional.
+      Linked.
+  - Live session records under an active coaching: time, length, the
+      Google Meet, Zoom or Microsoft Teams link the coach set, status and who
+      marked it done. Linked. Deleted with either account.
   - Plans a coach shares are stored under the member's account.
   - No payments exist in this version: no payment info, purchase history or
       financial info is collected.
@@ -123,6 +142,10 @@ Photos and videos
       items on the portfolio. The coach can remove an item; all are deleted
       with her account. Before approval a picture is readable only by her
       and the reviewer.
+      Also the meal photo, when she chooses to analyse a meal: collected and
+      processed ephemerally, sent once to Google Cloud Vertex AI in Frankfurt
+      for the estimate and never stored. Optional. Purpose: App
+      functionality.
 
 App activity
   - App interactions
@@ -132,6 +155,12 @@ App activity
       screens (by id) and steps she uses, from closed lists. Never health,
       body, cycle, life stage, name, number, ID or anything she typed. No
       user ID is set; turning it off resets the analytics ID on the phone.
+      With the same consent, PostHog (United States): eight allowlisted app
+      milestones (tour start and finish, sign-up start and finish, sign-in,
+      workout start and finish, coaching request sent), with no account UID,
+      no person profile, no health values, messages or payment details, and
+      no session replay. Turning it off stops new collection and resets the
+      PostHog identifier; it does not erase what PostHog already received.
       Optional. Purpose: Analytics.
 
 App info and performance
@@ -145,7 +174,10 @@ App info and performance
       Purpose: Analytics.
   - Diagnostics
       ML Kit performance events, and the device details sent with a crash
-      report. Required. Purpose: Analytics.
+      report. Required. Purpose: Analytics. With her consent to usage
+      statistics, also one fixed PostHog status line per app start
+      (integration name and schema version only) and the device and app
+      details the PostHog library adds. Optional. Purpose: Analytics.
 
 Device or other IDs
   - Device or other IDs
@@ -155,9 +187,12 @@ Device or other IDs
       Also the push token (Firebase Cloud Messaging), only if she taps "Tell
       me when I'm in" while a woman reviewer has her check and allows
       notifications. Optional. Purpose: App functionality. It is used for
-      one notification, "your check is done", and deleted with her account.
+      the "your check is done" notification and, if she applies to coach or
+      uses coaching, for coaching notifications (one generic line, never the
+      message), and deleted with her account.
       Also the Google Analytics app instance ID, only with her consent to
-      usage statistics, reset when she withdraws it. Optional. Purpose:
+      usage statistics, reset when she withdraws it, and the PostHog
+      anonymous identifier on the same terms. Optional. Purpose:
       Analytics. No Advertising ID: the AD_ID permission is removed from the
       merged manifest and google_analytics_adid_collection_enabled is false.
 
@@ -165,7 +200,8 @@ Location
   - Approximate location
       Only with her consent to usage statistics: Google Analytics derives an
       approximate location (country, and city unless granular location is
-      turned off in the Analytics property) from the masked IP address. The
+      turned off in the Analytics property) from the masked IP address.
+      PostHog milestones are sent with location lookup switched off. The
       app asks for no location permission and reads no location.
       Optional. Purpose: Analytics.
 
@@ -183,7 +219,8 @@ pictures she picks (or takes) for her application are uploaded and declared
 above under Photos.
 There is no video review. A woman from Own Hub who reviews a case contacts
 her by phone, outside the app; nothing from that contact is collected by the
-app.
+app. A live coaching session opens in the coach's video service, outside the
+app; nothing from the call reaches Own Hub.
 Training reminders and event reminders are scheduled on the phone (local
 notifications, opt-in; the training ones are asked after her first finished
 session). The days and time she picks, and which events she booked, are read
@@ -210,10 +247,11 @@ under 18.
 
 Content rating
 --------------
-No community. The user-written content other members can see is an approved
-coach's public portfolio (reviewed before it is shown, reportable by members)
-and a dish a member opts to share without her name. A member and the coach she
-joined can chat in text; no images or voice. Reports reach the Own Hub team.
+No community. Users can interact: a member and the coach she joined chat in
+text (no images or voice), with Report and Block in every chat. The
+user-written content other members can see is an approved coach's public
+portfolio (reviewed before it is shown, reportable by members) and a dish a
+member opts to share without her name. Reports reach the Own Hub team.
 
 App access
 ----------
@@ -223,12 +261,3 @@ The +20 Firebase test number with its fixed code, and the reviewer allow-list
 Privacy policy URL
 ------------------
 https://own-hub.app/privacy
-
-PostHog addition (12 October 2026; submission answers must match the released build):
-Optional usage analytics also sends eight allowlisted app milestones, an anonymous
-app identifier and SDK device/app metadata to PostHog US after fresh consent.
-No account UID, health values, messages, replay or payment details are sent.
-A fixed integration status log is sent once per process with consent. Include
-app interactions, device identifiers and diagnostics as applicable; verify actual
-SDK traffic and processor terms before submitting Data safety answers. Revocation
-stops new collection and resets the identifier, not server-side historical data.

@@ -409,11 +409,9 @@ class _TypeItViewState extends State<TypeItView> {
             l10n.addIt,
             onPressed: () => _log(state.items),
           ),
-      FoodCategoryChips(
-        key: const ValueKey('type-it-categories'),
-        selected: _category,
-        onChanged: (category) => setState(() => _category = category),
-      ),
+      // Browsing one shelf keeps its chips at the head so she can leave it; the
+      // rest of the time they close the list, below the rows she came for.
+      if (_category != null) _categoryChips(),
       if (_isSentence(state))
         Text(
           l10n.wellAdd,
@@ -504,30 +502,39 @@ class _TypeItViewState extends State<TypeItView> {
           // No microphone while saying a meal is off in this build
           // (`Feature.voiceLogging`): there is nothing to hear her with.
           hint: _voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
-          trailing: _voice
-              ? IconButton(
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_voice)
+                IconButton(
                   onPressed: widget.onSpeak,
                   tooltip: l10n.weNeedTheMicrophoneToHearWhat,
                   iconSize: 22,
                   color: AppColors.primaryDim,
                   icon: const Icon(Icons.mic),
-                )
-              : null,
-        ),
-        if (widget.onSnap case final snap?)
-          AppButton(
-            key: const ValueKey('type-it-snap-meal'),
-            l10n.scanWithTheCameraInstead,
-            onPressed: snap,
-            variant: AppButtonVariant.outlined,
-            icon: Icons.camera_alt_rounded,
-            height: 48,
-            fontSize: 16,
+                ),
+              if (widget.onSnap case final snap?)
+                IconButton(
+                  key: const ValueKey('type-it-snap-meal'),
+                  onPressed: snap,
+                  tooltip: l10n.snapYourMeal,
+                  iconSize: 22,
+                  color: AppColors.primaryDim,
+                  icon: const Icon(Icons.photo_camera_outlined),
+                ),
+            ],
           ),
+        ),
         ...body,
       ],
     );
   }
+
+  Widget _categoryChips() => FoodCategoryChips(
+    key: const ValueKey('type-it-categories'),
+    selected: _category,
+    onChanged: (category) => setState(() => _category = category),
+  );
 
   /// Opens the portion sheet for a food and logs what she picked.
   Future<void> _pick(Food food, {FoodSize? size, int servings = 1}) async {
@@ -664,10 +671,10 @@ class _TypeItViewState extends State<TypeItView> {
         : const <ParsedItem>[];
 
     return [
-      if (picks.isNotEmpty)
-        SlotPicksRow(slot: _slot, picks: picks, onAdd: (pick) => _log([pick])),
       if (query.isEmpty && shelf == null)
         ..._emptyBox(l10n, state, guard, library),
+      if (picks.isNotEmpty)
+        SlotPicksRow(slot: _slot, picks: picks, onAdd: (pick) => _log([pick])),
       if (had.isNotEmpty) ...[
         Text(
           l10n.youveHad,
@@ -709,6 +716,7 @@ class _TypeItViewState extends State<TypeItView> {
                 setState(() => _category = FoodCategory.egyptianDishes),
           ),
       ],
+      if (_category == null) _categoryChips(),
     ];
   }
 

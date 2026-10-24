@@ -8,7 +8,10 @@ an approval copies every image, re-encoded (no EXIF, no location), to
 `coach-public/{uid}/media/` and sets the public fields. A rejection, or an item
 still waiting, leaves nothing public. A transformation also needs her tick that
 the client agreed in writing that Own Hub members may see the photos, kept with
-the time and the terms version.
+the time and the terms version, and a picture of that written release,
+uploaded to her private `transformations` folder, which only a woman reviewer
+sees. Approval needs the picture; it then moves to `coachPrivate/{uid}/
+mediaConsents/{id}` as the evidence and leaves the doc members read.
 
 Uses `common.require_portfolio_live`: the portfolio group's switch.
 """
@@ -57,6 +60,31 @@ def _file(blobs, uid: str, value, folders: tuple) -> str:
     return path
 
 
+def _consent_file(blobs, uid: str, data: dict) -> Optional[str]:
+    """The picture of the client's written release: her own upload, and not one
+    of the two photos. None when she sent none: coaches on app 1.0.0 do not
+    send one, and approval stays blocked until a release is attached."""
+    if data.get("consentPath") is None:
+        return None
+    path = _file(blobs, uid, data.get("consentPath"), ("transformations",))
+    photos = [common.text(data[k], max_len=300) for k in ("beforePath", "afterPath") if isinstance(data.get(k), str)]
+    if path in photos:
+        raise common.bad()
+    return path
+
+
+def _lock(blobs, row: dict) -> None:
+    """A transformation's files are evidence once it is submitted: storage rules
+    stop her deleting or replacing them (a draft she never submitted stays hers)."""
+    for key in ("beforePath", "afterPath", "consentPath"):
+        if row.get(key):
+            blobs.lock(row[key])
+
+
+def _evidence_ref(db, uid: str, media_id: str):
+    return db.collection("coachPrivate").document(uid).collection("mediaConsents").document(media_id)
+
+
 def _fields(uid: str, data: dict, blobs) -> dict:
     kind = common.one_of(data.get("kind"), KINDS)
     if kind == "transformation":
@@ -66,6 +94,7 @@ def _fields(uid: str, data: dict, blobs) -> dict:
             "kind": kind,
             "beforePath": _file(blobs, uid, data.get("beforePath"), ("transformations",)),
             "afterPath": _file(blobs, uid, data.get("afterPath"), ("transformations",)),
+            **({"consentPath": release} if (release := _consent_file(blobs, uid, data)) else {}),
             "weeks": common.whole(data.get("weeks"), low=1, high=104),
             "note": common.optional_text(data.get("note"), max_len=300),
             "clientConsentPublic": True,
@@ -110,6 +139,7 @@ def add(db, uid: str, data: dict, *, live: bool, coach_v, blobs, reencode, now: 
         transaction.set(ref, row)
 
     common.run(db, body)
+    _lock(blobs, row)
     return {"mediaId": ref.id, "status": "pending"}
 
 
@@ -136,34 +166,51 @@ def remove(db, uid: str, data: dict, *, live: bool, coach_v, blobs, now: dt.date
         for key in _PRIVATE_KEYS:
             if row.get(key):
                 blobs.delete(row[key])
+    evidence = _evidence_ref(db, uid, ref.id)
+    release = row.get("consentPath") or (evidence.get().to_dict() or {}).get("path")
+    if release:
+        blobs.delete(release)
+    evidence.delete()
     ref.delete()
     return {"removed": True}
 
 
-def confirm_consent(db, uid: str, data: dict, *, live: bool, coach_v, now: dt.datetime) -> dict:
+def confirm_consent(db, uid: str, data: dict, *, live: bool, coach_v, blobs, now: dt.datetime) -> dict:
     """The coach's own tick on a transformation that came in with her
-    application: her client agreed in writing, so it can go to review."""
+    application, with a picture of her client's written release: it can go to
+    review. A transformation already waiting without a release can be given
+    one the same way."""
     common.require_portfolio_live(live)
     common.require_active_coach(db, uid, coach_v)
     media_id = common.text(data.get("mediaId"), max_len=128)
     ref = _collection(db, uid).document(media_id)
+    held: dict = {}
 
     def body(transaction):
         row = common.read(ref, transaction)
         if row is None:
             raise common.refuse(errors.NOT_FOUND, MEDIA_NOT_FOUND)
-        if row.get("kind") != "transformation" or row.get("status") != "needsConsent":
+        held.update(row)
+        waiting = row.get("status") == "needsConsent" or (row.get("status") == "pending" and not row.get("consentPath"))
+        if row.get("kind") != "transformation" or not waiting:
             raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
-        transaction.update(
-            ref,
-            {
-                "status": "pending",
-                "clientConsentPublic": True,
-                "consent": {"at": now, "termsVersion": TERMS_VERSION},
-            },
+        consent_path = _consent_file(
+            blobs, uid, {**data, "beforePath": row.get("beforePath"), "afterPath": row.get("afterPath")}
         )
+        pending = row.get("status") == "pending"
+        if pending and not consent_path:
+            raise common.bad()
+        fields = {"status": "pending", "clientConsentPublic": True}
+        if consent_path:
+            fields["consentPath"] = consent_path
+            held["consentPath"] = consent_path
+        if not pending:
+            # A pending item already carries the stamp from when it was added.
+            fields["consent"] = {"at": now, "termsVersion": TERMS_VERSION}
+        transaction.update(ref, fields)
 
     common.run(db, body)
+    _lock(blobs, held)
     return {"status": "pending"}
 
 
@@ -279,7 +326,9 @@ def decide(db, actor_uid: str, data: dict, *, blobs, reencode, notify, now: dt.d
     row = snap.to_dict() or {}
     if row.get("status") != "pending":
         raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
-    if row.get("kind") == "transformation" and row.get("clientConsentPublic") is not True:
+    if row.get("kind") == "transformation" and (
+        row.get("clientConsentPublic") is not True or (decision == "approve" and not row.get("consentPath"))
+    ):
         raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
     common.log_access(db, actor_uid, f"media.{decision}", media_id, now)
     decided = common.decided_stamp(actor_uid, now)
@@ -311,11 +360,24 @@ def decide(db, actor_uid: str, data: dict, *, blobs, reencode, notify, now: dt.d
             # Members read approved docs, so the private originals' names leave
             # the doc and the originals themselves are deleted below.
             cleared = {key: None for key in _PRIVATE_KEYS if current.get(key)}
+            if current.get("consentPath"):
+                cleared["consentPath"] = None
+                transaction.set(
+                    _evidence_ref(db, coach_uid, media_id),
+                    {
+                        "path": current["consentPath"],
+                        "consent": current.get("consent"),
+                        "approvedAt": now,
+                        "approvedBy": common.staff_ref(actor_uid),
+                    },
+                )
             transaction.update(
                 ref, {"status": "approved", "publicPaths": published, "reason": None, **cleared, **decided}
             )
         else:
             cleared = {} if media_id.startswith(SEEDED) else {key: None for key in _PRIVATE_KEYS if current.get(key)}
+            if current.get("consentPath"):
+                cleared["consentPath"] = None
             transaction.update(ref, {"status": "rejected", "reason": reason, **cleared, **decided})
 
     try:
@@ -325,6 +387,8 @@ def decide(db, actor_uid: str, data: dict, *, blobs, reencode, notify, now: dt.d
         raise
     if not media_id.startswith(SEEDED):
         _drop(blobs, [row[key] for key in _PRIVATE_KEYS if row.get(key)])
+    if decision == "reject" and row.get("consentPath"):
+        _drop(blobs, [row["consentPath"]])
     notify(coach_uid, DECISION_PUSH)
     return {"status": "approved" if decision == "approve" else "rejected"}
 

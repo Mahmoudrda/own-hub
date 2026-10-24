@@ -245,9 +245,11 @@ def test_the_legal_values_are_filled_in(prefix):
         assert "المحكمة الاقتصادية بالقاهرة" in terms
 
 
-def test_the_home_page_offers_the_tour_in_both_languages():
-    assert "Show me around" in _page()
-    assert "«خديني في جولة»" in _page("ar")
+def test_the_home_page_does_not_send_her_to_the_old_tour():
+    # The app opens on Home as a guest now; the "Show me around" button is gone
+    # from the first launch, so the site must not point to it.
+    assert "Show me around" not in _page()
+    assert "خديني في جولة" not in _page("ar")
 
 
 def test_the_home_page_does_not_say_she_reads_the_support_mailbox():

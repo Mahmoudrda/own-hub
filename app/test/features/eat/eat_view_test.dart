@@ -119,6 +119,12 @@ EatView _eat({
   );
 }
 
+/// The "+" on a Quick add card, not the ones on the meal rows.
+final _quickPlus = find.descendant(
+  of: find.byType(QuickAddCard),
+  matching: find.byType(PlusButton),
+);
+
 void main() {
   group('P0-LOG-06 — log a usual meal in one tap', () {
     testWidgets('her usual is on the screen, ranked, with its numbers', (
@@ -132,7 +138,7 @@ void main() {
 
       expect(find.text('Molokhia with chicken'), findsOneWidget);
       expect(find.text('460 kcal · 34 g protein'), findsOneWidget);
-      expect(find.byType(PlusButton), findsOneWidget);
+      expect(_quickPlus, findsOneWidget);
     });
 
     testWidgets('one tap logs it, and the write waits five seconds', (
@@ -149,9 +155,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Exactly one tap.
-      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.ensureVisible(_quickPlus.first);
       await tester.pump();
-      await tester.tap(find.byType(PlusButton).first);
+      await tester.tap(_quickPlus.first);
       await tester.pump();
 
       expect(handles, hasLength(1));
@@ -186,9 +192,9 @@ void main() {
       // Lunch is empty and reads "Now".
       expect(find.text('Now'), findsOneWidget);
 
-      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.ensureVisible(_quickPlus.first);
       await tester.pump();
-      await tester.tap(find.byType(PlusButton).first);
+      await tester.tap(_quickPlus.first);
       await tester.pump();
 
       // §4.3: the logged row appears with its real numbers straight away, even
@@ -216,9 +222,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.ensureVisible(_quickPlus.first);
       await tester.pump();
-      await tester.tap(find.byType(PlusButton).first);
+      await tester.tap(_quickPlus.first);
       await tester.pump(const Duration(seconds: 2));
 
       expect(handles.single.undo(), isTrue);
@@ -316,9 +322,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.ensureVisible(_quickPlus.first);
       await tester.pump();
-      await tester.tap(find.byType(PlusButton).first);
+      await tester.tap(_quickPlus.first);
       await tester.pump();
 
       expect(find.byType(AlertDialog), findsNothing);
@@ -402,9 +408,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Day 1'), findsOneWidget);
 
-      await tester.ensureVisible(find.byType(PlusButton).first);
+      await tester.ensureVisible(_quickPlus.first);
       await tester.pump();
-      await tester.tap(find.byType(PlusButton).first);
+      await tester.tap(_quickPlus.first);
       await tester.pump();
 
       expect(

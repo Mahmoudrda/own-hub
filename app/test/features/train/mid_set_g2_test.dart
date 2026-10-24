@@ -1,5 +1,6 @@
 // R07: the note under the move name, the plate line (barbell moves only) and
-// the History button.
+// the History row. The note, the plates and History are in the Pause sheet's
+// "…", so the set itself stays one figure and one button.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,8 @@ import 'package:own_hub/features/train/presentation/change_set_view.dart';
 import 'package:own_hub/features/train/presentation/mid_set_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+
+import '../../helpers/pause_menu.dart';
 
 Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
   locale: locale,
@@ -51,6 +54,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('plate-diagram')), findsNothing);
+    await pickMore(tester, 'Plates');
     expect(find.text('20 kg bar + 10 kg each side'), findsOneWidget);
     expect(find.byKey(const ValueKey('plate-diagram')), findsOneWidget);
     expect(
@@ -73,44 +78,36 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('plate-helper')), findsNothing);
       expect(find.textContaining('each side'), findsNothing);
+      expect(await moreRow(tester, 'Plates'), isNull);
     });
   }
 
-  testWidgets('the History button is there only with a callback, 48 px', (
-    tester,
-  ) async {
+  testWidgets('the History row is there only with a callback', (tester) async {
     await tester.pumpWidget(_host(MidSetView(move: _move)));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('r07-history')), findsNothing);
+    expect(await moreRow(tester, 'History'), isNull);
+    await closeSheets(tester);
 
     var opened = 0;
     await tester.pumpWidget(
       _host(MidSetView(move: _move, onOpenHistory: () => opened++)),
     );
     await tester.pumpAndSettle();
-    final button = find.byKey(const ValueKey('r07-history'));
-    expect(button, findsOneWidget);
-    expect(find.byIcon(Icons.show_chart), findsOneWidget);
-    expect(find.byTooltip('History'), findsOneWidget);
-    final size = tester.getSize(button);
-    expect(size.width, greaterThanOrEqualTo(48));
-    expect(size.height, greaterThanOrEqualTo(48));
-    await tester.tap(button);
+    final row = await moreRow(tester, 'History');
+    expect(row, isNotNull);
+    expect(tester.getSize(row!).height, greaterThanOrEqualTo(48));
+    await tester.tap(row);
+    await tester.pumpAndSettle();
     expect(opened, 1);
   });
 
   testWidgets('add, edit and remove a note', (tester) async {
     await tester.pumpWidget(_host(MidSetView(move: _move)));
     await tester.pumpAndSettle();
-    expect(find.text('Add note'), findsOneWidget);
-    expect(find.byIcon(Icons.sticky_note_2_outlined), findsOneWidget);
-    expect(
-      tester.getSize(find.byKey(const ValueKey('r07-note'))).height,
-      greaterThanOrEqualTo(48),
-    );
+    expect(find.byKey(const ValueKey('r07-note-text')), findsNothing);
 
-    await tester.tap(find.byKey(const ValueKey('r07-note')));
-    await tester.pumpAndSettle();
+    await pickMore(tester, 'Add note');
     await tester.enterText(
       find.byKey(const ValueKey('r07-note-field')).last,
       '  seat 4, pin 3 ',
@@ -119,14 +116,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('seat 4, pin 3'), findsOneWidget);
     expect(MoveNotes.instance.forMove('hip_thrust'), 'seat 4, pin 3');
-    expect(find.text('Edit note'), findsOneWidget);
 
-    await tester.tap(find.byKey(const ValueKey('r07-note')));
-    await tester.pumpAndSettle();
+    await pickMore(tester, 'Edit note');
     await tester.tap(find.byKey(const ValueKey('r07-note-remove')));
     await tester.pumpAndSettle();
     expect(MoveNotes.instance.forMove('hip_thrust'), isNull);
-    expect(find.text('Add note'), findsOneWidget);
+    expect(find.byKey(const ValueKey('r07-note-text')), findsNothing);
+    expect(await moreRow(tester, 'Add note'), isNotNull);
   });
 
   testWidgets('a note already kept is shown under the name', (tester) async {

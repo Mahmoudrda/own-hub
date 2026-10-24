@@ -49,7 +49,7 @@ Set<String> _subcollectionsInRules() {
 
 void main() {
   group('the manifest is intact', () {
-    test('59 rows, numbered 1 to 59 with no gaps and no duplicates', () {
+    test('61 rows, numbered 1 to 61 with no gaps and no duplicates', () {
       // 34 until check (e) below ran for the first time and found three
       // collections nobody had enumerated in three passes by eye.
       //
@@ -77,10 +77,13 @@ void main() {
       //
       // 59 with private coaching: her application, coachPrivate, packages and
       // drafts, subscriptions, and the pseudonymised payment records.
-      expect(kDeletionManifest, hasLength(59));
+      //
+      // 61 with the copy of a reported message or plan (row 60) and a coach's
+      // release evidence (row 61).
+      expect(kDeletionManifest, hasLength(61));
 
       final numbers = kDeletionManifest.map((r) => r.number).toList()..sort();
-      expect(numbers, [for (var i = 1; i <= 59; i++) i]);
+      expect(numbers, [for (var i = 1; i <= 61; i++) i]);
     });
 
     test('every row names a path and an owner', () {
@@ -111,8 +114,8 @@ void main() {
     );
   });
 
-  group('seven rows survive on purpose, and A02 must say so', () {
-    test('exactly seven rows do not remove data', () {
+  group('eight rows survive on purpose, and A02 must say so', () {
+    test('exactly eight rows do not remove data', () {
       expect(kRowsThatSurvive.map((r) => r.number).toList()..sort(), [
         23,
         30,
@@ -121,6 +124,7 @@ void main() {
         43,
         44,
         59,
+        60,
       ]);
     });
 

@@ -326,3 +326,92 @@ Future<bool> confirmBlock(BuildContext context, String name) async {
   );
   return answer ?? false;
 }
+
+/// The words of the chat and conduct rules, in order, as she reads them. The
+/// hash of this text is what the record keeps.
+String chatRulesText(AppL10n l10n) => <String>[
+  l10n.beforeYourFirstMessage,
+  l10n.beRespectfulInsultsHarassmentAndHatefulWords,
+  l10n.keepTheChatInOwnHubPhone,
+  l10n.yourCoachSharesTrainingAndFoodIdeas,
+  l10n.messagesAreStoredOnOwnHubsServers,
+  l10n.iHaveReadTheseRulesAndI,
+].join('\n');
+
+/// The rules before her first message, with an unticked box. True when she
+/// ticked and agreed.
+Future<bool> showChatRulesSheet(BuildContext context) async {
+  final l10n = AppL10n.of(context);
+  final answer = await showAppSheet<bool>(
+    context: context,
+    children: [
+      Builder(
+        builder: (sheet) => _ChatRules(
+          l10n: l10n,
+          onAgree: () => Navigator.of(sheet).pop(true),
+        ),
+      ),
+    ],
+  );
+  return answer == true;
+}
+
+class _ChatRules extends StatefulWidget {
+  const _ChatRules({required this.l10n, required this.onAgree});
+
+  final AppL10n l10n;
+  final VoidCallback onAgree;
+
+  @override
+  State<_ChatRules> createState() => _ChatRulesState();
+}
+
+class _ChatRulesState extends State<_ChatRules> {
+  bool _ticked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          header: true,
+          child: Text(
+            l10n.beforeYourFirstMessage,
+            style: AppText.titleL.copyWith(color: AppColors.ink),
+          ),
+        ),
+        const SizedBox(height: 12),
+        for (final line in <String>[
+          l10n.beRespectfulInsultsHarassmentAndHatefulWords,
+          l10n.keepTheChatInOwnHubPhone,
+          l10n.yourCoachSharesTrainingAndFoodIdeas,
+          l10n.messagesAreStoredOnOwnHubsServers,
+        ])
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              line,
+              style: AppText.body.copyWith(color: AppColors.ink),
+            ),
+          ),
+        Material(
+          type: MaterialType.transparency,
+          child: CheckboxListTile(
+            value: _ticked,
+            onChanged: (v) => setState(() => _ticked = v ?? false),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.iHaveReadTheseRulesAndI, style: AppText.bodyM),
+          ),
+        ),
+        const SizedBox(height: 8),
+        AppButton(
+          l10n.agreeAndSend,
+          onPressed: _ticked ? widget.onAgree : null,
+        ),
+      ],
+    );
+  }
+}

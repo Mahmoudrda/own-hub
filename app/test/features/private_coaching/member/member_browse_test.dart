@@ -18,6 +18,7 @@ import 'package:own_hub/features/private_coaching/presentation/member/coach_labe
 import 'package:own_hub/features/private_coaching/presentation/member/coach_portfolio_view.dart';
 import 'package:own_hub/features/private_coaching/presentation/member/find_coach_view.dart';
 import 'package:own_hub/features/private_coaching/presentation/member/join_coach_sheet.dart';
+import 'package:own_hub/features/account/domain/safety.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/ui/app_button.dart';
 import 'package:own_hub/ui/app_chip_row.dart';
@@ -63,6 +64,7 @@ class MemberRepo implements CoachingRepository {
       <(String, Map<String, Object?>)>[];
   final Map<String, CoachingFailure> failWith = <String, CoachingFailure>{};
   Intake? lastIntake;
+  Map<String, Object?>? lastConsent;
   int packageWatches = 0;
 
   List<String> get callNames => <String>[for (final c in calls) c.$1];
@@ -115,9 +117,11 @@ class MemberRepo implements CoachingRepository {
     required String coachUid,
     required String packageId,
     required Intake intake,
+    required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
   }) async {
+    lastConsent = consent;
     _record('requestCoaching', {
       'coachUid': coachUid,
       'packageId': packageId,
@@ -238,8 +242,10 @@ Widget portfolio(
   double scale = 1,
   List<String> allergies = const <String>[],
   List<ApprovedMedia> media = const <ApprovedMedia>[],
+  BlockService? blocks,
 }) => host(
   CoachPortfolioView(
+    blocks: blocks,
     coach: coach('c2', 'Amal'),
     packages: <CoachPackage>[pkg('a', 2000)],
     media: media,
@@ -432,6 +438,38 @@ void main() {
     expect(find.text('Thank you. We will look at this.'), findsOneWidget);
   });
 
+  testWidgets('Block is in the menu, asks first and blocks the coach', (
+    tester,
+  ) async {
+    phone(tester);
+    final blocks = InMemoryBlockService(selfUid: 'me');
+    await tester.pumpWidget(portfolio(MemberRepo(), blocks: blocks));
+    await tester.tap(find.byTooltip('More options'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Block'));
+    await tester.pumpAndSettle();
+    expect(blocks.isBlocked('c2'), isFalse);
+    await tester.tap(find.widgetWithText(AppButton, 'Block'));
+    await tester.pumpAndSettle();
+    expect(blocks.isBlocked('c2'), isTrue);
+    expect(blocks.blocks().single.source, BlockSource.profile);
+  });
+
+  testWidgets('no menu on a coach own page or without a block list', (
+    tester,
+  ) async {
+    phone(tester);
+    await tester.pumpWidget(portfolio(MemberRepo()));
+    expect(find.byTooltip('More options'), findsNothing);
+    await tester.pumpWidget(
+      portfolio(
+        MemberRepo(uid: 'c2'),
+        blocks: InMemoryBlockService(selfUid: 'c2'),
+      ),
+    );
+    expect(find.byTooltip('More options'), findsNothing);
+  });
+
   testWidgets('a failed report keeps the sheet and says so', (tester) async {
     phone(tester);
     final repo = MemberRepo()
@@ -572,6 +610,11 @@ void main() {
       await tapText(tester, find.text('Send request'));
       await tester.pumpAndSettle();
       expect(repo.callNames, <String>['requestCoaching']);
+      final consent = repo.lastConsent!;
+      expect(consent['version'], 2);
+      expect(consent['shareHash'], matches(RegExp(r'^[0-9a-f]{64}$')));
+      expect(consent['transferHash'], matches(RegExp(r'^[0-9a-f]{64}$')));
+      expect(consent['shareHash'], isNot(consent['transferHash']));
       final args = repo.calls.single.$2;
       expect(args['coachUid'], 'c2');
       expect(args['packageId'], 'a');

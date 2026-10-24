@@ -240,7 +240,7 @@ class ProgressView extends StatelessWidget {
       backgroundColor: AppColors.surface,
       appBar: AppTopBar(title: l10n.insights, onBack: onBack),
       bottomNavigationBar: AppNavBar(
-        activeScreenId: 'P01',
+        activeScreenId: 'P07',
         onSelect: (id) {
           final onTab = onSelectTab;
           if (onTab != null) {

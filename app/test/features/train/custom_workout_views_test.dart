@@ -70,9 +70,15 @@ Widget _r03({
   alternativesFor: alternatives,
 );
 
+/// Taps move [i], and Sets and reps when the move offers more than one thing.
 Future<void> _openEditor(WidgetTester tester, int i) async {
-  await tester.tap(find.byKey(ValueKey('r03-edit-$i')));
+  await tester.tap(find.byKey(ValueKey('r03-move-$i')));
   await tester.pumpAndSettle();
+  final sets = find.byKey(const ValueKey('r03-move-Sets and reps'));
+  if (sets.evaluate().isNotEmpty) {
+    await tester.tap(sets);
+    await tester.pumpAndSettle();
+  }
 }
 
 void main() {
@@ -95,6 +101,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Add is part of Edit moves, in the "…".
+      expect(find.byKey(const ValueKey('r03-add')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('overflow-row-Edit moves')));
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const ValueKey('r03-add')));
       await tester.tap(find.byKey(const ValueKey('r03-add')));
       await tester.pumpAndSettle();
@@ -254,8 +266,11 @@ void main() {
       final saved = <List<PlannedMove>>[];
       await tester.pumpWidget(_host(_r03(edits: edits, saveAsMine: saved.add)));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const ValueKey('r03-save-mine')));
-      await tester.tap(find.byKey(const ValueKey('r03-save-mine')));
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('overflow-row-Save as my workout')),
+      );
       await tester.pumpAndSettle();
       expect(saved.single.map((m) => m.exerciseId), [
         'donkey_kick',
@@ -269,6 +284,7 @@ void main() {
       await tester.pumpWidget(_host(WorkoutDayView(day: _day)));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('r03-add')), findsNothing);
+      expect(find.byKey(const ValueKey('overflow-menu')), findsNothing);
       expect(find.byKey(const ValueKey('r03-edit-0')), findsNothing);
     });
   });
@@ -428,7 +444,6 @@ void main() {
           TrainView(
             myWorkouts: [mine],
             onBuildOwn: () => log.add('build'),
-            onSwitchPlan: () => log.add('switch'),
             onStartMine: (w) => log.add('start ${w.id}'),
             onEditMine: (w) => log.add('edit ${w.id}'),
             onDeleteMine: (w) => log.add('delete ${w.id}'),
@@ -444,13 +459,16 @@ void main() {
         await tester.pump();
       }
 
+      // Her list opens from the "My workouts" row.
+      expect(find.text('Thursday legs'), findsNothing);
+      await tapKey('r01-open-my-workouts');
+      await tester.pumpAndSettle();
       expect(find.text('Thursday legs'), findsOneWidget);
       await tapKey('r01-build-own');
-      await tapKey('r01-switch-plan');
       await tapKey('r01-mine-wa');
       await tapKey('r01-mine-edit-wa');
       await tapKey('r01-mine-delete-wa');
-      expect(log, ['build', 'switch', 'start wa', 'edit wa', 'delete wa']);
+      expect(log, ['build', 'start wa', 'edit wa', 'delete wa']);
     });
 
     testWidgets('with none saved, no heading is drawn', (tester) async {

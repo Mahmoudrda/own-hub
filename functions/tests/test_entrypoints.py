@@ -56,6 +56,8 @@ CALLABLES = {
     "admin_dashboard",
     "admin_logs",
     "record_meal_photo_consent",
+    "withdraw_meal_photo_consent",
+    "record_consent_choice",
     "analyze_meal_photo",
     "approve_user",
     "approve_users",
@@ -103,7 +105,7 @@ CALLABLES = {
     "publish_coach_plan",
     "schedule_live_session",
     "respond_live_session",
-    "mark_session_done", "mark_thread_read",
+    "mark_session_done", "mark_thread_read", "accept_chat_rules",
     "list_coaching_reports",
     "decide_coaching_report",
 }

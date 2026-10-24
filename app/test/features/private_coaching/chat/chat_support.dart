@@ -94,6 +94,22 @@ class FakeChatRepository implements ChatThreadRepository {
   Stream<DateTime?> watchOtherReadAt(String relId, String otherUid) =>
       otherRead.watch();
 
+  bool rulesAccepted = true;
+  String? rulesText;
+
+  @override
+  Future<bool> chatRulesAccepted() async => rulesAccepted;
+
+  @override
+  Future<void> acceptChatRules({
+    required String rulesText,
+    required String locale,
+  }) async {
+    _record('acceptChatRules', {'locale': locale});
+    this.rulesText = rulesText;
+    rulesAccepted = true;
+  }
+
   @override
   Future<void> markThreadRead(String relId) async =>
       _record('markThreadRead', {'relId': relId});

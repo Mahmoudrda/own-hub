@@ -25,6 +25,8 @@ import 'package:own_hub/features/train/presentation/move_history_sheet.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
 
+import '../helpers/pause_menu.dart';
+
 NavigatorState _nav(WidgetTester tester) =>
     tester.state<NavigatorState>(find.byType(Navigator).first);
 
@@ -134,8 +136,7 @@ void main() {
     _seedTypoHistory();
     await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
 
-    await tester.tap(find.byKey(const ValueKey('r07-history')));
-    await tester.pumpAndSettle();
+    await pickMore(tester, 'History');
 
     expect(find.byKey(const ValueKey('move-history-close')), findsOneWidget);
     expect(find.byKey(const ValueKey('move-history-row-s2')), findsOneWidget);
@@ -147,8 +148,7 @@ void main() {
   testWidgets('R08 chips step by 2.5 kg for a barbell move', (tester) async {
     await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
 
-    await tester.tap(find.byKey(const ValueKey('r07-change')));
-    await tester.pumpAndSettle();
+    await pickMore(tester, 'Change');
 
     expect(find.text('37.5 kg'), findsOneWidget);
     expect(find.text('40 kg'), findsWidgets);
@@ -161,11 +161,15 @@ void main() {
     tester,
   ) async {
     await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
+    await pickMore(tester, 'Plates');
     expect(find.text('20 kg bar + 10 kg each side'), findsOneWidget);
     expect(find.byKey(const ValueKey('plate-diagram')), findsOneWidget);
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
 
     WorkoutSessionState.instance.reset();
     await _openR07(tester, 'dumbbell_reverse_lunge', 'Dumbbell reverse lunge');
+    expect(await moreRow(tester, 'Plates'), isNull);
     expect(find.byKey(const ValueKey('plate-helper')), findsNothing);
     expect(find.textContaining('each side'), findsNothing);
     await tester.pump(const Duration(seconds: 10));
@@ -206,7 +210,7 @@ void main() {
       AppRouter.sessionBests.backfill(repository: AppRouter.trainRepository);
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
       await tester.pumpAndSettle();
-      _nav(tester).pushNamed(appDestinations['P01']!.name);
+      _nav(tester).pushNamed(appDestinations['P07']!.name);
       await tester.pumpAndSettle();
 
       final entry = find.byKey(const ValueKey('p01-recent-sessions'));
@@ -230,13 +234,11 @@ void main() {
       _nav(tester).pushNamed(appDestinations['R02']!.name);
       await tester.pumpAndSettle();
 
-      final entry = find.byKey(const ValueKey('r02-recent-sessions'));
-      await tester.scrollUntilVisible(
-        entry,
-        300,
-        scrollable: find.byType(Scrollable).first,
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byKey(const ValueKey('overflow-row-Recent sessions')),
       );
-      await tester.tap(entry);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('recent-s2')), findsOneWidget);
 
@@ -264,6 +266,8 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
 
     expect(WorkoutSessionState.instance.isLive, isFalse);
+    await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
     // She did every set at 40 kg on a barbell move, so the line names the
     // next bar step, the same 42.5 kg the set screen offers.
     expect(find.textContaining('Next time: 42.5 kg on'), findsOneWidget);
@@ -329,14 +333,16 @@ void main() {
       });
       _seedTypoHistory();
       await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
-      expect(find.byKey(const ValueKey('r07-history')), findsNothing);
-      expect(find.byKey(const ValueKey('plate-diagram')), findsOneWidget);
+      expect(await moreRow(tester, 'History'), isNull);
+      expect(find.byKey(const ValueKey('overflow-row-Plates')), findsOneWidget);
 
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
       await tester.pumpAndSettle();
       _nav(tester).pushNamed(appDestinations['R02']!.name);
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('r02-recent-sessions')), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      expect(find.text('Recent sessions'), findsNothing);
     });
 
     testWidgets('gymHelpers off hides the plate line and the note', (
@@ -348,8 +354,9 @@ void main() {
       await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
       expect(find.byKey(const ValueKey('plate-diagram')), findsNothing);
       expect(find.byKey(const ValueKey('plate-helper')), findsNothing);
-      expect(find.byKey(const ValueKey('r07-note')), findsNothing);
-      expect(find.byKey(const ValueKey('r07-history')), findsOneWidget);
+      expect(await moreRow(tester, 'History'), isNotNull);
+      expect(find.byKey(const ValueKey('overflow-row-Plates')), findsNothing);
+      expect(find.byKey(const ValueKey('overflow-row-Add note')), findsNothing);
     });
   });
 
@@ -398,6 +405,8 @@ void main() {
       final summary = WorkoutSessionState.instance.lastSummary!;
       expect(summary.newBests, isNotEmpty);
       expect(summary.newBests.single.exerciseId, 'barbell_hip_thrust');
+      await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
       expect(find.textContaining('30 kg × 10'), findsWidgets);
       await tester.pump(const Duration(seconds: 70));
     });

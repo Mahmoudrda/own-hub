@@ -30,7 +30,7 @@
       "note": "Optional. The same date written in Arabic, e.g. 1 أكتوبر 2026. If left empty the Arabic pages show the value of effectiveDate."
     },
     "lastUpdated": {
-      "value": "",
+      "value": "23 October 2026",
       "label": {
         "en": "last updated",
         "ar": "آخر تحديث"
@@ -38,7 +38,7 @@
       "note": "Optional. Only set this once a page has been revised after publication. Empty means the pages show effectiveDate."
     },
     "lastUpdatedAr": {
-      "value": "",
+      "value": "23 أكتوبر 2026",
       "label": {
         "en": "last updated",
         "ar": "آخر تحديث"
@@ -342,8 +342,8 @@
     },
     "policyEffectiveDate": {
       "value": {
-        "en": "the day this version of the app is released",
-        "ar": "يوم صدور الإصدار ده من التطبيق"
+        "en": "23 October 2026",
+        "ar": "23 أكتوبر 2026"
       },
       "label": {
         "en": "the date version 3.0 takes effect",

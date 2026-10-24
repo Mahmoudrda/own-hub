@@ -173,7 +173,7 @@ void main() {
     AppRouter.goTo(tester.element(find.byType(Scaffold).first), 'R07');
     await tester.pumpAndSettle();
     expect(session.isLive, isTrue);
-    expect(find.text('1 of 3'), findsOneWidget);
+    expect(find.text('Set 1 of 3'), findsOneWidget);
 
     final done = find.textContaining('Done');
     for (var set = 1; set <= 3; set++) {
@@ -196,7 +196,7 @@ void main() {
         await tester.tap(find.text("I'm ready, next set"));
         await tester.pumpAndSettle(const Duration(milliseconds: 100));
         expect(_topRoute(tester), appDestinations['R07']!.name);
-        expect(find.text('${set + 1} of 3'), findsOneWidget);
+        expect(find.text('Set ${set + 1} of 3'), findsOneWidget);
       }
     }
     // The last set ends the workout on R10 once, never on R03 with "0 of 0".
@@ -266,6 +266,20 @@ void main() {
       }
     }
 
+    /// End workout: in the bar of the screens that draw it, in the Pause sheet
+    /// on R07 and R09.
+    Future<void> tapEnd(WidgetTester tester) async {
+      final bar = find.byKey(end).hitTestable();
+      if (bar.evaluate().isNotEmpty) {
+        await tester.tap(bar);
+      } else {
+        await tester.tap(find.byKey(const ValueKey('pause')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('pause-end')));
+      }
+      await tester.pumpAndSettle();
+    }
+
     Future<void> logOneSet(WidgetTester tester) async {
       await tester.tap(find.textContaining('Done'));
       await frames(tester);
@@ -281,7 +295,10 @@ void main() {
           await frames(tester);
           // R08 draws its own sheet over the page, so its control is there
           // but behind the sheet's scrim until the sheet is put away.
-          final found = id == 'R08'
+          // R07 and R09 keep it in the Pause sheet, behind one control.
+          final found = id == 'R07' || id == 'R09'
+              ? find.byKey(const ValueKey('pause')).hitTestable()
+              : id == 'R08'
               ? find.byKey(end)
               : find.byKey(end).hitTestable();
           expect(found, findsOneWidget, reason: id);
@@ -311,8 +328,7 @@ void main() {
       final before = AppRouter.progressStore.rewards.sessionsLogged;
       await logOneSet(tester);
 
-      await tester.tap(find.byKey(end));
-      await tester.pumpAndSettle();
+      await tapEnd(tester);
       expect(find.text('Sets saved so far: 1'), findsOneWidget);
       await tester.tap(find.text('Finish and save'));
       await tester.pump(const Duration(seconds: 1));
@@ -331,8 +347,7 @@ void main() {
       final before = AppRouter.progressStore.rewards.sessionsLogged;
       await logOneSet(tester);
 
-      await tester.tap(find.byKey(end));
-      await tester.pumpAndSettle();
+      await tapEnd(tester);
       await tester.tap(find.text('Discard this workout'));
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
@@ -352,8 +367,7 @@ void main() {
       final origin = await startFromR03(tester);
       final before = AppRouter.progressStore.rewards.sessionsLogged;
 
-      await tester.tap(find.byKey(end));
-      await tester.pumpAndSettle();
+      await tapEnd(tester);
       expect(find.text('Finish and save'), findsNothing);
       await tester.tap(find.text('Discard this workout'));
       await tester.pump(const Duration(seconds: 1));
@@ -385,7 +399,9 @@ void main() {
       );
       _nav(tester).pushNamed(appDestinations['R03']!.name);
       await frames(tester);
-      await tester.tap(find.byKey(const ValueKey('r03-edit-toggle')));
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('overflow-row-Edit moves')));
       await frames(tester);
       await tester.tap(find.byKey(const ValueKey('r03-remove-0')));
       await frames(tester);
@@ -408,8 +424,7 @@ void main() {
     testWidgets('Keep going leaves the workout as it was', (tester) async {
       await startFromR03(tester);
       await logOneSet(tester);
-      await tester.tap(find.byKey(end));
-      await tester.pumpAndSettle();
+      await tapEnd(tester);
       await tester.tap(find.text('Keep going'));
       await tester.pumpAndSettle();
       expect(WorkoutSessionState.instance.isLive, isTrue);
@@ -417,12 +432,13 @@ void main() {
       await tester.pump(const Duration(seconds: 70));
     });
 
-    testWidgets('close sends her to the sheet once a set is logged', (
+    testWidgets('Back sends her to the sheet once a set is logged', (
       tester,
     ) async {
       await startFromR03(tester);
-      // Nothing logged yet: close simply leaves the screen.
-      await tester.tap(find.byTooltip('Close'));
+      // Nothing logged yet: Back simply leaves the screen. R07 has no close
+      // button; Back is the system's.
+      unawaited(_nav(tester).maybePop());
       await tester.pumpAndSettle();
       expect(_topRoute(tester), appDestinations['R03']!.name);
       await tester.tap(find.textContaining('Start'));
@@ -430,7 +446,7 @@ void main() {
       expect(_topRoute(tester), appDestinations['R07']!.name);
 
       await logOneSet(tester);
-      await tester.tap(find.byTooltip('Close'));
+      unawaited(_nav(tester).maybePop());
       await frames(tester);
       expect(find.text('Finish and save'), findsOneWidget);
       await tester.tap(find.text('Keep going'));
@@ -479,8 +495,7 @@ void main() {
       await tester.tap(find.text("I'm ready, next set"));
       await tester.pumpAndSettle(const Duration(milliseconds: 100));
       expect(_topRoute(tester), appDestinations['R07']!.name);
-      await tester.tap(find.byKey(end));
-      await tester.pumpAndSettle();
+      await tapEnd(tester);
       await tester.tap(find.text('Finish and save'));
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 1));
@@ -500,8 +515,7 @@ void main() {
         'runs', (tester) async {
       await startFromR03(tester);
       await logOneSet(tester);
-      await tester.tap(find.byKey(end));
-      await tester.pumpAndSettle();
+      await tapEnd(tester);
       await tester.tap(find.text('Finish and save'));
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 1));
@@ -568,7 +582,7 @@ void main() {
 
       /// Short pumps only, so the set's undo window has not run out.
       Future<void> discard(WidgetTester tester) async {
-        await tester.tap(find.byKey(end));
+        await tapEnd(tester);
         for (var i = 0; i < 4; i++) {
           await tester.pump(const Duration(milliseconds: 250));
         }
@@ -640,8 +654,7 @@ void main() {
       (tester) async {
         await startFromR03(tester);
         await logOneSet(tester);
-        await tester.tap(find.byKey(end));
-        await tester.pumpAndSettle();
+        await tapEnd(tester);
         await tester.tap(find.text('Finish and save'));
         await tester.pump(const Duration(seconds: 1));
         await tester.pump(const Duration(seconds: 1));

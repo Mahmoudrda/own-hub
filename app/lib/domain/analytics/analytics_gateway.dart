@@ -125,6 +125,15 @@ enum AnalyticsEvent {
   /// She opened the share sheet with her progress card (P05). Nothing about
   /// what is on the card, whether her weight was on it, or where it went.
   progressShared,
+
+  /// She opened the app, once per calendar day. [AnalyticsProp.installAge]
+  /// says how old the install is, so day 1, 7 and 30 retention and the days
+  /// she is active can be counted. Nothing about her.
+  appOpened,
+
+  /// Her first finished workout, sent once. [AnalyticsProp.durationBucket]
+  /// is the hours since her first counted opening: activation within 24 hours.
+  firstWorkoutDone,
 }
 
 /// The name each event carries to Firebase.
@@ -170,6 +179,8 @@ const Map<AnalyticsEvent, String> analyticsEventWireNames = {
   AnalyticsEvent.codeResent: 'sign_up_code_resend',
   AnalyticsEvent.dataCopyRequested: 'data_copy_request',
   AnalyticsEvent.progressShared: 'progress_share',
+  AnalyticsEvent.appOpened: 'app_open',
+  AnalyticsEvent.firstWorkoutDone: 'activation_first_workout',
 };
 
 /// The only property keys that exist.
@@ -196,6 +207,10 @@ enum AnalyticsProp {
 
   /// Why something could not happen, from a closed list of technical causes.
   reason,
+
+  /// Days since the first opening counted with her consent: `d0`, `d1`,
+  /// `d2_6`, `d7`, `d8_29`, `d30` or `d31p`. Retention cohorts, no dates.
+  installAge,
 }
 
 /// The name each property carries to Firebase: snake_case, at most 40
@@ -215,6 +230,7 @@ const Map<AnalyticsProp, String> analyticsPropWireNames = {
   AnalyticsProp.notifPermissionState: 'notif_permission',
   AnalyticsProp.tourStop: 'tour_stop',
   AnalyticsProp.reason: 'reason',
+  AnalyticsProp.installAge: 'install_age',
 };
 
 /// The words each property may carry. A token outside its list is a bug: it
@@ -256,6 +272,15 @@ abstract final class AnalyticsVocabulary {
       'bar', 'sheet', 'end', 'welcome', 'tour', 'live',
       // a set logged on its own (`R07`, `R08`) or a whole move at once (`R13`)
       'set', 'move',
+    },
+    AnalyticsProp.installAge: {
+      'd0',
+      'd1',
+      'd2_6',
+      'd7',
+      'd8_29',
+      'd30',
+      'd31p',
     },
     AnalyticsProp.locale: {'en', 'ar'},
     AnalyticsProp.platform: {'ios', 'android'},

@@ -40,16 +40,21 @@ void main() {
       s.dispose();
     });
   }
-  testWidgets('R1-19 log a meal from E01', (t) async {
+  testWidgets('R1-19 log a meal from E02, Find and add', (t) async {
     phone(t);
     final s = t.ensureSemantics();
-    await open(t, appDestinations['E01']!.name, locale: const Locale('en'));
+    await open(t, appDestinations['E02']!.name, locale: const Locale('en'));
     print(
       'BEFORE: ${paintedText(t).where((e) => e.contains("Day") || e.contains("plates")).join(" | ")}',
     );
-    // The first quick-add card is the most popular Egyptian dish.
-    final logged = await tapControl(t, 'Add Koshari bowl');
-    expect(logged, isTrue, reason: 'E01 must offer a one-tap log');
+    // The first pick is the most popular Egyptian dish.
+    // A day-one woman has no usual plate: the dish, then Add.
+    final dish = find.byKey(const ValueKey('result-koshari_bowl'));
+    expect(dish, findsOneWidget, reason: 'E02 must offer the dish');
+    await t.tap(dish);
+    await settle(t);
+    await t.tap(find.byKey(const ValueKey('portion-add')));
+    await settle(t);
     print('AFTER LOG top=${topScreen(t)}');
     print('AFTER LOG painted: ${paintedText(t).join(" | ")}');
     print(

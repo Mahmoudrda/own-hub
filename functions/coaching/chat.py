@@ -216,6 +216,45 @@ def on_message(
     }
 
 
+RULES_VERSION = 1
+"""Version of the chat and conduct rules she ticks before her first coaching
+message. Recorded at users/{uid}/consents/chat-rules-v1."""
+
+
+def accept_rules(db, uid: str, data: dict, *, live: bool, now: dt.datetime) -> dict:
+    """Her tick on the chat rules: the version, the hash of the words she saw,
+    her language and the app version. The first tick stays; ticking again
+    changes nothing."""
+    common.require_clients_live(live)
+    if data.get("version") != RULES_VERSION or isinstance(data.get("version"), bool):
+        raise common.bad()
+    text_hash = data.get("textHash")
+    if not isinstance(text_hash, str) or len(text_hash) != 64 or not set(text_hash) <= set("0123456789abcdef"):
+        raise common.bad()
+    locale = common.one_of(data.get("locale"), ENUMS["languages"])
+    if text_hash not in {common.sha(t) for t in common.CONTRACT["consentTexts"]["chatRules1"][locale]}:
+        raise common.bad()
+    record = {
+        "version": RULES_VERSION,
+        "at": now,
+        "locale": locale,
+        "textHash": text_hash,
+    }
+    app = data.get("appVersion")
+    if app is not None:
+        if not isinstance(app, str) or len(app) > 32:
+            raise common.bad()
+        record["appVersion"] = app
+    ref = common.consent_ref(db, uid, f"chat-rules-v{RULES_VERSION}")
+
+    def body(transaction):
+        if not ref.get(transaction=transaction).exists:
+            transaction.set(ref, record)
+
+    common.run(db, body)
+    return {"ok": True}
+
+
 def mark_read(db, uid: str, data: dict, *, live: bool, now: dt.datetime) -> dict:
     """She opened the thread: her unread count is zero and `reads/{uid}` holds
     the time, in one write. Only the two parties can; anyone else is told the

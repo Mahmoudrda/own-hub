@@ -224,6 +224,14 @@ class DemoLogCommandBus extends LogCommandBus {
 
 /// The whole sample, built once when the tour opens.
 class DemoSample {
+  /// The minutes in each of the sample's finished sessions.
+  static const int sessionMinutes = 25;
+
+  /// Days back from today of the sample sessions the tour lists, newest first:
+  /// today's is the one this week's figure counts. The others are a week or
+  /// more back, so they are in an earlier week whatever day the tour opens.
+  static const List<int> sessionDaysAgo = [0, 8, 10];
+
   DemoSample._({
     required this.now,
     required this.refusals,

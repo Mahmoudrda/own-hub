@@ -64,6 +64,6 @@ void main() {
     final title = find.text(move.name);
     expect(title, findsWidgets);
     expect(Directionality.of(tester.element(title.first)), TextDirection.ltr);
-    expect(find.byTooltip(ar.change), findsWidgets);
+    expect(find.byTooltip(ar.pause), findsOneWidget);
   });
 }

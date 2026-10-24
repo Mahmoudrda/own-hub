@@ -132,13 +132,13 @@ void main() {
       await tester.pumpWidget(
         _host(
           ScreenScope(
-            screenId: 'P01',
+            screenId: 'P03',
             child: LanguageSwitchFrame(
               preference: AppRouter.localePreference,
               child: _page(),
             ),
           ),
-          screen: 'P01',
+          screen: 'P03',
         ),
       );
       expect(_avatar, findsOneWidget);

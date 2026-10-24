@@ -4238,16 +4238,6 @@
   "noSwapForThisMoveRightNow": "مفيش بديل للحركة دي دلوقتي",
   "tryFewerFiltersToSeeMoreWorkouts": "جرّبي فلاتر أقل عشان تشوفي تمارين أكتر.",
   "gladYouShowedUpToday": "مبسوطة إنك جيتي النهارده.",
-  "countPluralOne1MoreAndThe": "{count, plural, one{تمرين واحد كمان والأسبوع يتحسب.} two{تمرينين كمان والأسبوع يتحسب.} few{{count} تمارين كمان والأسبوع يتحسب.} many{{count} تمرين كمان والأسبوع يتحسب.} other{{count} تمرين كمان والأسبوع يتحسب.}}",
-  "@countPluralOne1MoreAndThe": {
-    "description": "T01 week line while sessions are still to go. A plural message because Arabic says تمرين واحد, تمرينين, 3 تمارين and 11 تمرين.",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "3"
-      }
-    }
-  },
   "dayOneStartsWithYourNextSession": "أول يوم بيبدأ مع تمرينك الجاي.",
   "ramadanModeOn": "وضع رمضان شغال",
   "dangerZone": "منطقة الحذف",
@@ -5242,9 +5232,6 @@
       }
     }
   },
-  "scanYourMealWithTheCamera": "صوّري وجبتك بالكاميرا",
-  "onePhotoForCaloriesAndProtein": "صورة واحدة تحسبلك السعرات والبروتين",
-  "scanWithTheCameraInstead": "صوّري الوجبة بالكاميرا",
   "scan": "صوّري",
   "yourCoachRepliedToYourReview": "كوتشك ردّت على مراجعتك",
   "yourGroupReachedANewMilestone": "جروبك وصل لإنجاز جديد",
@@ -5320,7 +5307,6 @@
       }
     }
   },
-  "switchPlanOrPickAnySession": "غيّري النظام أو اختاري أي تمرينة",
   "saveAsMyWorkout": "احفظيها كتمرينة ليا",
   "myWorkouts": "تمريناتي",
   "myWorkout": "تمرينتي",
@@ -5354,7 +5340,6 @@
       }
     }
   },
-  "editThisMove": "عدّلي الحركة دي",
   "moveEarlier": "قدّميها",
   "moveLater": "أخّريها",
   "workoutName": "اسم التمرينة",
@@ -5590,7 +5575,6 @@
   "eatingDinnerSoonLogItInOne": "هتتعشي دلوقتي؟ سجّليه بضغطة وهيتضاف ليومك.",
   "openEventLink": "افتحي رابط الفعالية",
   "nothingLoggedSoThisOneIsNot": "ما سجلتيش حاجة، فالجلسة دي مش هتتحسب.",
-  "dontShowThisKindAgain": "بلاش أشوف النوع ده تاني",
   "onlyMovesScreenedForYouAndStop": "بنختار ليكي حركات مناسبة بس، وقفي لو حسّيتي بأي حاجة مش مظبوطة.",
   "todayCanBeAGentleDay": "النهارده ممكن يبقى يوم هادي.",
   "yourLastSession": "آخر تمرين ليكي",
@@ -5985,8 +5969,6 @@
     }
   },
   "previewOfYourWorkoutCard": "معاينة كارت تمرينك",
-  "editWorkout": "عدّلي التمرين",
-  "swapRemoveReorderOrAddMoves": "بدّلي أو شيلي أو رتّبي أو ضيفي تمارين.",
   "reset": "رجّعيه زي الأول",
   "setsAndReps": "المجموعات والعدّات",
   "dragToReorder": "اسحبي عشان تغيّري الترتيب",
@@ -5998,8 +5980,6 @@
   "justThisTime": "المرة دي بس",
   "updatedInYourPlan": "اتحدّث في خطتك",
   "useThisMove": "استخدمي التمرين ده",
-  "buildMyOwnPlan": "ابني خطتي بنفسي",
-  "startWithABlankPlanOrChange": "ابدئي بخطة فاضية، أو عدّلي واحدة من التلات خطط على مزاجك.",
   "startFromScratch": "ابدئي من الصفر",
   "editOneOfTheThreeSplits": "عدّلي واحدة من التلات خطط",
   "customizeThisPlan": "عدّلي الخطة دي",
@@ -6807,7 +6787,6 @@
       }
     }
   },
-  "iUnderstandMyAnswersAreStoredIn": "فاهمة إن إجاباتي محفوظة بأمان على سيرفرات Own Hub في ألمانيا.",
   "sendRequest": "ابعتي الطلب",
   "answerEveryQuestionAndTickTheBoxes": "جاوبي على كل الأسئلة وعلّمي على الخانات اللي في الآخر.",
   "requestSent": "الطلب اتبعت",
@@ -8195,5 +8174,65 @@
   "pm": "م",
   "pickHerNameIfSheKnowsYou_akwt2": "اختاري اسمها لو بتعرفك. طلبك هيروحلها هي.",
   "nameYourCoachSees": "الاسم اللي المدرّبة هتشوفه",
-  "yourFirstNameIsOptionalYourCoach": "اسمك الأول اختياري. المدرّبة بتشوفه جنب إجاباتك."
+  "yourFirstNameIsOptionalYourCoach": "اسمك الأول اختياري. المدرّبة بتشوفه جنب إجاباتك.",
+  "iAgreeThatMyAnswersAreSent": "موافقة إن إجاباتي تتبعت وتتخزّن على سيرفرات Own Hub في فرانكفورت بألمانيا، يعني برّه مصر.",
+  "aPictureOfYourClientsWrittenAgreement": "صورة اتفاق عميلتك المكتوب",
+  "onlyAWomanReviewerAtOwnHub": "مراجِعة من Own Hub بس هي اللي بتشوفها. ضيفيها قبل ما تبعتي.",
+  "addHerWrittenAgreement": "ضيفي اتفاقها المكتوب",
+  "beforeYourFirstMessage": "قبل أول رسالة ليكي",
+  "beRespectfulInsultsHarassmentAndHatefulWords": "احترمي التانيين. الشتيمة والمضايقة والكلام الكاره مش مسموحين.",
+  "keepTheChatInOwnHubPhone": "خلّي الكلام جوّه Own Hub. أرقام التليفون واللينكات وبيانات الدفع مش مسموحة، والتطبيق بيوقّف الرسايل دي.",
+  "yourCoachSharesTrainingAndFoodIdeas": "المدرّبة بتشاركك أفكار تمرين وأكل. ده مش نصيحة طبية. اسألي دكتورك عن أي مشكلة صحية.",
+  "messagesAreStoredOnOwnHubsServers": "الرسايل بتتحفظ على سيرفرات Own Hub. لو حد بلّغ عن رسالة، فريق Own Hub يقدر يقراها. تقدري تبلّغي أو تحظري أي حد من القايمة.",
+  "iHaveReadTheseRulesAndI": "قريت القواعد دي وموافقة ألتزم بيها.",
+  "agreeAndSend": "موافقة وهبعت",
+  "weCouldNotSaveYourAnswerTry": "معرفناش نحفظ ردّك. جرّبي تاني.",
+  "onTurnOffAndYourMealPhotos": "شغّال. لو قفلتيه صور وجباتك مش هتتبعت لـ Google.",
+  "offYouAreAskedAgainBeforeYour": "مقفول. هنسألك تاني قبل صورة وجبتك الجاية.",
+  "weCouldNotTurnThisOffTry": "معرفناش نقفل ده. جرّبي تاني.",
+  "progress": "تقدمك",
+  "activities": "الأنشطة",
+  "seeMore": "شوفي المزيد",
+  "sessionsThisWeek": "تمارين الأسبوع ده",
+  "addAPictureOfYourClientsWritten": "ضيفي صورة موافقة عميلتك المكتوبة.",
+  "mealPhotosSentToGoogleToRead": "صور الوجبات اللي بتتبعت لـ Google عشان يتعرّف على الأكل",
+  "editToday": "عدّلي تمرين النهارده",
+  "shortVersion": "نسخة قصيرة",
+  "a10MinuteWalk": "مشي 10 دقايق",
+  "doMyOwnPlanInstead": "هعمل خطتي أنا بدل كده",
+  "eatenOfTargetKcal": "{eaten} من {target} سعرة",
+  "@eatenOfTargetKcal": {
+    "description": "Home's one Eat line: calories eaten so far against today's target, in Western digits, e.g. 1,240 of 1,624 kcal.",
+    "placeholders": {
+      "eaten": {
+        "type": "String",
+        "example": "1,240"
+      },
+      "target": {
+        "type": "String",
+        "example": "1,624"
+      }
+    }
+  },
+  "setNOfTotal": "المجموعة {n} من {total}",
+  "@setNOfTotal": {
+    "description": "R07: which set of the move she is on.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "plates": "الطارات",
+  "allMoves": "كل الحركات",
+  "nextMove": "الحركة الجاية",
+  "seeDetails": "شوفي التفاصيل",
+  "editMoves": "عدّلي الحركات",
+  "yourPlan": "خطتك",
+  "gentler": "أخف"
 }

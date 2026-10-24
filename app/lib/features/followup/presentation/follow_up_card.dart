@@ -74,12 +74,24 @@ class _FollowUpCardState extends State<FollowUpCard> {
     final l10n = AppL10n.of(context);
     final f = widget.followUp;
     final answered = _answered;
+    final body = _body(context, l10n, f);
     return _Appear(
       child: AppCard(
         children: [
-          ..._body(context, l10n, f),
+          // The one way out: a close that sends the card away until
+          // tomorrow. Switching a kind off for good is on Notifications (A01).
+          if (answered == null)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: body.first),
+                _close(l10n, f.kind),
+              ],
+            )
+          else
+            body.first,
+          ...body.skip(1),
           if (answered == null) ..._notes(l10n, f),
-          if (answered == null) _dismissRow(l10n, f.kind),
         ],
       ),
     );
@@ -213,28 +225,14 @@ class _FollowUpCardState extends State<FollowUpCard> {
     ];
   }
 
-  Widget _dismissRow(AppL10n l10n, FollowUpKind kind) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: AppButton(
-            l10n.notNow,
-            key: ValueKey('follow-up-not-now-${kind.name}'),
-            variant: AppButtonVariant.text,
-            onPressed: () => _state.notNow(kind, dayKey(widget.now)),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: AppButton(
-            l10n.dontShowThisKindAgain,
-            key: ValueKey('follow-up-mute-${kind.name}'),
-            variant: AppButtonVariant.text,
-            onPressed: () => _state.mute(kind),
-          ),
-        ),
-      ],
+  Widget _close(AppL10n l10n, FollowUpKind kind) {
+    return IconButton(
+      key: ValueKey('follow-up-not-now-${kind.name}'),
+      tooltip: l10n.notNow,
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+      icon: const Icon(Icons.close, size: 20),
+      color: AppColors.onSurfaceVariant,
+      onPressed: () => _state.notNow(kind, dayKey(widget.now)),
     );
   }
 }

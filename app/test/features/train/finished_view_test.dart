@@ -24,6 +24,8 @@ import 'package:own_hub/features/train/presentation/session_share_card.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 
+import '../../helpers/control_counter.dart' show countHeroFigures;
+
 Widget _host(
   Widget child, {
   Locale locale = const Locale('en'),
@@ -64,6 +66,13 @@ Future<void> _pastWipe(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 1));
 }
 
+/// Opens "See details", where the effort, the week's marks, the bests and the
+/// points are.
+Future<void> _details(WidgetTester tester) async {
+  await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   // The share link posts to a group, so R10 is tested with Community on.
   final savedFlags = AppRouter.featureFlags;
@@ -88,6 +97,11 @@ void main() {
     // No points are claimed before the ledger has answered (D41): the fixed
     // "+30 points" stood here whether or not anything was granted.
     expect(find.textContaining('points'), findsNothing);
+    // One hero figure for the week, and the rest behind See details.
+    expect(find.text('Sessions this week'), findsOneWidget);
+    expect(find.text('2 of 3'), findsOneWidget);
+    expect(find.text('One more session and this week counts.'), findsNothing);
+    await _details(tester);
     expect(find.text('This week'), findsOneWidget);
     expect(find.text('One more session and this week counts.'), findsOneWidget);
 
@@ -153,6 +167,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // The hero area: the week, minutes, sets and one best.
+      expect(countHeroFigures(tester), 4);
+      await _details(tester);
       expect(
         find.text('Glute bridge: 14 reps, up from 12 reps'),
         findsOneWidget,
@@ -238,6 +255,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const ValueKey('r10-week-counts')), findsOneWidget);
+    await _details(tester);
     expect(find.text('+70 points'), findsOneWidget);
   });
 
@@ -273,6 +291,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(PaperConfetti), findsOneWidget);
       // Every stage is on the page once it has run.
+      expect(find.text('Sessions this week'), findsOneWidget);
+      expect(find.text('20'), findsOneWidget);
+      await _details(tester);
       expect(find.text('Moves: 3 · Sets: 9 · Time: 20 min'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -403,65 +424,60 @@ void main() {
             .opacity
             .value;
         expect(inkOf("That's Tuesday done"), 1);
-        expect(inkOf('Moves: 3 · Sets: 9 · Time: 20 min'), lessThan(1));
+        expect(inkOf('Sessions this week'), lessThan(1));
         await tester.pumpAndSettle();
-        expect(inkOf('Moves: 3 · Sets: 9 · Time: 20 min'), 1);
+        expect(inkOf('Sessions this week'), 1);
       },
     );
 
-    testWidgets(
-      'one medium tap, as the kitten cheers, and the week counts up',
-      (tester) async {
-        final felt = <String?>[];
+    testWidgets('one medium tap, as the kitten cheers', (tester) async {
+      final felt = <String?>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            if (call.method == 'HapticFeedback.vibrate') {
+              felt.add(call.arguments as String?);
+            }
+            return null;
+          });
+      final saved = AppHaptics.enabled;
+      AppHaptics.enabled = () => true;
+      addTearDown(() {
+        AppHaptics.enabled = saved;
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-            .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-              if (call.method == 'HapticFeedback.vibrate') {
-                felt.add(call.arguments as String?);
-              }
-              return null;
-            });
-        final saved = AppHaptics.enabled;
-        AppHaptics.enabled = () => true;
-        addTearDown(() {
-          AppHaptics.enabled = saved;
-          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-              .setMockMethodCallHandler(SystemChannels.platform, null);
-        });
-        await tester.pumpWidget(
-          _host(
-            const FinishedView(
-              session: _live,
-              sessionsThisWeek: 2,
-              sessionsPrescribed: 3,
-              summary: SessionSummary(
-                sessionId: 'live-12',
-                source: SessionSource.live,
-                credit: CreditOutcome(
-                  sessionPoints: 30,
-                  weekPoints: 40,
-                  weekCountedNow: true,
-                  loggedAfter: 3,
-                  target: 3,
-                ),
+            .setMockMethodCallHandler(SystemChannels.platform, null);
+      });
+      await tester.pumpWidget(
+        _host(
+          const FinishedView(
+            session: _live,
+            sessionsThisWeek: 2,
+            sessionsPrescribed: 3,
+            summary: SessionSummary(
+              sessionId: 'live-12',
+              source: SessionSource.live,
+              credit: CreditOutcome(
+                sessionPoints: 30,
+                weekPoints: 40,
+                weekCountedNow: true,
+                loggedAfter: 3,
+                target: 3,
               ),
             ),
           ),
-        );
-        await _pastWipe(tester);
-        expect(felt, isEmpty);
-        // Stage 3 is the count-up (450 ms): mid-way it is not yet the final
-        // figure, and the kitten (stage 5, 750 ms) has not cheered.
-        await tester.pump(const Duration(milliseconds: 740));
-        expect(felt, isEmpty);
-        // The cheer arrives, and the one medium tap lands with it.
-        await tester.pump(const Duration(milliseconds: 60));
-        expect(find.text('3 of 3'), findsNothing);
-        expect(felt, ['HapticFeedbackType.mediumImpact']);
-        await tester.pumpAndSettle();
-        expect(find.text('3 of 3'), findsOneWidget);
-        expect(felt, ['HapticFeedbackType.mediumImpact']);
-      },
-    );
+        ),
+      );
+      await _pastWipe(tester);
+      expect(felt, isEmpty);
+      // The kitten (stage 5, 750 ms) has not cheered yet.
+      await tester.pump(const Duration(milliseconds: 740));
+      expect(felt, isEmpty);
+      // The cheer arrives, and the one medium tap lands with it.
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(felt, ['HapticFeedbackType.mediumImpact']);
+      await tester.pumpAndSettle();
+      expect(find.text('3 of 3'), findsOneWidget);
+      expect(felt, ['HapticFeedbackType.mediumImpact']);
+    });
 
     testWidgets(
       'the whole reveal, cheer to confetti, ends inside two seconds',
@@ -533,7 +549,7 @@ void main() {
       await tester.tapAt(const Offset(200, 300));
       await tester.pump();
       final effort = find.ancestor(
-        of: find.text('Moves: 3 · Sets: 9 · Time: 20 min'),
+        of: find.text('Sessions this week'),
         matching: find.byType(FadeTransition),
       );
       expect(tester.widget<FadeTransition>(effort.first).opacity.value, 1);
@@ -555,7 +571,7 @@ void main() {
       );
       await tester.pump();
       final effort = find.ancestor(
-        of: find.text('Moves: 3 · Sets: 9 · Time: 20 min'),
+        of: find.text('Sessions this week'),
         matching: find.byType(FadeTransition),
       );
       expect(tester.widget<FadeTransition>(effort.first).opacity.value, 1);
@@ -570,23 +586,30 @@ void main() {
     });
   });
 
-  testWidgets('sharing is a quiet link, and hands over an intent only', (
-    tester,
-  ) async {
-    var shared = 0;
-    var back = 0;
-    await tester.pumpWidget(
-      _host(FinishedView(onShare: () => shared++, onBackToToday: () => back++)),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'sharing with the group is in the "…", and hands over an intent only',
+    (tester) async {
+      var shared = 0;
+      var back = 0;
+      await tester.pumpWidget(
+        _host(
+          FinishedView(onShare: () => shared++, onBackToToday: () => back++),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Share the squat with your group'));
-    await tester.tap(find.text('Back to today'));
-    await tester.pumpAndSettle();
+      // The group link is in the "…"; Done is the one button.
+      await tester.tap(find.byKey(const ValueKey('overflow-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Share the squat with your group'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Done'));
+      await tester.pumpAndSettle();
 
-    expect(shared, 1);
-    expect(back, 1);
-  });
+      expect(shared, 1);
+      expect(back, 1);
+    },
+  );
 
   testWidgets('the week is drawn as a count of sessions, never as days', (
     tester,
@@ -614,7 +637,8 @@ void main() {
     // No best is claimed without one (D40); the Arabic "A personal best" that
     // stood here was the trophy every live session used to get.
     expect(find.text('رقم شخصي جديد'), findsNothing);
-    expect(find.text('ارجعي لصفحة اليوم'), findsOneWidget);
+    expect(find.text('تمام'), findsOneWidget);
+    expect(find.text('Done'), findsNothing);
     expect(find.text('Back to today'), findsNothing);
   });
 
@@ -643,7 +667,10 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await _details(tester);
       expect(find.textContaining(words), findsOneWidget, reason: '$minutes');
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pumpAndSettle();
     }
   });
 
@@ -682,7 +709,7 @@ void main() {
       addTearDown(tester.view.reset);
     }
 
-    testWidgets('sits under the hero and ahead of the week, card above Share', (
+    testWidgets('the share icon opens the card, with Share under it', (
       tester,
     ) async {
       tall(tester);
@@ -699,14 +726,14 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      // Not on the page: the page is the celebration.
+      expect(find.byType(SessionShareCard), findsNothing);
 
-      final hero = tester.getTopLeft(find.text("That's Tuesday done")).dy;
+      await tester.tap(find.byKey(const ValueKey('r10-share')));
+      await tester.pumpAndSettle();
       final card = tester.getTopLeft(find.byType(SessionShareCard)).dy;
       final share = tester.getTopLeft(find.text('Share')).dy;
-      final week = tester.getTopLeft(find.text('This week')).dy;
-      expect(hero, lessThan(card));
       expect(card, lessThan(share));
-      expect(share, lessThan(week));
       // Calories are named an estimate and use her weight: 3.5 x 70 x 0.5.
       expect(find.text('Calories (est.)'), findsWidgets);
       expect(find.text('123'), findsOneWidget);
@@ -770,6 +797,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(Kitten), findsOneWidget);
 
+      await tester.tap(find.byKey(const ValueKey('r10-share')));
+      await tester.pumpAndSettle();
       await tester.runAsync(() async {
         await tester.tap(find.text('Share'));
         await tester.pump();
@@ -797,6 +826,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byKey(const ValueKey('r10-share')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pumpAndSettle();
+      await _details(tester);
       expect(tester.takeException(), isNull);
     });
   });

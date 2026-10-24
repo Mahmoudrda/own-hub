@@ -113,6 +113,11 @@ void main() {
       await tester.pumpWidget(_host(LookAroundView(onJoin: () => joined++)));
       await tester.pumpAndSettle();
 
+      final change = find.byKey(const ValueKey('today-change'));
+      await tester.ensureVisible(change);
+      await tester.pumpAndSettle();
+      await tester.tap(change);
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Count it'));
       await tester.pumpAndSettle();
       expect(find.text('Join to make this yours'), findsOneWidget);

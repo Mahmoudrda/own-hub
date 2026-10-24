@@ -622,7 +622,47 @@ class FirebaseBackend:
         reports = self.db.collection("reports")
         for field in ("reporterUid", "subjectUid"):
             for snapshot in reports.where(field, "==", uid).stream():
-                snapshot.reference.update({field: token})
+                # Row 60: the reporter deleting hers removes the copy of what
+                # she reported; the reported side deleting hers keeps it for the
+                # safety case, with every name on her account taken out.
+                evidence = snapshot.reference.collection("evidence").document("content")
+                if field == "reporterUid":
+                    evidence.delete()
+                else:
+                    self._pseudonymise_evidence(evidence)
+                # The subject reference (`coaches/{uid}`, `relationships/{coach}__{client}/...`)
+                # and any other field that holds her uid carry the token too.
+                fields = {
+                    key: value.replace(uid, token)
+                    for key, value in (snapshot.to_dict() or {}).items()
+                    if key not in ("reporterUid", "subjectUid") and isinstance(value, str) and uid in value
+                }
+                snapshot.reference.update({field: token, **fields})
+
+    _NAMING_KEYS = frozenset(
+        {"coachname", "clientname", "displayname", "photo", "photopath", "photourl", "avatar", "avatarpath", "phone", "email"}
+    )
+
+    @classmethod
+    def _without_names(cls, value):
+        if isinstance(value, dict):
+            return {
+                k: (None if str(k).lower() in cls._NAMING_KEYS else cls._without_names(v)) for k, v in value.items()
+            }
+        if isinstance(value, list):
+            return [cls._without_names(v) for v in value]
+        return value
+
+    @classmethod
+    def _pseudonymise_evidence(cls, evidence) -> None:
+        # shortcut: the words that were reported stay as the evidence (they may
+        # still say her name); only fields that name her account are blanked.
+        snapshot = evidence.get()
+        if not snapshot.exists:
+            return
+        from coaching.moderation import _without_ids
+
+        evidence.set(cls._without_names(_without_ids(snapshot.to_dict() or {})))
 
     def delete_auth(self, uid):
         from firebase_admin import auth

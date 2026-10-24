@@ -13,6 +13,7 @@ import '../../../../ui/app_empty_state.dart';
 import '../../../../ui/app_pill.dart';
 import '../../../../ui/app_scaffold.dart';
 import '../../../../ui/app_sheet.dart';
+import '../../data/coaching_repository.dart';
 import '../../domain/coaching_failure.dart';
 import '../../domain/portfolio_media.dart';
 import '../member/coach_image.dart' as pub show CoachImage;
@@ -66,6 +67,29 @@ class _PortfolioMediaViewState extends State<PortfolioMediaView> {
     } finally {
       if (mounted) setState(() => _busyId = null);
     }
+  }
+
+  /// Her client's written agreement, as a picture, goes up first; the server
+  /// moves the item to review only with it.
+  Future<void> _confirmConsent(PortfolioMedia item) async {
+    final l10n = AppL10n.of(context);
+    final CoachImage? image;
+    try {
+      image = await widget.imageChooser(context);
+    } catch (_) {
+      if (mounted) setState(() => _error = l10n.thatPictureCouldNotBeUsedTry);
+      return;
+    }
+    if (image == null || !mounted) return;
+    final repository = widget.data.repository;
+    await _run(item.id, () async {
+      final path = await repository.uploadCoachDoc(
+        CoachDocFolder.transformations,
+        image!.bytes,
+        image.contentType,
+      );
+      await repository.confirmMediaConsent(item.id, path);
+    });
   }
 
   Future<void> _remove(PortfolioMedia item) async {
@@ -266,14 +290,9 @@ class _PortfolioMediaViewState extends State<PortfolioMediaView> {
           ),
         if (item.needsConsent)
           AppButton(
-            l10n.confirmMyClientAgreed,
+            l10n.addHerWrittenAgreement,
             variant: AppButtonVariant.tonal,
-            onPressed: busy
-                ? null
-                : () => _run(
-                    item.id,
-                    () => widget.data.repository.confirmMediaConsent(item.id),
-                  ),
+            onPressed: busy ? null : () => _confirmConsent(item),
           ),
         AppButton(
           l10n.remove,

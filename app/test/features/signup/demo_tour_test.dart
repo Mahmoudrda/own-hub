@@ -8,6 +8,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:own_hub/domain/week/week_key.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/rewards_state.dart';
 import 'package:own_hub/app_state/training_streak_state.dart';
@@ -17,7 +18,7 @@ import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/features/eat/presentation/rahma_recipe_view.dart';
 import 'package:own_hub/features/eat/presentation/recipes_view.dart';
 import 'package:own_hub/features/eat/presentation/week_plan_view.dart';
-import 'package:own_hub/features/progress/presentation/progress_view.dart';
+import 'package:own_hub/features/progress/presentation/you_view.dart';
 import 'package:own_hub/features/signup/demo/demo_sample.dart';
 import 'package:own_hub/features/signup/presentation/demo/demo_stops.dart';
 import 'package:own_hub/features/signup/presentation/look_around_view.dart';
@@ -78,7 +79,7 @@ const List<Type> _stopTypes = [
   RecipesView,
   WeekPlanView,
   CheckInStopView,
-  ProgressView,
+  YouView,
 ];
 
 Future<DemoSample> _pump(
@@ -87,6 +88,7 @@ Future<DemoSample> _pump(
   double textScale = 1.0,
   int initialStop = 0,
   bool waiting = false,
+  DateTime? now,
   VoidCallback? onJoin,
   VoidCallback? onLeave,
   VoidCallback? onSignIn,
@@ -96,7 +98,10 @@ Future<DemoSample> _pump(
   tester.view.physicalSize = const Size(1170, 2532);
   tester.view.devicePixelRatio = 3.0;
   addTearDown(tester.view.reset);
-  final sample = DemoSample.build(now: DateTime(2026, 10, 6, 10), book: _book);
+  final sample = DemoSample.build(
+    now: now ?? DateTime(2026, 10, 6, 10),
+    book: _book,
+  );
   addTearDown(sample.dispose);
   await tester.pumpWidget(
     MaterialApp(
@@ -133,6 +138,12 @@ Future<void> _tap(WidgetTester tester, Finder target) async {
   await tester.pumpAndSettle();
   await tester.tap(target);
   await tester.pumpAndSettle();
+}
+
+/// Home's "Change" link, which opens the sheet holding the rest of today's
+/// choices.
+Future<void> _openChange(WidgetTester tester) async {
+  await _tap(tester, find.byKey(const ValueKey('today-change')));
 }
 
 /// A control on the stop itself, never on the tour's own card or bar.
@@ -210,8 +221,8 @@ void main() {
       expect(find.text('Donkey kick'), findsOneWidget);
       expect(find.text('Move 1 of 4'), findsOneWidget);
       // Only the set she is on is drawn; the top bar carries the progress.
-      expect(find.text('1 of 3'), findsOneWidget);
-      expect(find.text('2 of 3'), findsNothing);
+      expect(find.text('Set 1 of 3'), findsOneWidget);
+      expect(find.text('Set 2 of 3'), findsNothing);
     });
 
     testWidgets('the week plan says it is a sample, and promises no swap', (
@@ -269,7 +280,7 @@ void main() {
     testWidgets('the screens own links move the tour too', (tester) async {
       await _pump(tester);
       await _tap(tester, find.text('This week, 1 of 3'));
-      expect(find.byType(ProgressView), findsOneWidget);
+      expect(find.byType(YouView), findsOneWidget);
 
       await _pump(tester, initialStop: 3);
       await _tap(tester, find.text("This week's plan and list"));
@@ -354,6 +365,7 @@ void main() {
       expect(find.text('Back to my check'), findsOneWidget);
       expect(find.text('Join Own Hub'), findsNothing);
 
+      await _openChange(tester);
       await _tap(tester, find.text('Count it'));
       expect(
         find.text('The app opens as soon as your check is done.'),
@@ -424,43 +436,68 @@ void main() {
 
   group('every real action asks her to join', () {
     // Stop, then the control. Each one is a real action on the real screen.
-    final triggers = <(int, String, Finder Function())>[
-      (0, 'count the walk', () => find.text('Count it')),
-      (0, 'log from memory', () => _onStop(find.text('I already did it'))),
-      (0, 'the meal', () => find.text('Breakfast')),
-      (0, 'a plate', () => find.text('Ful and baladi')),
-      (0, 'notifications', () => find.byTooltip('Notifications')),
-      (0, 'her profile', () => find.bySemanticsLabel('Your profile')),
-      (0, 'her first week', () => find.textContaining('Your first week')),
-      (1, 'start', () => find.text("Start, everything's ready")),
-      (1, 'a move', () => find.text('Donkey kick')),
-      (1, 'more', () => _onStop(find.byTooltip('More'))),
-      (2, 'log a set', () => find.text('Done · 12 reps')),
-      (2, 'log the move', () => find.text('I did all 3 sets')),
-      (2, 'pause', () => find.byTooltip('Pause')),
-      (2, 'change the set', () => find.byTooltip('Change')),
-      (3, 'another recipe', () => find.text('Koshari, portioned')),
-      (3, 'another of hers', () => find.text('Pancakes')),
-      (3, 'search', () => find.byTooltip('Search recipes')),
-      (3, 'her letter', () => find.text('A message from Rahma')),
-      (4, 'a dinner', () => find.text('Molokhia with chicken')),
-      (4, 'rearrange', () => find.byTooltip('Rearrange the week')),
-      (4, 'the grocery list', () => find.text('See the grocery list')),
-      (5, 'check in', () => find.text('How are you feeling?')),
-      (5, 'view the gentler option', () => find.text('View option')),
-      (5, 'keep mine', () => find.text('Keep mine')),
-      (6, 'milestones', () => find.text('Milestones')),
-      (6, 'bests', () => find.text('Bests')),
-      (6, 'her first week', () => find.text('Your first week')),
-    ];
+    final triggers =
+        <
+          (int, String, Finder Function(), Future<void> Function(WidgetTester)?)
+        >[
+          (0, 'count the walk', () => find.text('Count it'), _openChange),
+          (
+            0,
+            'log from memory',
+            () => find.text('I already did it'),
+            _openChange,
+          ),
+          (0, 'edit today', () => find.text('Edit today'), _openChange),
+          (0, 'change plan', () => find.text('Change plan'), _openChange),
+          (0, 'short version', () => find.text('Short version'), _openChange),
+          (
+            0,
+            'the Eat line',
+            () => find.byKey(const ValueKey('today-eat-line')),
+            null,
+          ),
+          // "I did all 3 sets" and "Change" sit behind Pause and its "…"; in the
+          // tour Pause asks her to join, so that is the one door.
+          (0, 'notifications', () => find.byTooltip('Notifications'), null),
+          (0, 'her profile', () => find.bySemanticsLabel('Your profile'), null),
+          (
+            0,
+            'her first week',
+            () => find.textContaining('Your first week'),
+            null,
+          ),
+          (1, 'start', () => find.text("Start, everything's ready"), null),
+          (1, 'a move', () => find.text('Donkey kick'), null),
+          (1, 'more', () => _onStop(find.byTooltip('More')), null),
+          (2, 'log a set', () => find.text('Done · 12 reps'), null),
+          (2, 'pause', () => find.byTooltip('Pause'), null),
+          (3, 'another recipe', () => find.text('Koshari, portioned'), null),
+          (3, 'another of hers', () => find.text('Pancakes'), null),
+          (3, 'search', () => find.byTooltip('Search recipes'), null),
+          (3, 'her letter', () => find.text('A message from Rahma'), null),
+          (4, 'a dinner', () => find.text('Molokhia with chicken'), null),
+          (4, 'rearrange', () => find.byTooltip('Rearrange the week'), null),
+          (
+            4,
+            'the grocery list',
+            () => find.text('See the grocery list'),
+            null,
+          ),
+          (5, 'check in', () => find.text('How are you feeling?'), null),
+          (5, 'view the gentler option', () => find.text('View option'), null),
+          (5, 'keep mine', () => find.text('Keep mine'), null),
+          (6, 'see more', () => find.text('See more'), null),
+          (6, 'settings', () => find.byTooltip('Open settings'), null),
+        ];
 
-    for (final (stop, what, finder) in triggers) {
+    for (final (stop, what, finder, prep) in triggers) {
       testWidgets('stop ${stop + 1}: $what', (tester) async {
         final sample = await _pump(tester, initialStop: stop);
         final title = DemoStop.values[stop].title(
           lookupAppL10n(const Locale('en')),
         );
 
+        if (prep != null) await prep(tester);
         await _tap(tester, finder().first);
         expect(find.text('Join to make this yours'), findsOneWidget);
         expect(
@@ -479,27 +516,53 @@ void main() {
       });
     }
 
-    testWidgets('stop 7: rest week, one tap behind How weeks count', (
+    testWidgets('You matches the sample: minutes, and its sessions', (
       tester,
     ) async {
-      final sample = await _pump(tester, initialStop: 6);
-      await _tap(tester, find.text('How weeks count').first);
-      await _tap(tester, find.text('What a rest week covers').first);
-      expect(find.text('Join to make this yours'), findsOneWidget);
-      expect(find.text('Join Own Hub'), findsNWidgets(2));
+      await _pump(tester, initialStop: 6);
+      expect(find.text('25'), findsOneWidget);
 
-      await _tap(tester, find.text('Keep looking'));
-      expect(find.text('Join to make this yours'), findsNothing);
-      expect(find.byType(_stopTypes[6]), findsOneWidget);
-      expect(sample.train.sessions, isEmpty);
+      await _tap(tester, find.text('Activities'));
+      expect(find.text('No finished sessions yet'), findsNothing);
+      for (final ago in DemoSample.sessionDaysAgo) {
+        expect(find.byKey(ValueKey('demo-session-$ago')), findsOneWidget);
+      }
+      expect(find.textContaining('25 min'), findsWidgets);
+
+      await _tap(tester, find.byKey(const ValueKey('demo-session-0')));
+      expect(find.text('Join to make this yours'), findsOneWidget);
     });
+
+    for (final (name, day) in [
+      ('a Monday', DateTime(2026, 10, 26, 10)),
+      ('a Saturday', DateTime(2026, 10, 24, 10)),
+      ('a Sunday', DateTime(2026, 10, 25, 10)),
+    ]) {
+      testWidgets('Activities this week matches the figure on $name', (
+        tester,
+      ) async {
+        final sample = await _pump(tester, initialStop: 6, now: day);
+        await _tap(tester, find.text('Activities'));
+        final thisWeek = WeekKey.of(day);
+        final listed = [
+          for (final ago in DemoSample.sessionDaysAgo)
+            if (WeekKey.of(day.subtract(Duration(days: ago))) == thisWeek) ago,
+        ];
+        expect(listed.length, sample.progress.sessionsThisWeek);
+        for (final ago in DemoSample.sessionDaysAgo) {
+          expect(find.byKey(ValueKey('demo-session-$ago')), findsOneWidget);
+        }
+      });
+    }
 
     testWidgets('counting the walk leaves the sample day as it was', (
       tester,
     ) async {
       final sample = await _pump(tester);
+      await _openChange(tester);
       await _tap(tester, find.text('Count it'));
       await _tap(tester, find.text('Keep looking'));
+      await _openChange(tester);
       expect(find.text('Count it'), findsOneWidget);
       expect(sample.today.day.walkToCount, isTrue);
       expect(sample.refusals.count, 0, reason: 'nothing was even tried');
@@ -516,6 +579,7 @@ void main() {
     testWidgets('the sheet joins', (tester) async {
       var joined = 0;
       await _pump(tester, onJoin: () => joined++);
+      await _openChange(tester);
       await _tap(tester, find.text('Count it'));
       await _tap(tester, find.text('Join Own Hub').last);
       expect(joined, 1);
