@@ -206,11 +206,12 @@ void main() {
     expect(situations.keys.toSet(), _allowedSlots.keys.toSet());
   });
 
-  test('every situation has both tones, each with enough lines', () {
+  test('every situation has enough calm lines; playful is kept empty', () {
     for (final s in _allowedSlots.keys) {
       final tones = situations[s] as Map<String, Object?>;
       expect(tones.keys.toSet(), _tones.toSet(), reason: s);
-      for (final t in _tones) {
+      expect(tones['playful'], isEmpty, reason: s);
+      for (final t in const ['calm']) {
         final inTone = lines.where((l) => l.situation == s && l.tone == t);
         expect(
           inTone.length,
