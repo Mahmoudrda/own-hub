@@ -2,6 +2,8 @@
 
 Branch `feat/motivation-2026-10-13`. Main is at fe5a732 (waves 1 to 3 and the notification cleanup). Plan with the full build log: `~/.claude/plans/wiggly-discovering-elephant.md`. Owner rules: `.claude/CLAUDE.md` (no AI signs, no em dashes in product copy, Egyptian Arabic with feminine address, never push main without the owner's OK, never stage `.claude/CLAUDE.md`).
 
+**The master plan for the public release is `docs/plan/PRODUCTION-RELEASE-PLAN.md` (phases 1 to 6). It supersedes the session list below, which only covers phases 1 and 4.**
+
 ## Where things stand
 - Committed and pushed: waves 1 to 3 (ec272aa), notification cleanup (fe5a732), emotional redesign guide (8299dfa).
 - Uncommitted in the working tree (about 90 files): batch A, plus the kitten removal and the new animation mark `app/lib/ui/hand/moment.dart`.
