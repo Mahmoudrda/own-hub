@@ -106,8 +106,39 @@ Haptics confirm, they never decorate. Always paired with a visual, off when the 
 | Error needing action | one warning notification pattern |
 | Everything else | none |
 
-### 5.3 Sound
-Default off. If added later, only soft, short cues on R10 and the rest-timer end, with a Profile switch. No sound on tabs, taps or errors. Not part of the first pass.
+### 5.3 Sound (owner decision 26 Oct: the app is alive with sound, not silent)
+Sound is on by default and is part of the first pass. It answers her actions and celebrates her wins, the way haptics do, and always pairs with a visual and usually a haptic.
+
+**Sound palette.** One small family of warm, soft, organic sounds that fits the hand-drawn brand: paper, wood, a soft chime, a gentle marimba or kalimba, a muted pop. No game bleeps, no sirens, no harsh sine tones. Every sound is short (under 1.2 s; the session peak up to 2 s), quiet in level (peak around -12 dBFS, loudness consistent across all files), and tuned in one key so sounds layered together never clash. A rising pair means success, a falling soft pair means "undone", never a buzzer.
+
+**Cue map** (each cue is an id in one table; screens ask for the id, never a file):
+| Cue | Moment | Character |
+|---|---|---|
+| `tap` | primary button press, tab change | tiny soft tick, almost felt |
+| `setDone` | set logged (M3) | short warm pop, pitch rises a step per set in the workout, resets next move |
+| `restStart` / `restTick` / `restEnd` | rest timer (M4) | soft whoosh; last 3 seconds three gentle ticks; a clear but kind chime at the end |
+| `sessionDone` | R10 peak (M5) | the one rich cue: short rising phrase with a soft shimmer |
+| `personalBest` | a real best | the same phrase with one extra bright note |
+| `weekClosed` | week goal reached (M6) | slow warm chord |
+| `foodLogged` | meal added (M8) | soft wooden tap; `undo` a gentle reverse of it |
+| `milestone` | real milestone (M9) | short chime |
+| `verified` | women-only check approved (M10) | calm welcoming two-note |
+| `saved` | any saved confirmation (M1) | tiny pop |
+| `message` | coach message arrives in the app | soft two-note |
+| `error` | needs her attention | one low soft note, never harsh, never repeated |
+| `welcome` | first open (M2) | a short warm phrase, once ever |
+
+**Rules**
+- Respect the phone: obey the silent switch and the system volume; use the ambient audio category so the app mixes with her own music or podcast and never stops it or ducks it for a tap sound (workout music matters). In Silent mode, play nothing and keep the visuals and haptics.
+- A Profile switch "Sounds" (on by default) and a second "Haptics". Both survive reinstall in local settings. Reduce-motion does not turn sound off; a separate system accessibility choice does not either; only her switch does.
+- Never play sound while the camera or a coach voice or video clip is playing, and never on top of the exercise video's own audio (the clips stay as they are). Pause cues during phone calls.
+- Latency: preload the cue set at launch into memory (short files, few hundred KB in total) and play with a low-latency player, so `setDone` lands within about 50 ms of the tap. Audit on a mid-range Android.
+- One sound per moment; layered cues are composed once, not stacked at runtime. Rate limit: the same cue at most once per 400 ms.
+- Not on every list scroll, keyboard tap, toggle or error repeat. Restraint is what makes the wins feel big.
+- Sources: record, generate or commission original sounds, or license royalty-free with a written licence that allows commercial app use; keep the licence and the source in `app/assets/sounds/README` style notes outside product copy. No copied sounds from other apps.
+- Arabic and English share the same sounds (no spoken words in cues). Egypt use: many women train with others around, so the Profile switch is one tap from Home's You tab and the first-run explains it in one line.
+- Tests: a cue table test (every id has a file, a length cap, a loudness note), a settings test (off means silent), and a test that no cue plays under `handMotionOff` incorrectly (sound is independent of motion).
+- Implementation: add one audio dependency (a low-latency one such as `audioplayers` or `just_audio`, chosen by the agent after checking maintenance and Android and iOS latency) behind a single `AppSound` service in `app/lib/app_state/`, mirroring `haptics.dart`. Do not call the package from screens.
 
 ### 5.4 Surfaces and depth
 Cards sit on Linen with a soft paper-like edge already used by the hand art; one elevation level for cards and one for sheets. Large friendly radius family (already in tokens). Keep the grain and the hand-drawn underline marks; do not add gradients, glass or glows. The one filled pink button gets the strongest contrast on every screen.
@@ -138,7 +169,7 @@ Predict the outcome before the tap ("Start, 4 moves ready", "Save this workout")
 
 ## 6. The moments catalog (the animation set that replaces the kitten)
 
-Each moment has a trigger, a motion, a haptic and a reduced-motion fallback. Build as a small library on top of `moment.dart` so every screen uses the same grammar.
+Each moment has a trigger, a motion, a haptic, a sound cue (section 5.3) and a reduced-motion fallback. The sound for each moment is the cue with the matching name (M3 `setDone`, M4 rest cues, M5 `sessionDone` or `personalBest`, M6 `weekClosed`, M8 `foodLogged`, M9 `milestone`, M10 `verified`, M1 `saved`, M2 `welcome`). Build as a small library on top of `moment.dart` so every screen uses the same grammar.
 
 | ID | Trigger | Motion | Haptic | Reduced motion |
 |---|---|---|---|---|
@@ -217,6 +248,7 @@ Each entry adds the feeling layer. Structure and control budgets come from the e
 
 ## 9. Guardrails (never cross)
 
+- Sound never startles, never plays on an error loop, never overrides her silent switch or her own music.
 - No loss framing, countdowns, "I'll risk it" dismissals, fake scarcity, fake waits, random rewards, rankings, or numbers she did not earn.
 - No mascot, character or pet. No dark patterns in consent, deletion or cancel flows.
 - Emotional features never replace reliability: if a flow is not fast, correct and forgiving, fix that first.
@@ -229,11 +261,12 @@ Order matters. One review and one commit per package; all existing suites stay g
 | Package | Content | Acceptance |
 |---|---|---|
 | E0 | Land the pending kitten removal and batch A (see the Build log in the plan); confirm green suites | `flutter analyze` clean, full `flutter test` green |
+| E1b | Sound: `AppSound` service, the cue table, the original sound files and licences, the Profile switches "Sounds" and "Haptics", ambient mixing and silent-switch behaviour | cue table, settings and rate-limit tests; device check of latency, mixing with music, and silent mode on iPhone and a mid-range Android |
 | E1 | Foundations: motion tokens in `HandTiming`, haptics map, response-time ladder helpers, state widgets (empty, loading, error, offline) with strings in EN and AR | unit tests per token and widget; Reduce Motion golden tests |
 | E2 | The moments library M1 to M12 on `moment.dart` and the existing pieces | each moment has a widget test (plays once, static fallback) and appears in `docs/ui-reference` |
 | E3 | Onboarding: endowed progress, choose before account, first workout before account, verification steps | tap-count and budget tests; step counter test |
 | E4 | Home: time-aware greeting, week-phase hero art, M6, M7 | one-primary and budget tests; goldens EN and AR at 375x667 and 390x844 |
-| E5 | Workout: M3, M4, M5 on R07, R09, R10; call `bigMoment` for a real best | existing finish tests; haptic call test; no extra control |
+| E5 | Workout: M3, M4, M5 on R07, R09, R10 with their sounds; call `bigMoment` for a real best | existing finish tests; haptic call test; no extra control |
 | E6 | Eat: M8, judgment-free copy, empty and error states; scanner steps | eat tap-count tests stay at 1 and 3 |
 | E7 | You, Progress, coaching, notifications states | budget tests; skeleton present on every list |
 | E8 | Events and Settings: tokens only | goldens unchanged except press and arrival |
@@ -253,7 +286,7 @@ Visual QA checklist before each package is reviewed: one icon set, no decorative
 ## 12. Open decisions for the owner
 
 1. Rahma's own end-of-workout lines (owner-approved set) for R10 and welcome-back.
-2. Whether to add soft sound cues later (default off).
+2. Who creates the sounds (commissioned, generated, or licensed) and who approves the final set; Rahma should hear it before release.
 3. Whether the Home hero art changes by week phase or stays one calm drawing.
 4. Whether she may pick an accent from the palette (IKEA effect) or only name her plan.
 5. The retention window for any new measurement events (with counsel).
