@@ -11,7 +11,7 @@ Verified against the working tree of `~/ownhub`, branch `feat/motivation-2026-10
 | Product | Women-only fitness app for Egypt: training (video-led workouts), food logging, progress, cycle-aware suggestions, events, and private coaching with a real coach. |
 | Who it is for | Women in Egypt, adults only (18+). Every account is checked at sign-up (ID card scan plus selfie, or a live woman reviewer). Men are out of scope. |
 | Stack | Flutter app in `app/` (Dart, Material 3). Python 3.12 Firebase Cloud Functions in `functions/`. Firebase project `own-hub`, functions region `europe-west3` (Frankfurt). Static staff dashboard `admin-web/` (Cloudflare Pages project `ownhub-reviewers`). Static public site `site/` (generator `site/_build/build.py`). |
-| Bundle ids | iPhone `com.ownhub.fitness`; widget extension `com.ownhub.fitness.OwnHubWidgets`; App Group `group.com.ownhub.fitness`. Android application id `com.ownhub.app` (kept; `app/android/app/build.gradle*`). |
+| Bundle ids | iPhone `com.ownhub.fitness`; widget extension `com.ownhub.fitness.OwnHubWidgets`; App Group `group.com.ownhub.fitness`. Android application id `com.ownhub.app` (kept; `app/android/app/build.gradle*`). `HOW-TO-RUN.md` says `com.ownhub.app` for both stores: it is STALE; `PRODUCT_BUNDLE_IDENTIFIER = com.ownhub.fitness` in `app/ios/Runner.xcodeproj/project.pbxproj` is the iPhone truth. |
 | Repo | github.com/Mahmoudrda/own-hub. Working branch `feat/motivation-2026-10-13`. Never push `main`. |
 | Release state | iOS 1.0.0 (build 424738) is in App Store review. `app/pubspec.yaml` still says `version: 1.0.0+1`; the 1.1.0 bump is done by the owner at ship time. Android store submission not started. Release 2 (simpler screens) is built on this branch; the emotional redesign and production plan are the next phases (`docs/plan/PRODUCTION-RELEASE-PLAN.md`, `docs/plan/EMOTIONAL-REDESIGN-GUIDE.md`). |
 
@@ -151,7 +151,7 @@ Hand-art ink roles live in `lib/theme/hand_tokens.dart` (`HandInk.ink = AppColor
 
 Rule: use these; never build a one-off button, card, row, sheet or menu. Imports are relative (`'../../../ui/app_button.dart'`) or `package:own_hub/ui/app_button.dart` in tests.
 
-**AppButton** (`app_button.dart`). `AppButton(String label, {Key? key, VoidCallback? onPressed, AppButtonVariant variant = filled, double height = 56, double fontSize = 17, IconData? icon, bool haptic = false})`. Variants: `filled` (the ONE primary, pink), `tonal`, `sage` (restorative), `outlined`, `text` (lowest weight, never destructive). Only `filled` counts as a primary in the budget tests.
+**AppButton** (`app_button.dart`). `AppButton(String label, {Key? key, VoidCallback? onPressed, AppButtonVariant variant = filled, double height = 56, double fontSize = 17, IconData? icon, bool haptic = false})`. Variants: `filled` (the ONE primary, pink), `tonal`, `sage` (restorative), `outlined`, `text` (lowest weight, never destructive). In `test/helpers/primary_actions.dart`, `filledPrimaryActions` counts every `AppButton` with `variant == filled` and a non-null `onPressed` that is on screen, plus every on-screen `AppBigButton`.
 ```dart
 AppButton(l10n.startEverythingsReady, icon: Icons.play_arrow, onPressed: onStart),
 AppButton(l10n.later, variant: AppButtonVariant.text, height: 44, fontSize: 15, onPressed: onLater),
@@ -207,7 +207,7 @@ AppScaffold(appBar: AppTopBar(title: l10n.train), children: [card, list], footer
 
 **AppNavBar / NavDestination** (`app_nav_bar.dart`). `AppNavBar({required String activeScreenId, List<NavDestination>? destinations, ValueChanged<String>? onSelect})`. Tab roots pass it as `bottomNavigationBar:` of their own `Scaffold` (examples: `progress_view.dart:242`, `quiet_week_view.dart:150`). `NavDestination({required screenId, required icon, required activeIcon, required String Function(AppL10n) label, bool isAction = false})`. Lists: `traineeTabs`, `coachTabs`, `logFoodAction`; `tabsFor(AppRole)` filters tabs whose feature is off.
 ```dart
-bottomNavigationBar: AppNavBar(activeScreenId: 'T01', onSelect: (id) => AppRouter.goToTab(context, id)),
+bottomNavigationBar: AppNavBar(activeScreenId: 'P07', onSelect: onSelectTab), // real wiring: progress_view.dart:242-250 (router passes onSelectTab)
 ```
 
 **Moment** (`hand/moment.dart`). `Moment({double size = 48, Duration delay = Duration.zero})`: ExcludeSemantics + SpringPop + `HandTick(drawOn: true)`. Use for any "saved/done" confirmation instead of a modal or a character. Not on R07, R09, charts, errors.
@@ -277,7 +277,7 @@ Assets: `app/assets/{art,brand,content,fonts,icon}`. Content packs (recipes, exe
 
 | Piece | File | Facts |
 |---|---|---|
-| Id to route | `lib/routing/app_routes.dart` (GENERATED from `6-v2/src/inventory.mjs`) | `appRoutes['T01']` is `AppRoute(name: '/today/t01', flow: 'today', title: ...)`; header says "196 screens across 17 flows". `AppRouter.appDestinations` is the same minus `firstRunStates`. |
+| Id to route | `lib/routing/app_routes.dart` (GENERATED from `6-v2/src/inventory.mjs`) | `appRoutes['T01']` is `AppRoute(name: '/today/t01', flow: 'today', title: "Today")`; header says "196 screens across 17 flows". `AppRouter.appDestinations` is the same minus `firstRunStates`. |
 | Resolve | `AppRouter.onGenerateRoute` | Order: id known, `resolvesInThisBuild` (admin out of store builds), `screenIsOn` (else `FeatureOff` screen), `verificationGate` (whole-app women-only gate), camera consent for C10/C10b/C11 (`_opensALens`), analytics screen view (`reportsScreenView`), build via `_built[id]` else `NotBuiltYet`. |
 | Screen on? | `AppRouter.screenIsOn(id)` | `ungatedScreens` always on; else flow feature (`featureForFlow(flow)`) AND the screen's own feature (`kScreenFeatures`) must be on. |
 | Verification gate | `AppRouter.openBeforeVerification = {signup, onboarding, account, admin}` | Everything else needs a server `verified` claim. Do not add flows to that set. |
@@ -303,8 +303,8 @@ Assets: `app/assets/{art,brand,content,fonts,icon}`. Content packs (recipes, exe
 Pipeline: English key text and Egyptian Arabic go into `6-v2/i18n/ar-extra.json` -> `node 6-v2/src/merge-i18n.mjs` -> `node 6-v2/src/build-flutter.mjs` (writes `6-v2/flutter/app_*.arb`, syncs them and `app_routes.dart`, `app_tokens.dart` into `app/lib/...`) -> `flutter gen-l10n` (output `app/lib/l10n/app_l10n*.dart`, class `AppL10n`, config `app/l10n.yaml`). `app/tool/add_strings.py` runs all of that under a lock and prints the getter name.
 
 Usage (verified in `app/tool/add_strings.py`):
+Write the JSON to a scratch file outside the repo (the session scratchpad), then run the script. This example re-adds two strings that already exist: use it for the FORMAT only, do not run it.
 ```json
-// /tmp-free place: write it in the session scratchpad, e.g. strings.json
 {
   "strings": {
     "Short version": "نسخة قصيرة",
@@ -409,7 +409,7 @@ Tests that enforce them (run from `app/`):
 | `test/helpers/control_counter.dart` | `countControlsAboveFold(tester, {includeChrome})`; counting rules in its header. Its own tests: `test/qa/control_counter_test.dart`. |
 | `test/helpers/primary_actions.dart` | `filledPrimaryActions(tester)`, `expectAtMostOnePrimaryAction`. |
 | `test/qa/large_text_sweep_test.dart`, `tap_crawler_test.dart` | Small phones / large text; opens every screen. |
-| `test/nav_reachability_test.dart` | Share of screens reachable from the shipped app (floors currently 75 and 92, lowered with owner OK). |
+| `test/nav_reachability_test.dart` | Share of screens reachable from the shipped app (`_measuredFloor = 75.0`, `_withinTwoTapsFloor = 92` in the file, lowered with owner OK). |
 
 Pattern to add a budget assertion: use the harness in `test/qa/round1/round1_harness.dart` (`useShippingApp()`, `phone(tester)`, `open(tester, route, locale:)`), then `expectWithinBudget(tester, 'R01')`.
 
@@ -477,10 +477,10 @@ Setup once per shell: `export PATH="$HOME/development/flutter/bin:$PATH"` (Flutt
 | Release preflight | `cd ~/ownhub/app && bash tool/release_preflight.sh` (add `RELEASE_BASE_URL=https://own-hub.app` for URL checks) | all lines PASS or SKIP; last recorded 83 pass / 0 fail (23 Oct); see 9.4 for today's count |
 | Coaching end to end | `cd ~/ownhub && bash app/tool/e2e_coaching.sh run` | PASS per step (30 passed, 1 skipped on 23 Oct; not re-run today) |
 | Knowledge graph | `cd ~/ownhub && graphify query "<question>"`; after changing code `graphify update .` | |
-| Run on Android emulator | `~/Library/Android/sdk/emulator/emulator -avd ownhub_pixel8` then `cd ~/ownhub/app && flutter run -d emulator-5554` (confirm id with `flutter devices`); open a screen: `flutter run --route /train/r01`; Arabic: `--dart-define=OWNHUB_LOCALE=ar`; local Firebase emulators: `--dart-define=OWNHUB_EMULATOR_HOST=10.0.2.2` | |
+| Run on Android emulator | `~/Library/Android/sdk/emulator/emulator -avd ownhub_pixel8` then `cd ~/ownhub/app && flutter run -d <id>` (UNVERIFIED id, usually `emulator-5554`; verify with `flutter devices`); open a screen: `flutter run --route /train/r01`; Arabic: `--dart-define=OWNHUB_LOCALE=ar`; local Firebase emulators: `--dart-define=OWNHUB_EMULATOR_HOST=10.0.2.2` | |
 | iOS | The iOS 26.3 simulator CANNOT run the app (ML Kit ships no arm64 simulator slice). Use the Android emulator `ownhub_pixel8`. Booted simulator devices exist (iPhone 17 Pro etc.) but are for builds only. | |
 | Build iPhone (owner uploads) | `cd ~/ownhub/app && bash tool/build_ios.sh` | IPA at `app/build/ios/ipa/own_hub.ipa`; owner uploads with Transporter |
-| Build Android | `cd ~/ownhub/app && bash tool/build_release.sh` | AAB (owner uploads to Play) |
+| Build Android | `cd ~/ownhub/app && bash tool/build_release.sh` | AAB plus split-per-abi APKs (script header); owner uploads the AAB to Play |
 | Store screenshots | `OWNHUB_SCREENSHOTS_DIR=$HOME/ownhub/docs/release/launch-pack/screenshots flutter test test/store/store_screenshots_test.dart` | |
 
 Deploys (functions, rules, indexes, dashboard, site, stores) are run by the OWNER. Order for the release-2 changes: functions, then `storage.rules`, then the dashboard within minutes, then the owner re-adds pre-approved numbers with the 18+ tick, the app last. An agent never deploys.
@@ -570,11 +570,11 @@ Stop and append to `~/ownhub/handover/QUESTIONS.md` (create it if absent) when: 
 | Deleted (tracked) | `app/lib/app_state/kitten_setting.dart`, `app/test/features/train/move_logged_view_test.dart` (R13 removed). |
 | New untracked | `app/lib/ui/hand/moment.dart`, `app/test/ui/hand/moment_test.dart`, `app/test/features/train/finish_reveal_test.dart`, `app/test/qa/step8_budget_test.dart`, `app/test/routing/last_log_undo_test.dart`, and a scratch `app/test/zz_probe_parser_test.dart` (not part of the product; do not commit, do not delete without the owner). |
 | Two failing Flutter tests (verified 26 Oct) | `app/test/features/train/training_reminders_test.dart`: group "Home reminder offer", test "her days, preselected from her week, are set once allowed". `app/test/app_state/getting_started_test.dart:242`: "the meal photo tip only where she can take one the plan leaves it out and marks it done" (expected length 2, actual 0). They belong to the dirty tree; do not "fix" by editing the tests unless a work order says so. |
-| Verified green today | `flutter analyze` No issues; pytest 3459 passed; Firestore rules 446/0; storage rules 33/0; admin-web 77/0. `release_preflight.sh` printed `78 passed, 1 failed, 3 skipped` (the single FAIL line was not captured; run the script and `grep FAIL` before relying on it). |
-| Full `flutter test` on this tree | A full run was started 26 Oct; the result is appended in 9.5 if it finished before this file was closed. |
+| Verified green today | `flutter analyze` No issues; pytest 3459 passed; Firestore rules 446/0; storage rules 33/0; admin-web 77/0. `bash app/tool/release_preflight.sh` printed `78 passed, 1 failed, 3 skipped` once on 26 Oct while a full Flutter run was also going (UNVERIFIED which check failed; it takes over 5 minutes alone: run `cd app && bash tool/release_preflight.sh 2>&1 | tee /tmp/pf.txt; grep FAIL /tmp/pf.txt` and report the FAIL line). |
+| Full `flutter test` on this tree | Not completed on 26 Oct; see 9.5. |
 | Stale comments | A few source comments still mention "kitten". Harmless. |
 | Disk | Disk was filled once (24 Oct); keep `app/build` (holds the IPA in review). |
 
 ### 9.5 Full-suite result on the dirty tree
 
-(filled in below if available)
+The full `flutter test` was not run to completion on 26 Oct (it takes well over 30 minutes while other jobs run). Run it in the background, read the last line (`+N ~M -K`), and compare with the two known failures in 9.4. Any other failing test name is a new problem: write it to `handover/QUESTIONS.md`.
