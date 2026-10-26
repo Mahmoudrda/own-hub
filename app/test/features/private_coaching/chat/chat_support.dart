@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:own_hub/features/private_coaching/data/chat_repository.dart';
@@ -120,6 +121,24 @@ class FakeChatRepository implements ChatThreadRepository {
     final screened = ChatScreen.screen(text.trim());
     if (screened != null) throw CoachingFailure.screened(screened);
   }
+
+  @override
+  Future<void> sendMedia(
+    String relId, {
+    required MessageType type,
+    required Uint8List bytes,
+    required String contentType,
+    int? durationMs,
+  }) async => _record('sendMedia', {
+    'relId': relId,
+    'type': type.wire,
+    'bytes': bytes.length,
+    'contentType': contentType,
+    'durationMs': durationMs,
+  });
+
+  @override
+  Future<String> chatMediaUrl(String path) async => 'https://example.test/$path';
 
   @override
   Stream<List<LiveSession>> watchSessions(String subId) => sessions

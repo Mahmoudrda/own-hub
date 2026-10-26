@@ -1,6 +1,6 @@
 // The gym improvements, through the real router: the History button on R07,
 // kit-sized weight chips on R08, the plate line, Recent sessions from Insights
-// and R02 with an edit that re-works bests, "next time" on R10, and the
+// and R02 with an edit that re-works bests, "today's weights" on R03, and the
 // one-time bests backfill at launch.
 
 import 'dart:io';
@@ -246,34 +246,6 @@ void main() {
     });
   });
 
-  testWidgets('R10 shows a next-time line after a weighed session', (
-    tester,
-  ) async {
-    await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
-
-    for (var set = 1; set <= 3; set++) {
-      await tester.tap(find.textContaining('Done'));
-      for (var i = 0; i < 6; i++) {
-        await tester.pump(const Duration(milliseconds: 250));
-      }
-      if (set < 3) {
-        await tester.pump(const Duration(seconds: 3));
-        await tester.tap(find.text("I'm ready, next set"));
-        await tester.pumpAndSettle(const Duration(milliseconds: 100));
-      }
-    }
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100));
-
-    expect(WorkoutSessionState.instance.isLive, isFalse);
-    await tester.tap(find.byKey(const ValueKey('r10-see-details')));
-    await tester.pumpAndSettle(const Duration(milliseconds: 100));
-    // She did every set at 40 kg on a barbell move, so the line names the
-    // next bar step, the same 42.5 kg the set screen offers.
-    expect(find.textContaining('Next time: 42.5 kg on'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 70));
-  });
-
   testWidgets('the launch backfill finds the best once and pays nothing', (
     tester,
   ) async {
@@ -377,9 +349,31 @@ void main() {
         await tester.pumpAndSettle(const Duration(milliseconds: 100));
       }
     }
-    await tester.pump(const Duration(seconds: 2));
+    // The last set's five seconds, then the session finishes.
+    await tester.pump(const Duration(seconds: 6));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
   }
+
+  testWidgets('R03 shows today\'s weight after a weighed session', (
+    tester,
+  ) async {
+    await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
+    await doAllSets(tester);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(WorkoutSessionState.instance.isLive, isFalse);
+    CustomWorkoutState.instance.draft = TodayDraft(
+      day: _day('barbell_hip_thrust', 'Barbell hip thrust', loaded: true),
+      dayKey: dayKey(AppClock.now()),
+    );
+    _nav(tester).pushNamed(appDestinations['R03']!.name);
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+    // She did every set at 40 kg on a barbell move, so the line names the
+    // next bar step, the same 42.5 kg the set screen offers.
+    expect(find.textContaining('Today: 42.5 kg on'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 70));
+  });
 
   group('a split move through a whole session', () {
     testWidgets('a best reaches the live badge, the summary and R10', (
@@ -411,7 +405,7 @@ void main() {
       await tester.pump(const Duration(seconds: 70));
     });
 
-    testWidgets('two very sore days hold the weight on R10', (tester) async {
+    testWidgets('two very sore days hold the weight on R03', (tester) async {
       final today = AppClock.now();
       for (final back in [1, 2]) {
         FollowUpState.instance.feels[dayKey(
@@ -424,9 +418,14 @@ void main() {
       await _openR07(tester, 'barbell_hip_thrust', 'Barbell hip thrust');
       await doAllSets(tester);
 
-      final next = WorkoutSessionState.instance.lastSummary!.nextTime;
-      expect(next.single.rises, isFalse);
-      expect(next.single.kg, 40);
+      CustomWorkoutState.instance.draft = TodayDraft(
+        day: _day('barbell_hip_thrust', 'Barbell hip thrust', loaded: true),
+        dayKey: dayKey(AppClock.now()),
+      );
+      _nav(tester).pushNamed(appDestinations['R03']!.name);
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.textContaining('Same weight on'), findsOneWidget);
+      expect(find.textContaining('Today: '), findsNothing);
       await tester.pump(const Duration(seconds: 70));
     });
   });

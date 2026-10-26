@@ -70,12 +70,26 @@ class PackagesView extends StatelessWidget {
                     child: AppListItem(
                       variant: AppCardVariant.filled,
                       title: p.title,
-                      subtitle: [
-                        l10n.membersSeeEgpPrice(countLabel(p.priceFinalEgp)),
-                        l10n.daysPluralOne1DayOtherDays(p.durationDays),
-                        if (!coachingPaymentsOn)
-                          l10n.freeForMembersUntilPaymentsOpen,
-                      ].join(' · '),
+                      subtitle:
+                          (coachingPaymentsOn
+                                  ? <String>[
+                                      l10n.membersSeeEgpPrice(
+                                        countLabel(p.priceFinalEgp),
+                                      ),
+                                      l10n.daysPluralOne1DayOtherDays(
+                                        p.durationDays,
+                                      ),
+                                    ]
+                                  : <String>[
+                                      l10n.freeForMembersUntilPaymentsOpen,
+                                      l10n.egpPriceWhenPaymentsOpen(
+                                        countLabel(p.priceFinalEgp),
+                                      ),
+                                      l10n.daysPluralOne1DayOtherDays(
+                                        p.durationDays,
+                                      ),
+                                    ])
+                              .join(' · '),
                       trailing: AppPill(
                         p.active ? l10n.onForMembers : l10n.off,
                         background: p.active

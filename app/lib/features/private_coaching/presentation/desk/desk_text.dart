@@ -94,6 +94,9 @@ String previewText(AppL10n l10n, LastMessage? last, String? myUid) {
   final body = switch (last.type) {
     MessageType.text || MessageType.system => last.text,
     MessageType.recipe => l10n.recipe,
+    MessageType.image => l10n.photo,
+    MessageType.video => l10n.video,
+    MessageType.audio => l10n.voiceNote,
     MessageType.workoutPlan => l10n.workoutPlan,
     MessageType.mealPlan => l10n.mealPlan,
     MessageType.session => l10n.liveSession,
@@ -125,3 +128,13 @@ String rowTime(AppL10n l10n, DateTime? at, DateTime now) {
   if (days == 1) return l10n.yesterday;
   return dateText(l10n, at);
 }
+
+/// A reason on the "Needs attention" list, in words about the week, not about her.
+String attentionReasonText(AppL10n l10n, String reason) => switch (reason) {
+  'noCheckIn' => l10n.noCheckInYet,
+  'missedSessions' => l10n.trainingSlippedThisWeek,
+  'healthFlag' => l10n.healthAnswerToRead,
+  'unread' => l10n.unreadMessage,
+  _ => '',
+};
+

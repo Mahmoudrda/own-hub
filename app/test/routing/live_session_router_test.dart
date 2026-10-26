@@ -83,7 +83,7 @@ void main() {
     expect(session.day!.title, isNot(englishTitle));
     expect(_hasArabic(session.day!.title), isTrue);
 
-    // R05, R09 and R13 read the same day, so their set lines are Arabic too.
+    // R05 and R09 read the same day, so their set lines are Arabic too.
     expect(session.day!.moves.first.name, isNotEmpty);
     expect(
       _hasArabic(session.day!.moves.first.prescriptionLabel) ||
@@ -208,39 +208,38 @@ void main() {
     expect(find.byType(MidSetView), findsNothing);
   });
 
-  testWidgets(
-    'R05, R09 and R13 read their set lines in the language on screen',
-    (tester) async {
-      await _boot(tester, 'R03');
-      await tester.tap(find.textContaining('Start'));
-      await tester.pumpAndSettle();
-      LocaleScope.of(tester.element(find.byType(Navigator).first))
-          .value = const Locale(
-        'ar',
-      );
-      await tester.pumpAndSettle();
+  testWidgets('R05 and R09 read their set lines in the language on screen', (
+    tester,
+  ) async {
+    await _boot(tester, 'R03');
+    await tester.tap(find.textContaining('Start'));
+    await tester.pumpAndSettle();
+    LocaleScope.of(tester.element(find.byType(Navigator).first))
+        .value = const Locale(
+      'ar',
+    );
+    await tester.pumpAndSettle();
 
-      for (final id in ['R05', 'R13', 'R09']) {
-        _nav(tester).pushNamed(appDestinations[id]!.name);
-        for (var i = 0; i < 6; i++) {
-          await tester.pump(const Duration(milliseconds: 250));
-        }
-        final shown = [
-          for (final text in tester.widgetList<Text>(find.byType(Text)))
-            if (text.data != null) text.data!,
-          for (final text in tester.widgetList<RichText>(find.byType(RichText)))
-            text.text.toPlainText(),
-        ];
-        // No set line is left in English: every "×" line has Arabic in it.
-        final lines = shown.where((t) => t.contains('×')).toList();
-        if (id != 'R09') expect(lines, isNotEmpty, reason: id);
-        for (final line in lines) {
-          expect(_hasArabic(line), isTrue, reason: '$id: $line');
-        }
+    for (final id in ['R05', 'R09']) {
+      _nav(tester).pushNamed(appDestinations[id]!.name);
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 250));
       }
-      await tester.pump(const Duration(seconds: 70));
-    },
-  );
+      final shown = [
+        for (final text in tester.widgetList<Text>(find.byType(Text)))
+          if (text.data != null) text.data!,
+        for (final text in tester.widgetList<RichText>(find.byType(RichText)))
+          text.text.toPlainText(),
+      ];
+      // No set line is left in English: every "×" line has Arabic in it.
+      final lines = shown.where((t) => t.contains('×')).toList();
+      if (id != 'R09') expect(lines, isNotEmpty, reason: id);
+      for (final line in lines) {
+        expect(_hasArabic(line), isTrue, reason: '$id: $line');
+      }
+    }
+    await tester.pump(const Duration(seconds: 70));
+  });
 
   group('ending the workout from inside it', () {
     const end = ValueKey('session-end');
@@ -290,7 +289,7 @@ void main() {
       'the control is on R03 and R05 to R09 while a workout is live',
       (tester) async {
         await startFromR03(tester);
-        for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09', 'R13']) {
+        for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09']) {
           _nav(tester).pushNamed(appDestinations[id]!.name);
           await frames(tester);
           // R08 draws its own sheet over the page, so its control is there
@@ -313,7 +312,7 @@ void main() {
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
       await tester.pumpAndSettle();
       expect(WorkoutSessionState.instance.isLive, isFalse);
-      for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09', 'R13']) {
+      for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09']) {
         _nav(tester).pushNamed(appDestinations[id]!.name);
         await frames(tester);
         expect(find.byKey(end), findsNothing, reason: id);

@@ -92,6 +92,9 @@ String previewOf(AppL10n l10n, LastMessage last, String myUid) {
   final body = switch (last.type) {
     MessageType.text => text.isEmpty ? l10n.messageHidden : text,
     MessageType.recipe => l10n.recipe,
+    MessageType.image => l10n.photo,
+    MessageType.video => l10n.video,
+    MessageType.audio => l10n.voiceNote,
     MessageType.workoutPlan => l10n.workoutPlan,
     MessageType.mealPlan => l10n.mealPlan,
     MessageType.session => l10n.liveSession,
@@ -249,5 +252,6 @@ String systemLine(AppL10n l10n, SystemMessageKind? kind) => switch (kind) {
   SystemMessageKind.planUpdated => l10n.aPlanWasUpdated,
   SystemMessageKind.sessionConfirmed => l10n.liveSessionConfirmed,
   SystemMessageKind.sessionDone => l10n.liveSessionFinished,
+  SystemMessageKind.checkIn => l10n.weeklyCheckInSent,
   SystemMessageKind.hidden || null => l10n.thisMessageWasHiddenBecauseItHad,
 };

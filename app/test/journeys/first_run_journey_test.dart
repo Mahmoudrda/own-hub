@@ -255,8 +255,20 @@ void main() {
       // three steps is done, counted off the same list T07 draws.
       expect(find.text('Your first week: 1 of 3 steps'), findsOneWidget);
 
-      // The line sits at the foot of the page now, below the fold.
-      final door = find.byKey(const ValueKey('today-first-week'));
+      // The line is only a count now (Home keeps to five controls); the door
+      // to T07 is the row on the week screen the strip opens.
+      expect(find.byKey(const ValueKey('today-first-week')), findsOneWidget);
+      final strip = find.byKey(const ValueKey('today-week-strip'));
+      await tester.ensureVisible(strip);
+      await tester.pumpAndSettle();
+      await tester.tap(strip);
+      await tester.pumpAndSettle();
+      final more = find.byKey(const ValueKey('you-see-more'));
+      await tester.ensureVisible(more);
+      await tester.pumpAndSettle();
+      await tester.tap(more);
+      await tester.pumpAndSettle();
+      final door = find.text('Your first week');
       await tester.ensureVisible(door);
       await tester.pumpAndSettle();
       await tester.tap(door);

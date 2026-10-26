@@ -60,7 +60,9 @@ PORTFOLIO = {
     "add_portfolio_media", "remove_portfolio_media", "confirm_portfolio_consent",
 }
 PAYMENTS = {"submit_payment_proof", "request_cancellation", "request_payout_account_change"}
-CLIENTS = set(MEMBER_SIDE) - PORTFOLIO - PAYMENTS | {"request_coaching"}
+# The weekly check-in has a second switch (CHECK_INS_LIVE) on top of the clients one.
+CHECK_INS = {"submit_check_in", "coach_needs_attention"}
+CLIENTS = set(MEMBER_SIDE) - PORTFOLIO - PAYMENTS - CHECK_INS | {"request_coaching"}
 SWITCHES = {
     "COACH_PORTFOLIO_LIVE": PORTFOLIO,
     "COACH_CLIENTS_LIVE": CLIENTS,
@@ -99,7 +101,7 @@ def refusal(name, **kw):
 
 
 def test_every_member_or_coach_callable_belongs_to_one_switch():
-    assert PORTFOLIO | CLIENTS | PAYMENTS == set(MEMBER_SIDE) | {"record_signup_role"}
+    assert PORTFOLIO | CLIENTS | PAYMENTS | CHECK_INS == set(MEMBER_SIDE) | {"record_signup_role"}
     assert not PORTFOLIO & CLIENTS and not CLIENTS & PAYMENTS and not PORTFOLIO & PAYMENTS
     assert "mark_thread_read" in CLIENTS and "request_coaching" in CLIENTS
 
@@ -107,9 +109,10 @@ def test_every_member_or_coach_callable_belongs_to_one_switch():
 def test_the_contract_lists_every_callable_this_file_maps():
     assert set(KINDS.values()) == {"finance", "admin", "reviewer", "coach", "member"}
     assert COACH_SIDE == [
-        "add_portfolio_media", "confirm_portfolio_consent", "publish_coach_plan",
-        "remove_portfolio_media", "request_payout_account_change", "respond_coaching_request",
-        "save_coach_package", "schedule_live_session", "update_coach_profile",
+        "add_portfolio_media", "coach_needs_attention", "confirm_portfolio_consent",
+        "publish_coach_plan", "remove_portfolio_media", "request_payout_account_change",
+        "respond_coaching_request", "review_client_health", "save_coach_package",
+        "schedule_live_session", "update_coach_profile",
     ]
     for name in CALLABLES:
         assert callable(getattr(main, name)), name
@@ -162,6 +165,19 @@ def test_one_switch_on_opens_only_its_own_group(on, world, monkeypatch):
             assert closed == (switch != on), (name, on, caught.value.message)
 
 
+@pytest.mark.parametrize("name", sorted(CHECK_INS))
+def test_the_check_in_callables_need_both_the_clients_and_the_check_in_switch(name, world, monkeypatch):
+    token = {"verified": True, "coachV": "active"}
+    for clients, check_ins in ((False, False), (True, False), (False, True)):
+        switches(monkeypatch, COACH_CLIENTS_LIVE=clients)
+        monkeypatch.setattr(coaching, "CHECK_INS_LIVE", check_ins)
+        error = refusal(name, token=token, data={})
+        assert error.code == CLOSED and error.message == "coach_app_closed", (clients, check_ins)
+    switches(monkeypatch, COACH_CLIENTS_LIVE=True)
+    monkeypatch.setattr(coaching, "CHECK_INS_LIVE", True)
+    assert refusal(name, token=token, data={}).message != "coach_app_closed"
+
+
 def test_the_role_choice_runs_with_the_portfolio_switch_alone(world, monkeypatch):
     switches(monkeypatch, COACH_PORTFOLIO_LIVE=True)
     answer = call("record_signup_role", data={"role": "coach"}, token={"verified": True, "coachV": "active"})
@@ -174,6 +190,7 @@ def test_the_role_choice_runs_with_the_portfolio_switch_alone(world, monkeypatch
 @pytest.fixture
 def live(monkeypatch):
     switches(monkeypatch, COACH_PORTFOLIO_LIVE=True, COACH_CLIENTS_LIVE=True, COACH_PAYMENTS_LIVE=True)
+    monkeypatch.setattr(coaching, "CHECK_INS_LIVE", True)
 
 
 @pytest.mark.parametrize("name", MEMBER_SIDE)

@@ -218,23 +218,17 @@ class ProfileScreenView {
     required this.firstName,
     required this.verified,
     required this.dietary,
-    required this.notifyIsDefault,
   });
 
   factory ProfileScreenView.from({
     required VerificationRecord verification,
     required DietaryProfile dietary,
-    required NotifySettings notify,
     String? firstName,
   }) {
     return ProfileScreenView(
       firstName: firstName,
       verified: verification.isDecided,
       dietary: dietary,
-      // A02's "One a day, quiet 10pm-8am" is a fixed sentence describing the
-      // shipped defaults. It is true only while they ARE the defaults, so it is
-      // rendered only then — the same discipline C13's nullable duration uses.
-      notifyIsDefault: notify == NotifySettings.initial,
     );
   }
 
@@ -246,8 +240,6 @@ class ProfileScreenView {
   /// D3's allergy row. [DietaryProfile.asked] is what decides between inviting
   /// her to answer and showing her answer back.
   final DietaryProfile dietary;
-
-  final bool notifyIsDefault;
 
   /// How many allergens she has named. Zero is a real answer once [asked].
   int get allergenCount => dietary.allergies?.length ?? 0;

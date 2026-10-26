@@ -417,6 +417,38 @@ test('coach-public media: verified members read, nobody writes', async () => {
   await assertFails(put(admin(), `coach-public/${HER}/media/new.jpg`, 1024, 'image/jpeg'));
 });
 
+test('chat media: the owner in the thread writes within the limits', async () => {
+  const a = () => store(env.authenticatedContext('a', { verified: true }));
+  await assertSucceeds(put(a(), 'chat-media/a__b/a/x.jpg', 3 * MB, 'image/jpeg'));
+  await assertFails(put(a(), 'chat-media/a__b/a/x2.jpg', 3 * MB + 1, 'image/jpeg'));
+  await assertSucceeds(put(a(), 'chat-media/a__b/a/v.mp4', 25 * MB, 'video/mp4'));
+  await assertFails(put(a(), 'chat-media/a__b/a/v2.mp4', 26 * MB, 'video/mp4'));
+  await assertSucceeds(put(a(), 'chat-media/a__b/a/n.m4a', 2 * MB, 'audio/mp4'));
+  await assertFails(put(a(), 'chat-media/a__b/a/n.mp3', 1024, 'audio/mpeg'));
+  await assertFails(put(a(), 'chat-media/a__b/a/p.png', 1024, 'image/png'));
+});
+
+test('chat media: only the two people read, only the owner deletes', async () => {
+  const a = () => store(env.authenticatedContext('a', { verified: true }));
+  const b = () => store(env.authenticatedContext('b', { verified: true }));
+  const c = () => store(env.authenticatedContext('c', { verified: true }));
+  await assertSucceeds(put(a(), 'chat-media/a__b/a/r1.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(a(), 'chat-media/a__b/a/r1.jpg', 1024, 'image/jpeg'));
+  await assertSucceeds(getBytes(ref(a(), 'chat-media/a__b/a/r1.jpg')));
+  await assertSucceeds(getBytes(ref(b(), 'chat-media/a__b/a/r1.jpg')));
+  await assertFails(getBytes(ref(c(), 'chat-media/a__b/a/r1.jpg')));
+  await assertFails(deleteObject(ref(b(), 'chat-media/a__b/a/r1.jpg')));
+  await assertSucceeds(deleteObject(ref(a(), 'chat-media/a__b/a/r1.jpg')));
+});
+
+test('chat media: a stranger or an unverified caller cannot write', async () => {
+  const c = () => store(env.authenticatedContext('c', { verified: true }));
+  const aUnv = () => store(env.authenticatedContext('a', {}));
+  await assertFails(put(c(), 'chat-media/a__b/c/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(aUnv(), 'chat-media/a__b/a/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(anon(), 'chat-media/a__b/a/x.jpg', 1024, 'image/jpeg'));
+});
+
 test('admin content uploads take jpeg, png, webp, gif and video, never SVG', async () => {
   await assertSucceeds(put(admin(), 'content/recipes/r1/ok.png', 16, 'image/png'));
   await assertSucceeds(put(admin(), 'content/recipes/r1/ok.webp', 16, 'image/webp'));

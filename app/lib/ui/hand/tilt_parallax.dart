@@ -3,8 +3,7 @@
 /// Reads the accelerometer, which on both platforms needs no permission and
 /// no privacy declaration. It listens only while its screen is the one being
 /// looked at, lets go the moment it is covered or disposed, and sits still
-/// under reduced motion or when she has turned the kitten's motion off in
-/// Profile. Never put it round the kitten.
+/// under reduced motion.
 library;
 
 import 'dart:async';
@@ -12,7 +11,6 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
-import '../../app_state/kitten_setting.dart';
 import 'draw_on.dart';
 
 class TiltParallax extends StatefulWidget {
@@ -54,12 +52,6 @@ class _TiltParallaxState extends State<TiltParallax> {
   double _baseY = 0;
 
   @override
-  void initState() {
-    super.initState();
-    KittenSetting.instance.addListener(_sync);
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _sync();
@@ -70,7 +62,6 @@ class _TiltParallaxState extends State<TiltParallax> {
     final live =
         !handMotionOff(context) &&
         TickerMode.valuesOf(context).enabled &&
-        KittenSetting.instance.moves &&
         (ModalRoute.of(context)?.isCurrent ?? true);
     if (live && _sub == null) {
       _sub = TiltParallax.source().listen(_onReading, onError: (_) {});
@@ -108,7 +99,6 @@ class _TiltParallaxState extends State<TiltParallax> {
 
   @override
   void dispose() {
-    KittenSetting.instance.removeListener(_sync);
     _sub?.cancel();
     _sub = null;
     _shift.dispose();

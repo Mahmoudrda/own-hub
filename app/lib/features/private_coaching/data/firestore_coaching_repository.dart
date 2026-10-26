@@ -401,6 +401,56 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
     await _addLine(relId, ChatMessage.recipeFields(me, recipeId));
   }
 
+  static const Map<String, String> _chatExt = <String, String>{
+    'image/jpeg': 'jpg',
+    'video/mp4': 'mp4',
+    'video/quicktime': 'mov',
+    'audio/mp4': 'm4a',
+  };
+
+  @override
+  Future<void> sendMedia(
+    String relId, {
+    required MessageType type,
+    required Uint8List bytes,
+    required String contentType,
+    int? durationMs,
+  }) async {
+    final me = _requireUid();
+    final ext = _chatExt[contentType];
+    final limit = switch (type) {
+      MessageType.image => CoachingLimits.chatImageMaxBytes,
+      MessageType.video => CoachingLimits.chatVideoMaxBytes,
+      MessageType.audio => CoachingLimits.chatAudioMaxBytes,
+      _ => 0,
+    };
+    final clean = contentType == 'image/jpeg' ? stripJpegMetadata(bytes) : bytes;
+    if (ext == null || clean.isEmpty || clean.length > limit) {
+      throw const CoachingFailure(CoachingRefusal.imageInvalid);
+    }
+    final path = 'chat-media/$relId/$me/${_randomToken()}.$ext';
+    try {
+      await _storage
+          .ref(path)
+          .putData(clean, SettableMetadata(contentType: contentType));
+    } on FirebaseException catch (error) {
+      throw CoachingFailure.fromStore(error.code);
+    }
+    await _addLine(
+      relId,
+      ChatMessage.mediaFields(me, type, path, clean.length, durationMs: durationMs),
+    );
+  }
+
+  @override
+  Future<String> chatMediaUrl(String path) async {
+    try {
+      return await _storage.ref(path).getDownloadURL();
+    } on FirebaseException catch (error) {
+      throw CoachingFailure.fromStore(error.code);
+    }
+  }
+
   @override
   Future<void> markRead(String relId) async {
     final me = _requireUid();
@@ -809,6 +859,7 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
     MyPlan? workout,
     MealPlanBody? meal,
     String? planId,
+    String? startsOn,
   }) async {
     if ((workout == null) == (meal == null)) {
       throw const CoachingFailure(CoachingRefusal.badRequest);
@@ -821,6 +872,7 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
         workout: workout,
         meal: meal,
         planId: planId,
+        startsOn: startsOn,
       ),
     );
     final id = readStringOrNull(data['planId']);

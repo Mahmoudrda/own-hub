@@ -12,7 +12,6 @@ import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/domain/rewards/credit_outcome.dart';
 import 'package:own_hub/domain/rewards/personal_best_detector.dart';
 import 'package:own_hub/features/train/domain/session_summary.dart';
-import 'package:own_hub/ui/hand/mascot/kitten_painter.dart';
 import 'package:own_hub/ui/hand/paper_confetti.dart';
 import 'package:own_hub/ui/hand/finish_wipe.dart';
 import 'package:own_hub/ui/hand/hand.dart';
@@ -286,7 +285,7 @@ void main() {
         _host(const FinishedView(session: _live, summary: summary)),
       );
       await tester.pump();
-      // The paper comes last, after the kitten (stage 6 of 7).
+      // The paper comes last, after the tick (stage 6 of 7).
       expect(find.byType(PaperConfetti), findsNothing);
       await tester.pumpAndSettle();
       expect(find.byType(PaperConfetti), findsOneWidget);
@@ -301,7 +300,6 @@ void main() {
     testWidgets(
       'the cheer and the burst arrive with their stages, not before',
       (tester) async {
-        Kitten.resetPlayed();
         await tester.pumpWidget(
           _host(
             const FinishedView(
@@ -327,12 +325,12 @@ void main() {
         // The order is the week (stage 2), the cheer (stage 5), then the
         // paper (stage 6): none exists before its stage starts to arrive.
         expect(find.byType(PaperConfetti), findsNothing);
-        expect(find.byType(Kitten), findsNothing);
+        expect(find.byType(Moment), findsNothing);
         await tester.pump(const Duration(milliseconds: 400));
         expect(find.byType(PaperConfetti), findsNothing);
-        expect(find.byType(Kitten), findsNothing);
+        expect(find.byType(Moment), findsNothing);
         await tester.pump(const Duration(milliseconds: 450));
-        expect(find.byType(Kitten), findsOneWidget);
+        expect(find.byType(Moment), findsOneWidget);
         expect(find.byType(PaperConfetti), findsNothing);
         await tester.pump(const Duration(milliseconds: 100));
         expect(find.byType(PaperConfetti), findsOneWidget);
@@ -340,10 +338,9 @@ void main() {
       },
     );
 
-    testWidgets('a session that is not a full cheer gets a nod, one kitten', (
+    testWidgets('a session that is not a full cheer draws no tick', (
       tester,
     ) async {
-      Kitten.resetPlayed();
       await tester.pumpWidget(
         _host(
           const FinishedView(
@@ -366,8 +363,7 @@ void main() {
       );
       await _pastWipe(tester);
       await tester.pump(const Duration(seconds: 3));
-      expect(find.byType(Kitten), findsOneWidget);
-      expect(tester.widget<Kitten>(find.byType(Kitten)).pose, KittenPose.nod);
+      expect(find.byType(Moment), findsNothing);
       await tester.pumpAndSettle();
     });
 
@@ -430,7 +426,7 @@ void main() {
       },
     );
 
-    testWidgets('one medium tap, as the kitten cheers', (tester) async {
+    testWidgets('one medium tap, as the tick draws', (tester) async {
       final felt = <String?>[];
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, (call) async {
@@ -468,7 +464,7 @@ void main() {
       );
       await _pastWipe(tester);
       expect(felt, isEmpty);
-      // The kitten (stage 5, 750 ms) has not cheered yet.
+      // The tick (stage 5, 750 ms) has not cheered yet.
       await tester.pump(const Duration(milliseconds: 740));
       expect(felt, isEmpty);
       // The cheer arrives, and the one medium tap lands with it.
@@ -505,8 +501,7 @@ void main() {
         )) {
           expect(fade.opacity.value, 1);
         }
-        // What is left is the kitten's idle breathing, and then it is still.
-        await tester.pump(kittenRunFor(KittenPose.cheer));
+        await tester.pump(const Duration(seconds: 2));
         expect(tester.hasRunningAnimations, isFalse);
       },
     );
@@ -776,7 +771,7 @@ void main() {
       }
     });
 
-    testWidgets('Share hands the sheet a PNG; the page keeps its one kitten', (
+    testWidgets('Share hands the sheet a PNG; the page is unchanged', (
       tester,
     ) async {
       tall(tester);
@@ -795,7 +790,6 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(Kitten), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey('r10-share')));
       await tester.pumpAndSettle();

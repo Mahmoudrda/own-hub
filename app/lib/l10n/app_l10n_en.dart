@@ -4954,9 +4954,6 @@ class AppL10nEn extends AppL10n {
       'Filled in from her intake. Change what has moved, and nothing is overwritten until you save.';
 
   @override
-  String get finishHere => 'Finish here';
-
-  @override
   String get fiveTimesNoHands => 'Five times, no hands';
 
   @override
@@ -6741,11 +6738,6 @@ class AppL10nEn extends AppL10n {
   @override
   String moveMoveOfTotal(String move, String total) {
     return 'Move $move of $total';
-  }
-
-  @override
-  String nextMoveMove(String move) {
-    return 'Next move · $move';
   }
 
   @override
@@ -8559,13 +8551,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get yourWeekShowsHere => 'Your week shows here';
-
-  @override
-  String get theKittenShowsYouAroundAndMoves =>
-      'The kitten shows you around and moves once when it appears.';
-
-  @override
-  String get theKittenStaysStill => 'The kitten stays still.';
 
   @override
   String get helpImproveOwnHub => 'Help improve Own Hub';
@@ -10544,13 +10529,6 @@ class AppL10nEn extends AppL10n {
   String get removeIt => 'Remove it';
 
   @override
-  String get tapAMoveYouLoggedToChange =>
-      'Tap a move you logged to change a set.';
-
-  @override
-  String get whichSet => 'Which set?';
-
-  @override
   String get addToMyWeek => 'Add to my week';
 
   @override
@@ -10658,11 +10636,6 @@ class AppL10nEn extends AppL10n {
   @override
   String skippedName(String name) {
     return 'Skipped $name';
-  }
-
-  @override
-  String finishNowCountMovesLeft(String count) {
-    return 'Finish now · $count moves left';
   }
 
   @override
@@ -11534,9 +11507,6 @@ class AppL10nEn extends AppL10n {
   String fullBodyStrengthMinutesMin(String minutes) {
     return 'Full-body strength, $minutes min';
   }
-
-  @override
-  String get onceADayQuiet10pmTo8am => 'Once a day, quiet 10pm to 8am';
 
   @override
   String get onlyTheDishWhatsInItAnd =>
@@ -12478,16 +12448,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get logTheTotalBarIncluded => 'Log the total, bar included.';
-
-  @override
-  String nextTimeWeightOnName(String weight, String name) {
-    return 'Next time: $weight on $name';
-  }
-
-  @override
-  String sameWeightOnNameNextTimeUntil(String name) {
-    return 'Same weight on $name next time, until it feels steady';
-  }
 
   @override
   String weightMustBe0ToMaxKg(String max) {
@@ -14894,4 +14854,374 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get gentler => 'Gentler';
+
+  @override
+  String get recordAVideoUpTo30Seconds => 'Record a video (up to 30 seconds)';
+
+  @override
+  String get chooseAVideo => 'Choose a video';
+
+  @override
+  String get thatFileIsTooBigAPhoto =>
+      'That file is too big. A photo is up to 10 MB and a video is up to 25 MB.';
+
+  @override
+  String get weCouldNotSendThatTryAgain => 'We could not send that. Try again.';
+
+  @override
+  String get holdTheMicAndSpeak => 'Hold the mic and speak';
+
+  @override
+  String get slideAwayToCancel => 'Slide away to cancel';
+
+  @override
+  String get releaseToCancel => 'Release to cancel';
+
+  @override
+  String get allowTheMicrophoneInSettingsToSend =>
+      'Allow the microphone in Settings to send voice notes.';
+
+  @override
+  String get weCouldNotPlayThatVoiceNote =>
+      'We could not play that voice note.';
+
+  @override
+  String get editReply => 'Edit reply';
+
+  @override
+  String get addAReply => 'Add a reply';
+
+  @override
+  String get newReply => 'New reply';
+
+  @override
+  String get writeYourReply => 'Write your reply';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get greatWorkTodayIAmProudOf => 'Great work today. I am proud of you.';
+
+  @override
+  String get howDidTheSessionFeelTellMe =>
+      'How did the session feel? Tell me what was easy and what was hard.';
+
+  @override
+  String get sendMeAShortVideoOfThat =>
+      'Send me a short video of that exercise from the side and I will check your form.';
+
+  @override
+  String get lowerTheWeightALittleAndFocus =>
+      'Lower the weight a little and focus on a slow, steady movement.';
+
+  @override
+  String get restWellTodayRecoveryIsPartOf =>
+      'Rest well today. Recovery is part of the plan.';
+
+  @override
+  String get rememberToDrinkWaterAndEatYour =>
+      'Remember to drink water and eat your protein today.';
+
+  @override
+  String get ifAnythingHurtsStopAndTellMe =>
+      'If anything hurts, stop and tell me. Do not push through pain.';
+
+  @override
+  String get iSawYourWeeklyCheckInThank =>
+      'I saw your weekly check-in. Thank you. I will update your plan.';
+
+  @override
+  String get missedADayNoProblemPickUp =>
+      'Missed a day? No problem. Pick up with the next session.';
+
+  @override
+  String get sendMeAPhotoOfYourMeal =>
+      'Send me a photo of your meal and I will give you my notes.';
+
+  @override
+  String todayWeightOnName(String weight, String name) {
+    return 'Today: $weight on $name';
+  }
+
+  @override
+  String sameWeightOnNameAsLastTime(String name) {
+    return 'Same weight on $name as last time, until it feels steady';
+  }
+
+  @override
+  String get supersetGoStraightToTheNextMove =>
+      'Superset: go straight to the next move, then rest.';
+
+  @override
+  String get moveDetails => 'Move details';
+
+  @override
+  String get targetWeightKg => 'Target weight (kg)';
+
+  @override
+  String get leaveEmptyForBodyweight => 'Leave empty for bodyweight';
+
+  @override
+  String get supersetWithTheNextMove => 'Superset with the next move';
+
+  @override
+  String get superset => 'Superset';
+
+  @override
+  String get saveDetails => 'Save details';
+
+  @override
+  String get duplicate => 'Duplicate';
+
+  @override
+  String get copy_1g7xp => '(copy)';
+
+  @override
+  String get repeatLastWeek => 'Repeat last week';
+
+  @override
+  String nWeeks(String n) {
+    return '$n weeks';
+  }
+
+  @override
+  String weekNOfTotal(String n, String total) {
+    return 'Week $n of $total';
+  }
+
+  @override
+  String yourPlanStartsDate(String date) {
+    return 'Your plan starts $date';
+  }
+
+  @override
+  String get seeAllWeeks => 'See all weeks';
+
+  @override
+  String get sendToMoreClients => 'Send to more clients';
+
+  @override
+  String get whoGetsThisPlan => 'Who gets this plan?';
+
+  @override
+  String chooseNClients(Object n) {
+    return 'Choose $n clients';
+  }
+
+  @override
+  String publishToNClients(Object n) {
+    return 'Publish to $n clients';
+  }
+
+  @override
+  String sentToNClients(Object n) {
+    return 'Sent to $n clients';
+  }
+
+  @override
+  String tryAgainForN(Object n) {
+    return 'Try again for $n';
+  }
+
+  @override
+  String get someClientsDidNotGetThePlan =>
+      'Some clients did not get the plan.';
+
+  @override
+  String startsDate(Object date) {
+    return 'Starts $date';
+  }
+
+  @override
+  String joinMeOnOwnHubTheTraining_s0kkx(Object code, Object link) {
+    return 'Join me on Own Hub, the training app for women only. Open this link: $link If it does not open the app, install Own Hub, tap I have a code from my coach when you sign up and enter $code.';
+  }
+
+  @override
+  String get shareMyProfileLink => 'Share my profile link';
+
+  @override
+  String get membersWhoOpenItLandOnYour =>
+      'Members who open it land on your page and can ask to join.';
+
+  @override
+  String trainWithMeOnOwnHubLink(Object link) {
+    return 'Train with me on Own Hub: $link';
+  }
+
+  @override
+  String get yourCoachsInvitation => 'Your coach\'s invitation';
+
+  @override
+  String get thisLinkDoesNotWorkAskYour =>
+      'This link does not work. Ask your coach to send it again.';
+
+  @override
+  String get weeklyCheckIn => 'Weekly check-in';
+
+  @override
+  String get fourQuickTapsItTakesUnderA =>
+      'Four quick taps. It takes under a minute.';
+
+  @override
+  String get answer => 'Answer';
+
+  @override
+  String get weeklyCheckInSent => 'Weekly check-in sent';
+
+  @override
+  String get sentThankYou => 'Sent. Thank you.';
+
+  @override
+  String get howDidYourTrainingGo => 'How did your training go?';
+
+  @override
+  String get most => 'Most';
+
+  @override
+  String get some => 'Some';
+
+  @override
+  String get howIsYourEnergy => 'How is your energy?';
+
+  @override
+  String get n1IsLow5IsHigh => '1 is low, 5 is high.';
+
+  @override
+  String get howDidEatingGo => 'How did eating go?';
+
+  @override
+  String get n1IsHard5IsEasy => '1 is hard, 5 is easy.';
+
+  @override
+  String get anyPainOrInjuryThisWeek => 'Any pain or injury this week?';
+
+  @override
+  String get tellYourCoachMoreBelowIfYou =>
+      'Tell your coach more below if you like. If it is sharp or getting worse, please see a doctor.';
+
+  @override
+  String get anythingYouWantYourCoachToKnow =>
+      'Anything you want your coach to know? (optional)';
+
+  @override
+  String get sendToMyCoach => 'Send to my coach';
+
+  @override
+  String get sentYourCoachWillSeeIt => 'Sent. Your coach will see it.';
+
+  @override
+  String get youAlreadySentThisOne => 'You already sent this one.';
+
+  @override
+  String get weCouldNotSendItTryAgain =>
+      'We could not send it. Try again in a moment.';
+
+  @override
+  String get needsAttention => 'Needs attention';
+
+  @override
+  String get noCheckInYet => 'No check-in yet';
+
+  @override
+  String get trainingSlippedThisWeek => 'Training slipped this week';
+
+  @override
+  String get healthAnswerToRead => 'Health answer to read';
+
+  @override
+  String get unreadMessage => 'Unread message';
+
+  @override
+  String get areYouPregnantOrDidYouHave =>
+      'Are you pregnant, or did you have a baby in the last 12 months?';
+
+  @override
+  String get hadABaby => 'Had a baby';
+
+  @override
+  String get hasFoodOrWeightEverFeltOut =>
+      'Has food or weight ever felt out of control or worrying for you?';
+
+  @override
+  String get yourCoachReadsThisFirstYouDo =>
+      'Your coach reads this first. You do not have to say more.';
+
+  @override
+  String get hadABabyInTheLast12 => 'Had a baby in the last 12 months';
+
+  @override
+  String get foodOrWeightHasFeltWorrying => 'Food or weight has felt worrying';
+
+  @override
+  String get readHerHealthAnswersFirst => 'Read her health answers first';
+
+  @override
+  String get plansAreOnHoldUntilYouHave =>
+      'Plans are on hold until you have. Her answers are below.';
+
+  @override
+  String get iHaveReadThem => 'I have read them';
+
+  @override
+  String get readHerHealthAnswersFirstOpenHer =>
+      'Read her health answers first. Open her page and tick that you have.';
+
+  @override
+  String get thisClientsAnswersOnEatingMeanYou =>
+      'This client\'s answers on eating mean you review her first. A plan with calorie or protein targets cannot be sent.';
+
+  @override
+  String get dailyTargetForHer => 'Daily target for her';
+
+  @override
+  String get calories => 'Calories';
+
+  @override
+  String get between1200And4000Calories30To =>
+      'Between 1200 and 4000 calories, 30 to 250 g protein.';
+
+  @override
+  String get fillInBothNumbersOrLeaveBoth =>
+      'Fill in both numbers, or leave both empty.';
+
+  @override
+  String get herAnswersOnEatingMeanYouReview =>
+      'Her answers on eating mean you review her first. You can send a menu without calorie or protein targets.';
+
+  @override
+  String get swaps => 'Swaps';
+
+  @override
+  String swapsN(String n) {
+    return 'Swaps ($n)';
+  }
+
+  @override
+  String get approvedSwaps => 'Approved swaps';
+
+  @override
+  String get threeAtMost => 'Three at most.';
+
+  @override
+  String get saveSwaps => 'Save swaps';
+
+  @override
+  String yourCoachsTargetKcalCaloriesAndProtein(String kcal, String protein) {
+    return 'Your coach\'s target: $kcal calories and $protein g protein';
+  }
+
+  @override
+  String get changeTo => 'Change to';
+
+  @override
+  String get thePlannedDish => 'The planned dish';
+
+  @override
+  String get forTheWholePlanAsTheDishes =>
+      'For the whole plan, as the dishes are written';
+
+  @override
+  String get nothingToBuyYet => 'Nothing to buy yet.';
 }

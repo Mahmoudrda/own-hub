@@ -48,6 +48,10 @@ String coachFailureText(AppL10n l10n, CoachingFailure failure) =>
       CoachingRefusal.tooManyMedia => l10n.youHaveCountItemsRemoveOneTo(
         countLabel(CoachingLimits.mediaMaxItems),
       ),
+      CoachingRefusal.healthNotReviewed =>
+        l10n.readHerHealthAnswersFirstOpenHer,
+      CoachingRefusal.eatingHistoryHold =>
+        l10n.thisClientsAnswersOnEatingMeanYou,
       _ => l10n.somethingWentWrongPleaseTryAgain,
     };
 

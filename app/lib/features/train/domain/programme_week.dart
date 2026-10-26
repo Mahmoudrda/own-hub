@@ -76,6 +76,7 @@ AuthoredSession scaleSession(AuthoredSession session, int minutes) {
     quiet: m.quiet,
     floorOnly: m.floorOnly,
     needsEquipment: m.needsEquipment,
+    supersetWithNext: m.supersetWithNext,
   );
 
   AuthoredSession build(int count) {

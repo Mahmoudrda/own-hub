@@ -32,6 +32,7 @@ const String kCoachPlanId = 'coach_plan';
 
 /// Most days a plan holds: one week's worth.
 const int kMaxPlanDays = 7;
+const int kMaxCoachPlanWeeks = 4;
 
 const int _maxName = 80;
 const int _maxNote = WorkoutLimits.maxText;
@@ -56,6 +57,7 @@ class MyPlanDay {
     required this.session,
     this.sourceId,
     this.targetKg = const <double?>[],
+    this.week = 1,
   });
 
   final AuthoredSession session;
@@ -68,12 +70,16 @@ class MyPlanDay {
   /// bodyweight or no target.
   final List<double?> targetKg;
 
+  /// 1 to 4. A plan of one week has all its days in week 1.
+  final int week;
+
   double? kgAt(int move) => move < targetKg.length ? targetKg[move] : null;
 
   Map<String, Object?> toJson() => <String, Object?>{
     'session': session.toJson(),
     'sourceId': ?sourceId,
     'kg': targetKg,
+    if (week > 1) 'week': week,
   };
 
   static MyPlanDay? tryParse(Object? raw) {
@@ -90,6 +96,7 @@ class MyPlanDay {
           for (var i = 0; i < session.moves.length; i++)
             _cleanKg(kg is List && i < kg.length ? kg[i] : null),
         ],
+        week: _cleanWeek(raw['week']),
       );
     } catch (_) {
       // A day that is not shaped like one costs that day, not the plan.
@@ -102,6 +109,16 @@ double? _cleanKg(Object? v) {
   if (v is! num || !v.isFinite || v < kMinWeightKg) return null;
   return v.clamp(kMinWeightKg, kMaxWeightKg).toDouble();
 }
+
+int _cleanWeek(Object? v) =>
+    v is int ? v.clamp(1, kMaxCoachPlanWeeks) : 1;
+
+MyPlanDay _sameWeek(MyPlanDay d, int week) => MyPlanDay(
+  session: d.session,
+  sourceId: d.sourceId,
+  targetKg: d.targetKg,
+  week: week,
+);
 
 String _clip(String text, int max) {
   final one = text.replaceAll(RegExp(r'\s+'), ' ').trim();
@@ -156,6 +173,7 @@ AuthoredMove? _cleanMove(AuthoredMove m) {
     quiet: m.quiet,
     floorOnly: m.floorOnly,
     needsEquipment: m.needsEquipment,
+    supersetWithNext: m.supersetWithNext,
   );
 }
 
@@ -195,7 +213,51 @@ class MyPlan {
   final int revision;
 
   bool get isBlank => days.isEmpty;
-  bool get isFull => days.length >= kMaxPlanDays;
+  bool get isFull => daysOfWeek(weekCount).length >= kMaxPlanDays;
+
+  /// The highest week any day is in (1 for a plan of one week).
+  int get weekCount =>
+      days.fold<int>(1, (m, d) => d.week > m ? d.week : m);
+
+  List<int> daysOfWeek(int week) => [
+    for (var i = 0; i < days.length; i++)
+      if (days[i].week == week) i,
+  ];
+
+  /// Whole plan copied once more as the next week: every day of the last week
+  /// gets a new id and week + 1. Same plan when 4 weeks are already there.
+  MyPlan withRepeatedLastWeek() {
+    if (weekCount >= kMaxCoachPlanWeeks) return this;
+    final last = daysOfWeek(weekCount);
+    if (last.isEmpty) return this;
+    final next = [...days];
+    var plan = this;
+    for (final i in last) {
+      final id = plan._freshId();
+      final s = days[i].session;
+      final copy = MyPlanDay(
+        session: AuthoredSession(
+          sessionId: id,
+          titleEn: s.titleEn,
+          titleAr: s.titleAr,
+          minutes: s.minutes,
+          lifeStages: s.lifeStages,
+          moves: s.moves,
+        ),
+        sourceId: days[i].sourceId,
+        targetKg: days[i].targetKg,
+        week: weekCount + 1,
+      );
+      next.add(copy);
+      plan = MyPlan(
+        days: List.unmodifiable(next),
+        sourceProgrammeId: sourceProgrammeId,
+        name: name,
+        revision: revision,
+      );
+    }
+    return _with(next);
+  }
 
   MyPlan _with(List<MyPlanDay> next) => MyPlan(
     days: List.unmodifiable(next),
@@ -218,14 +280,17 @@ class MyPlan {
     if (i < 0 || i >= days.length || moves.isEmpty) return this;
     final day = days[i];
     final next = [...days];
-    next[i] = _dayFromMoves(
-      id: day.session.sessionId,
-      titleEn: day.session.titleEn,
-      titleAr: day.session.titleAr,
-      moves: moves,
-      like: day.session,
-      lifeStages: day.session.lifeStages,
-      sourceId: day.sourceId,
+    next[i] = _sameWeek(
+      _dayFromMoves(
+        id: day.session.sessionId,
+        titleEn: day.session.titleEn,
+        titleAr: day.session.titleAr,
+        moves: moves,
+        like: day.session,
+        lifeStages: day.session.lifeStages,
+        sourceId: day.sourceId,
+      ),
+      day.week,
     );
     return _with(next);
   }
@@ -243,12 +308,15 @@ class MyPlan {
     final title = cleanWorkoutName(name);
     return _with([
       ...days,
-      _dayFromMoves(
-        id: _freshId(),
-        titleEn: title.isEmpty ? titleEn : title,
-        titleAr: title.isEmpty ? titleAr : title,
-        moves: moves,
-        lifeStages: {...LifeStage.values},
+      _sameWeek(
+        _dayFromMoves(
+          id: _freshId(),
+          titleEn: title.isEmpty ? titleEn : title,
+          titleAr: title.isEmpty ? titleAr : title,
+          moves: moves,
+          lifeStages: {...LifeStage.values},
+        ),
+        weekCount,
       ),
     ]);
   }
@@ -265,7 +333,7 @@ class MyPlan {
   MyPlan cleared() => _with(const <MyPlanDay>[]);
 
   /// A copy of day [i], added at the end.
-  MyPlan withCopyOf(int i) {
+  MyPlan withCopyOf(int i, {String suffixEn = '', String suffixAr = ''}) {
     if (isFull || i < 0 || i >= days.length) return this;
     final day = days[i];
     final id = _freshId();
@@ -275,13 +343,14 @@ class MyPlan {
       MyPlanDay(
         session: AuthoredSession(
           sessionId: id,
-          titleEn: s.titleEn,
-          titleAr: s.titleAr,
+          titleEn: _clip('${s.titleEn}$suffixEn', kMaxCustomNameLength),
+          titleAr: _clip('${s.titleAr}$suffixAr', kMaxCustomNameLength),
           minutes: s.minutes,
           lifeStages: s.lifeStages,
           moves: s.moves,
         ),
         targetKg: day.targetKg,
+        week: weekCount,
       ),
     ]);
   }
@@ -316,6 +385,7 @@ class MyPlan {
       session: fresh.session,
       sourceId: days[i].sourceId ?? original.sessionId,
       targetKg: fresh.targetKg,
+      week: days[i].week,
     );
     return _with(next);
   }
@@ -361,7 +431,7 @@ class MyPlan {
         if (MyPlanDay.tryParse(row) case final day?
             when seen.add(day.session.sessionId))
           day,
-    ].take(kMaxPlanDays).toList();
+    ].take(kMaxPlanDays * kMaxCoachPlanWeeks).toList();
     final source = raw['source'];
     final name = raw['name'];
     final revision = raw['revision'];

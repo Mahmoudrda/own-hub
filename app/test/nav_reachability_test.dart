@@ -48,10 +48,7 @@ const Set<String> _oneTimeFlows = {'signup', 'onboarding'};
 /// real address a link can carry, and it is built for exactly that reason —
 /// before, it resolved to the developer placeholder. Reachability from a tab
 /// root is the wrong question for an address that arrives from outside.
-// R13 (3.3): "I did them all" now goes straight to the next move, so nothing
-// navigates to R13. It stays routable until it is removed; corrections are in
-// R10's See details and Recent sessions.
-const Set<String> _externalEntry = {'T03', 'T08', 'R13'};
+const Set<String> _externalEntry = {'T03', 'T08'};
 
 /// Built, but reachable only from a screen that is **not built yet**.
 ///
@@ -116,8 +113,8 @@ const Map<String, String> _awaitingInboundScreen = <String, String>{
 ///     document. A screenshot found it in one look. Giving that branch a real
 ///     affordance also gave Y01 its first inbound edge, at depth 2.
 ///
-/// What remains beyond two taps is the workout player: `R08`, `R09`, `R10` and
-/// `R13` sit at depth 3–4 because a session is a *sequence* — Train → Workout
+/// What remains beyond two taps is the workout player: `R08`, `R09` and
+/// `R10` sit at depth 3–4 because a session is a *sequence* — Train → Workout
 /// day → Mid-set → Resting → Finished. No navigation design makes "Resting" two
 /// taps from a tab root without breaking the session model, so the honest
 /// options are to accept deeper in-flow steps or to change what the case

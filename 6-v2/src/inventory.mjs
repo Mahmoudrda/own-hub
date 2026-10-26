@@ -86,7 +86,6 @@ export const screens = [
   { id: 'R10', flow: 'train', title: 'Finished' },
   { id: 'R11', flow: 'train', title: 'Workout library' },
   { id: 'R12', flow: 'train', title: 'Logged from memory' },
-  { id: 'R13', flow: 'train', title: 'Move logged' },
   { id: 'R14', flow: 'train', title: 'Exercise library', noMockup: true },
   { id: 'R15', flow: 'train', title: 'Exercise demo', noMockup: true },
   // Eat

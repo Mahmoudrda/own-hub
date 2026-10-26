@@ -22,9 +22,12 @@ import '../../../train/data/exercise_media_store.dart';
 import '../../../train/domain/custom_workout.dart';
 import '../../../train/domain/exercise_library.dart';
 import '../../../train/domain/my_plan.dart';
-import '../../../train/domain/workout_library.dart' show AuthoredMove;
+import '../../../train/domain/weight_label.dart';
+import '../../../train/domain/workout_library.dart'
+    show AuthoredMove, WorkoutLimits;
 import '../../../train/presentation/exercise_clip_player.dart';
 import '../../../train/presentation/exercise_demo_view.dart';
+import '../../../../ui/app_sheet.dart';
 import 'coach_plan_logic.dart';
 
 class CoachDayEditorView extends StatefulWidget {
@@ -113,6 +116,45 @@ class _CoachDayEditorViewState extends State<CoachDayEditorView> {
     );
   }
 
+  Future<void> _details(int m) async {
+    final plan = _plan;
+    final i = widget.dayIndex;
+    final day = plan.days[i];
+    final move = day.session.moves[m];
+    final lang = Localizations.localeOf(context).languageCode;
+    await showAppSheet<void>(
+      context: context,
+      children: [
+        _MoveDetailsSheet(
+          title: lang == 'ar' && move.nameAr.isNotEmpty
+              ? move.nameAr
+              : move.nameEn,
+          kg: day.kgAt(m),
+          rest: move.restSeconds,
+          note: lang == 'ar' && move.notesAr.isNotEmpty
+              ? move.notesAr
+              : move.notesEn,
+          superset: move.supersetWithNext,
+          isLast: m == day.session.moves.length - 1,
+          onSave: ({kg, required rest, required note, required superset}) {
+            _save(
+              changeMoveDetails(
+                _plan,
+                i,
+                m,
+                restSeconds: rest,
+                note: note,
+                superset: superset,
+                kg: kg,
+                clearKg: kg == null,
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -160,6 +202,8 @@ class _CoachDayEditorViewState extends State<CoachDayEditorView> {
                     widget.exerciseFor?.call(session.moves[m].exerciseId) !=
                     null,
                 onWatch: () => _watch(session.moves[m].exerciseId),
+                kg: plan.days[i].kgAt(m),
+                onDetails: () => unawaited(_details(m)),
                 onChange: ({sets, reps, hold}) => _save(
                   changeMove(
                     _plan,
@@ -189,6 +233,8 @@ class _MoveCard extends StatelessWidget {
     required this.language,
     required this.canWatch,
     required this.onWatch,
+    required this.kg,
+    required this.onDetails,
     required this.onChange,
     required this.onShift,
     required this.onRemove,
@@ -200,6 +246,8 @@ class _MoveCard extends StatelessWidget {
   final String language;
   final bool canWatch;
   final VoidCallback onWatch;
+  final double? kg;
+  final VoidCallback onDetails;
   final void Function({int? sets, int? reps, int? hold}) onChange;
   final ValueChanged<int> onShift;
   final VoidCallback onRemove;
@@ -280,6 +328,17 @@ class _MoveCard extends StatelessWidget {
               ),
           ],
         ),
+        if (kg != null || move.supersetWithNext || move.notesEn.isNotEmpty)
+          Text(
+            <String>[
+              if (kg != null) '${weightLabel(kg!)} ${l10n.kg}',
+              if (move.restSeconds > 0)
+                l10n.restSecondsSeconds(countLabel(move.restSeconds)),
+              if (move.supersetWithNext) l10n.superset,
+            ].join(' · '),
+            key: ValueKey('move-summary-$index'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
         Row(
           children: [
             IconButton(
@@ -296,7 +355,21 @@ class _MoveCard extends StatelessWidget {
               onPressed: index >= count - 1 ? null : () => onShift(index + 1),
               icon: const Icon(Icons.arrow_downward, size: 22),
             ),
-            const Spacer(),
+            Flexible(
+              fit: FlexFit.tight,
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  key: ValueKey('move-details-$index'),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                  ),
+                  onPressed: onDetails,
+                  child: Text(l10n.moveDetails),
+                ),
+              ),
+            ),
             IconButton(
               key: ValueKey('move-remove-$index'),
               tooltip: l10n.remove,
@@ -334,10 +407,14 @@ class _Stepper extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ExcludeSemantics(
-            child: Text(
-              label,
-              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          Flexible(
+            child: ExcludeSemantics(
+              child: Text(
+                label,
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
           IconButton(
@@ -355,6 +432,121 @@ class _Stepper extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MoveDetailsSheet extends StatefulWidget {
+  const _MoveDetailsSheet({
+    required this.title,
+    required this.kg,
+    required this.rest,
+    required this.note,
+    required this.superset,
+    required this.isLast,
+    required this.onSave,
+  });
+
+  final String title;
+  final double? kg;
+  final int rest;
+  final String note;
+  final bool superset;
+  final bool isLast;
+  final void Function({
+    double? kg,
+    required int rest,
+    required String note,
+    required bool superset,
+  })
+  onSave;
+
+  @override
+  State<_MoveDetailsSheet> createState() => _MoveDetailsSheetState();
+}
+
+class _MoveDetailsSheetState extends State<_MoveDetailsSheet> {
+  late final TextEditingController _kg = TextEditingController(
+    text: widget.kg == null ? '' : weightLabel(widget.kg!),
+  );
+  late final TextEditingController _note = TextEditingController(
+    text: widget.note,
+  );
+  late int _rest = widget.rest;
+  late bool _superset = widget.superset && !widget.isLast;
+
+  @override
+  void dispose() {
+    _kg.dispose();
+    _note.dispose();
+    super.dispose();
+  }
+
+  double? get _kgValue {
+    final v = double.tryParse(_kg.text.trim().replaceAll(',', '.'));
+    return v == null || v < kMinWeightKg ? null : v;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(widget.title, style: AppText.titleL),
+        AppField(
+          key: const ValueKey('details-kg'),
+          controller: _kg,
+          label: l10n.targetWeightKg,
+          hint: l10n.leaveEmptyForBodyweight,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [LengthLimitingTextInputFormatter(6)],
+        ),
+        _Stepper(
+          keyPrefix: 'details-rest',
+          label: l10n.restBetweenSets,
+          value: countLabel(_rest),
+          onMinus: _rest <= 0
+              ? null
+              : () => setState(() => _rest = (_rest - 15).clamp(0, 600)),
+          onPlus: _rest >= WorkoutLimits.maxRestSeconds
+              ? null
+              : () => setState(() => _rest = (_rest + 15).clamp(0, 600)),
+        ),
+        AppField(
+          key: const ValueKey('details-note'),
+          controller: _note,
+          label: l10n.noteForHer,
+          maxLines: 3,
+          inputFormatters: [LengthLimitingTextInputFormatter(300)],
+        ),
+        Material(
+          type: MaterialType.transparency,
+          child: SwitchListTile(
+            key: const ValueKey('details-superset'),
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.supersetWithTheNextMove),
+            value: _superset,
+            onChanged: widget.isLast
+                ? null
+                : (v) => setState(() => _superset = v),
+          ),
+        ),
+        AppButton(
+          l10n.saveDetails,
+          key: const ValueKey('details-save'),
+          onPressed: () {
+            widget.onSave(
+              kg: _kgValue,
+              rest: _rest,
+              note: _note.text,
+              superset: _superset,
+            );
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
     );
   }
 }

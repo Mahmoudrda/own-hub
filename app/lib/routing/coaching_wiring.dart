@@ -30,6 +30,7 @@ import '../features/private_coaching/presentation/client/my_coach_view.dart'
     show coachingEnded, requestClosed;
 import '../app_state/workout_library_state.dart';
 import '../features/onboarding/domain/starting_program.dart';
+import '../features/private_coaching/presentation/plans/assign_clients_sheet.dart';
 import '../features/private_coaching/presentation/plans/coach_plan_logic.dart';
 import '../features/private_coaching/presentation/plans/schedule_session_sheet.dart';
 import '../features/private_coaching/presentation/plans/share_meal_plan_view.dart';
@@ -50,6 +51,7 @@ import '../features/private_coaching/presentation/chat/chat_list_view.dart';
 import '../features/private_coaching/presentation/chat/chat_logic.dart';
 import '../features/private_coaching/presentation/chat/chat_sheets.dart';
 import '../features/private_coaching/presentation/chat/chat_thread_view.dart';
+import '../features/private_coaching/presentation/chat/saved_replies_sheet.dart';
 import '../features/private_coaching/domain/coaching_contract.dart';
 import '../features/private_coaching/presentation/desk/desk_model.dart'
     show tagOf;
@@ -191,6 +193,7 @@ class CoachingThreadScreen extends StatelessWidget {
       share: iAmClient
           ? const ShareChoices()
           : (shareOf?.call(rel) ?? const ShareChoices()),
+      starterReplies: iAmClient ? const <String>[] : starterRepliesOf(l10n),
       recipeTitleOf: recipeTitleOf,
       onOpenPlan: onOpenPlan,
       onOpenRecipe: onOpenRecipe,
@@ -271,7 +274,9 @@ MealCatalog coachMealCatalog(AppL10n l10n) {
   return MealCatalog(
     recipes: [
       for (final r in eat.recipeBook.recipes)
-        if (seeded == null || seeded.contains(r.recipeId)) r,
+        if ((seeded == null || seeded.contains(r.recipeId)) &&
+            r.allergensKnown)
+          r,
     ],
     foods: FoodLibrary(EgyptianFoodPack.allFoods(l10n)),
   );
@@ -305,6 +310,14 @@ class ShareWorkoutScreen extends StatelessWidget {
         repository: repository,
         subscription: sub,
         clientName: clientName(AppL10n.of(context), sub),
+        others: [
+          for (final s in PrivateCoachingState.instance.coachSubscriptions)
+            if (s.status == SubscriptionStatus.active && s.id != sub.id)
+              AssignClient(
+                subId: s.id,
+                name: clientName(AppL10n.of(context), s),
+              ),
+        ],
         splits: coachSplits(),
         templates: <CoachDraft>[
           for (final d in drafts.data ?? const <CoachDraft>[])
@@ -342,6 +355,11 @@ class ShareMealScreen extends StatelessWidget {
         subscription: sub,
         catalog: coachMealCatalog(l10n),
         clientName: clientName(l10n, sub),
+        others: [
+          for (final s in PrivateCoachingState.instance.coachSubscriptions)
+            if (s.status == SubscriptionStatus.active && s.id != sub.id)
+              AssignClient(subId: s.id, name: clientName(l10n, s)),
+        ],
         templates: <CoachDraft>[
           for (final d in drafts.data ?? const <CoachDraft>[])
             if (d.kind == PlanKind.meal) d,
@@ -519,15 +537,21 @@ class CoachPlanScreen extends StatelessWidget {
     this.onStartWorkout,
     this.onOpenRecipe,
     this.onLog,
+    this.onGrocery,
     this.onBack,
+    this.doneThisWeek = 0,
   });
 
   final String planId;
+
+  /// Sessions finished this week, which pick today's workout day.
+  final int doneThisWeek;
   final LifeStage? lifeStage;
   final DietaryConstraints constraints;
   final void Function(CoachPlan plan, int dayIndex)? onStartWorkout;
   final void Function(String recipeId)? onOpenRecipe;
   final void Function(CoachPlan plan, MealItem item, String slot)? onLog;
+  final void Function(CoachPlan plan)? onGrocery;
   final VoidCallback? onBack;
 
   @override
@@ -549,11 +573,13 @@ class CoachPlanScreen extends StatelessWidget {
       exercises: library.library.exercises,
       media: library.media,
       players: library.players,
+      doneThisWeek: doneThisWeek,
       onStartWorkout: onStartWorkout == null
           ? null
           : (day) => onStartWorkout!(shown, day),
       onOpenRecipe: onOpenRecipe,
       onLog: onLog == null ? null : (item, slot) => onLog!(shown, item, slot),
+      onGrocery: onGrocery == null ? null : () => onGrocery!(shown),
       onBack: onBack,
     );
   }

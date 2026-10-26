@@ -37,6 +37,8 @@ Updated 23 October 2026. Only steps you do yourself are listed; everything the c
 - Note: the store description cannot change while 1.0 is in review. The corrected wording for the next version is in `docs/release/launch-pack/store-listing-copy.md`.
 
 ### 3. Deploy the corrected website (after the 23 Oct legal text fixes are finished)
+- [ ] In the Apple developer portal, App ID `com.ownhub.fitness`, tick Associated Domains, regenerate the store profile, then `app/tool/build_ios.sh`.
+- [ ] Paste the SHA-256 of the Play App Signing key (Play Console, Setup, App signing) and of the upload key into `site/.well-known/assetlinks.json`, then redeploy the site. Until then Android opens these links in the browser (the /join page), not the app.
 - [ ] Read the changed privacy policy, terms and coach terms in English and Arabic, then deploy:
 ```bash
 ~/ownhub/site/_build/deploy.sh https://own-hub.app --dry-run

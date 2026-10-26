@@ -84,7 +84,7 @@ void main() {
       expect(_switch, findsNothing);
     });
 
-    for (final id in ['R07', 'R13', 'C10', 'E12', 'C06']) {
+    for (final id in ['R07', 'C10', 'E12', 'C06']) {
       testWidgets('$id never shows it', (tester) async {
         _phone(tester);
         await tester.pumpWidget(_host(_page(), screen: id));

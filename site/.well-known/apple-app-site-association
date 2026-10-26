@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["NC94DG55XR.com.ownhub.fitness"],
+        "components": [
+          { "/": "/c/*", "comment": "A coach's invite" },
+          { "/": "/p/*", "comment": "A coach's profile" }
+        ]
+      }
+    ]
+  }
+}

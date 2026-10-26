@@ -64,7 +64,6 @@ import 'community_state.dart';
 import 'analytics_consent.dart';
 import 'crash_consent.dart';
 import 'first_run_moments.dart';
-import 'kitten_setting.dart';
 import 'custom_workout_state.dart';
 import 'my_plan_state.dart';
 import 'bar_preference.dart';
@@ -226,12 +225,8 @@ class ThisPhoneWipe implements LocalWipe {
     unawaited(CrashConsent.instance.erase().catchError((Object _) {}));
 
     // Her usage-statistics choice, back to off, collection stopped and the
-    // analytics instance id on this phone reset. Before the kitten below, so
-    // putting the kitten back to its default is not itself counted.
+    // analytics instance id on this phone reset.
     unawaited(AnalyticsConsent.instance.erase().catchError((Object _) {}));
-
-    // Whether the kitten moves, back to the default.
-    unawaited(KittenSetting.instance.erase());
 
     // Her profile photo. Gone from the screens at once and its file deleted,
     // on a change of account too: it is hers, not the next woman's.

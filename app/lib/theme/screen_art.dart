@@ -192,7 +192,6 @@ abstract final class ScreenArt {
     'R09': [AppArt.restFloor],
     'R11': [AppArt.yogaMat, AppArt.gymBag],
     'R12': [AppArt.trainers],
-    'R13': [AppArt.strongArms],
     'R14': [AppArt.stretchSeated, AppArt.dumbbells],
     'R15': [AppArt.squatWeights],
     'T01': [AppArt.breakfast, AppArt.running],

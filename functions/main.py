@@ -1841,6 +1841,99 @@ def accept_coach_invite(request: https_fn.CallableRequest) -> dict:
     )
 
 
+@https_fn.on_call()
+def review_client_health(request: https_fn.CallableRequest) -> dict:
+    """C9: the coach has read this client's health answers. `{subId}`."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    import datetime as dt
+
+    import coaching
+    from coaching import subscriptions
+
+    return _coaching_call(
+        subscriptions.review_health,
+        store.db(),
+        uid,
+        data,
+        live=coaching.COACH_CLIENTS_LIVE,
+        coach_v=_claim(request, "coachV"),
+        now=dt.datetime.now(dt.timezone.utc),
+    )
+
+
+@https_fn.on_call()
+def submit_check_in(request: https_fn.CallableRequest) -> dict:
+    """C3: the client answers her weekly check-in. `{relId, weekKey, answers}`."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    import datetime as dt
+
+    import coaching
+    from coaching import checkins
+
+    return _coaching_call(
+        checkins.submit,
+        store.db(),
+        uid,
+        data,
+        live=coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE,
+        now=dt.datetime.now(dt.timezone.utc),
+    )
+
+
+@https_fn.on_call()
+def coach_needs_attention(request: https_fn.CallableRequest) -> dict:
+    """C3: the coach's clients that need a look. `{}` in, `{clients}` out."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    _body(request)
+    import datetime as dt
+
+    import coaching
+    from coaching import checkins
+
+    return _coaching_call(
+        checkins.needs_attention,
+        store.db(),
+        uid,
+        live=coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE,
+        coach_v=_claim(request, "coachV"),
+        now=dt.datetime.now(dt.timezone.utc),
+    )
+
+
+@scheduler_fn.on_schedule(schedule="0 9 * * 5", timezone="Africa/Cairo", region=config.REGION)
+def send_weekly_check_ins(event: scheduler_fn.ScheduledEvent) -> None:
+    """Friday 09:00 Cairo: the weekly check-in card and push. Safe to run twice."""
+    import datetime as dt
+
+    import coaching
+    from coaching import checkins
+
+    if not (coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE):
+        return
+    count = checkins.send_cards(store.db(), dt.datetime.now(dt.timezone.utc), _coaching_notify)
+    logs.decision("send_weekly_check_ins", outcome="sent", count=count)
+
+
+@scheduler_fn.on_schedule(schedule="0 9 * * 1", timezone="Africa/Cairo", region=config.REGION)
+def check_in_follow_up(event: scheduler_fn.ScheduledEvent) -> None:
+    """Monday 09:00 Cairo: one kind follow-up for last week's open card."""
+    import datetime as dt
+
+    import coaching
+    from coaching import checkins
+
+    if not (coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE):
+        return
+    count = checkins.follow_up(store.db(), dt.datetime.now(dt.timezone.utc), _coaching_notify)
+    logs.decision("check_in_follow_up", outcome="sent", count=count)
+
+
+
 # ------------------------------------------------------- private coaching
 #
 # DECISIONS D61. The logic lives in pure modules under coaching/; these wrappers
@@ -1914,6 +2007,12 @@ def _payments_live() -> bool:
     import coaching
 
     return coaching.COACH_PAYMENTS_LIVE
+
+
+def common_limits() -> dict:
+    from coaching import common
+
+    return common.LIMITS
 
 
 @https_fn.on_call()
@@ -2404,6 +2503,7 @@ def on_coaching_message(event) -> None:
         chat.on_message(
             store.db(), event.params["relId"], event.params["messageId"],
             event.data.to_dict() or {}, now=_coaching_now(), notify=_coaching_notify,
+            blobs=_PersonalBlobs(), reencode=_reencode,
         )
     except Exception:
         logs.error("coaching_message_trigger_failed")
@@ -2418,8 +2518,17 @@ def on_coaching_report(event) -> None:
     from coaching import moderation
 
     try:
+        from datetime import timedelta
+
+        db = store.db()
+        data = event.data.to_dict() or {}
+        since = _coaching_now() - timedelta(hours=24)
+        mine = db.collection("reports").where("reporterUid", "==", data.get("reporterUid")).where("createdAt", ">=", since)
+        if sum(1 for _ in mine.stream()) > common_limits()["reportsPerDay"]:
+            db.collection("reports").document(event.params["reportId"]).update({"throttled": True})
+            return
         moderation.capture_evidence(
-            store.db(), event.params["reportId"], event.data.to_dict() or {}, now=_coaching_now()
+            db, event.params["reportId"], data, now=_coaching_now()
         )
     except Exception:
         logs.error("coaching_report_trigger_failed")

@@ -6,6 +6,7 @@ import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart'
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_list_view.dart';
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_logic.dart';
+import 'package:own_hub/features/private_coaching/presentation/chat/chat_media_bubbles.dart';
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_sheets.dart';
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_thread_view.dart';
 
@@ -389,17 +390,15 @@ void main() {
 
     testWidgets('send is off while the field is blank', (tester) async {
       await _thread(tester, lines: _sample());
-      final button = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.send),
-      );
-      expect(button.onPressed, isNull);
+      expect(find.widgetWithIcon(IconButton, Icons.send), findsNothing);
+      expect(find.byIcon(Icons.mic), findsOneWidget);
     });
 
     testWidgets(
-      'a client has no plus; a coach does, and each choice calls back',
+      'a client has a plus; a coach does, and each choice calls back',
       (tester) async {
         await _thread(tester, lines: _sample());
-        expect(find.byTooltip('Share something'), findsNothing);
+        expect(find.byTooltip('Share something'), findsOneWidget);
         final taps = <String>[];
         await _thread(
           tester,
@@ -426,6 +425,102 @@ void main() {
         expect(taps.length, 4);
       },
     );
+
+    testWidgets('a client sees the plus and the media rows', (tester) async {
+      await _thread(tester, otherIsCoach: true);
+      await tester.tap(find.byTooltip('Share something'));
+      await tester.pumpAndSettle();
+      expect(find.text('Take a photo'), findsOneWidget);
+      expect(find.text('Choose a photo'), findsOneWidget);
+      expect(find.text('Record a video (up to 30 seconds)'), findsOneWidget);
+      expect(find.text('Choose a video'), findsOneWidget);
+      expect(find.text('Share a recipe'), findsNothing);
+    });
+
+    testWidgets('a coach sees the media rows first and then the share rows', (
+      tester,
+    ) async {
+      await _thread(
+        tester,
+        otherIsCoach: false,
+        share: ShareChoices(onRecipe: () {}),
+      );
+      await tester.tap(find.byTooltip('Share something'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.getTopLeft(find.text('Take a photo')).dy,
+        lessThan(tester.getTopLeft(find.text('Share a recipe')).dy),
+      );
+    });
+
+    testWidgets('a photo line draws a bubble with a tick and a spoken label', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await _thread(
+        tester,
+        lines: [
+          ChatMessage(
+            id: 'p',
+            senderUid: 'me',
+            type: MessageType.image,
+            mediaPath: 'chat-media/c1__me/me/a.jpg',
+            createdAt: DateTime(2026, 10, 24, 11),
+          ),
+        ],
+      );
+      expect(find.byType(MediaBubble), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('You, Photo')), findsOneWidget);
+      expect(find.byIcon(Icons.done), findsOneWidget);
+      handle.dispose();
+    });
+
+    testWidgets('a video and a voice line show their length', (tester) async {
+      await _thread(
+        tester,
+        lines: [
+          ChatMessage(
+            id: 'v',
+            senderUid: 'me',
+            type: MessageType.video,
+            mediaPath: 'chat-media/c1__me/me/v.mp4',
+            durationMs: 12000,
+            createdAt: DateTime(2026, 10, 24, 11, 2),
+          ),
+          ChatMessage(
+            id: 'a',
+            senderUid: 'c1',
+            type: MessageType.audio,
+            mediaPath: 'chat-media/c1__me/c1/a.m4a',
+            durationMs: 65000,
+            createdAt: DateTime(2026, 10, 24, 11, 1),
+          ),
+        ],
+      );
+      expect(find.text('0:12'), findsOneWidget);
+      expect(find.text('1:05'), findsOneWidget);
+    });
+
+    testWidgets('a two tick shows once the other person read it', (
+      tester,
+    ) async {
+      final repo = FakeChatRepository();
+      repo.otherRead.value = DateTime(2026, 10, 24, 11, 30);
+      await _thread(
+        tester,
+        repo: repo,
+        lines: [
+          ChatMessage(
+            id: 'p',
+            senderUid: 'me',
+            type: MessageType.image,
+            mediaPath: 'chat-media/c1__me/me/a.jpg',
+            createdAt: DateTime(2026, 10, 24, 11),
+          ),
+        ],
+      );
+      expect(find.byIcon(Icons.done_all), findsOneWidget);
+    });
 
     testWidgets('a closed thread is read-only with a banner', (tester) async {
       await _thread(tester, lines: _sample(), open: false);

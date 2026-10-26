@@ -283,6 +283,28 @@ class ChatThreadController extends ChangeNotifier {
 
   bool get hasSendFailure => _failedSend != null;
 
+  /// Sends a photo, a clip or a voice note. True when the line was written.
+  Future<bool> sendMedia({
+    required MessageType type,
+    required Uint8List bytes,
+    required String contentType,
+    int? durationMs,
+  }) async {
+    if (_disposed || bytes.isEmpty) return false;
+    try {
+      await repository.sendMedia(
+        relId,
+        type: type,
+        bytes: bytes,
+        contentType: contentType,
+        durationMs: durationMs,
+      );
+      return true;
+    } on CoachingFailure {
+      return false;
+    }
+  }
+
   // ------------------------------------------------------ sessions on cards
 
   void _watchSessionsIfNeeded() {

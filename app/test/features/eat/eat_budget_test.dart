@@ -16,8 +16,6 @@ import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
 import 'package:own_hub/features/eat/presentation/eat_hub_view.dart';
-import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
-    show PlusButton;
 import 'package:own_hub/features/eat/presentation/meal_log_session.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/app_router.dart';
@@ -29,6 +27,7 @@ import '../../helpers/control_counter.dart';
 import '../../helpers/primary_actions.dart';
 
 const _maxHeroFigures = 4;
+const _maxControls = 5;
 
 final DateTime _lunchtime = DateTime(2026, 9, 15, 13, 12);
 const String _dayId = '2026-09-15';
@@ -135,39 +134,24 @@ void main() {
     return stat.evaluate().length + bars.evaluate().length;
   }
 
-  /// The "+" buttons that do something, in the viewport.
-  int plusButtons(WidgetTester tester) => find
-      .byWidgetPredicate((w) => w is PlusButton && w.onPressed != null)
-      .hitTestable()
-      .evaluate()
-      .length;
-
-  // The counter counts every "+" as a control, and each meal row and each food
-  // row has its own. [otherCeiling] is the plan's five, with the "+" buttons
-  // set aside; [strictCeiling] pins the count with every "+" included.
+  // The shared counter counts a meal or food row and its "+" as one control.
   final cases =
       <
         ({
           String name,
           InMemoryMealRepository Function() repository,
           Future<void> Function(WidgetTester) enter,
-          int otherCeiling,
-          int strictCeiling,
         })
       >[
         (
           name: 'E01 empty day',
           repository: InMemoryMealRepository.new,
           enter: (_) async {},
-          otherCeiling: 5,
-          strictCeiling: 8,
         ),
         (
           name: 'E01 mid-day with logged meals',
           repository: _midDay,
           enter: (_) async {},
-          otherCeiling: 5,
-          strictCeiling: 8,
         ),
         (
           name: 'E02 find, empty',
@@ -176,8 +160,6 @@ void main() {
             await tester.tap(find.byKey(const ValueKey('eat-hub-search')));
             await tester.pumpAndSettle();
           },
-          otherCeiling: 8,
-          strictCeiling: 9,
         ),
         (
           name: 'E02 find, typed text',
@@ -189,8 +171,6 @@ void main() {
             );
             await tester.pumpAndSettle();
           },
-          otherCeiling: 9,
-          strictCeiling: 9,
         ),
       ];
 
@@ -212,27 +192,30 @@ void main() {
           await tester.pumpAndSettle();
           await c.enter(tester);
 
-          final controls = countControlsAboveFold(tester);
-          final plus = plusButtons(tester);
+          // The caret handle a tap in the field raises is not a control.
+          final handles = find
+              .byElementPredicate(
+                (e) =>
+                    e.widget.runtimeType.toString() ==
+                    '_SelectionHandleOverlay',
+              )
+              .evaluate()
+              .length;
+          final controls = countControlsAboveFold(tester) - handles;
           final figures = heroFigures(tester);
           print(
             'EATBUDGET ${c.name} ${locale.languageCode} '
             '${logical.width.toInt()}x${logical.height.toInt()} '
-            'controls=$controls plus=$plus '
+            'controls=$controls '
             'primary=${filledPrimaryActions(tester)} figures=$figures',
           );
           expect(tester.takeException(), isNull);
           expectAtMostOnePrimaryAction(tester, where: c.name);
           expect(figures, lessThanOrEqualTo(_maxHeroFigures));
           expect(
-            controls - plus,
-            lessThanOrEqualTo(c.otherCeiling),
-            reason: '${c.name}: other controls, the "+" buttons set aside',
-          );
-          expect(
             controls,
-            lessThanOrEqualTo(c.strictCeiling),
-            reason: '${c.name}: strict count, every "+" included',
+            lessThanOrEqualTo(_maxControls),
+            reason: '${c.name}: controls, a row and its "+" counted as one',
           );
         });
       }

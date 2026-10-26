@@ -162,7 +162,6 @@ const Set<String> kNoChromeScreens = {
   'R07',
   'R08',
   'R09',
-  'R13',
   'C01',
   'C02',
   'C03',

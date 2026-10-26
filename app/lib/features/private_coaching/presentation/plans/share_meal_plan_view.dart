@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../app_state/app_changes.dart';
 import '../../../../app_state/honest_notice.dart';
+import '../../../../domain/format/day_key.dart';
 import '../../../../domain/format/number_label.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
@@ -33,8 +34,18 @@ import '../../domain/coaching_failure.dart';
 import '../../domain/subscription.dart';
 import '../client/coach_plan_view.dart';
 import '../coach/coach_text.dart';
+import '../desk/desk_text.dart';
+import 'assign_clients_sheet.dart';
+import 'assign_many.dart';
 import 'coach_plan_logic.dart';
 import 'plan_labels.dart';
+import 'swap_picker_sheet.dart';
+
+extension on AppL10n {
+  String get proteinGrams => proteinG_xt7ig;
+  String get targetRangeLine => between1200And4000Calories30To;
+  String get fillInBothNumbersOrLeaveBothEmpty => fillInBothNumbersOrLeaveBoth;
+}
 
 const int _itemNoteMax = 120;
 const int _freeTextMax = 80;
@@ -46,6 +57,7 @@ class ShareMealPlanView extends StatefulWidget {
     required this.subscription,
     required this.catalog,
     this.clientName = '',
+    this.others = const <AssignClient>[],
     this.templates = const <CoachDraft>[],
     this.existing,
     this.onBack,
@@ -58,6 +70,9 @@ class ShareMealPlanView extends StatefulWidget {
   /// The recipe book and the food pack.
   final MealCatalog catalog;
   final String clientName;
+
+  /// Her other active clients, for "Send to more clients".
+  final List<AssignClient> others;
   final List<CoachDraft> templates;
 
   /// A meal plan already published to this client, sent again as a new version.
@@ -74,15 +89,86 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
   late final TextEditingController _name = TextEditingController(
     text: widget.existing?.name ?? '',
   );
+  final TextEditingController _kcal = TextEditingController();
+  final TextEditingController _protein = TextEditingController();
   int _day = 0;
   bool _busy = false;
   bool _published = false;
   bool _templateSaved = false;
   String _error = '';
+  Set<String> _also = <String>{};
+  DateTime? _startsOn;
+  final Set<String> _sentSubs = <String>{};
+  Map<String, CoachingFailure> _failed = <String, CoachingFailure>{};
+  int _sentCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final g = widget.existing?.meal?.goal;
+    if (g != null) {
+      _kcal.text = '${g.kcalPerDay}';
+      _protein.text = '${g.proteinGPerDay}';
+    }
+  }
+
+  bool get _flagged => widget.subscription.intake?.eatingHistoryFlag ?? false;
+
+  /// Null when both fields are empty or the client is flagged. Throws nothing:
+  /// a half-filled or out-of-range pair is reported by [_goalProblem].
+  MealGoal? get _goal {
+    if (_flagged) return null;
+    final k = int.tryParse(_kcal.text.trim());
+    final p = int.tryParse(_protein.text.trim());
+    if (k == null || p == null) return null;
+    final g = MealGoal(kcalPerDay: k, proteinGPerDay: p);
+    return g.isValid ? g : null;
+  }
+
+  bool get _goalProblem {
+    if (_flagged) return false;
+    final empty = _kcal.text.trim().isEmpty && _protein.text.trim().isEmpty;
+    return !empty && _goal == null;
+  }
+
+  MealPlanBody get _bodyToSend => mealPlanWithGoal(_body, _goal);
+
+  Future<void> _assign() async {
+    final choice = await showAppSheet<AssignChoice>(
+      context: context,
+      children: [
+        AssignClientsSheet(
+          mine: AssignClient(
+            subId: widget.subscription.id,
+            name: widget.clientName,
+          ),
+          others: widget.others,
+          initial: _also,
+          startsOn: _startsOn ?? DateTime.now(),
+        ),
+      ],
+    );
+    if (choice == null || !mounted) return;
+    setState(() {
+      _also = choice.subIds;
+      _startsOn = choice.startsOn;
+    });
+  }
+
+  String _nameOf(String subId) => subId == widget.subscription.id
+      ? widget.clientName
+      : widget.others
+            .firstWhere(
+              (c) => c.subId == subId,
+              orElse: () => AssignClient(subId: subId, name: subId),
+            )
+            .name;
 
   @override
   void dispose() {
     _name.dispose();
+    _kcal.dispose();
+    _protein.dispose();
     super.dispose();
   }
 
@@ -128,10 +214,32 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
     });
   }
 
+  Future<void> _swaps(int day, String slot, int index, MealItem item) async {
+    final picked = await showAppSheet<List<String>>(
+      context: context,
+      children: [
+        SwapPickerSheet(
+          catalog: widget.catalog,
+          language: Localizations.localeOf(context).languageCode,
+          exclude: item.recipeId!,
+          initial: item.swaps,
+        ),
+      ],
+    );
+    if (picked == null || !mounted) return;
+    setState(
+      () => _body = mealPlanWithSwaps(_body, day, slot, index, picked),
+    );
+  }
+
   List<PlanProblem> _problems() => mealProblems(_body, _name.text);
 
   Future<void> _publish() async {
     final l10n = AppL10n.of(context);
+    if (_goalProblem) {
+      setState(() => _error = l10n.fillInBothNumbersOrLeaveBothEmpty);
+      return;
+    }
     final problems = _problems();
     if (problems.isNotEmpty) {
       setState(
@@ -146,20 +254,67 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
     setState(() {
       _busy = true;
       _error = '';
+      _failed = <String, CoachingFailure>{};
     });
     try {
-      final sent = await widget.repository.publishCoachPlan(
-        subId: widget.subscription.id,
-        name: _name.text.trim(),
-        meal: _body,
-        planId: widget.existing?.id,
+      final start = _startsOn == null ? null : dayKey(_startsOn!);
+      if (_also.isEmpty) {
+        final sent = await widget.repository.publishCoachPlan(
+          subId: widget.subscription.id,
+          name: _name.text.trim(),
+          meal: _bodyToSend,
+          planId: widget.existing?.id,
+          startsOn: start,
+        );
+        if (!mounted) return;
+        _sentSubs.add(widget.subscription.id);
+        setState(() {
+          _busy = false;
+          _published = true;
+        });
+        widget.onPublished?.call(sent.planId, sent.revision);
+        return;
+      }
+      final ids = <String>[
+        if (!_sentSubs.contains(widget.subscription.id)) widget.subscription.id,
+        for (final id in _also)
+          if (!_sentSubs.contains(id)) id,
+      ];
+      String? firstPlanId;
+      var firstRevision = 1;
+      final outcome = await publishToMany(
+        subIds: ids,
+        send: (subId) async {
+          final sent = await widget.repository.publishCoachPlan(
+            subId: subId,
+            name: _name.text.trim(),
+            meal: _bodyToSend,
+            planId: subId == widget.subscription.id
+                ? widget.existing?.id
+                : null,
+            startsOn: start,
+          );
+          if (subId == widget.subscription.id) {
+            firstPlanId = sent.planId;
+            firstRevision = sent.revision;
+          }
+        },
       );
       if (!mounted) return;
+      _sentSubs.addAll(outcome.sent);
       setState(() {
         _busy = false;
-        _published = true;
+        _failed = outcome.failed;
+        _sentCount = _sentSubs.length;
+        _published = outcome.allSent;
       });
-      widget.onPublished?.call(sent.planId, sent.revision);
+      if (outcome.allSent) {
+        if (firstPlanId != null) {
+          widget.onPublished?.call(firstPlanId!, firstRevision);
+        }
+      } else {
+        showHonestNotice(context, l10n.someClientsDidNotGetThePlan);
+      }
     } on CoachingFailure catch (failure) {
       if (!mounted) return;
       setState(() {
@@ -192,7 +347,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
           id: '',
           kind: PlanKind.meal,
           name: _name.text.trim(),
-          body: _body.toJson(),
+          body: _bodyToSend.toJson(),
         ),
       );
       if (!mounted) return;
@@ -221,7 +376,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
               kind: PlanKind.meal,
               name: _name.text.trim(),
               revision: (widget.existing?.revision ?? 0) + 1,
-              meal: _body,
+              meal: _bodyToSend,
             ),
             catalog: widget.catalog,
             constraints: _constraints,
@@ -253,9 +408,11 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
             ? const []
             : [
                 AppButton(
-                  widget.existing == null
+                  widget.existing != null
+                      ? l10n.publishAsANewVersion
+                      : _also.isEmpty
                       ? l10n.publishToName(first)
-                      : l10n.publishAsANewVersion,
+                      : l10n.publishToNClients(countLabel(_also.length + 1)),
                   key: const ValueKey('meal-publish'),
                   onPressed: _busy ? null : _publish,
                 ),
@@ -266,6 +423,27 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
               l10n.planForName(first),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
+          if (_failed.isNotEmpty)
+            AppCard(
+              variant: AppCardVariant.amber,
+              key: const ValueKey('assign-partial'),
+              children: [
+                Text(
+                  l10n.sentToNClients(countLabel(_sentCount)),
+                  style: AppText.titleS,
+                ),
+                for (final e in _failed.entries)
+                  Text(
+                    '${_nameOf(e.key)}: ${coachFailureText(l10n, e.value)}',
+                    style: AppText.bodyM,
+                  ),
+                AppButton(
+                  l10n.tryAgainForN(countLabel(_failed.length)),
+                  key: const ValueKey('assign-retry'),
+                  onPressed: _busy ? null : _publish,
+                ),
+              ],
+            ),
           if (_published)
             AppCard(
               variant: AppCardVariant.sage,
@@ -273,7 +451,9 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                 Semantics(
                   liveRegion: true,
                   child: Text(
-                    l10n.publishedNameCanSeeItNow(first),
+                    _sentSubs.length > 1
+                        ? l10n.sentToNClients(countLabel(_sentSubs.length))
+                        : l10n.publishedNameCanSeeItNow(first),
                     key: const ValueKey('meal-published'),
                     style: AppText.titleS,
                   ),
@@ -295,6 +475,23 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
               ],
               onChanged: (_) => setState(() => _error = ''),
             ),
+            if (widget.existing == null && widget.others.isNotEmpty)
+              AppButton(
+                l10n.sendToMoreClients,
+                key: const ValueKey('assign-more'),
+                variant: AppButtonVariant.text,
+                height: 48,
+                fontSize: 15,
+                onPressed: _busy ? null : _assign,
+              ),
+            if (_startsOn != null && _also.isNotEmpty)
+              Text(
+                l10n.startsDate(dateText(l10n, _startsOn)),
+                key: const ValueKey('assign-summary'),
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
             if (widget.existing != null)
               Text(
                 l10n.versionN(countLabel(widget.existing!.revision + 1)),
@@ -354,6 +551,64 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                   ),
                 ],
               ),
+            if (_flagged)
+              AppCard(
+                key: const ValueKey('meal-gate-banner'),
+                variant: AppCardVariant.amber,
+                children: [
+                  Text(
+                    l10n.herAnswersOnEatingMeanYouReview,
+                    style: AppText.titleS,
+                  ),
+                ],
+              )
+            else
+              AppCard(
+                variant: AppCardVariant.outlined,
+                borderRadius: AppRadius.md,
+                children: [
+                  Text(l10n.dailyTargetForHer, style: AppText.titleS),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppField(
+                          key: const ValueKey('meal-goal-kcal'),
+                          controller: _kcal,
+                          label: l10n.calories,
+                          hint: '1600',
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(4),
+                          ],
+                          onChanged: (_) => setState(() => _error = ''),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppField(
+                          key: const ValueKey('meal-goal-protein'),
+                          controller: _protein,
+                          label: l10n.proteinGrams,
+                          hint: '110',
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(3),
+                          ],
+                          onChanged: (_) => setState(() => _error = ''),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    l10n.targetRangeLine,
+                    style: AppText.bodyM.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
             AppCard(
               key: ValueKey('meal-day-$dayIndex'),
               variant: AppCardVariant.outlined,
@@ -368,7 +623,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                 ),
                 for (final slot in CoachingEnums.mealSlots)
                   ..._slot(l10n, lang, slot, day, dayIndex, flags),
-                if (!total.isEmpty)
+                if (!_flagged && !total.isEmpty)
                   Text(
                     [
                       dayNutritionLine(l10n, total),
@@ -538,6 +793,17 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
             ),
             icon: const Icon(Icons.delete_outline, size: 22),
           ),
+          if (item.kind == MealItemKind.recipe)
+            TextButton(
+              key: ValueKey('meal-swaps-$dayIndex-$slot-$index'),
+              style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+              onPressed: () => unawaited(_swaps(dayIndex, slot, index, item)),
+              child: Text(
+                item.swaps.isEmpty
+                    ? l10n.swaps
+                    : l10n.swapsN(countLabel(item.swaps.length)),
+              ),
+            ),
         ],
       ),
     );

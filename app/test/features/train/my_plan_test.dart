@@ -114,10 +114,12 @@ void main() {
 
     test('remove, copy, move and add a day', () {
       expect(base.withoutDay(0).days.length, 1);
-      final copy = base.withCopyOf(1);
+      final copy = base.withCopyOf(1, suffixEn: ' (copy)', suffixAr: ' (نسخة)');
       expect(copy.days.length, 3);
       expect(copy.days[2].session.sessionId, isNot('mine_1'));
       expect(copy.days[2].session.sessionId, isNot('mine_2'));
+      expect(copy.days[2].session.titleEn, 'Day b (copy)');
+      expect(copy.days[2].session.titleAr, 'يوم b (نسخة)');
       expect(copy.days[2].sourceId, isNull);
       final moved = base.withDayMoved(1, 0);
       expect(moved.days[0].sourceId, 'b');
@@ -400,6 +402,37 @@ void main() {
       expect(targetsFor(plan, 'mine_1'), [8]);
       expect(targetsFor(plan, 'nope'), isEmpty);
       expect(targetsFor(null, 'mine_1'), isEmpty);
+    });
+
+    test('repeat last week', () {
+      var plan = MyPlan.fork(_template(), stage: LifeStage.none);
+      plan = _newDay(plan, 'Day c', [_planned('m1')]);
+      expect(plan.days.length, 3);
+      final two = plan.withRepeatedLastWeek();
+      expect(two.days.length, 6);
+      expect([for (final d in two.days.sublist(3)) d.week], [2, 2, 2]);
+      expect(
+        [for (final d in two.days.sublist(3)) d.session.titleEn],
+        [for (final d in plan.days) d.session.titleEn],
+      );
+      expect(
+        {for (final d in two.days) d.session.sessionId}.length,
+        6,
+      );
+      final three = two.withRepeatedLastWeek();
+      final four = three.withRepeatedLastWeek();
+      expect(four.days.length, 12);
+      expect(four.weekCount, 4);
+      expect(identical(four.withRepeatedLastWeek(), four), isTrue);
+      var fullW2 = two;
+      while (!fullW2.isFull) {
+        fullW2 = _newDay(fullW2, 'extra', [_planned('m1')]);
+      }
+      expect(fullW2.daysOfWeek(2).length, kMaxPlanDays);
+      final back = MyPlan.tryParse(four.toJson())!;
+      expect([for (final d in back.days) d.week], [
+        for (final d in four.days) d.week,
+      ]);
     });
   });
 }

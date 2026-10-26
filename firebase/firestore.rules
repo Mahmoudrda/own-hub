@@ -1185,11 +1185,12 @@ service cloud.firestore {
                              ? parent().clientUid
                              : parent().coachUid)
                       && request.resource.data.keys().hasOnly(
-                           ['senderUid', 'type', 'text', 'recipeId', 'createdAt'])
+                           ['senderUid', 'type', 'text', 'recipeId', 'createdAt',
+                            'mediaPath', 'durationMs', 'bytes'])
                       && request.resource.data.keys().hasAll(
                            ['senderUid', 'type', 'createdAt'])
                       && request.resource.data.createdAt == request.time
-                      && request.resource.data.type in ['text', 'recipe']
+                      && request.resource.data.type in ['text', 'recipe', 'image', 'video', 'audio']
                       && (!('text' in request.resource.data)
                           || (request.resource.data.text is string
                               && request.resource.data.text.size() <= 2000
@@ -1198,10 +1199,26 @@ service cloud.firestore {
                       && (request.resource.data.type == 'text'
                           ? (('text' in request.resource.data)
                              && request.resource.data.text.size() >= 1
-                             && !('recipeId' in request.resource.data))
-                          : (request.resource.data.recipeId is string
+                             && !('recipeId' in request.resource.data)
+                             && !('mediaPath' in request.resource.data))
+                          : request.resource.data.type == 'recipe'
+                          ? (request.resource.data.recipeId is string
                              && request.resource.data.recipeId.matches(
-                                  '^[a-z0-9_-]{1,80}$')));
+                                  '^[a-z0-9_-]{1,80}$')
+                             && !('mediaPath' in request.resource.data))
+                          : (!('text' in request.resource.data)
+                             && !('recipeId' in request.resource.data)
+                             && request.resource.data.mediaPath is string
+                             && request.resource.data.mediaPath.matches(
+                                  '^chat-media/' + relId + '/' + request.auth.uid + '/[A-Za-z0-9_.-]{1,80}$')
+                             && request.resource.data.bytes is int
+                             && request.resource.data.bytes > 0
+                             && request.resource.data.bytes <= 25000000
+                             && (request.resource.data.type == 'image'
+                                 ? !('durationMs' in request.resource.data)
+                                 : (request.resource.data.durationMs is int
+                                    && request.resource.data.durationMs >= 500
+                                    && request.resource.data.durationMs <= 121500))));
         allow update, delete: if false;
       }
 
@@ -1222,6 +1239,10 @@ service cloud.firestore {
       match /reviews/{reviewId} {
         allow read: if coachClientsLive() && isPartyOfParent();
         allow write: if false;
+      }
+
+      match /checkIns/{weekKey} {
+        allow read, write: if false;
       }
     }
 

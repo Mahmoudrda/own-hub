@@ -76,3 +76,11 @@ https://:version.:project.pages.dev/*
 # stays as a last guard for a host that serves the folder as it is.
 /_build/*
   X-Robots-Tag: noindex, nofollow
+
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600

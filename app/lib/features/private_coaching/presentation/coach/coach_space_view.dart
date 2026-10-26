@@ -34,6 +34,8 @@ class CoachSpaceView extends StatefulWidget {
     this.onPreviewPortfolio,
     this.onOpenDashboard,
     this.onOpenChats,
+    this.onInviteClient,
+    this.onShareProfile,
     this.onBack,
     this.photoChooser = chooseCoachPhoto,
     this.imageChooser = chooseCoachImage,
@@ -48,6 +50,12 @@ class CoachSpaceView extends StatefulWidget {
   final void Function(String coachUid)? onPreviewPortfolio;
   final VoidCallback? onOpenDashboard;
   final VoidCallback? onOpenChats;
+
+  /// "Invite a client": her code, shared on WhatsApp.
+  final VoidCallback? onInviteClient;
+
+  /// "Share my profile link": her public portfolio link.
+  final void Function(String coachUid)? onShareProfile;
   final VoidCallback? onBack;
   final CoachPhotoChooser photoChooser;
   final CoachImageChooser imageChooser;
@@ -163,6 +171,20 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
                 ListenableBuilder(
                   listenable: AppChanges.instance,
                   builder: (context, _) => _dashboard(l10n, coaching),
+                ),
+              if (widget.onInviteClient != null)
+                _nav(
+                  title: l10n.inviteAClient,
+                  subtitle: l10n.alreadyCoachingSomeoneSendHerYourCode,
+                  icon: Icons.person_add_alt,
+                  onTap: widget.onInviteClient!,
+                ),
+              if (widget.onShareProfile != null && live)
+                _nav(
+                  title: l10n.shareMyProfileLink,
+                  subtitle: l10n.membersWhoOpenItLandOnYour,
+                  icon: Icons.link,
+                  onTap: () => widget.onShareProfile!(profile.uid),
                 ),
               _nav(
                 title: l10n.myPortfolio,

@@ -299,14 +299,6 @@ class _WeekPlanViewState extends State<WeekPlanView> {
               openScreen(context, 'E06');
             },
           ),
-      // First view of a week with nothing planned only: it waves once.
-      if (!view.hasPlan)
-        const Kitten(
-          pose: KittenPose.wave,
-          size: 56,
-          moment: 'E07',
-          sessionBudget: true,
-        ),
       if (!widget.embedded && AppRouter.screenIsOn('E08'))
         if (view.hasPlan)
           AppCard(

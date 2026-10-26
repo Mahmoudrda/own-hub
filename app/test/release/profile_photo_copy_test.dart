@@ -37,6 +37,13 @@ void main() {
     expect(arabic, contains('ومش بتتخزّن أبدًا'));
     expect(arabic, contains('بتفضل على موبايلك'));
     expect(arabic, contains('بتترفع، وOwn Hub بتراجعها'));
+    for (final path in [
+      'ios/Runner/Info.plist',
+      'ios/Runner/en.lproj/InfoPlist.strings',
+      'ios/Runner/ar.lproj/InfoPlist.strings',
+    ]) {
+      expect(read(path), contains('NSMicrophoneUsageDescription'), reason: path);
+    }
   });
 
   test('the profile screen says kept, not that no copy exists anywhere', () {

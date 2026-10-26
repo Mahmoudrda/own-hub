@@ -17,7 +17,6 @@ import 'analytics_consent.dart';
 import 'debug_analytics_sink.dart';
 import 'firebase_analytics_sink.dart';
 import 'firebase_boot.dart';
-import 'kitten_setting.dart';
 import 'posthog_analytics.dart';
 
 const bool _kAnalyticsDebugSend = bool.fromEnvironment(
@@ -72,10 +71,6 @@ abstract final class AnalyticsSession {
         languageCode,
       );
     }
-    await analytics.setUserProperty(
-      AnalyticsUserProperty.kittenMoves,
-      KittenSetting.instance.moves ? 'on' : 'off',
-    );
     await analytics.setUserProperty(
       AnalyticsUserProperty.buildChannel,
       kBuildChannel,

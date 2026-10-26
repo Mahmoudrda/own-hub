@@ -60,6 +60,9 @@ ALREADY_REQUESTED = "already_requested"
 REQUEST_NOT_FOUND = "request_not_found"
 
 WRONG_STATUS = "wrong_status"
+
+HEALTH_NOT_REVIEWED = "health_not_reviewed"
+"""A plan cannot go to a client whose health answers her coach has not read."""
 """Not in a status that allows this call. Refresh and try again."""
 
 PAST_PAY_BY = "past_pay_by"
@@ -86,6 +89,8 @@ SELLER_NOT_SET = "seller_not_set"
 PLAN_INVALID = "plan_invalid"
 
 PLAN_TOO_LARGE = "plan_too_large"
+
+EATING_HISTORY_HOLD = "eating_history_hold"
 
 SESSION_LINK_INVALID = "session_link_invalid"
 

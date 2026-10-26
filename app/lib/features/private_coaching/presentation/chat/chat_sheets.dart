@@ -10,6 +10,7 @@ import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_chip_row.dart';
 import '../../../../ui/app_sheet.dart';
+import '../../data/saved_reply_store.dart';
 import '../../domain/coaching_contract.dart';
 import '../member/coach_labels.dart';
 
@@ -52,25 +53,86 @@ class SheetAction extends StatelessWidget {
   );
 }
 
-/// What the coach can put into the thread.
+/// What the coach or client can put into the thread.
 class ShareChoices {
   const ShareChoices({
     this.onRecipe,
     this.onWorkoutPlan,
     this.onMealPlan,
     this.onSession,
+    this.onTakePhoto,
+    this.onChoosePhoto,
+    this.onRecordVideo,
+    this.onChooseVideo,
+    this.replies = const <SavedReply>[],
+    this.onUseReply,
+    this.onEditReply,
+    this.onAddReply,
   });
 
   final VoidCallback? onRecipe;
   final VoidCallback? onWorkoutPlan;
   final VoidCallback? onMealPlan;
   final VoidCallback? onSession;
+  final VoidCallback? onTakePhoto;
+  final VoidCallback? onChoosePhoto;
+  final VoidCallback? onRecordVideo;
+  final VoidCallback? onChooseVideo;
+  final List<SavedReply> replies;
+  final void Function(SavedReply)? onUseReply;
+  final void Function(SavedReply)? onEditReply;
+  final VoidCallback? onAddReply;
 
   bool get any =>
       onRecipe != null ||
       onWorkoutPlan != null ||
       onMealPlan != null ||
-      onSession != null;
+      onSession != null ||
+      onTakePhoto != null ||
+      onChoosePhoto != null ||
+      onRecordVideo != null ||
+      onChooseVideo != null ||
+      onUseReply != null;
+
+  ShareChoices withMedia({
+    required VoidCallback onTakePhoto,
+    required VoidCallback onChoosePhoto,
+    required VoidCallback onRecordVideo,
+    required VoidCallback onChooseVideo,
+  }) => ShareChoices(
+    onRecipe: onRecipe,
+    onWorkoutPlan: onWorkoutPlan,
+    onMealPlan: onMealPlan,
+    onSession: onSession,
+    onTakePhoto: onTakePhoto,
+    onChoosePhoto: onChoosePhoto,
+    onRecordVideo: onRecordVideo,
+    onChooseVideo: onChooseVideo,
+    replies: replies,
+    onUseReply: onUseReply,
+    onEditReply: onEditReply,
+    onAddReply: onAddReply,
+  );
+
+  ShareChoices withReplies({
+    required List<SavedReply> replies,
+    required void Function(SavedReply) onUseReply,
+    required void Function(SavedReply) onEditReply,
+    required VoidCallback onAddReply,
+  }) => ShareChoices(
+    onRecipe: onRecipe,
+    onWorkoutPlan: onWorkoutPlan,
+    onMealPlan: onMealPlan,
+    onSession: onSession,
+    onTakePhoto: onTakePhoto,
+    onChoosePhoto: onChoosePhoto,
+    onRecordVideo: onRecordVideo,
+    onChooseVideo: onChooseVideo,
+    replies: replies,
+    onUseReply: onUseReply,
+    onEditReply: onEditReply,
+    onAddReply: onAddReply,
+  );
 }
 
 Future<void> showShareSheet(BuildContext context, ShareChoices choices) {
@@ -88,6 +150,82 @@ Future<void> showShareSheet(BuildContext context, ShareChoices choices) {
     builder: (sheet) => AppSheet(
       gap: 8,
       children: [
+        if (choices.onUseReply != null) ...[
+          Text(
+            l10n.savedReplies,
+            style: AppText.titleS.copyWith(color: AppColors.ink),
+          ),
+          for (final reply in choices.replies)
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(sheet).pop();
+                      choices.onUseReply!(reply);
+                    },
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 52),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
+                          reply.text,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.body.copyWith(color: AppColors.ink),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l10n.editReply,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  icon: const Icon(Icons.edit_outlined),
+                  color: AppColors.primary,
+                  onPressed: () {
+                    Navigator.of(sheet).pop();
+                    choices.onEditReply!(reply);
+                  },
+                ),
+              ],
+            ),
+          if (choices.onAddReply != null &&
+              choices.replies.length < kSavedReplyMax)
+            SheetAction(
+              icon: Icons.add,
+              label: l10n.addAReply,
+              onTap: () => run(sheet, choices.onAddReply!),
+            ),
+          const Divider(height: 24),
+        ],
+        if (choices.onTakePhoto != null)
+          SheetAction(
+            icon: Icons.photo_camera_outlined,
+            label: l10n.takeAPhoto,
+            onTap: () => run(sheet, choices.onTakePhoto!),
+          ),
+        if (choices.onChoosePhoto != null)
+          SheetAction(
+            icon: Icons.photo_outlined,
+            label: l10n.chooseAPhoto,
+            onTap: () => run(sheet, choices.onChoosePhoto!),
+          ),
+        if (choices.onRecordVideo != null)
+          SheetAction(
+            icon: Icons.videocam_outlined,
+            label: l10n.recordAVideoUpTo30Seconds,
+            onTap: () => run(sheet, choices.onRecordVideo!),
+          ),
+        if (choices.onChooseVideo != null)
+          SheetAction(
+            icon: Icons.video_library_outlined,
+            label: l10n.chooseAVideo,
+            onTap: () => run(sheet, choices.onChooseVideo!),
+          ),
         if (choices.onRecipe != null)
           SheetAction(
             icon: Icons.menu_book_outlined,
@@ -108,7 +246,7 @@ Future<void> showShareSheet(BuildContext context, ShareChoices choices) {
           ),
         if (choices.onSession != null)
           SheetAction(
-            icon: Icons.videocam_outlined,
+            icon: Icons.event_outlined,
             label: l10n.scheduleALiveSession,
             onTap: () => run(sheet, choices.onSession!),
           ),

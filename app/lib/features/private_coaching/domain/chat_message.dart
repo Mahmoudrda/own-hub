@@ -8,6 +8,9 @@ import 'parse.dart';
 enum MessageType with WireEnum {
   text('text'),
   recipe('recipe'),
+  image('image'),
+  video('video'),
+  audio('audio'),
   workoutPlan('workoutPlan'),
   mealPlan('mealPlan'),
   session('session'),
@@ -17,7 +20,10 @@ enum MessageType with WireEnum {
   @override
   final String wire;
 
-  bool get writtenByApp => this == text || this == recipe;
+  bool get writtenByApp =>
+      this == text || this == recipe || isMedia;
+
+  bool get isMedia => this == image || this == video || this == audio;
 
   static MessageType? fromWire(Object? value) => enumFromWire(values, value);
 }
@@ -29,6 +35,9 @@ class ChatMessage {
     required this.type,
     this.text = '',
     this.recipeId,
+    this.mediaPath,
+    this.durationMs,
+    this.bytes,
     this.planId,
     this.planKind,
     this.planName,
@@ -36,6 +45,7 @@ class ChatMessage {
     this.startsAt,
     this.minutes,
     this.systemKind,
+    this.weekKey,
     this.hidden = false,
     this.createdAt,
     this.pending = false,
@@ -46,6 +56,9 @@ class ChatMessage {
   final MessageType type;
   final String text;
   final String? recipeId;
+  final String? mediaPath;
+  final int? durationMs;
+  final int? bytes;
   final String? planId;
   final PlanKind? planKind;
   final String? planName;
@@ -53,6 +66,7 @@ class ChatMessage {
   final DateTime? startsAt;
   final int? minutes;
   final SystemMessageKind? systemKind;
+  final String? weekKey;
 
   /// Hidden by the server after its screen or a staff decision.
   final bool hidden;
@@ -82,6 +96,9 @@ class ChatMessage {
       type: type,
       text: readString(map['text']),
       recipeId: readStringOrNull(map['recipeId']),
+      mediaPath: readStringOrNull(map['mediaPath']),
+      durationMs: readIntOrNull(map['durationMs']),
+      bytes: readIntOrNull(map['bytes']),
       planId: readStringOrNull(map['planId']),
       planKind: PlanKind.fromWire(map['planKind']),
       planName: readStringOrNull(map['planName']),
@@ -89,6 +106,7 @@ class ChatMessage {
       startsAt: readTime(map['startsAt']),
       minutes: readIntOrNull(map['minutes']),
       systemKind: system,
+      weekKey: readStringOrNull(map['weekKey']),
       hidden: readBool(map['hidden']) || system == SystemMessageKind.hidden,
       createdAt: readTime(map['createdAt']),
       pending: pending,
@@ -109,6 +127,20 @@ class ChatMessage {
         'type': MessageType.recipe.wire,
         'recipeId': recipeId,
       };
+
+  static Json mediaFields(
+    String senderUid,
+    MessageType type,
+    String mediaPath,
+    int bytes, {
+    int? durationMs,
+  }) => <String, Object?>{
+    'senderUid': senderUid,
+    'type': type.wire,
+    'mediaPath': mediaPath,
+    'bytes': bytes,
+    'durationMs': ?durationMs,
+  };
 
   /// Why [text] cannot be sent, else null. Empty and over-long texts count.
   static MessageProblem? problemWith(String text) {

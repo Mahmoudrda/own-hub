@@ -127,6 +127,9 @@ void main() {
     while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
       if (!await logWholeMove(tester)) break;
     }
+    // The last move's five seconds, then the session finishes.
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
     if (WorkoutSessionState.instance.day != null) await finishEarly(tester);
 
     expect(_weekOnHome, before + 1, reason: 'a custom session is a session');

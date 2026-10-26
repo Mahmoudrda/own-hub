@@ -12,6 +12,7 @@ from typing import Optional
 from identity import push as identity_push
 
 TITLE = "Own Hub"
+NEW_MESSAGE_TEXT_MODE = "generic"  # "generic" or "first_name" (owner decision 5)
 
 TEXT: dict[str, dict[str, tuple[str, str]]] = {
     "coachDecision": {
@@ -50,6 +51,10 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
         "en": (TITLE, "You have a new message."),
         "ar": (TITLE, "عندك رسالة جديدة."),
     },
+    "newMessageFrom": {
+        "en": (TITLE, "{name} sent you a message."),
+        "ar": (TITLE, "{name} بعتتلك رسالة."),
+    },
     "sessionProposed": {
         "en": (TITLE, "A live session has been proposed. Open Own Hub to answer."),
         "ar": (TITLE, "اتقترحت جلسة لايف. افتحي Own Hub وردّي عليها."),
@@ -57,6 +62,14 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
     "endsSoon": {
         "en": (TITLE, "Your coaching ends in a few days."),
         "ar": (TITLE, "التدريب بتاعك هيخلص كمان كام يوم."),
+    },
+    "checkInDue": {
+        "en": (TITLE, "Your weekly check-in is ready. It takes under a minute."),
+        "ar": (TITLE, "التشيك إن الأسبوعي جاهز. بياخد أقل من دقيقة."),
+    },
+    "checkInFollowUp": {
+        "en": (TITLE, "No rush. Last week's check-in is still here when you are ready."),
+        "ar": (TITLE, "من غير استعجال. التشيك إن بتاع الأسبوع اللي فات لسه موجود وقت ما تحبي."),
     },
     "coachingEnded": {
         "en": (TITLE, "Your coaching has ended."),
@@ -69,10 +82,11 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
 }
 
 
-def text_for(kind: str, locale: Optional[str]) -> tuple[str, str]:
+def text_for(kind: str, locale: Optional[str], name: str = "") -> tuple[str, str]:
     """Title and body for a kind. Arabic is the fallback, as for every push."""
     by_locale = TEXT[kind]
-    return by_locale.get(locale or "", by_locale["ar"])
+    title, body = by_locale.get(locale or "", by_locale["ar"])
+    return title, body.replace("{name}", name)
 
 
 def send_kind(
@@ -81,6 +95,7 @@ def send_kind(
     """Pushes one kind to each of her phones, in each phone's own language
     (`locale` stands in for a phone that did not say). Returns how many were
     accepted; an unknown kind sends nothing."""
+    kind, _, name = kind.partition(":")
     if kind not in TEXT:
         return 0
     return identity_push.send_to_user(
@@ -90,6 +105,6 @@ def send_kind(
         {"kind": kind},
         db,
         messaging,
-        texts=lambda phone_locale: text_for(kind, phone_locale),
+        texts=lambda phone_locale: text_for(kind, phone_locale, name),
         fallback_locale=locale if locale in ("en", "ar") else "ar",
     )

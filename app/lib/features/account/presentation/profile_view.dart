@@ -75,13 +75,9 @@ class ProfileView extends StatefulWidget {
     this.verification = VerificationRecord.none,
     this.notify = NotifySettings.initial,
     this.onBack,
-    this.onOpenCycle,
-    this.onOpenCoach,
     this.onBecomeCoach,
     this.onOpenCoachSpace,
     this.onOpenTraining,
-    this.onOpenLanguage,
-    this.onOpenNotifications,
     this.onOpenPrivacy,
     this.onOpenSafetyCentre,
     this.onOpenYourData,
@@ -103,8 +99,6 @@ class ProfileView extends StatefulWidget {
   final NotifySettings notify;
 
   final VoidCallback? onBack;
-  final VoidCallback? onOpenCycle;
-  final VoidCallback? onOpenCoach;
 
   /// "Coach women on Own Hub": the application. Null hides the row.
   final VoidCallback? onBecomeCoach;
@@ -122,8 +116,6 @@ class ProfileView extends StatefulWidget {
   /// behaves.
   final VoidCallback? onOpenTraining;
 
-  final VoidCallback? onOpenLanguage;
-  final VoidCallback? onOpenNotifications;
   final VoidCallback? onOpenPrivacy;
   final VoidCallback? onOpenSafetyCentre;
 
@@ -278,7 +270,6 @@ class _ProfileViewState extends State<ProfileView> {
     final view = ProfileScreenView.from(
       verification: widget.verification,
       dietary: _dietary,
-      notify: widget.notify,
       firstName: widget.firstName,
     );
 
@@ -325,31 +316,14 @@ class _ProfileViewState extends State<ProfileView> {
             onTap: widget.onOpenTraining,
           ),
 
-        // The language chooser lives in the sign-up flow and is a setting all
-        // the same, which is why `AppRouter.ungatedScreens` keeps it
-        // reachable with sign-up dark. Without that this row was the one
-        // control in the product that could strand a woman in a language she
-        // does not read.
+        // D3's row. The one the Eat safety guard has been waiting for.
         _row(
-          icon: Icons.language,
-          title: l10n.language,
-          subtitle: l10n.english_imxmn,
-          onTap: widget.onOpenLanguage,
+          icon: Icons.restaurant_outlined,
+          title: l10n.allergiesAndDietaryPreferences,
+          subtitle: l10n.anythingYouCannotEat,
+          onTap: _editDietary,
         ),
-        _row(
-          icon: Icons.self_improvement,
-          title: l10n.myCycle,
-          onTap: widget.onOpenCycle,
-        ),
-        // Hiring a coach is the marketplace, and the marketplace waits on a
-        // payment rail. D11 moved this row here from the deleted fifth tab;
-        // it comes back the day that flag does.
-        if (AppRouter.screenIsOn('H01'))
-          _row(
-            icon: Icons.sports_outlined,
-            title: l10n.myCoach,
-            onTap: widget.onOpenCoach,
-          ),
+        const SizedBox(height: 6),
         if (widget.onOpenCoachSpace != null)
           _row(
             icon: Icons.badge_outlined,
@@ -363,23 +337,6 @@ class _ProfileViewState extends State<ProfileView> {
             onTap: widget.onBecomeCoach,
           ),
 
-        // D3's row. The one the Eat safety guard has been waiting for.
-        _row(
-          icon: Icons.restaurant_outlined,
-          title: l10n.allergiesAndDietaryPreferences,
-          subtitle: l10n.anythingYouCannotEat,
-          onTap: _editDietary,
-        ),
-
-        _row(
-          icon: Icons.notifications_none,
-          title: l10n.notifications,
-          // True only while her notification settings ARE the defaults this
-          // sentence describes. Otherwise it is a statement about somebody
-          // else's quiet hours.
-          subtitle: view.notifyIsDefault ? l10n.onceADayQuiet10pmTo8am : '',
-          onTap: widget.onOpenNotifications,
-        ),
         // Privacy, the Safety Centre and Your data, one row to open and a
         // short list behind it.
         _row(
@@ -387,6 +344,8 @@ class _ProfileViewState extends State<ProfileView> {
           title: l10n.privacyAndData,
           onTap: _openPrivacyAndData,
         ),
+        if (widget.onOpenAdmin != null || widget.onOpenAllScreens != null)
+          const SizedBox(height: 6),
         if (widget.onOpenAdmin != null)
           _row(
             icon: Icons.admin_panel_settings_outlined,

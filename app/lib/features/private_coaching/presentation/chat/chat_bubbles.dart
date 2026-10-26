@@ -559,6 +559,9 @@ class CardBubble extends StatelessWidget {
         );
       case MessageType.text:
       case MessageType.system:
+      case MessageType.image:
+      case MessageType.video:
+      case MessageType.audio:
         return (const SizedBox.shrink(), '');
     }
   }

@@ -81,6 +81,7 @@ CALLABLES = {
     "decide_coach_application",
     "add_portfolio_media", "remove_portfolio_media", "confirm_portfolio_consent",
     "list_portfolio_media", "decide_portfolio_media",
+    "submit_check_in", "coach_needs_attention", "review_client_health",
     "suspend_coach",
     "update_coach_profile",
     "request_payout_account_change",

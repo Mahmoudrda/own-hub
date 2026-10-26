@@ -27,7 +27,7 @@ import 'package:own_hub/features/signup/presentation/being_checked_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_card.dart';
-import 'package:own_hub/ui/hand/mascot/kitten.dart';
+import 'package:own_hub/ui/hand/moment.dart';
 
 Widget _host(
   Widget child, {
@@ -255,6 +255,7 @@ void main() {
       await tester.pumpAndSettle();
       updates.add(const ServerVerification(ServerVerificationState.approved));
       await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 2));
       expect(approved, 1);
       await updates.close();
     });
@@ -456,23 +457,7 @@ void main() {
     expect(deviceDocId('fcm-token'), isNot(contains('fcm')));
   });
 
-  group('the kitten', () {
-    setUp(Kitten.resetPlayed);
-
-    testWidgets('waits in sage while the check is pending, and settles once', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_host(const BeingCheckedView()));
-      await tester.pump();
-      expect(find.byType(Kitten), findsOneWidget);
-      final kitten = tester.widget<Kitten>(find.byType(Kitten));
-      expect(kitten.pose, KittenPose.wait);
-      expect(kitten.size, 56);
-      expect(kitten.tint, KittenTint.sage);
-      await tester.pumpAndSettle();
-      expect(tester.binding.hasScheduledFrame, isFalse);
-    });
-
+  group('the tick', () {
     testWidgets('is never beside a refusal or a retry', (tester) async {
       for (final state in const [
         ServerVerificationState.rejected,
@@ -487,7 +472,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.byType(Kitten), findsNothing, reason: '$state');
+        expect(find.byType(Moment), findsNothing, reason: '$state');
       }
     });
   });

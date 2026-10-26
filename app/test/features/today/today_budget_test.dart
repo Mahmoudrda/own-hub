@@ -46,6 +46,8 @@ final DateTime _tuesday = DateTime(2026, 9, 15, 9, 41);
 
 enum _State { newWoman, midWeek, coached, followUp, event }
 
+var coachOpened = 0;
+
 TodayView _view(_State state) {
   final dayOne = state == _State.newWoman;
   return TodayView(
@@ -64,6 +66,7 @@ TodayView _view(_State state) {
     onOpenWeek: () {},
     onNotifications: () {},
     onSelectTab: (_) {},
+    onOpenCoach: state == _State.coached ? () => coachOpened++ : null,
     coachCard: state == _State.coached
         ? CoachHomeCard(
             workout: CoachPlan(
@@ -75,7 +78,6 @@ TodayView _view(_State state) {
               workout: workoutPlan(),
             ),
             hasUnread: true,
-            onOpen: () {},
             onStartWorkout: (_, _) {},
           )
         : null,
@@ -276,17 +278,20 @@ void main() {
     expect(last.bottom, lessThanOrEqualTo(bar.top));
   });
 
-  testWidgets('the follow-up card has one question, its chips and one close', (
-    tester,
-  ) async {
-    _size(tester, const Size(390, 844));
-    await tester.pumpWidget(_host(_view(_State.followUp), const Locale('en')));
-    await tester.pumpAndSettle();
-    expect(find.text('How do you feel today?'), findsOneWidget);
-    expect(find.byIcon(Icons.close), findsOneWidget);
-    expect(find.text("Don't show this kind again"), findsNothing);
-    expect(find.text('Not now'), findsNothing);
-  });
+  testWidgets(
+    'the follow-up card has one question, its chips and no close button',
+    (tester) async {
+      _size(tester, const Size(390, 844));
+      await tester.pumpWidget(
+        _host(_view(_State.followUp), const Locale('en')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('How do you feel today?'), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsNothing);
+      expect(find.text("Don't show this kind again"), findsNothing);
+      expect(find.text('Not now'), findsNothing);
+    },
+  );
 
   testWidgets('only one contextual card: follow-up beats event beats cycle', (
     tester,
@@ -331,6 +336,7 @@ void main() {
   testWidgets('a coached woman: her coach is the Today card (D11)', (
     tester,
   ) async {
+    coachOpened = 0;
     _size(tester, const Size(390, 844));
     await tester.pumpWidget(_host(_view(_State.coached), const Locale('en')));
     await tester.pumpAndSettle();
@@ -342,6 +348,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Do my own plan instead'), findsOneWidget);
     expect(find.text('Edit today'), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('change-my-coach')));
+    await tester.pumpAndSettle();
+    expect(coachOpened, 1);
   });
 
   testWidgets('the Change sheet closes, then runs the row', (tester) async {

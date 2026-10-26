@@ -95,7 +95,7 @@ check "privacy manifest declares Health" "grep -q '<string>NSPrivacyCollectedDat
 check "privacy manifest declares SensitiveInfo" "grep -q NSPrivacyCollectedDataTypeSensitiveInfo ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares PhotosorVideos" "grep -q NSPrivacyCollectedDataTypePhotosorVideos ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares OtherDataTypes" "grep -q NSPrivacyCollectedDataTypeOtherDataTypes ios/Runner/PrivacyInfo.xcprivacy"
-check "RECORD_AUDIO stripped from the merged manifest" "grep -q 'RECORD_AUDIO\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
+check "RECORD_AUDIO declared in the manifest" "grep -q '<uses-permission android:name=\"android.permission.RECORD_AUDIO\" />' android/app/src/main/AndroidManifest.xml"
 check "READ_EXTERNAL_STORAGE stripped"     "grep -q 'READ_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "WRITE_EXTERNAL_STORAGE stripped"    "grep -q 'WRITE_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "push is declared where it is used"  "! grep -q '^  firebase_messaging:' pubspec.yaml || (grep -q POST_NOTIFICATIONS android/app/src/main/AndroidManifest.xml && grep -q aps-environment ios/Runner/Runner.entitlements && grep -q 'push token' android/play-data-safety.txt)"

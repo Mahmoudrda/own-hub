@@ -65,17 +65,7 @@ void main() {
     phone(t);
     final s = t.ensureSemantics();
     AppRouter.intakeRepository.markSetupDone();
-    for (final id in [
-      'R07',
-      'R08',
-      'R09',
-      'R10',
-      'R04',
-      'R06',
-      'R12',
-      'R13',
-      'R02',
-    ]) {
+    for (final id in ['R07', 'R08', 'R09', 'R10', 'R04', 'R06', 'R12', 'R02']) {
       await open(t, appDestinations[id]!.name, locale: const Locale('en'));
       print('$id PAINTED: ${paintedText(t).join(" | ")}');
       print('$id TAPPABLE: ${tappables(t).map((e) => e.label).join(" | ")}');

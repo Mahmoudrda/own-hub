@@ -167,7 +167,7 @@ class MidSetView extends StatefulWidget {
   /// offer Undo on the very log that was just made.
   final ValueChanged<LogHandle>? onSetLogged;
 
-  /// R13. Logs every remaining set of this move at once and returns to the move
+  /// Logs every remaining set of this move at once and returns to the move
   /// list — **the session does not end.**
   final ValueChanged<LogHandle>? onMoveLogged;
 

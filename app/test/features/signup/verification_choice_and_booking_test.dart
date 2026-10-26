@@ -318,7 +318,7 @@ void main() {
       updates.add(const ServerVerification(ServerVerificationState.approved));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      expect(approved, 0, reason: 'the kitten cheers first');
+      expect(approved, 0, reason: 'the tick draws first');
       expect(find.text('Your check is done'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 1));

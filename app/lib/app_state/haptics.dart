@@ -7,7 +7,7 @@
 ///
 /// - **a set logged** — a selection click, the lightest the phone has, so a
 ///   tap between breaths is confirmed without a buzz in her hand;
-/// - **a session finished** — a medium impact as the kitten cheers on R10, the
+/// - **a session finished** — a medium impact as the tick draws on R10, the
 ///   one haptic of that screen;
 /// - **a small thing done** — a meal logged, a grocery line ticked, a period
 ///   saved: a light impact beside the tick that draws;

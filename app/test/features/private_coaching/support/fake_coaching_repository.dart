@@ -323,6 +323,7 @@ class FakeCoachingRepository implements ChatThreadRepository {
     MyPlan? workout,
     MealPlanBody? meal,
     String? planId,
+    String? startsOn,
   }) async {
     _record('publishCoachPlan', {'subId': subId, 'name': name});
     return (planId: planId ?? _next('plan'), revision: 1);
@@ -386,6 +387,24 @@ class FakeCoachingRepository implements ChatThreadRepository {
   @override
   Future<void> sendRecipe(String relId, String recipeId) async =>
       _record('sendRecipe', {'relId': relId, 'recipeId': recipeId});
+
+  @override
+  Future<void> sendMedia(
+    String relId, {
+    required MessageType type,
+    required Uint8List bytes,
+    required String contentType,
+    int? durationMs,
+  }) async => _record('sendMedia', {
+    'relId': relId,
+    'type': type.wire,
+    'bytes': bytes.length,
+    'contentType': contentType,
+    'durationMs': durationMs,
+  });
+
+  @override
+  Future<String> chatMediaUrl(String path) async => 'https://example.test/$path';
 
   @override
   Future<void> markRead(String relId) async {

@@ -17,7 +17,6 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_sheet.dart';
-import '../../../ui/hand/mascot/kitten.dart';
 import '../../../ui/hand/spring_pop.dart';
 
 /// True when she chose to go on, false or null when she did not.
@@ -150,12 +149,6 @@ class SampleNotification extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Kitten(
-                    pose: KittenPose.point,
-                    size: 26,
-                    holdStill: true,
-                  ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

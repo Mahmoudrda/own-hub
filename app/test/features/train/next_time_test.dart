@@ -1,5 +1,5 @@
-// R10 looks ahead: for up to three loaded moves she weighed, what to lift
-// next time. A step up when the sets were done, the same weight when not,
+// R03 looks ahead: for up to three loaded moves she weighed, what to lift
+// today. A step up when the sets were done, the same weight when not,
 // nothing for bodyweight, nothing after a discard, never a lower figure.
 
 import 'package:flutter/material.dart';
@@ -7,18 +7,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/rewards_state.dart';
 import 'package:own_hub/app_state/training_streak_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
-import 'package:own_hub/domain/flags/feature_flags.dart';
-import 'package:own_hub/domain/rewards/credit_outcome.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/features/progress/domain/progress_repository.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/train/domain/session_summary.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
-import 'package:own_hub/features/train/presentation/finished_view.dart';
+import 'package:own_hub/features/train/presentation/workout_day_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
-import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/theme/app_tokens.dart';
-import 'package:own_hub/ui/hand/finish_wipe.dart';
 
 PlannedMove _loaded(String id, String name) => PlannedMove(
   exerciseId: id,
@@ -84,10 +80,7 @@ void main() {
     ],
   );
 
-  Future<SessionSummary?> session({
-    EndedReason reason = EndedReason.finished,
-    bool difficult = false,
-  }) async {
+  Future<void> session({EndedReason reason = EndedReason.finished}) async {
     state.start(day, repository);
     await Future<void>.delayed(Duration.zero);
     state.setLogged();
@@ -96,18 +89,23 @@ void main() {
     _log(repository, 'live-1', 'glute_bridge', reps: 10);
     _log(repository, 'live-1', 'rdl', reps: 10, kg: 30);
     _log(repository, 'live-1', 'curl', reps: 10, kg: 8);
-    return state.finish(
+    await state.finish(
       repository: repository,
       today: InMemoryTodayRepository(),
       progress: ProgressStore(),
       reason: reason,
-      difficult: difficult,
     );
   }
 
+  List<NextTimeMove> next({bool difficult = false}) => nextWeightsFor(
+    repository: repository,
+    moves: day.moves,
+    difficult: difficult,
+  );
+
   test('a step up when the sets were done, the same weight when not', () async {
-    final summary = await session();
-    expect(summary!.nextTime, const [
+    await session();
+    expect(next(), const [
       NextTimeMove(name: 'Hip thrust', kg: 22.5, rises: true),
       NextTimeMove(name: 'Leg press', kg: 40, rises: false),
       NextTimeMove(name: 'Romanian deadlift', kg: 35, rises: true),
@@ -115,105 +113,57 @@ void main() {
   });
 
   test('a hard week holds the weight, never lowers it', () async {
-    final summary = await session(difficult: true);
-    expect(summary!.nextTime.every((m) => !m.rises), isTrue);
-    expect(summary.nextTime.first.kg, 20);
+    await session();
+    final held = next(difficult: true);
+    expect(held.every((m) => !m.rises), isTrue);
+    expect(held.first.kg, 20);
   });
 
   test('nothing for bodyweight and nothing after a discard', () async {
-    final discarded = await session(reason: EndedReason.abandoned);
-    expect(discarded!.nextTime, isEmpty);
+    await session(reason: EndedReason.abandoned);
+    expect(next(), isEmpty);
   });
 
-  group('on R10', () {
-    final savedFlags = AppRouter.featureFlags;
-    setUp(
-      () => AppRouter.featureFlags = FeatureFlags.allOff.with_({
-        Feature.finishReveal: true,
-      }),
-    );
-    tearDown(() => AppRouter.featureFlags = savedFlags);
-
-    const live = TrainSession(
-      id: 'live-1',
-      source: SessionSource.live,
-      dateKey: '2026-10-22',
-      sets: [],
-      completed: true,
-    );
-
-    SessionSummary summaryWith(List<NextTimeMove> next) => SessionSummary(
-      sessionId: 'live-1',
-      source: SessionSource.live,
-      moves: 3,
-      sets: 9,
-      minutes: 20,
-      credit: const CreditOutcome(sessionPoints: 30),
-      nextTime: next,
-    );
-
-    Widget host(Locale locale, SessionSummary summary) => MaterialApp(
+  group('on R03', () {
+    Widget host(Locale locale) => MaterialApp(
       locale: locale,
       localizationsDelegates: AppL10n.localizationsDelegates,
       supportedLocales: AppL10n.supportedLocales,
       theme: buildTheme(locale),
-      home: MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(2.0)),
-        child: FinishedView(session: live, summary: summary),
-      ),
+      home: WorkoutDayView(repository: repository, day: day),
     );
 
-    Future<void> settle(WidgetTester tester) async {
-      await tester.pump();
-      await tester.pump(finishWipeDuration);
-      await tester.pumpAndSettle();
-    }
-
-    const next = [
-      NextTimeMove(name: 'Hip thrust', kg: 22.5, rises: true),
-      NextTimeMove(name: 'Leg press', kg: 40, rises: false),
-    ];
-
     testWidgets('English: a step up and a hold, no drop words', (tester) async {
-      await tester.pumpWidget(host(const Locale('en'), summaryWith(next)));
-      await settle(tester);
-      await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+      await tester.runAsync(session);
+      await tester.pumpWidget(host(const Locale('en')));
       await tester.pumpAndSettle();
-      expect(
-        find.text('Next time: 22.5 kg on \u2066Hip thrust\u2069'),
-        findsOneWidget,
-      );
+      expect(find.text('Today: 22.5 kg on Hip thrust'), findsOneWidget);
       expect(
         find.text(
-          'Same weight on \u2066Leg press\u2069 next time, until it feels steady',
+          'Same weight on Leg press as last time, until it feels steady',
         ),
         findsOneWidget,
       );
-      expect(tester.takeException(), isNull);
     });
 
     testWidgets('Arabic: English move names stay left to right', (
       tester,
     ) async {
-      await tester.pumpWidget(host(const Locale('ar'), summaryWith(next)));
-      await settle(tester);
-      await tester.tap(find.byKey(const ValueKey('r10-see-details')));
+      await tester.runAsync(session);
+      await tester.pumpWidget(host(const Locale('ar')));
       await tester.pumpAndSettle();
       expect(
-        find.text('المرة الجاية: 22.5 كجم على \u2066Hip thrust\u2069'),
+        find.text('النهارده: 22.5 كجم على \u2066Hip thrust\u2069'),
         findsOneWidget,
       );
-      expect(find.textContaining('نفس الوزن على'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('nothing when there is nothing to look ahead to', (
-      tester,
-    ) async {
-      await tester.pumpWidget(host(const Locale('en'), summaryWith(const [])));
-      await settle(tester);
-      expect(find.byKey(const ValueKey('r10-next-time')), findsNothing);
-      expect(find.textContaining('Next time'), findsNothing);
+    testWidgets('nothing without history', (tester) async {
+      await tester.pumpWidget(host(const Locale('en')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('r03-weights-today')), findsNothing);
+      expect(find.textContaining('Today:'), findsNothing);
     });
   });
 }

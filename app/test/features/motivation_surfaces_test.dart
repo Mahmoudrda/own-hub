@@ -229,23 +229,20 @@ void main() {
       AppRouter.featureFlags = FeatureFlags.everything.with_(<Feature, bool>{
         Feature.firstWeek: false,
       });
-      var opened = 0;
       await tester.pumpWidget(
         _host(
           TodayView(
             repository: InMemoryTodayRepository(day: day(DayState.nothingDone)),
             now: DateTime(2026, 10, 13, 10),
             trainingStreak: const StreakStatus(enabled: true, days: 6, best: 9),
-            onOpenStreak: () => opened++,
           ),
         ),
       );
       await tester.pumpAndSettle();
       expect(find.textContaining('Your first week'), findsNothing);
-      await tester.ensureVisible(find.text('Training streak: 6 days'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Training streak: 6 days'));
-      expect(opened, 1);
+      // A line, not a control: Home keeps to five, and the streak opens
+      // from You.
+      expect(find.text('Training streak: 6 days'), findsOneWidget);
     });
 
     testWidgets('a day-zero streak says what starts it, never a failure', (

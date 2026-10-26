@@ -18,6 +18,7 @@ import functools
 import json
 import math
 import os
+import zoneinfo
 from typing import Any, Optional
 
 from google.cloud import firestore
@@ -50,18 +51,21 @@ MAX_ITEM_NOTE = 120
 MAX_FREE_TEXT = 80
 SERVINGS = (0.25, 6)
 GRAMS = (1, 2000)
+GOAL_KCAL = (1200, 4000)
+GOAL_PROTEIN_G = (30, 250)
+MAX_SWAPS = 3
 
 NUTRITION_KEYS = frozenset(
     {"kcal", "calories", "protein", "carbs", "fat", "fibre", "fiber", "macros"}
 )
 
 _PLAN_KEYS = {"source", "name", "revision", "days"}
-_DAY_KEYS = {"session", "sourceId", "kg"}
+_DAY_KEYS = {"session", "sourceId", "kg", "week"}
 _SESSION_KEYS = {"sessionId", "titleEn", "titleAr", "minutes", "lifeStages", "moves"}
 _MOVE_KEYS = {
     "exerciseId", "nameEn", "nameAr", "sets", "reps", "holdSeconds", "restSeconds",
     "notesEn", "notesAr", "safetyEn", "safetyAr", "contraindications", "quiet",
-    "floorOnly", "needsEquipment",
+    "floorOnly", "needsEquipment", "supersetWithNext",
 }
 _LIFE_STAGES = {"none", "postpartum", "pregnant", "pain_injury"}
 
@@ -155,7 +159,7 @@ def _check_move(move: Any, exercises) -> None:
     tags = move.get("contraindications", [])
     _check(isinstance(tags, list) and len(tags) <= MAX_TAGS)
     _check(all(isinstance(t, str) and t in _tags() for t in tags))
-    for key in ("quiet", "floorOnly", "needsEquipment"):
+    for key in ("quiet", "floorOnly", "needsEquipment", "supersetWithNext"):
         if key in move:
             _check(isinstance(move[key], bool))
 
@@ -193,10 +197,16 @@ def _check_workout(body: dict, ids: dict) -> None:
     if "revision" in body:
         _check(_is_int(body["revision"]) and body["revision"] > 0)
     days = body.get("days")
-    _check(isinstance(days, list) and 1 <= len(days) <= LIMITS["planMaxDays"])
+    max_days = LIMITS["planMaxDays"] * LIMITS["planMaxWeeks"]
+    _check(isinstance(days, list) and 1 <= len(days) <= max_days)
     seen: set = set()
     for day in days:
         _check_day(day, ids["exercises"], seen)
+    weeks = [d.get("week", 1) for d in days]
+    _check(all(_is_int(w) and 1 <= w <= LIMITS["planMaxWeeks"] for w in weeks))
+    # No gaps, and at most a week's worth of days in each.
+    _check(set(weeks) == set(range(1, max(weeks) + 1)))
+    _check(all(weeks.count(w) <= LIMITS["planMaxDays"] for w in set(weeks)))
 
 
 # --------------------------------------------------------------------- meal --
@@ -206,9 +216,13 @@ def _check_item(item: Any, ids: dict) -> None:
     kind = item.get("kind")
     _check(kind in ENUMS["mealItemKind"])
     if kind == "recipe":
-        _keys_within(item, {"kind", "recipeId", "servings", "note"})
+        _keys_within(item, {"kind", "recipeId", "servings", "note", "swaps"})
         _check(isinstance(item.get("recipeId"), str) and item["recipeId"] in ids["recipes"])
         _check(_in_range(item.get("servings"), *SERVINGS))
+        swaps = item.get("swaps", [])
+        _check(isinstance(swaps, list) and len(swaps) <= MAX_SWAPS)
+        _check(all(isinstance(s, str) and s in ids["recipes"] and s != item["recipeId"] for s in swaps))
+        _check(len(set(swaps)) == len(swaps))
     elif kind == "food":
         _keys_within(item, {"kind", "foodId", "grams", "note"})
         _check(isinstance(item.get("foodId"), str) and item["foodId"] in ids["foods"])
@@ -222,7 +236,7 @@ def _check_item(item: Any, ids: dict) -> None:
 
 
 def _check_meal(body: dict, ids: dict) -> None:
-    _keys_within(body, {"days"})
+    _keys_within(body, {"days", "goal"})
     days = body.get("days")
     _check(isinstance(days, list) and 1 <= len(days) <= LIMITS["planMaxDays"])
     for day in days:
@@ -234,6 +248,12 @@ def _check_meal(body: dict, ids: dict) -> None:
             _check(isinstance(items, list) and len(items) <= MAX_ITEMS_PER_SLOT)
             for item in items:
                 _check_item(item, ids)
+    goal = body.get("goal")
+    if goal is not None:
+        _check(isinstance(goal, dict))
+        _keys_within(goal, {"kcalPerDay", "proteinGPerDay"})
+        _check(_is_int(goal.get("kcalPerDay")) and GOAL_KCAL[0] <= goal["kcalPerDay"] <= GOAL_KCAL[1])
+        _check(_is_int(goal.get("proteinGPerDay")) and GOAL_PROTEIN_G[0] <= goal["proteinGPerDay"] <= GOAL_PROTEIN_G[1])
 
 
 def check_body(kind: str, body: Any, ids: dict) -> None:
@@ -250,6 +270,24 @@ def check_body(kind: str, body: Any, ids: dict) -> None:
         _check_meal(body, ids)
     else:
         _check_workout(body, ids)
+
+
+CAIRO = zoneinfo.ZoneInfo("Africa/Cairo")
+MAX_START_DAYS_AHEAD = 60
+
+
+def start_date(value: Any, now: dt.datetime) -> Optional[str]:
+    """None when absent; else a Cairo date string from today to 60 days ahead."""
+    if value is None:
+        return None
+    _check(isinstance(value, str) and len(value) == 10)
+    try:
+        day = dt.date.fromisoformat(value)
+    except ValueError:
+        raise common.bad(errors.PLAN_INVALID)
+    today = now.astimezone(CAIRO).date()
+    _check(today <= day <= today + dt.timedelta(days=MAX_START_DAYS_AHEAD))
+    return value
 
 
 # ------------------------------------------------------------------ publish --
@@ -280,6 +318,7 @@ def publish(
             raise common.bad()
     body = data.get("body")
     check_body(kind, body, content_ids if content_ids is not None else load_content_ids())
+    starts_on = start_date(data.get("startsOn"), now)
 
     sub_ref = db.collection("subscriptions").document(sub_id)
     coach_ref = db.collection("coaches").document(uid)
@@ -290,9 +329,20 @@ def publish(
             raise common.refuse(errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
         if sub.get("status") != "active":
             raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
+        intake = sub.get("intake") or {}
+        if subscriptions.intake_flagged(intake) and not sub.get("healthReviewedAt"):
+            raise common.refuse(errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
         client_uid = sub.get("clientUid")
         if subscriptions.blocked_either(transaction, db, uid, client_uid):
             raise common.refuse(errors.PRECONDITION, errors.COACH_UNAVAILABLE)
+        if kind == "meal" and body.get("goal") is not None:
+            intake = sub.get("intake") or {}
+            health = intake.get("health") or {}
+            eating = intake.get("eatingHistory") is True or (
+                isinstance(health, dict) and health.get("eatingHistory") is True
+            )
+            if eating:
+                raise common.refuse(errors.PRECONDITION, errors.EATING_HISTORY_HOLD)
         plans = db.collection("plans").document(client_uid).collection("coachPlans")
 
         if plan_id is None:
@@ -324,6 +374,7 @@ def publish(
                 "revision": revision,
                 "body": body,
                 "publishedAt": now,
+                **({"startsOn": starts_on} if starts_on else {}),
             },
         )
         transaction.set(

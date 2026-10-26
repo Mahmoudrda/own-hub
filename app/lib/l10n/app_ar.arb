@@ -627,7 +627,7 @@
   "gobletSquatSet3": "القرفصاء بالدمبل، المجموعة 3",
   "goodBeforeAnEveningSession": "كويسة قبل تمرين المسا.",
   "grilledChickenAndSalad": "فراخ مشوية وسلطة",
-  "groceryList": "قائمة المشتريات",
+  "groceryList": "قايمة المشتريات",
   "groupedTheWayYouShopTickAs": "مترتّبة زي ما بتشتري. علّمي أول بأول، وهي بتفتكر.",
   "groups": "الجروبات",
   "habibaAnd12OthersLikedYourBest": "حبيبة و12 غيرها عجبهم أحسن رقم ليكي",
@@ -1077,7 +1077,7 @@
   "sunTueThu20Min": "الأحد والثلاثاء والخميس · 20 دقيقة",
   "sunday20September": "الأحد 20 سبتمبر",
   "sundayToThursday900To17": "من الأحد للخميس، 9:00 لـ 17:00 · الرد خلال يوم شغل",
-  "swap": "غيّري",
+  "swap": "بدّلي",
   "swapExercise": "غيّري الحركة",
   "swapIt": "غيّريها",
   "swapThisExercise": "غيّري الحركة دي",
@@ -1582,12 +1582,11 @@
   "done2SeptemberReAssessIn2": "خلص يوم 2 سبتمبر · نعيد التقييم بعد أسبوعين",
   "everything": "كل حاجة",
   "filledInFromHerIntakeChangeWhat": "متعبّي من تقييمها الأول. غيّري اللي اتغيّر، ومفيش حاجة هتتبدّل غير لما تحفظي.",
-  "finishHere": "خلّصي هنا",
   "fiveTimesNoHands": "خمس مرات، من غير إيدين",
   "fullBody3": "الجسم كله ×3",
   "moveSavedSetsSets": "حفظنا {move} · {sets} مجموعات",
   "@moveSavedSetsSets": {
-    "description": "R13 undo snackbar after a whole move.",
+    "description": "Undo snackbar after a whole move (I did them all).",
     "placeholders": {
       "move": {
         "type": "String",
@@ -2520,16 +2519,6 @@
       "total": {
         "type": "String",
         "example": "5"
-      }
-    }
-  },
-  "nextMoveMove": "الحركة الجاية · {move}",
-  "@nextMoveMove": {
-    "description": "R13 primary button. The move she goes back to, replacing the fixed 'Next move · step-back lunge'.",
-    "placeholders": {
-      "move": {
-        "type": "String",
-        "example": "step-back lunge"
       }
     }
   },
@@ -3498,8 +3487,6 @@
   "openOwnHubForToday": "افتحي Own Hub ليومك",
   "openOwnHubToStart": "افتحي Own Hub عشان تبدئي",
   "yourWeekShowsHere": "أسبوعك هيظهر هنا",
-  "theKittenShowsYouAroundAndMoves": "القطة بتعرّفك على التطبيق وبتتحرك مرة واحدة لما تظهر.",
-  "theKittenStaysStill": "القطة بتفضل ثابتة.",
   "helpImproveOwnHub": "ساعدينا نحسّن Own Hub",
   "offNothingAboutHowYouUseThe": "مقفول. مش بنبعت أي حاجة عن طريقة استخدامك للتطبيق. وقفله كمان بيمسح معرّف الإحصاءات على الموبايل ده.",
   "dashboard": "لوحة المتابعة",
@@ -3848,7 +3835,7 @@
   "resume": "كمّلي",
   "setsDoneDoneOfTotal": "المجموعات اللي خلصت: {done} من {total}",
   "@setsDoneDoneOfTotal": {
-    "description": "R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.",
+    "description": "R07/R08/R09 set bar: sets of today's session behind her, out of all of them.",
     "placeholders": {
       "done": {
         "type": "String",
@@ -4725,8 +4712,6 @@
   "removeThisSession_1qh67": "تشيلي التمرين ده؟",
   "itComesOffThisWeeksCountAnd": "هيتشال من عدد الأسبوع ده ومن نقطك.",
   "removeIt": "شيليه",
-  "tapAMoveYouLoggedToChange": "دوسي على حركة سجلتيها عشان تغيّري مجموعة فيها.",
-  "whichSet": "أنهي مجموعة؟",
   "addToMyWeek": "ضيفيها لأسبوعي",
   "weekRearranged": "اتغيّر ترتيب أسبوعك",
   "savedChangeItAnyTimeInYour": "اتحفظ. تقدري تغيّريه في أي وقت من بروفايلك.",
@@ -4865,16 +4850,6 @@
       "name": {
         "type": "String",
         "example": "Plank"
-      }
-    }
-  },
-  "finishNowCountMovesLeft": "خلّصي دلوقتي · الحركات الباقية: {count}",
-  "@finishNowCountMovesLeft": {
-    "description": "R13 Finish here, second tap to confirm. count in Western digits.",
-    "placeholders": {
-      "count": {
-        "type": "String",
-        "example": "3"
       }
     }
   },
@@ -5557,7 +5532,6 @@
       }
     }
   },
-  "onceADayQuiet10pmTo8am": "مرة في اليوم، وهدوء من 10 بالليل لـ 8 الصبح",
   "onlyTheDishWhatsInItAnd": "بنشارك الأكلة واللي فيها وأرقامها بس، مش صورتك ولا اسمك.",
   "yourMealsWorkoutsWeightPhotosAndPhone_z6z34": "وجباتك وتمارينك ووزنك وصورك ورقم موبايلك عمرها ما بتظهر لأي عضوة تانية، إلا طبق تختاري تشاركيه من غير اسمك. الإعدادات دي بس عن اللي تختاري تعرضيه.",
   "weKeepAFingerprintOfThePhoto": "بنحتفظ ببصمة الصورة والأصناف اللي اتلقت فيها 30 يومًا، عشان نرد على نفس الصورة تاني. ومفيش فيها أي حاجة بتدلّ عليكي.",
@@ -6328,30 +6302,6 @@
     }
   },
   "logTheTotalBarIncluded": "سجّلي الوزن الكلي مع البار.",
-  "nextTimeWeightOnName": "المرة الجاية: {weight} على {name}",
-  "@nextTimeWeightOnName": {
-    "description": "R10 next-step line for a loaded move that goes up a step next time.",
-    "placeholders": {
-      "weight": {
-        "type": "String",
-        "example": "22.5 kg"
-      },
-      "name": {
-        "type": "String",
-        "example": "Hip thrust"
-      }
-    }
-  },
-  "sameWeightOnNameNextTimeUntil": "نفس الوزن على {name} المرة الجاية، لحد ما تحسّيه ثابت",
-  "@sameWeightOnNameNextTimeUntil": {
-    "description": "R10 next-step line for a loaded move that stays at the same weight next time.",
-    "placeholders": {
-      "name": {
-        "type": "String",
-        "example": "Hip thrust"
-      }
-    }
-  },
   "weightMustBe0ToMaxKg": "الوزن من 0 لـ {max} كجم",
   "@weightMustBe0ToMaxKg": {
     "description": "Range error on the set editor's weight field.",
@@ -8234,5 +8184,184 @@
   "seeDetails": "شوفي التفاصيل",
   "editMoves": "عدّلي الحركات",
   "yourPlan": "خطتك",
-  "gentler": "أخف"
+  "gentler": "أخف",
+  "recordAVideoUpTo30Seconds": "صوّري فيديو (لحد 30 ثانية)",
+  "chooseAVideo": "اختاري فيديو",
+  "thatFileIsTooBigAPhoto": "حجم الملف كبير. الصورة لحد 10 ميجا والفيديو لحد 25 ميجا.",
+  "weCouldNotSendThatTryAgain": "ماقدرناش نبعت ده. جرّبي تاني.",
+  "holdTheMicAndSpeak": "افضلي دايسة على المايك واتكلمي",
+  "slideAwayToCancel": "اسحبي لبعيد للإلغاء",
+  "releaseToCancel": "سيبي عشان تلغي",
+  "allowTheMicrophoneInSettingsToSend": "اسمحي بالمايك من الإعدادات عشان تبعتي رسايل صوتية.",
+  "weCouldNotPlayThatVoiceNote": "ماقدرناش نشغّل الرسالة الصوتية دي.",
+  "editReply": "عدّلي الرد",
+  "addAReply": "ضيفي رد",
+  "newReply": "رد جديد",
+  "writeYourReply": "اكتبي الرد",
+  "delete": "امسحي",
+  "greatWorkTodayIAmProudOf": "برافو عليكي النهاردة. فخورة بيكي.",
+  "howDidTheSessionFeelTellMe": "إزاي كانت التمرينة؟ قوليلي إيه اللي كان سهل وإيه اللي كان صعب.",
+  "sendMeAShortVideoOfThat": "ابعتيلي فيديو قصير للتمرين ده من الجنب وأنا أراجع الوضعية.",
+  "lowerTheWeightALittleAndFocus": "قلّلي الوزن شوية وركّزي على حركة بطيئة وثابتة.",
+  "restWellTodayRecoveryIsPartOf": "ارتاحي كويس النهاردة. الراحة جزء من الخطة.",
+  "rememberToDrinkWaterAndEatYour": "افتكري تشربي مية وتاكلي البروتين بتاعك النهاردة.",
+  "ifAnythingHurtsStopAndTellMe": "لو حاجة وجعتك وقّفي وقوليلي. ماتكمّليش مع الوجع.",
+  "iSawYourWeeklyCheckInThank": "شفت متابعتك الأسبوعية. شكرًا ليكي. هعدّل الخطة بتاعتك.",
+  "missedADayNoProblemPickUp": "فاتك يوم؟ مفيش مشكلة. كمّلي بالتمرينة الجاية.",
+  "sendMeAPhotoOfYourMeal": "ابعتيلي صورة وجبتك وأنا أقولك رأيي.",
+  "todayWeightOnName": "النهارده: {weight} على {name}",
+  "@todayWeightOnName": {
+    "description": "R03 weights line: the step up she has earned on a loaded move, from her last session.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "22.5 kg"
+      },
+      "name": {
+        "type": "String",
+        "example": "Hip thrust"
+      }
+    }
+  },
+  "sameWeightOnNameAsLastTime": "نفس الوزن على {name} زي المرة اللي فاتت، لحد ما تحسّيه ثابت",
+  "@sameWeightOnNameAsLastTime": {
+    "description": "R03 weights line: a loaded move that stays at last time's weight.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leg press"
+      }
+    }
+  },
+  "supersetGoStraightToTheNextMove": "سوبر سيت: روحي على الحركة اللي بعدها علطول، وبعدين ارتاحي.",
+  "moveDetails": "تفاصيل الحركة",
+  "targetWeightKg": "الوزن المطلوب (كجم)",
+  "leaveEmptyForBodyweight": "سيبيها فاضية لو بوزن الجسم",
+  "supersetWithTheNextMove": "سوبر سيت مع الحركة اللي بعدها",
+  "superset": "سوبر سيت",
+  "saveDetails": "حفظ التفاصيل",
+  "duplicate": "نسخ اليوم",
+  "copy_1g7xp": "(نسخة)",
+  "repeatLastWeek": "كرري آخر أسبوع",
+  "nWeeks": "{n} أسابيع",
+  "@nWeeks": {
+    "description": "Weeks in a plan",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "weekNOfTotal": "الأسبوع {n} من {total}",
+  "@weekNOfTotal": {
+    "description": "Which week of her plan she is in",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "yourPlanStartsDate": "خطتك بتبدأ {date}",
+  "@yourPlanStartsDate": {
+    "description": "When her multi-week plan starts",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "1 Nov"
+      }
+    }
+  },
+  "seeAllWeeks": "شوفي كل الأسابيع",
+  "sendToMoreClients": "ابعتيها لعميلات تانيات",
+  "whoGetsThisPlan": "مين هتاخد الخطة دي؟",
+  "chooseNClients": "تمام، {n} عميلات",
+  "publishToNClients": "ابعتيها لـ {n} عميلات",
+  "sentToNClients": "اتبعتت لـ {n} عميلات",
+  "tryAgainForN": "جرّبي تاني لـ {n}",
+  "someClientsDidNotGetThePlan": "في عميلات الخطة ماوصلتش لهم.",
+  "startsDate": "بتبدأ {date}",
+  "joinMeOnOwnHubTheTraining_s0kkx": "انضمّي ليّا على Own Hub، تطبيق التمرين للستات بس. افتحي اللينك ده: {link} ولو مافتحش التطبيق، نزّلي Own Hub، ولما تسجّلي اضغطي «معايا كود من مدرّبتي» واكتبي {code}.",
+  "shareMyProfileLink": "ابعتي لينك صفحتي",
+  "membersWhoOpenItLandOnYour": "أي عضوة تفتحه توصل لصفحتك وتقدر تطلب تنضم ليكي.",
+  "trainWithMeOnOwnHubLink": "تدرّبي معايا على Own Hub: {link}",
+  "yourCoachsInvitation": "دعوة مدرّبتك",
+  "thisLinkDoesNotWorkAskYour": "اللينك ده مش شغّال. اطلبي من مدرّبتك تبعتهولك تاني.",
+  "weeklyCheckIn": "التشيك إن الأسبوعي",
+  "fourQuickTapsItTakesUnderA": "أربع ضغطات سريعة. بياخد أقل من دقيقة.",
+  "answer": "جاوبي",
+  "weeklyCheckInSent": "التشيك إن الأسبوعي اتبعت",
+  "sentThankYou": "اتبعت. شكرًا.",
+  "howDidYourTrainingGo": "التمرين مشي إزاي؟",
+  "most": "أغلبه",
+  "some": "شوية",
+  "howIsYourEnergy": "طاقتك عاملة إيه؟",
+  "n1IsLow5IsHigh": "1 قليلة، 5 عالية.",
+  "howDidEatingGo": "الأكل مشي إزاي؟",
+  "n1IsHard5IsEasy": "1 صعب، 5 سهل.",
+  "anyPainOrInjuryThisWeek": "حسيتي بألم أو إصابة الأسبوع ده؟",
+  "tellYourCoachMoreBelowIfYou": "لو حابة احكي لمدرّبتك أكتر تحت. ولو الألم حاد أو بيزيد، اروحي لدكتور.",
+  "anythingYouWantYourCoachToKnow": "حابة مدرّبتك تعرفي حاجة؟ (لو حابة)",
+  "sendToMyCoach": "ابعتي لمدرّبتك",
+  "sentYourCoachWillSeeIt": "اتبعت. مدرّبتك هتشوفه.",
+  "youAlreadySentThisOne": "انتي بعتّي ده قبل كده.",
+  "weCouldNotSendItTryAgain": "ماقدرناش نبعته. جرّبي تاني كمان شوية.",
+  "needsAttention": "محتاجة متابعة",
+  "noCheckInYet": "لسه ماجاوبتش على التشيك إن",
+  "trainingSlippedThisWeek": "التمرين اتأخر الأسبوع ده",
+  "healthAnswerToRead": "فيه إجابة صحية محتاجة تقرأيها",
+  "unreadMessage": "رسالة ماتقرتش",
+  "areYouPregnantOrDidYouHave": "انتي حامل، ولا خلّفتي في آخر 12 شهر؟",
+  "hadABaby": "خلّفت من قريب",
+  "hasFoodOrWeightEverFeltOut": "الأكل أو الوزن حسّيتي قبل كده إنه خارج عن السيطرة أو بيقلقك؟",
+  "yourCoachReadsThisFirstYouDo": "مدرّبتك بتقراه الأول. مش لازم تقولي أكتر.",
+  "hadABabyInTheLast12": "خلّفت في آخر 12 شهر",
+  "foodOrWeightHasFeltWorrying": "الأكل أو الوزن كان بيقلقها",
+  "readHerHealthAnswersFirst": "اقري إجاباتها الصحية الأول",
+  "plansAreOnHoldUntilYouHave": "الخطط واقفة لحد ما تقريها. إجاباتها تحت.",
+  "iHaveReadThem": "قريتها",
+  "readHerHealthAnswersFirstOpenHer": "اقري إجاباتها الصحية الأول. افتحي صفحتها وأكدي إنك قريتيها.",
+  "thisClientsAnswersOnEatingMeanYou": "إجابات العميلة دي عن الأكل معناها إنك تراجعيها بنفسك الأول. مينفعش تتبعت خطة فيها سعرات أو بروتين مطلوب.",
+  "dailyTargetForHer": "الهدف اليومي ليها",
+  "calories": "السعرات",
+  "between1200And4000Calories30To": "من 1200 لـ 4000 سعر، ومن 30 لـ 250 جم بروتين.",
+  "fillInBothNumbersOrLeaveBoth": "املي الرقمين، أو سيبيهم فاضيين.",
+  "herAnswersOnEatingMeanYouReview": "إجاباتها عن الأكل معناها إنك تراجعيها بنفسك الأول. تقدري تبعتي منيو من غير سعرات أو بروتين مطلوب.",
+  "swaps": "البدائل",
+  "swapsN": "البدائل ({n})",
+  "@swapsN": {
+    "description": "Number of approved swaps for a meal item",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "approvedSwaps": "بدائل متاحة",
+  "threeAtMost": "3 بس.",
+  "saveSwaps": "حفظ البدائل",
+  "yourCoachsTargetKcalCaloriesAndProtein": "هدف مدربتك: {kcal} سعر و{protein} جم بروتين",
+  "@yourCoachsTargetKcalCaloriesAndProtein": {
+    "description": "Daily target set by coach for client",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1600"
+      },
+      "protein": {
+        "type": "String",
+        "example": "110"
+      }
+    }
+  },
+  "changeTo": "غيّريها لـ",
+  "thePlannedDish": "الأكلة المكتوبة في الخطة",
+  "forTheWholePlanAsTheDishes": "للخطة كلها، زي ما الأكلات مكتوبة",
+  "nothingToBuyYet": "مفيش حاجة تتشرى لسه."
 }

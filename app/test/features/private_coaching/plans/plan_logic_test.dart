@@ -68,6 +68,61 @@ void main() {
         PlanProblem.noName,
       ]);
     });
+
+    test('changeMoveDetails sets rest, note, superset and kg', () {
+      final plan = planFromSplit(split());
+      final beforeMove1 = plan.days[0].session.moves[1];
+      final next = changeMoveDetails(
+        plan,
+        0,
+        0,
+        restSeconds: 120,
+        note: '  slow   down ',
+        superset: true,
+        kg: 12.5,
+      );
+      final move0 = next.days[0].session.moves[0];
+      expect(move0.restSeconds, 120);
+      expect(move0.notesEn, 'slow down');
+      expect(move0.notesAr, 'slow down');
+      expect(move0.supersetWithNext, isTrue);
+      expect(next.days[0].targetKg[0], 12.5);
+      expect(next.revision, plan.revision + 1);
+      expect(next.days[0].session.moves[1], beforeMove1);
+    });
+
+    test('changeMoveDetails clamps and clears', () {
+      final plan = planFromSplit(split());
+      final clamped = changeMoveDetails(plan, 0, 0, restSeconds: 9999, kg: 500);
+      expect(clamped.days[0].session.moves[0].restSeconds, 600);
+      expect(clamped.days[0].targetKg[0], 200);
+      final cleared = changeMoveDetails(clamped, 0, 0, clearKg: true);
+      expect(cleared.days[0].targetKg[0], isNull);
+      expect(identical(changeMoveDetails(plan, -1, 0, restSeconds: 30), plan), isTrue);
+      expect(identical(changeMoveDetails(plan, 9, 0, restSeconds: 30), plan), isTrue);
+      expect(identical(changeMoveDetails(plan, 0, -1, restSeconds: 30), plan), isTrue);
+      expect(identical(changeMoveDetails(plan, 0, 9, restSeconds: 30), plan), isTrue);
+    });
+
+    test('changeMove keeps the superset flag', () {
+      final lib = sampleExerciseLibrary();
+      var plan = MyPlan(
+        days: [
+          MyPlanDay(
+            session: AuthoredSessionFor.make([
+              move('glute_bridge', tags: const []),
+              move('a2'),
+            ]),
+          ),
+        ],
+      );
+      plan = changeMoveDetails(plan, 0, 0, superset: true);
+      plan = changeMove(plan, 0, 0, sets: 5);
+      expect(plan.days[0].session.moves[0].supersetWithNext, isTrue);
+      final stamped = stampSafetyTags(plan, lib.byId);
+      expect(stamped.days[0].session.moves[0].supersetWithNext, isTrue);
+      expect(stamped.days[0].session.moves[0].contraindications, isNotEmpty);
+    });
   });
 
   group('meal body', () {

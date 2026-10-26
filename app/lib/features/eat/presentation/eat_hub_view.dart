@@ -442,15 +442,6 @@ class _EatHubViewState extends State<EatHubView> {
                   color: AppColors.onSurfaceVariant,
                   icon: const Icon(Icons.close),
                 ),
-              if (_finding && voice)
-                IconButton(
-                  key: const ValueKey('eat-hub-mic'),
-                  onPressed: widget.onSpeak,
-                  tooltip: l10n.weNeedTheMicrophoneToHearWhat,
-                  iconSize: 22,
-                  color: AppColors.primaryDim,
-                  icon: const Icon(Icons.mic),
-                ),
               if (widget.onSnap case final snap?)
                 IconButton(
                   key: const ValueKey('eat-snap-meal'),
@@ -630,6 +621,25 @@ class _EatHubViewState extends State<EatHubView> {
             onLogged: _logged,
             onBlocked: widget.onBlocked,
             requireAccount: widget.requireAccount,
+          ),
+        ),
+      // The microphone sits under the list, not in the field, so the field
+      // keeps its X and the camera.
+      if (finding &&
+          _text.text.trim().isEmpty &&
+          widget.onSpeak != null &&
+          AppRouter.screenIsOn('E03'))
+        Padding(
+          padding: const EdgeInsets.only(top: kStackGap),
+          child: AppListItem(
+            key: const ValueKey('eat-hub-mic'),
+            leading: const Icon(
+              Icons.mic,
+              size: 23,
+              color: AppColors.primaryDim,
+            ),
+            title: l10n.sayOrTypeWhatYouAte,
+            onTap: widget.onSpeak,
           ),
         ),
       if (_visited.contains(EatHubSegment.recipes) &&

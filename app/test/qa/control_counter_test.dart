@@ -2,10 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/eat/presentation/eat_widgets.dart'
+    show PlusButton;
+import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/ui/app_list_item.dart';
 import 'package:own_hub/ui/app_segmented.dart';
 import 'package:own_hub/ui/app_stat_hero.dart';
 import 'package:own_hub/ui/hand/hand.dart';
+import 'package:own_hub/ui/language_switch.dart';
 
 import '../helpers/control_counter.dart';
 
@@ -105,6 +109,97 @@ void main() {
       ]),
       2,
     );
+  });
+
+  testWidgets('a row and its own plus are one control', (tester) async {
+    expect(
+      await _count(tester, [
+        _row(
+          'Koshari',
+          trailing: PlusButton(label: 'Add', onPressed: () {}),
+        ),
+      ]),
+      1,
+    );
+  });
+
+  testWidgets('a plus in a row with no tap is a control of its own', (
+    tester,
+  ) async {
+    expect(
+      await _count(tester, [
+        AppListItem(
+          title: 'Koshari',
+          trailing: PlusButton(label: 'Add', onPressed: () {}),
+        ),
+      ]),
+      1,
+    );
+  });
+
+  testWidgets('a plus outside a row is a control of its own', (tester) async {
+    expect(
+      await _count(tester, [
+        _row('Koshari'),
+        PlusButton(label: 'Add', onPressed: () {}),
+      ]),
+      2,
+    );
+  });
+
+  testWidgets('plus rows still group, and a plain trailing button does not', (
+    tester,
+  ) async {
+    expect(
+      await _count(tester, [
+        _row(
+          'a',
+          trailing: PlusButton(label: 'Add', onPressed: () {}),
+        ),
+        _row(
+          'b',
+          trailing: PlusButton(label: 'Add', onPressed: () {}),
+        ),
+        _row(
+          'c',
+          trailing: IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+        ),
+      ]),
+      2,
+    );
+  });
+
+  testWidgets('includeChrome: false leaves the top bar out', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        home: Scaffold(
+          body: Column(
+            children: [
+              AppChrome(inStrip: true),
+              TextButton(onPressed: () {}, child: const Text('x')),
+            ],
+          ),
+        ),
+      ),
+    );
+    final withChrome = countControlsAboveFold(tester);
+    expect(withChrome, greaterThan(1));
+    expect(countControlsAboveFold(tester, includeChrome: false), 1);
+  });
+
+  testWidgets('the caret handle after a tap is not a control', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: TextField(controller: TextEditingController())),
+      ),
+    );
+    await tester.tap(find.byType(TextField));
+    await tester.pump();
+    await tester.tap(find.byType(TextField));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(countControlsAboveFold(tester), 1);
   });
 
   testWidgets('a link inside a tappable card counts on its own', (

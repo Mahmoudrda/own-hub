@@ -82,3 +82,39 @@ enum InviteRedemption {
   /// Not reached. The code stays on her phone and is tried again later.
   unreachable,
 }
+
+/// The host the links live on. Same string as `site/config.json` "baseUrl".
+const String kLinkHost = 'https://own-hub.app';
+
+String inviteLinkFor(String code) => '$kLinkHost/c/$code';
+String profileLinkFor(String coachUid) => '$kLinkHost/p/$coachUid';
+
+enum OwnHubLinkKind { invite, profile }
+
+class OwnHubLink {
+  const OwnHubLink(this.kind, this.value);
+
+  final OwnHubLinkKind kind;
+
+  /// The normalised code, or the coach's uid.
+  final String value;
+}
+
+final RegExp _uidShape = RegExp(r'^[A-Za-z0-9]{6,128}$');
+
+/// What a platform link names, or null. [routeName] is the path (and query)
+/// the platform hands the app, for example `/c/ABCD2345` or `/p/<uid>`.
+OwnHubLink? parseOwnHubLink(String routeName) {
+  final uri = Uri.tryParse(routeName);
+  if (uri == null) return null;
+  final parts = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+  if (parts.length != 2) return null;
+  if (parts[0] == 'c') {
+    final code = normaliseInviteCode(parts[1]);
+    return code == null ? null : OwnHubLink(OwnHubLinkKind.invite, code);
+  }
+  if (parts[0] == 'p' && _uidShape.hasMatch(parts[1])) {
+    return OwnHubLink(OwnHubLinkKind.profile, parts[1]);
+  }
+  return null;
+}

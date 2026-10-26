@@ -356,7 +356,7 @@ void main() {
       await tester.pump();
       final l10n = AppL10n.of(tester.element(find.byType(BeingCheckedView)));
 
-      expect(opened, 0, reason: 'the kitten cheers first');
+      expect(opened, 0, reason: 'the tick draws first');
       await tester.pump(const Duration(milliseconds: 1700));
 
       expect(find.text(l10n.yourCheckIsDone), findsOneWidget);

@@ -1582,12 +1582,11 @@
   "done2SeptemberReAssessIn2": "Done 2 September · re-assess in 2 weeks",
   "everything": "Everything",
   "filledInFromHerIntakeChangeWhat": "Filled in from her intake. Change what has moved, and nothing is overwritten until you save.",
-  "finishHere": "Finish here",
   "fiveTimesNoHands": "Five times, no hands",
   "fullBody3": "Full body ×3",
   "moveSavedSetsSets": "{move} saved · {sets} sets",
   "@moveSavedSetsSets": {
-    "description": "R13 undo snackbar after a whole move.",
+    "description": "Undo snackbar after a whole move (I did them all).",
     "placeholders": {
       "move": {
         "type": "String",
@@ -2520,16 +2519,6 @@
       "total": {
         "type": "String",
         "example": "5"
-      }
-    }
-  },
-  "nextMoveMove": "Next move · {move}",
-  "@nextMoveMove": {
-    "description": "R13 primary button. The move she goes back to, replacing the fixed 'Next move · step-back lunge'.",
-    "placeholders": {
-      "move": {
-        "type": "String",
-        "example": "step-back lunge"
       }
     }
   },
@@ -3498,8 +3487,6 @@
   "openOwnHubForToday": "Open Own Hub for today",
   "openOwnHubToStart": "Open Own Hub to start",
   "yourWeekShowsHere": "Your week shows here",
-  "theKittenShowsYouAroundAndMoves": "The kitten shows you around and moves once when it appears.",
-  "theKittenStaysStill": "The kitten stays still.",
   "helpImproveOwnHub": "Help improve Own Hub",
   "offNothingAboutHowYouUseThe": "Off. Nothing about how you use the app is sent. Turning it off also clears the statistics ID on this phone.",
   "dashboard": "Dashboard",
@@ -3848,7 +3835,7 @@
   "resume": "Resume",
   "setsDoneDoneOfTotal": "Sets done: {done} of {total}",
   "@setsDoneDoneOfTotal": {
-    "description": "R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.",
+    "description": "R07/R08/R09 set bar: sets of today's session behind her, out of all of them.",
     "placeholders": {
       "done": {
         "type": "String",
@@ -4725,8 +4712,6 @@
   "removeThisSession_1qh67": "Remove this session?",
   "itComesOffThisWeeksCountAnd": "It comes off this week's count and your points.",
   "removeIt": "Remove it",
-  "tapAMoveYouLoggedToChange": "Tap a move you logged to change a set.",
-  "whichSet": "Which set?",
   "addToMyWeek": "Add to my week",
   "weekRearranged": "Week rearranged",
   "savedChangeItAnyTimeInYour": "Saved. Change it any time in your profile.",
@@ -4865,16 +4850,6 @@
       "name": {
         "type": "String",
         "example": "Plank"
-      }
-    }
-  },
-  "finishNowCountMovesLeft": "Finish now · {count} moves left",
-  "@finishNowCountMovesLeft": {
-    "description": "R13 Finish here, second tap to confirm. count in Western digits.",
-    "placeholders": {
-      "count": {
-        "type": "String",
-        "example": "3"
       }
     }
   },
@@ -5557,7 +5532,6 @@
       }
     }
   },
-  "onceADayQuiet10pmTo8am": "Once a day, quiet 10pm to 8am",
   "onlyTheDishWhatsInItAnd": "Only the dish, what's in it and its numbers are shared, never your photo or your name.",
   "yourMealsWorkoutsWeightPhotosAndPhone_z6z34": "Your meals, workouts, weight, photos and phone number are never visible to another member, except a dish you choose to share, without your name. These settings are only about what you choose to show.",
   "weKeepAFingerprintOfThePhoto": "We keep a fingerprint of the photo and the foods found for 30 days, to answer the same photo again. Nothing in it identifies you.",
@@ -6328,30 +6302,6 @@
     }
   },
   "logTheTotalBarIncluded": "Log the total, bar included.",
-  "nextTimeWeightOnName": "Next time: {weight} on {name}",
-  "@nextTimeWeightOnName": {
-    "description": "R10 next-step line for a loaded move that goes up a step next time.",
-    "placeholders": {
-      "weight": {
-        "type": "String",
-        "example": "22.5 kg"
-      },
-      "name": {
-        "type": "String",
-        "example": "Hip thrust"
-      }
-    }
-  },
-  "sameWeightOnNameNextTimeUntil": "Same weight on {name} next time, until it feels steady",
-  "@sameWeightOnNameNextTimeUntil": {
-    "description": "R10 next-step line for a loaded move that stays at the same weight next time.",
-    "placeholders": {
-      "name": {
-        "type": "String",
-        "example": "Hip thrust"
-      }
-    }
-  },
   "weightMustBe0ToMaxKg": "Weight must be 0 to {max} kg",
   "@weightMustBe0ToMaxKg": {
     "description": "Range error on the set editor's weight field.",
@@ -8234,5 +8184,184 @@
   "seeDetails": "See details",
   "editMoves": "Edit moves",
   "yourPlan": "Your plan",
-  "gentler": "Gentler"
+  "gentler": "Gentler",
+  "recordAVideoUpTo30Seconds": "Record a video (up to 30 seconds)",
+  "chooseAVideo": "Choose a video",
+  "thatFileIsTooBigAPhoto": "That file is too big. A photo is up to 10 MB and a video is up to 25 MB.",
+  "weCouldNotSendThatTryAgain": "We could not send that. Try again.",
+  "holdTheMicAndSpeak": "Hold the mic and speak",
+  "slideAwayToCancel": "Slide away to cancel",
+  "releaseToCancel": "Release to cancel",
+  "allowTheMicrophoneInSettingsToSend": "Allow the microphone in Settings to send voice notes.",
+  "weCouldNotPlayThatVoiceNote": "We could not play that voice note.",
+  "editReply": "Edit reply",
+  "addAReply": "Add a reply",
+  "newReply": "New reply",
+  "writeYourReply": "Write your reply",
+  "delete": "Delete",
+  "greatWorkTodayIAmProudOf": "Great work today. I am proud of you.",
+  "howDidTheSessionFeelTellMe": "How did the session feel? Tell me what was easy and what was hard.",
+  "sendMeAShortVideoOfThat": "Send me a short video of that exercise from the side and I will check your form.",
+  "lowerTheWeightALittleAndFocus": "Lower the weight a little and focus on a slow, steady movement.",
+  "restWellTodayRecoveryIsPartOf": "Rest well today. Recovery is part of the plan.",
+  "rememberToDrinkWaterAndEatYour": "Remember to drink water and eat your protein today.",
+  "ifAnythingHurtsStopAndTellMe": "If anything hurts, stop and tell me. Do not push through pain.",
+  "iSawYourWeeklyCheckInThank": "I saw your weekly check-in. Thank you. I will update your plan.",
+  "missedADayNoProblemPickUp": "Missed a day? No problem. Pick up with the next session.",
+  "sendMeAPhotoOfYourMeal": "Send me a photo of your meal and I will give you my notes.",
+  "todayWeightOnName": "Today: {weight} on {name}",
+  "@todayWeightOnName": {
+    "description": "R03 weights line: the step up she has earned on a loaded move, from her last session.",
+    "placeholders": {
+      "weight": {
+        "type": "String",
+        "example": "22.5 kg"
+      },
+      "name": {
+        "type": "String",
+        "example": "Hip thrust"
+      }
+    }
+  },
+  "sameWeightOnNameAsLastTime": "Same weight on {name} as last time, until it feels steady",
+  "@sameWeightOnNameAsLastTime": {
+    "description": "R03 weights line: a loaded move that stays at last time's weight.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Leg press"
+      }
+    }
+  },
+  "supersetGoStraightToTheNextMove": "Superset: go straight to the next move, then rest.",
+  "moveDetails": "Move details",
+  "targetWeightKg": "Target weight (kg)",
+  "leaveEmptyForBodyweight": "Leave empty for bodyweight",
+  "supersetWithTheNextMove": "Superset with the next move",
+  "superset": "Superset",
+  "saveDetails": "Save details",
+  "duplicate": "Duplicate",
+  "copy_1g7xp": "(copy)",
+  "repeatLastWeek": "Repeat last week",
+  "nWeeks": "{n} weeks",
+  "@nWeeks": {
+    "description": "Weeks in a plan",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "weekNOfTotal": "Week {n} of {total}",
+  "@weekNOfTotal": {
+    "description": "Which week of her plan she is in",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      },
+      "total": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "yourPlanStartsDate": "Your plan starts {date}",
+  "@yourPlanStartsDate": {
+    "description": "When her multi-week plan starts",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "1 Nov"
+      }
+    }
+  },
+  "seeAllWeeks": "See all weeks",
+  "sendToMoreClients": "Send to more clients",
+  "whoGetsThisPlan": "Who gets this plan?",
+  "chooseNClients": "Choose {n} clients",
+  "publishToNClients": "Publish to {n} clients",
+  "sentToNClients": "Sent to {n} clients",
+  "tryAgainForN": "Try again for {n}",
+  "someClientsDidNotGetThePlan": "Some clients did not get the plan.",
+  "startsDate": "Starts {date}",
+  "joinMeOnOwnHubTheTraining_s0kkx": "Join me on Own Hub, the training app for women only. Open this link: {link} If it does not open the app, install Own Hub, tap I have a code from my coach when you sign up and enter {code}.",
+  "shareMyProfileLink": "Share my profile link",
+  "membersWhoOpenItLandOnYour": "Members who open it land on your page and can ask to join.",
+  "trainWithMeOnOwnHubLink": "Train with me on Own Hub: {link}",
+  "yourCoachsInvitation": "Your coach's invitation",
+  "thisLinkDoesNotWorkAskYour": "This link does not work. Ask your coach to send it again.",
+  "weeklyCheckIn": "Weekly check-in",
+  "fourQuickTapsItTakesUnderA": "Four quick taps. It takes under a minute.",
+  "answer": "Answer",
+  "weeklyCheckInSent": "Weekly check-in sent",
+  "sentThankYou": "Sent. Thank you.",
+  "howDidYourTrainingGo": "How did your training go?",
+  "most": "Most",
+  "some": "Some",
+  "howIsYourEnergy": "How is your energy?",
+  "n1IsLow5IsHigh": "1 is low, 5 is high.",
+  "howDidEatingGo": "How did eating go?",
+  "n1IsHard5IsEasy": "1 is hard, 5 is easy.",
+  "anyPainOrInjuryThisWeek": "Any pain or injury this week?",
+  "tellYourCoachMoreBelowIfYou": "Tell your coach more below if you like. If it is sharp or getting worse, please see a doctor.",
+  "anythingYouWantYourCoachToKnow": "Anything you want your coach to know? (optional)",
+  "sendToMyCoach": "Send to my coach",
+  "sentYourCoachWillSeeIt": "Sent. Your coach will see it.",
+  "youAlreadySentThisOne": "You already sent this one.",
+  "weCouldNotSendItTryAgain": "We could not send it. Try again in a moment.",
+  "needsAttention": "Needs attention",
+  "noCheckInYet": "No check-in yet",
+  "trainingSlippedThisWeek": "Training slipped this week",
+  "healthAnswerToRead": "Health answer to read",
+  "unreadMessage": "Unread message",
+  "areYouPregnantOrDidYouHave": "Are you pregnant, or did you have a baby in the last 12 months?",
+  "hadABaby": "Had a baby",
+  "hasFoodOrWeightEverFeltOut": "Has food or weight ever felt out of control or worrying for you?",
+  "yourCoachReadsThisFirstYouDo": "Your coach reads this first. You do not have to say more.",
+  "hadABabyInTheLast12": "Had a baby in the last 12 months",
+  "foodOrWeightHasFeltWorrying": "Food or weight has felt worrying",
+  "readHerHealthAnswersFirst": "Read her health answers first",
+  "plansAreOnHoldUntilYouHave": "Plans are on hold until you have. Her answers are below.",
+  "iHaveReadThem": "I have read them",
+  "readHerHealthAnswersFirstOpenHer": "Read her health answers first. Open her page and tick that you have.",
+  "thisClientsAnswersOnEatingMeanYou": "This client's answers on eating mean you review her first. A plan with calorie or protein targets cannot be sent.",
+  "dailyTargetForHer": "Daily target for her",
+  "calories": "Calories",
+  "between1200And4000Calories30To": "Between 1200 and 4000 calories, 30 to 250 g protein.",
+  "fillInBothNumbersOrLeaveBoth": "Fill in both numbers, or leave both empty.",
+  "herAnswersOnEatingMeanYouReview": "Her answers on eating mean you review her first. You can send a menu without calorie or protein targets.",
+  "swaps": "Swaps",
+  "swapsN": "Swaps ({n})",
+  "@swapsN": {
+    "description": "Number of approved swaps for a meal item",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "approvedSwaps": "Approved swaps",
+  "threeAtMost": "Three at most.",
+  "saveSwaps": "Save swaps",
+  "yourCoachsTargetKcalCaloriesAndProtein": "Your coach's target: {kcal} calories and {protein} g protein",
+  "@yourCoachsTargetKcalCaloriesAndProtein": {
+    "description": "Daily target set by coach for client",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1600"
+      },
+      "protein": {
+        "type": "String",
+        "example": "110"
+      }
+    }
+  },
+  "changeTo": "Change to",
+  "thePlannedDish": "The planned dish",
+  "forTheWholePlanAsTheDishes": "For the whole plan, as the dishes are written",
+  "nothingToBuyYet": "Nothing to buy yet."
 }

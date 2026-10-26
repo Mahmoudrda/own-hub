@@ -670,11 +670,18 @@ class _TypeItViewState extends State<TypeItView> {
           ]
         : const <ParsedItem>[];
 
+    // With rows of her own above, the starter dishes follow them without a
+    // heading, so everything she can add by one tap reads as one list.
+    final startsList = query.isEmpty && shelf == null;
+    final hasRowsAbove =
+        picks.isNotEmpty || _tabRows(state, guard, library).isNotEmpty;
+
     return [
       if (query.isEmpty && shelf == null)
         ..._emptyBox(l10n, state, guard, library),
-      if (picks.isNotEmpty)
-        SlotPicksRow(slot: _slot, picks: picks, onAdd: (pick) => _log([pick])),
+      // Her picks for this meal sit in the same list as the tab's rows, so a
+      // row and its "+" stay one control.
+      for (final pick in picks) _entryRow(l10n, guard, pick, 'pick'),
       if (had.isNotEmpty) ...[
         Text(
           l10n.youveHad,
@@ -683,7 +690,7 @@ class _TypeItViewState extends State<TypeItView> {
         for (final entry in had) _entryRow(l10n, guard, entry, 'had'),
       ],
       if (foods.isNotEmpty) ...[
-        if (query.isEmpty && shelf == null)
+        if (startsList && !hasRowsAbove)
           Text(
             l10n.popularDishes,
             style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
@@ -716,7 +723,21 @@ class _TypeItViewState extends State<TypeItView> {
                 setState(() => _category = FoodCategory.egyptianDishes),
           ),
       ],
-      if (_category == null) _categoryChips(),
+      // Browsing and typing come first; the shelves and the typed-in food
+      // wait below the rows, and the shelves rest while she types.
+      if (_category == null && query.isEmpty) _categoryChips(),
+      if (query.isEmpty && shelf == null)
+        AppListItem(
+          key: const ValueKey('quick-custom-row'),
+          leading: const Icon(
+            Icons.edit_note,
+            size: 23,
+            color: AppColors.primaryDim,
+          ),
+          title: l10n.quickCustom,
+          subtitle: l10n.typeANameAndTheNumbersOff,
+          onTap: _quickCustom,
+        ),
     ];
   }
 
@@ -739,10 +760,8 @@ class _TypeItViewState extends State<TypeItView> {
     );
   }
 
-  /// What the empty box offers: Recent, Frequent and Favourites, each row a
-  /// food at the portion she last had it, and Quick custom above them.
-  List<Widget> _emptyBox(
-    AppL10n l10n,
+  /// The rows under the open tab of the empty box.
+  List<ParsedItem> _tabRows(
     TypeItState state,
     AllergyGuard guard,
     FoodLibrary library,
@@ -756,7 +775,7 @@ class _TypeItViewState extends State<TypeItView> {
         .map((food) => food.foodId)
         .toSet();
 
-    final rows = switch (_tab) {
+    return switch (_tab) {
       0 => history.take(10).toList(),
       1 => [
         for (final entry in widget.frequent)
@@ -768,6 +787,17 @@ class _TypeItViewState extends State<TypeItView> {
             if (allowed.contains(food.foodId)) _lastPortion(history, food),
       ],
     };
+  }
+
+  /// What the empty box offers: Recent, Frequent and Favourites, each row a
+  /// food at the portion she last had it, and Quick custom above them.
+  List<Widget> _emptyBox(
+    AppL10n l10n,
+    TypeItState state,
+    AllergyGuard guard,
+    FoodLibrary library,
+  ) {
+    final rows = _tabRows(state, guard, library);
     final prefix = const ['had', 'frequent', 'favourite'][_tab];
 
     return [
@@ -776,17 +806,6 @@ class _TypeItViewState extends State<TypeItView> {
         items: [l10n.recent, l10n.frequent, l10n.favourites],
         selectedIndex: _tab,
         onChanged: (index) => setState(() => _tab = index),
-      ),
-      AppListItem(
-        key: const ValueKey('quick-custom-row'),
-        leading: const Icon(
-          Icons.edit_note,
-          size: 23,
-          color: AppColors.primaryDim,
-        ),
-        title: l10n.quickCustom,
-        subtitle: l10n.typeANameAndTheNumbersOff,
-        onTap: _quickCustom,
       ),
       if (rows.isEmpty)
         Text(

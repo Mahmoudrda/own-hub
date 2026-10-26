@@ -6,12 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/my_plan_state.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
+import 'package:own_hub/features/private_coaching/presentation/plans/coach_plan_logic.dart';
 import 'package:own_hub/features/train/domain/my_plan.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/domain/workout_library.dart';
 import 'package:own_hub/features/train/presentation/plan_editor_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/app_button.dart';
 
 AuthoredProgramme _template() => AuthoredProgramme(
   programId: 'split_fixture',
@@ -417,4 +419,72 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('repeat last week adds a Week 2 heading', (tester) async {
+    _tall(tester);
+    final coachState = CoachPlanEditState(
+      MyPlan.fork(_template(), stage: LifeStage.none),
+    );
+    await tester.pumpWidget(
+      _host(
+        PlanEditorView(
+          allowWeeks: true,
+          state: coachState,
+          onEditDay: (_) {},
+          onPickMoves: () async => null,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('plan-repeat-week')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('plan-repeat-week')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('plan-week-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('plan-week-2')), findsOneWidget);
+    expect(find.byKey(const ValueKey('plan-day-5')), findsOneWidget);
+
+    await tester.pumpWidget(
+      _host(
+        PlanEditorView(
+          allowWeeks: false,
+          state: coachState,
+          onEditDay: (_) {},
+          onPickMoves: () async => null,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('plan-repeat-week')), findsNothing);
+  });
+
+  testWidgets('repeat is off at four weeks', (tester) async {
+    _tall(tester);
+    final coachState = CoachPlanEditState(
+      MyPlan.fork(_template(), stage: LifeStage.none),
+    );
+    await tester.pumpWidget(
+      _host(
+        PlanEditorView(
+          allowWeeks: true,
+          state: coachState,
+          onEditDay: (_) {},
+          onPickMoves: () async => null,
+        ),
+        locale: 'ar',
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.byKey(const ValueKey('plan-repeat-week')));
+      await tester.pumpAndSettle();
+    }
+    expect(coachState.current!.weekCount, 4);
+    expect(
+      tester
+          .widget<AppButton>(find.byKey(const ValueKey('plan-repeat-week')))
+          .onPressed,
+      isNull,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

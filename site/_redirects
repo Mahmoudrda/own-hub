@@ -59,5 +59,9 @@
 /en/*                  /:splat             301
 /ar-eg/*               /ar/:splat          301
 
+# --- App links: the app opens these; without it the visitor lands on /join --
+/c/*                   /join               200
+/p/*                   /join               200
+
 # --- The generator is not part of the website ------------------------------
 /_build/*              /404.html           404

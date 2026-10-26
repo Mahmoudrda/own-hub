@@ -111,6 +111,8 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
   String? _place;
   final Map<String, bool> _health = <String, bool>{};
   bool _doctorAck = false;
+  String? _stage; // null = not answered, 'none' | 'pregnant' | 'postpartum'
+  bool? _eating;
   bool _shares = false;
   bool _stored = false;
   bool _sending = false;
@@ -135,12 +137,22 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
     ],
     health: Map<String, bool>.of(_health),
     doctorAck: _doctorAck,
+    lifeStage: (_stage == 'pregnant' || _stage == 'postpartum') ? _stage : null,
+    eatingHistory: _eating == true,
     note: _note.text.trim(),
   );
 
   bool get _anyYes => _health.values.any((yes) => yes);
 
-  bool get _ready => _intake().isValid && _shares && _stored;
+  bool get _flagged =>
+      _anyYes || _stage == 'pregnant' || _stage == 'postpartum' || _eating == true;
+
+  bool get _ready =>
+      _intake().isValid &&
+      _stage != null &&
+      _eating != null &&
+      _shares &&
+      _stored;
 
   Future<void> _send() async {
     if (_sending || !_ready) return;
@@ -358,7 +370,52 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
               ],
             ),
           ],
-          if (_anyYes) ...[
+          const SizedBox(height: 10),
+          Text(l10n.areYouPregnantOrDidYouHave, style: AppText.body),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            children: [
+              AppChip(
+                l10n.no,
+                selected: _stage == 'none',
+                onTap: () => setState(() => _stage = 'none'),
+              ),
+              AppChip(
+                l10n.pregnant,
+                selected: _stage == 'pregnant',
+                onTap: () => setState(() => _stage = 'pregnant'),
+              ),
+              AppChip(
+                l10n.hadABaby,
+                selected: _stage == 'postpartum',
+                onTap: () => setState(() => _stage = 'postpartum'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(l10n.hasFoodOrWeightEverFeltOut, style: AppText.body),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            children: [
+              AppChip(
+                l10n.yes_6deo,
+                selected: _eating == true,
+                onTap: () => setState(() => _eating = true),
+              ),
+              AppChip(
+                l10n.no,
+                selected: _eating == false,
+                onTap: () => setState(() => _eating = false),
+              ),
+            ],
+          ),
+          Text(
+            l10n.yourCoachReadsThisFirstYouDo,
+            style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
+          ),
+          if (_flagged) ...[
             const SizedBox(height: 10),
             _tick(
               _doctorAck,

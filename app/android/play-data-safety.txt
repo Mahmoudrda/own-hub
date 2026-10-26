@@ -146,6 +146,11 @@ Photos and videos
       processed ephemerally, sent once to Google Cloud Vertex AI in Frankfurt
       for the estimate and never stored. Optional. Purpose: App
       functionality.
+Photos and videos: Collected = yes (chat photos and clips in addition to the coach photos already declared).
+  Shared = no. Required = no. Purpose: App functionality. Encrypted in transit: yes.
+
+Audio files (voice notes): Collected = yes. Shared = no. Required = no (optional feature).
+  Purpose: App functionality. Encrypted in transit: yes. Deletion: deleted with the coaching chat or her account.
 
 App activity
   - App interactions

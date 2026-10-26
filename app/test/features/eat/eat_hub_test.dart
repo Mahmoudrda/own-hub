@@ -870,11 +870,7 @@ void main() {
       _phone(tester);
       await pump(tester, _host(hub(onSnap: () {}, onSpeak: () {})));
       await type(tester, 'k');
-      for (final key in const [
-        'eat-hub-mic',
-        'eat-hub-clear',
-        'eat-snap-meal',
-      ]) {
+      for (final key in const ['eat-hub-clear', 'eat-snap-meal']) {
         final size = tester.getSize(find.byKey(ValueKey(key)));
         expect(size.height, greaterThanOrEqualTo(48), reason: key);
         expect(size.width, greaterThanOrEqualTo(48), reason: key);

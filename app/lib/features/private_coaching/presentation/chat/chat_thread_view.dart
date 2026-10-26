@@ -7,15 +7,21 @@
 library;
 
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 
+import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 
+import '../../../../app_state/haptics.dart';
 import '../../../../app_state/open_link.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
-import '../../../../ui/hand/mascot/kitten.dart';
 import '../../../account/domain/safety.dart';
 import '../../data/chat_repository.dart';
+import '../../data/saved_reply_store.dart';
 import '../../domain/chat_message.dart';
 import '../../domain/chat_screen.dart';
 import '../../domain/coaching_contract.dart';
@@ -23,8 +29,12 @@ import '../member/coach_card.dart';
 import '../member/report_coach_sheet.dart';
 import 'chat_bubbles.dart';
 import 'chat_logic.dart';
+import 'chat_media_bubbles.dart';
 import 'chat_sheets.dart';
 import 'chat_thread_controller.dart';
+import 'check_in_view.dart';
+import 'saved_replies_sheet.dart';
+import 'voice_recorder.dart';
 
 class ChatThreadView extends StatefulWidget {
   const ChatThreadView({
@@ -46,6 +56,9 @@ class ChatThreadView extends StatefulWidget {
     this.now,
     this.markDelay = const Duration(seconds: 2),
     this.unreadAtOpen,
+    this.recorderBuilder,
+    this.savedReplyStore,
+    this.starterReplies = const <String>[],
   });
 
   final ChatThreadRepository repository;
@@ -79,6 +92,9 @@ class ChatThreadView extends StatefulWidget {
 
   /// Her unread lines in the relationship document when the thread opens.
   final int? unreadAtOpen;
+  final VoiceRecorder Function()? recorderBuilder;
+  final SavedReplyStore? savedReplyStore;
+  final List<String> starterReplies;
 
   @override
   State<ChatThreadView> createState() => _ChatThreadViewState();
@@ -92,8 +108,69 @@ class _ChatThreadViewState extends State<ChatThreadView>
   final ScrollController _scroll = ScrollController();
   final TextEditingController _text = TextEditingController();
   final FocusNode _focus = FocusNode();
+  final ImagePicker _picker = ImagePicker();
+  VoiceRecorder? _recorder;
+  VoiceRecorder get _rec =>
+      _recorder ??= (widget.recorderBuilder ?? PluginVoiceRecorder.new)();
+  late final SavedReplyStore _replyStore =
+      widget.savedReplyStore ?? SavedReplyStore();
+  List<SavedReply> _replies = const <SavedReply>[];
   ChatScreenReason? _refused;
   bool _sendFailed = false;
+  bool _recording = false;
+  bool _cancelArmed = false;
+  DateTime? _recordStart;
+  int _tickMs = 0;
+  Timer? _ticker;
+  double _dragX = 0;
+
+  bool get _iAmCoach => !widget.otherIsCoach;
+
+  Future<void> _loadReplies() async {
+    if (!_iAmCoach) return;
+    final list = await _replyStore.load(widget.myUid, widget.starterReplies);
+    if (mounted) setState(() => _replies = list);
+  }
+
+  void _useReply(SavedReply reply) {
+    final current = _text.text;
+    final next = current.trim().isEmpty
+        ? reply.text
+        : '${current.trimRight()} ${reply.text}';
+    _text.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
+    _focus.requestFocus();
+    setState(() {});
+  }
+
+  Future<void> _editReply(SavedReply? reply) async {
+    final text = await showReplyEditor(context, initial: reply?.text);
+    if (text == null || !mounted) return;
+    final next = <SavedReply>[..._replies];
+    if (reply == null) {
+      if (text.isNotEmpty && next.length < kSavedReplyMax) {
+        next.add(
+          SavedReply(
+            id: 'r${DateTime.now().microsecondsSinceEpoch}',
+            text: text,
+          ),
+        );
+      }
+    } else {
+      final at = next.indexWhere((r) => r.id == reply.id);
+      if (at >= 0) {
+        if (text.isEmpty) {
+          next.removeAt(at);
+        } else {
+          next[at] = SavedReply(id: reply.id, text: text);
+        }
+      }
+    }
+    setState(() => _replies = next);
+    await _replyStore.save(widget.myUid, next);
+  }
 
   @override
   void initState() {
@@ -113,11 +190,15 @@ class _ChatThreadViewState extends State<ChatThreadView>
     _scroll.addListener(_onScroll);
     WidgetsBinding.instance.addObserver(this);
     _controller.start();
+    unawaited(_loadReplies());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _ticker?.cancel();
+    final rec = _recorder;
+    if (rec != null) unawaited(rec.dispose());
     _controller
       ..removeListener(_onChange)
       ..dispose();
@@ -130,6 +211,9 @@ class _ChatThreadViewState extends State<ChatThreadView>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _controller.foreground = state == AppLifecycleState.resumed;
+    if (state != AppLifecycleState.resumed && _recording) {
+      unawaited(_recordEnd(send: false));
+    }
   }
 
   void _onChange() {
@@ -210,6 +294,158 @@ class _ChatThreadViewState extends State<ChatThreadView>
         setState(() => _refused = reason);
       case NothingToSend():
         break;
+    }
+  }
+
+  Future<void> _pickMedia({
+    required bool video,
+    required ImageSource source,
+  }) async {
+    if (!await _rulesOk() || !mounted) return;
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    try {
+      final file = video
+          ? await _picker.pickVideo(
+              source: source,
+              maxDuration: const Duration(
+                seconds: CoachingLimits.chatVideoMaxSeconds,
+              ),
+            )
+          : await _picker.pickImage(
+              source: source,
+              maxWidth: CoachingLimits.chatImageLongSidePx.toDouble(),
+              maxHeight: CoachingLimits.chatImageLongSidePx.toDouble(),
+              imageQuality: 80,
+            );
+      if (file == null || !mounted) return;
+      final bytes = await file.readAsBytes();
+      final limit = video
+          ? CoachingLimits.chatVideoMaxBytes
+          : CoachingLimits.chatImageMaxBytes;
+      if (bytes.length > limit) {
+        messenger?.showSnackBar(
+          SnackBar(content: Text(l10n.thatFileIsTooBigAPhoto)),
+        );
+        return;
+      }
+      final ok = await _controller.sendMedia(
+        type: video ? MessageType.video : MessageType.image,
+        bytes: bytes,
+        contentType: video
+            ? (file.path.toLowerCase().endsWith('.mov')
+                  ? 'video/quicktime'
+                  : 'video/mp4')
+            : 'image/jpeg',
+        durationMs: video ? await _videoMs(file.path) : null,
+      );
+      if (!ok) {
+        messenger?.showSnackBar(
+          SnackBar(content: Text(l10n.weCouldNotSendThatTryAgain)),
+        );
+      } else {
+        _toBottom();
+      }
+    } catch (_) {
+      messenger?.showSnackBar(
+        SnackBar(content: Text(l10n.weCouldNotSendThatTryAgain)),
+      );
+    }
+  }
+
+  Future<int> _videoMs(String path) async {
+    final probe = VideoPlayerController.file(File(path));
+    try {
+      await probe.initialize();
+      return probe.value.duration.inMilliseconds.clamp(
+        500,
+        CoachingLimits.chatVideoMaxSeconds * 1000,
+      );
+    } finally {
+      await probe.dispose();
+    }
+  }
+
+  Future<void> _recordStartHold() async {
+    if (_recording || !widget.open) return;
+    if (!await _rulesOk() || !mounted) return;
+    final ok = await _rec.start();
+    if (!mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(
+            AppL10n.of(context).allowTheMicrophoneInSettingsToSend,
+          ),
+        ),
+      );
+      return;
+    }
+    unawaited(AppHaptics.play(HapticMoment.actionDone));
+    setState(() {
+      _recording = true;
+      _cancelArmed = false;
+      _dragX = 0;
+      _recordStart = DateTime.now();
+      _tickMs = kLongPressTimeout.inMilliseconds;
+    });
+    _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (!mounted) return;
+      _tickMs += 250;
+      if (_elapsedMs >= CoachingLimits.chatAudioMaxSeconds * 1000) {
+        unawaited(_recordEnd(send: true));
+      } else {
+        setState(() {});
+      }
+    });
+  }
+
+  int get _elapsedMs => _recordStart == null
+      ? 0
+      : max(_tickMs, DateTime.now().difference(_recordStart!).inMilliseconds);
+
+  void _recordDrag(double dx) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final toward = rtl ? dx : -dx;
+    setState(() {
+      _dragX = dx;
+      _cancelArmed = toward > 80;
+    });
+  }
+
+  Future<void> _recordEnd({required bool send}) async {
+    if (!_recording) return;
+    final ms = _elapsedMs;
+    final cancel = !send || _cancelArmed;
+    _ticker?.cancel();
+    setState(() => _recording = false);
+    final l10n = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (cancel) {
+      await _rec.cancel();
+      return;
+    }
+    if (ms < 1000) {
+      await _rec.cancel();
+      messenger?.showSnackBar(
+        SnackBar(content: Text(l10n.holdTheMicAndSpeak)),
+      );
+      return;
+    }
+    final bytes = await _rec.stop();
+    if (bytes == null || bytes.isEmpty || !mounted) return;
+    final ok = await _controller.sendMedia(
+      type: MessageType.audio,
+      bytes: bytes,
+      contentType: 'audio/mp4',
+      durationMs: ms.clamp(1000, CoachingLimits.chatAudioMaxSeconds * 1000),
+    );
+    if (!ok) {
+      messenger?.showSnackBar(
+        SnackBar(content: Text(l10n.weCouldNotSendThatTryAgain)),
+      );
+    } else {
+      _toBottom();
     }
   }
 
@@ -365,12 +601,6 @@ class _ChatThreadViewState extends State<ChatThreadView>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Kitten(
-                pose: KittenPose.wave,
-                size: 72,
-                moment: 'chat-empty',
-              ),
-              const SizedBox(height: 12),
               Text(
                 l10n.noMessagesYetSayHello,
                 textAlign: TextAlign.center,
@@ -444,6 +674,22 @@ class _ChatThreadViewState extends State<ChatThreadView>
           );
         }
         if (message.type == MessageType.system) {
+          if (message.systemKind == SystemMessageKind.checkIn &&
+              message.weekKey != null &&
+              widget.otherIsCoach) {
+            // otherIsCoach is true on the CLIENT's side (the other person is
+            // the coach): she is the one who answers.
+            final week = message.weekKey!;
+            return CheckInCard(
+              weekKey: week,
+              onAnswer: () => Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      CheckInView(relId: widget.relId, weekKey: week),
+                ),
+              ),
+            );
+          }
           return NoticePill(systemLine(l10n, message.systemKind));
         }
         final who = mine ? l10n.you : widget.person.name;
@@ -456,6 +702,17 @@ class _ChatThreadViewState extends State<ChatThreadView>
             tail: tail,
             tick: tick,
             who: who,
+            onLongPress: press,
+          );
+        }
+        if (message.type.isMedia) {
+          return MediaBubble(
+            message: message,
+            mine: mine,
+            tail: tail,
+            tick: tick,
+            who: who,
+            urlOf: widget.repository.chatMediaUrl,
             onLongPress: press,
           );
         }
@@ -512,7 +769,35 @@ class _ChatThreadViewState extends State<ChatThreadView>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                if (widget.share.any)
+                if (_recording) ...[
+                  const SizedBox(width: 12),
+                  Icon(
+                    Icons.fiber_manual_record,
+                    color: _cancelArmed
+                        ? AppColors.onSurfaceVariant
+                        : Colors.red,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    durationLabel(_elapsedMs),
+                    style: AppText.body.copyWith(color: AppColors.ink),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Transform.translate(
+                      offset: Offset(_dragX.clamp(-120.0, 120.0), 0),
+                      child: Text(
+                        _cancelArmed
+                            ? l10n.releaseToCancel
+                            : l10n.slideAwayToCancel,
+                        style: AppText.nav.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
                   IconButton(
                     tooltip: l10n.shareSomething,
                     constraints: const BoxConstraints(
@@ -521,54 +806,108 @@ class _ChatThreadViewState extends State<ChatThreadView>
                     ),
                     icon: const Icon(Icons.add_circle_outline),
                     color: AppColors.primary,
-                    onPressed: () => showShareSheet(context, widget.share),
+                    onPressed: () {
+                      final choices = widget.share.withMedia(
+                        onTakePhoto: () => unawaited(
+                          _pickMedia(video: false, source: ImageSource.camera),
+                        ),
+                        onChoosePhoto: () => unawaited(
+                          _pickMedia(video: false, source: ImageSource.gallery),
+                        ),
+                        onRecordVideo: () => unawaited(
+                          _pickMedia(video: true, source: ImageSource.camera),
+                        ),
+                        onChooseVideo: () => unawaited(
+                          _pickMedia(video: true, source: ImageSource.gallery),
+                        ),
+                      );
+                      showShareSheet(
+                        context,
+                        _iAmCoach
+                            ? choices.withReplies(
+                                replies: _replies,
+                                onUseReply: _useReply,
+                                onEditReply: (r) => unawaited(_editReply(r)),
+                                onAddReply: () => unawaited(_editReply(null)),
+                              )
+                            : choices,
+                      );
+                    },
                   ),
-                Expanded(
-                  child: TextField(
-                    controller: _text,
-                    focusNode: _focus,
-                    minLines: 1,
-                    maxLines: 5,
-                    maxLength: CoachingLimits.messageMaxChars,
-                    keyboardType: TextInputType.multiline,
-                    textCapitalization: TextCapitalization.sentences,
-                    onChanged: (_) => setState(() {
-                      _refused = null;
-                      _sendFailed = false;
-                    }),
-                    style: AppText.body.copyWith(color: AppColors.ink),
-                    decoration: InputDecoration(
-                      hintText: l10n.message,
-                      counterText: '',
-                      filled: true,
-                      fillColor: AppColors.surfaceLowest,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.xl),
-                        borderSide: const BorderSide(color: AppColors.outline),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.xl),
-                        borderSide: const BorderSide(color: AppColors.outline),
+                  Expanded(
+                    child: TextField(
+                      controller: _text,
+                      focusNode: _focus,
+                      minLines: 1,
+                      maxLines: 5,
+                      maxLength: CoachingLimits.messageMaxChars,
+                      keyboardType: TextInputType.multiline,
+                      textCapitalization: TextCapitalization.sentences,
+                      onChanged: (_) => setState(() {
+                        _refused = null;
+                        _sendFailed = false;
+                      }),
+                      style: AppText.body.copyWith(color: AppColors.ink),
+                      decoration: InputDecoration(
+                        hintText: l10n.message,
+                        counterText: '',
+                        filled: true,
+                        fillColor: AppColors.surfaceLowest,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
+                          borderSide: const BorderSide(
+                            color: AppColors.outline,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
+                          borderSide: const BorderSide(
+                            color: AppColors.outline,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                IconButton(
-                  tooltip: l10n.send,
-                  constraints: const BoxConstraints(
-                    minWidth: 48,
-                    minHeight: 48,
+                ],
+                if (!_recording && _text.text.trim().isNotEmpty)
+                  IconButton(
+                    tooltip: l10n.send,
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    icon: const Icon(Icons.send),
+                    color: AppColors.primary,
+                    onPressed: () => unawaited(_send()),
+                  )
+                else
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => ScaffoldMessenger.maybeOf(context)
+                        ?.showSnackBar(
+                          SnackBar(content: Text(l10n.holdTheMicAndSpeak)),
+                        ),
+                    onLongPressStart: (_) => unawaited(_recordStartHold()),
+                    onLongPressMoveUpdate: (d) =>
+                        _recordDrag(d.offsetFromOrigin.dx),
+                    onLongPressEnd: (_) => unawaited(_recordEnd(send: true)),
+                    onLongPressCancel: () => unawaited(_recordEnd(send: false)),
+                    child: Semantics(
+                      button: true,
+                      label: l10n.voiceNote,
+                      hint: l10n.holdTheMicAndSpeak,
+                      excludeSemantics: true,
+                      child: const SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Icon(Icons.mic, color: AppColors.primary),
+                      ),
+                    ),
                   ),
-                  icon: const Icon(Icons.send),
-                  color: AppColors.primary,
-                  onPressed: _text.text.trim().isEmpty
-                      ? null
-                      : () => unawaited(_send()),
-                ),
               ],
             ),
           ),

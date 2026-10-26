@@ -23,6 +23,16 @@ OPEN = tuple(common.ENUMS["subscriptionOpen"])
 LIMITS = common.LIMITS
 PACKAGE_KEYS = tuple(common.CONTRACT["documents"]["subscription"]["packageSnapshot"])
 HEALTH_KEYS = tuple(common.ENUMS["healthQuestions"])
+FLAGGED_STAGES = ("pregnant", "postpartum")
+
+
+def intake_flagged(intake: dict) -> bool:
+    """Anything that makes her coach read her answers before a plan goes out."""
+    return (
+        any((intake.get("health") or {}).values())
+        or intake.get("lifeStage") in FLAGGED_STAGES
+        or intake.get("eatingHistory") is True
+    )
 
 
 def system_message(transaction, db, rel_id: str, kind: str, now: dt.datetime) -> None:
@@ -52,7 +62,8 @@ def intake_of(raw) -> dict:
     ack = raw.get("doctorAck", False)
     if not isinstance(ack, bool):
         raise common.bad()
-    if any(health.values()) and not ack:
+    eating = raw.get("eatingHistory", False)
+    if not isinstance(eating, bool):
         raise common.bad()
     allergies = raw.get("allergies", [])
     if not isinstance(allergies, list) or len(allergies) > 16:
@@ -61,6 +72,9 @@ def intake_of(raw) -> dict:
     life_stage = raw.get("lifeStage")
     if life_stage is not None:
         life_stage = common.text(life_stage, min_len=1, max_len=30)
+    flagged = any(health.values()) or life_stage in FLAGGED_STAGES or eating
+    if flagged and not ack:
+        raise common.bad()
     return {
         "goal": common.one_of(raw.get("goal"), common.ENUMS["goals"]),
         "level": common.one_of(raw.get("level"), common.ENUMS["levels"]),
@@ -68,6 +82,7 @@ def intake_of(raw) -> dict:
         "place": common.one_of(raw.get("place"), common.ENUMS["places"]),
         "allergies": allergies,
         "lifeStage": life_stage,
+        "eatingHistory": eating,
         "health": {key: health[key] for key in HEALTH_KEYS},
         "doctorAck": ack,
         "note": common.optional_text(raw.get("note"), max_len=LIMITS["noteMax"]),
@@ -316,7 +331,7 @@ def request(
         }
         auto = (
             row.get("autoAccept") is True
-            and not any(intake["health"].values())
+            and not intake_flagged(intake)
             and held_places(db, transaction, coach_uid, payments_live, asked=True) < cap
         )
         free = auto and not payments_live
@@ -810,3 +825,21 @@ def sweep(
                 counts["staleProofImages"] += 1
 
     return counts
+
+
+def review_health(db, uid: str, data: dict, *, live: bool, coach_v, now: dt.datetime) -> dict:
+    """The coach records that she has read the client's health answers."""
+    common.require_clients_live(live)
+    common.require_active_coach(db, uid, coach_v)
+    sub_id = _id(data.get("subId"))
+    ref = db.collection("subscriptions").document(sub_id)
+
+    def body(transaction):
+        sub = common.read(ref, transaction)
+        if sub is None or sub.get("coachUid") != uid:
+            raise common.refuse(errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+        if not sub.get("healthReviewedAt"):
+            transaction.update(ref, {"healthReviewedAt": now, "healthReviewedBy": uid})
+        return {"ok": True}
+
+    return common.run(db, body)

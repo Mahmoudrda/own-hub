@@ -4,11 +4,13 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../domain/format/number_label.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
 import '../coaching_when.dart';
+import '../desk/desk_text.dart' show dateText;
 import '../../../onboarding/domain/intake.dart' show LifeStage;
 import '../../domain/coach_plan.dart';
 import '../../domain/subscription.dart';
@@ -22,7 +24,6 @@ class CoachHomeCard extends StatelessWidget {
     this.hasUnread = false,
     this.doneThisWeek = 0,
     this.lifeStage,
-    this.onOpen,
     this.onStartWorkout,
   });
 
@@ -37,9 +38,6 @@ class CoachHomeCard extends StatelessWidget {
   final int doneThisWeek;
   final LifeStage? lifeStage;
 
-  /// Opens My coach.
-  final VoidCallback? onOpen;
-
   /// Starts the coach workout day shown. Null hides the button.
   final void Function(CoachPlan plan, int dayIndex)? onStartWorkout;
 
@@ -50,12 +48,16 @@ class CoachHomeCard extends StatelessWidget {
     final plan = workout?.workout;
     final day = plan == null
         ? null
-        : todaysWorkoutDay(plan, doneThisWeek, lifeStage);
+        : todaysWorkoutDay(
+            plan,
+            doneThisWeek,
+            lifeStage,
+            startsOn: workout?.startsOn,
+          );
     final at = nextSession?.startsAt;
     return AppCard(
       key: const ValueKey('coach-home-card'),
       variant: AppCardVariant.tonal,
-      onTap: onOpen,
       children: [
         Semantics(
           header: true,
@@ -63,11 +65,26 @@ class CoachHomeCard extends StatelessWidget {
         ),
         Text(
           day == null
-              ? l10n.yourCoachHasNotSetAPlan
+              ? (workout?.startsOn != null &&
+                        plan != null &&
+                        plan.weekCount > 1
+                    ? l10n.yourPlanStartsDate(
+                        dateText(l10n, workout!.startsOn),
+                      )
+                    : l10n.yourCoachHasNotSetAPlan)
               : l10n.todaysWorkoutName(plan!.days[day].session.title(lang)),
           key: const ValueKey('coach-home-workout'),
           style: AppText.bodyM,
         ),
+        if (plan != null && plan.weekCount > 1 && day != null)
+          Text(
+            l10n.weekNOfTotal(
+              countLabel(plan.days[day].week),
+              countLabel(plan.weekCount),
+            ),
+            key: const ValueKey('coach-home-week'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
         if (at != null)
           Text(
             l10n.nextSessionWhen(

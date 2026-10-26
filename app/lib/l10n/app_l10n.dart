@@ -9325,12 +9325,6 @@ abstract class AppL10n {
   /// **'Filled in from her intake. Change what has moved, and nothing is overwritten until you save.'**
   String get filledInFromHerIntakeChangeWhat;
 
-  /// No description provided for @finishHere.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish here'**
-  String get finishHere;
-
   /// No description provided for @fiveTimesNoHands.
   ///
   /// In en, this message translates to:
@@ -9343,7 +9337,7 @@ abstract class AppL10n {
   /// **'Full body ×3'**
   String get fullBody3;
 
-  /// R13 undo snackbar after a whole move.
+  /// Undo snackbar after a whole move (I did them all).
   ///
   /// In en, this message translates to:
   /// **'{move} saved · {sets} sets'**
@@ -12457,12 +12451,6 @@ abstract class AppL10n {
   /// **'Move {move} of {total}'**
   String moveMoveOfTotal(String move, String total);
 
-  /// R13 primary button. The move she goes back to, replacing the fixed 'Next move · step-back lunge'.
-  ///
-  /// In en, this message translates to:
-  /// **'Next move · {move}'**
-  String nextMoveMove(String move);
-
   /// R09 'Up next' card: the move and set she returns to after resting.
   ///
   /// In en, this message translates to:
@@ -15409,18 +15397,6 @@ abstract class AppL10n {
   /// **'Your week shows here'**
   String get yourWeekShowsHere;
 
-  /// No description provided for @theKittenShowsYouAroundAndMoves.
-  ///
-  /// In en, this message translates to:
-  /// **'The kitten shows you around and moves once when it appears.'**
-  String get theKittenShowsYouAroundAndMoves;
-
-  /// No description provided for @theKittenStaysStill.
-  ///
-  /// In en, this message translates to:
-  /// **'The kitten stays still.'**
-  String get theKittenStaysStill;
-
   /// No description provided for @helpImproveOwnHub.
   ///
   /// In en, this message translates to:
@@ -16513,7 +16489,7 @@ abstract class AppL10n {
   /// **'Resume'**
   String get resume;
 
-  /// R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.
+  /// R07/R08/R09 set bar: sets of today's session behind her, out of all of them.
   ///
   /// In en, this message translates to:
   /// **'Sets done: {done} of {total}'**
@@ -18601,18 +18577,6 @@ abstract class AppL10n {
   /// **'Remove it'**
   String get removeIt;
 
-  /// No description provided for @tapAMoveYouLoggedToChange.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a move you logged to change a set.'**
-  String get tapAMoveYouLoggedToChange;
-
-  /// No description provided for @whichSet.
-  ///
-  /// In en, this message translates to:
-  /// **'Which set?'**
-  String get whichSet;
-
   /// No description provided for @addToMyWeek.
   ///
   /// In en, this message translates to:
@@ -18774,12 +18738,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Skipped {name}'**
   String skippedName(String name);
-
-  /// R13 Finish here, second tap to confirm. count in Western digits.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish now · {count} moves left'**
-  String finishNowCountMovesLeft(String count);
 
   /// O05 after saving changed setup answers from the profile. Numbers in Western digits.
   ///
@@ -20251,12 +20209,6 @@ abstract class AppL10n {
   /// **'Full-body strength, {minutes} min'**
   String fullBodyStrengthMinutesMin(String minutes);
 
-  /// No description provided for @onceADayQuiet10pmTo8am.
-  ///
-  /// In en, this message translates to:
-  /// **'Once a day, quiet 10pm to 8am'**
-  String get onceADayQuiet10pmTo8am;
-
   /// No description provided for @onlyTheDishWhatsInItAnd.
   ///
   /// In en, this message translates to:
@@ -21700,18 +21652,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Log the total, bar included.'**
   String get logTheTotalBarIncluded;
-
-  /// R10 next-step line for a loaded move that goes up a step next time.
-  ///
-  /// In en, this message translates to:
-  /// **'Next time: {weight} on {name}'**
-  String nextTimeWeightOnName(String weight, String name);
-
-  /// R10 next-step line for a loaded move that stays at the same weight next time.
-  ///
-  /// In en, this message translates to:
-  /// **'Same weight on {name} next time, until it feels steady'**
-  String sameWeightOnNameNextTimeUntil(String name);
 
   /// Range error on the set editor's weight field.
   ///
@@ -25629,6 +25569,630 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Gentler'**
   String get gentler;
+
+  /// No description provided for @recordAVideoUpTo30Seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a video (up to 30 seconds)'**
+  String get recordAVideoUpTo30Seconds;
+
+  /// No description provided for @chooseAVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a video'**
+  String get chooseAVideo;
+
+  /// No description provided for @thatFileIsTooBigAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is too big. A photo is up to 10 MB and a video is up to 25 MB.'**
+  String get thatFileIsTooBigAPhoto;
+
+  /// No description provided for @weCouldNotSendThatTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send that. Try again.'**
+  String get weCouldNotSendThatTryAgain;
+
+  /// No description provided for @holdTheMicAndSpeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the mic and speak'**
+  String get holdTheMicAndSpeak;
+
+  /// No description provided for @slideAwayToCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide away to cancel'**
+  String get slideAwayToCancel;
+
+  /// No description provided for @releaseToCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to cancel'**
+  String get releaseToCancel;
+
+  /// No description provided for @allowTheMicrophoneInSettingsToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the microphone in Settings to send voice notes.'**
+  String get allowTheMicrophoneInSettingsToSend;
+
+  /// No description provided for @weCouldNotPlayThatVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not play that voice note.'**
+  String get weCouldNotPlayThatVoiceNote;
+
+  /// No description provided for @editReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit reply'**
+  String get editReply;
+
+  /// No description provided for @addAReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a reply'**
+  String get addAReply;
+
+  /// No description provided for @newReply.
+  ///
+  /// In en, this message translates to:
+  /// **'New reply'**
+  String get newReply;
+
+  /// No description provided for @writeYourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Write your reply'**
+  String get writeYourReply;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @greatWorkTodayIAmProudOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Great work today. I am proud of you.'**
+  String get greatWorkTodayIAmProudOf;
+
+  /// No description provided for @howDidTheSessionFeelTellMe.
+  ///
+  /// In en, this message translates to:
+  /// **'How did the session feel? Tell me what was easy and what was hard.'**
+  String get howDidTheSessionFeelTellMe;
+
+  /// No description provided for @sendMeAShortVideoOfThat.
+  ///
+  /// In en, this message translates to:
+  /// **'Send me a short video of that exercise from the side and I will check your form.'**
+  String get sendMeAShortVideoOfThat;
+
+  /// No description provided for @lowerTheWeightALittleAndFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower the weight a little and focus on a slow, steady movement.'**
+  String get lowerTheWeightALittleAndFocus;
+
+  /// No description provided for @restWellTodayRecoveryIsPartOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest well today. Recovery is part of the plan.'**
+  String get restWellTodayRecoveryIsPartOf;
+
+  /// No description provided for @rememberToDrinkWaterAndEatYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember to drink water and eat your protein today.'**
+  String get rememberToDrinkWaterAndEatYour;
+
+  /// No description provided for @ifAnythingHurtsStopAndTellMe.
+  ///
+  /// In en, this message translates to:
+  /// **'If anything hurts, stop and tell me. Do not push through pain.'**
+  String get ifAnythingHurtsStopAndTellMe;
+
+  /// No description provided for @iSawYourWeeklyCheckInThank.
+  ///
+  /// In en, this message translates to:
+  /// **'I saw your weekly check-in. Thank you. I will update your plan.'**
+  String get iSawYourWeeklyCheckInThank;
+
+  /// No description provided for @missedADayNoProblemPickUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed a day? No problem. Pick up with the next session.'**
+  String get missedADayNoProblemPickUp;
+
+  /// No description provided for @sendMeAPhotoOfYourMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Send me a photo of your meal and I will give you my notes.'**
+  String get sendMeAPhotoOfYourMeal;
+
+  /// R03 weights line: the step up she has earned on a loaded move, from her last session.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {weight} on {name}'**
+  String todayWeightOnName(String weight, String name);
+
+  /// R03 weights line: a loaded move that stays at last time's weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Same weight on {name} as last time, until it feels steady'**
+  String sameWeightOnNameAsLastTime(String name);
+
+  /// No description provided for @supersetGoStraightToTheNextMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Superset: go straight to the next move, then rest.'**
+  String get supersetGoStraightToTheNextMove;
+
+  /// No description provided for @moveDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Move details'**
+  String get moveDetails;
+
+  /// No description provided for @targetWeightKg.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight (kg)'**
+  String get targetWeightKg;
+
+  /// No description provided for @leaveEmptyForBodyweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for bodyweight'**
+  String get leaveEmptyForBodyweight;
+
+  /// No description provided for @supersetWithTheNextMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Superset with the next move'**
+  String get supersetWithTheNextMove;
+
+  /// No description provided for @superset.
+  ///
+  /// In en, this message translates to:
+  /// **'Superset'**
+  String get superset;
+
+  /// No description provided for @saveDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Save details'**
+  String get saveDetails;
+
+  /// No description provided for @duplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get duplicate;
+
+  /// No description provided for @copy_1g7xp.
+  ///
+  /// In en, this message translates to:
+  /// **'(copy)'**
+  String get copy_1g7xp;
+
+  /// No description provided for @repeatLastWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat last week'**
+  String get repeatLastWeek;
+
+  /// Weeks in a plan
+  ///
+  /// In en, this message translates to:
+  /// **'{n} weeks'**
+  String nWeeks(String n);
+
+  /// Which week of her plan she is in
+  ///
+  /// In en, this message translates to:
+  /// **'Week {n} of {total}'**
+  String weekNOfTotal(String n, String total);
+
+  /// When her multi-week plan starts
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan starts {date}'**
+  String yourPlanStartsDate(String date);
+
+  /// No description provided for @seeAllWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'See all weeks'**
+  String get seeAllWeeks;
+
+  /// No description provided for @sendToMoreClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to more clients'**
+  String get sendToMoreClients;
+
+  /// No description provided for @whoGetsThisPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Who gets this plan?'**
+  String get whoGetsThisPlan;
+
+  /// No description provided for @chooseNClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose {n} clients'**
+  String chooseNClients(Object n);
+
+  /// No description provided for @publishToNClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish to {n} clients'**
+  String publishToNClients(Object n);
+
+  /// No description provided for @sentToNClients.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to {n} clients'**
+  String sentToNClients(Object n);
+
+  /// No description provided for @tryAgainForN.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again for {n}'**
+  String tryAgainForN(Object n);
+
+  /// No description provided for @someClientsDidNotGetThePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Some clients did not get the plan.'**
+  String get someClientsDidNotGetThePlan;
+
+  /// No description provided for @startsDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts {date}'**
+  String startsDate(Object date);
+
+  /// No description provided for @joinMeOnOwnHubTheTraining_s0kkx.
+  ///
+  /// In en, this message translates to:
+  /// **'Join me on Own Hub, the training app for women only. Open this link: {link} If it does not open the app, install Own Hub, tap I have a code from my coach when you sign up and enter {code}.'**
+  String joinMeOnOwnHubTheTraining_s0kkx(Object code, Object link);
+
+  /// No description provided for @shareMyProfileLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Share my profile link'**
+  String get shareMyProfileLink;
+
+  /// No description provided for @membersWhoOpenItLandOnYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Members who open it land on your page and can ask to join.'**
+  String get membersWhoOpenItLandOnYour;
+
+  /// No description provided for @trainWithMeOnOwnHubLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Train with me on Own Hub: {link}'**
+  String trainWithMeOnOwnHubLink(Object link);
+
+  /// No description provided for @yourCoachsInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach\'s invitation'**
+  String get yourCoachsInvitation;
+
+  /// No description provided for @thisLinkDoesNotWorkAskYour.
+  ///
+  /// In en, this message translates to:
+  /// **'This link does not work. Ask your coach to send it again.'**
+  String get thisLinkDoesNotWorkAskYour;
+
+  /// No description provided for @weeklyCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly check-in'**
+  String get weeklyCheckIn;
+
+  /// No description provided for @fourQuickTapsItTakesUnderA.
+  ///
+  /// In en, this message translates to:
+  /// **'Four quick taps. It takes under a minute.'**
+  String get fourQuickTapsItTakesUnderA;
+
+  /// No description provided for @answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer'**
+  String get answer;
+
+  /// No description provided for @weeklyCheckInSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly check-in sent'**
+  String get weeklyCheckInSent;
+
+  /// No description provided for @sentThankYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. Thank you.'**
+  String get sentThankYou;
+
+  /// No description provided for @howDidYourTrainingGo.
+  ///
+  /// In en, this message translates to:
+  /// **'How did your training go?'**
+  String get howDidYourTrainingGo;
+
+  /// No description provided for @most.
+  ///
+  /// In en, this message translates to:
+  /// **'Most'**
+  String get most;
+
+  /// No description provided for @some.
+  ///
+  /// In en, this message translates to:
+  /// **'Some'**
+  String get some;
+
+  /// No description provided for @howIsYourEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'How is your energy?'**
+  String get howIsYourEnergy;
+
+  /// No description provided for @n1IsLow5IsHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'1 is low, 5 is high.'**
+  String get n1IsLow5IsHigh;
+
+  /// No description provided for @howDidEatingGo.
+  ///
+  /// In en, this message translates to:
+  /// **'How did eating go?'**
+  String get howDidEatingGo;
+
+  /// No description provided for @n1IsHard5IsEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'1 is hard, 5 is easy.'**
+  String get n1IsHard5IsEasy;
+
+  /// No description provided for @anyPainOrInjuryThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Any pain or injury this week?'**
+  String get anyPainOrInjuryThisWeek;
+
+  /// No description provided for @tellYourCoachMoreBelowIfYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell your coach more below if you like. If it is sharp or getting worse, please see a doctor.'**
+  String get tellYourCoachMoreBelowIfYou;
+
+  /// No description provided for @anythingYouWantYourCoachToKnow.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything you want your coach to know? (optional)'**
+  String get anythingYouWantYourCoachToKnow;
+
+  /// No description provided for @sendToMyCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to my coach'**
+  String get sendToMyCoach;
+
+  /// No description provided for @sentYourCoachWillSeeIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. Your coach will see it.'**
+  String get sentYourCoachWillSeeIt;
+
+  /// No description provided for @youAlreadySentThisOne.
+  ///
+  /// In en, this message translates to:
+  /// **'You already sent this one.'**
+  String get youAlreadySentThisOne;
+
+  /// No description provided for @weCouldNotSendItTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send it. Try again in a moment.'**
+  String get weCouldNotSendItTryAgain;
+
+  /// No description provided for @needsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get needsAttention;
+
+  /// No description provided for @noCheckInYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No check-in yet'**
+  String get noCheckInYet;
+
+  /// No description provided for @trainingSlippedThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Training slipped this week'**
+  String get trainingSlippedThisWeek;
+
+  /// No description provided for @healthAnswerToRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Health answer to read'**
+  String get healthAnswerToRead;
+
+  /// No description provided for @unreadMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread message'**
+  String get unreadMessage;
+
+  /// No description provided for @areYouPregnantOrDidYouHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you pregnant, or did you have a baby in the last 12 months?'**
+  String get areYouPregnantOrDidYouHave;
+
+  /// No description provided for @hadABaby.
+  ///
+  /// In en, this message translates to:
+  /// **'Had a baby'**
+  String get hadABaby;
+
+  /// No description provided for @hasFoodOrWeightEverFeltOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Has food or weight ever felt out of control or worrying for you?'**
+  String get hasFoodOrWeightEverFeltOut;
+
+  /// No description provided for @yourCoachReadsThisFirstYouDo.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach reads this first. You do not have to say more.'**
+  String get yourCoachReadsThisFirstYouDo;
+
+  /// No description provided for @hadABabyInTheLast12.
+  ///
+  /// In en, this message translates to:
+  /// **'Had a baby in the last 12 months'**
+  String get hadABabyInTheLast12;
+
+  /// No description provided for @foodOrWeightHasFeltWorrying.
+  ///
+  /// In en, this message translates to:
+  /// **'Food or weight has felt worrying'**
+  String get foodOrWeightHasFeltWorrying;
+
+  /// No description provided for @readHerHealthAnswersFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Read her health answers first'**
+  String get readHerHealthAnswersFirst;
+
+  /// No description provided for @plansAreOnHoldUntilYouHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans are on hold until you have. Her answers are below.'**
+  String get plansAreOnHoldUntilYouHave;
+
+  /// No description provided for @iHaveReadThem.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read them'**
+  String get iHaveReadThem;
+
+  /// No description provided for @readHerHealthAnswersFirstOpenHer.
+  ///
+  /// In en, this message translates to:
+  /// **'Read her health answers first. Open her page and tick that you have.'**
+  String get readHerHealthAnswersFirstOpenHer;
+
+  /// No description provided for @thisClientsAnswersOnEatingMeanYou.
+  ///
+  /// In en, this message translates to:
+  /// **'This client\'s answers on eating mean you review her first. A plan with calorie or protein targets cannot be sent.'**
+  String get thisClientsAnswersOnEatingMeanYou;
+
+  /// No description provided for @dailyTargetForHer.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily target for her'**
+  String get dailyTargetForHer;
+
+  /// No description provided for @calories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get calories;
+
+  /// No description provided for @between1200And4000Calories30To.
+  ///
+  /// In en, this message translates to:
+  /// **'Between 1200 and 4000 calories, 30 to 250 g protein.'**
+  String get between1200And4000Calories30To;
+
+  /// No description provided for @fillInBothNumbersOrLeaveBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in both numbers, or leave both empty.'**
+  String get fillInBothNumbersOrLeaveBoth;
+
+  /// No description provided for @herAnswersOnEatingMeanYouReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Her answers on eating mean you review her first. You can send a menu without calorie or protein targets.'**
+  String get herAnswersOnEatingMeanYouReview;
+
+  /// No description provided for @swaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Swaps'**
+  String get swaps;
+
+  /// Number of approved swaps for a meal item
+  ///
+  /// In en, this message translates to:
+  /// **'Swaps ({n})'**
+  String swapsN(String n);
+
+  /// No description provided for @approvedSwaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved swaps'**
+  String get approvedSwaps;
+
+  /// No description provided for @threeAtMost.
+  ///
+  /// In en, this message translates to:
+  /// **'Three at most.'**
+  String get threeAtMost;
+
+  /// No description provided for @saveSwaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Save swaps'**
+  String get saveSwaps;
+
+  /// Daily target set by coach for client
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach\'s target: {kcal} calories and {protein} g protein'**
+  String yourCoachsTargetKcalCaloriesAndProtein(String kcal, String protein);
+
+  /// No description provided for @changeTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Change to'**
+  String get changeTo;
+
+  /// No description provided for @thePlannedDish.
+  ///
+  /// In en, this message translates to:
+  /// **'The planned dish'**
+  String get thePlannedDish;
+
+  /// No description provided for @forTheWholePlanAsTheDishes.
+  ///
+  /// In en, this message translates to:
+  /// **'For the whole plan, as the dishes are written'**
+  String get forTheWholePlanAsTheDishes;
+
+  /// No description provided for @nothingToBuyYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to buy yet.'**
+  String get nothingToBuyYet;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -208,6 +208,19 @@ printf '+201000000002\n' | gcloud secrets versions add store-reviewer-phones --d
 
 - Rahma opens Profile, **Become a coach**, and fills the 8 steps (photo, education, certificates, specialties, feedback, a transformation with her client's written consent, how she coaches, terms).
 - A woman reviewer opens the dashboard, **Coaches**, approves her (tick the certificates she checked), then approves her photos under **Portfolio photos**.
+
+#### Approving Rahma, tap by tap
+
+Before anything: Rahma must already be a verified woman (she passed the check, so her account is verified), and the person who approves her must be a DIFFERENT woman reviewer. The server refuses a reviewer who tries to decide her own application (`functions/coaching/applications.py` `decide`, `refuse_if_subject`).
+
+1. Rahma, on her phone: Profile, Become a coach. Fill the 8 steps and send. The status screen says it is being checked.
+2. The reviewer opens the dashboard (https://ownhub-reviewers.pages.dev) and signs in. The Coaches tab shows a number when an application waits.
+3. Coaches, tap Rahma's application. Look at the profile photo, then open each certificate file. A certificate that is unreadable or not hers: tick nothing for it.
+4. Tick the certificate or certificates you checked. The Approve button stays grey until at least one is ticked ("To approve, tick at least one certificate you checked").
+5. Optional: write a note to her. Tap Approve. Rahma gets a notification and her coach access starts.
+6. Portfolio photos tab: open her photos, approve each one that shows only her or people who agreed in writing. A rejection needs a reason from the list.
+7. Rahma, on her phone: on the status screen tap Open coach space. She sees My coach space (K18). Her page shows to members only once she has turned on one package.
+Other statuses: "Needs changes" sends her back to the steps with the reasons; "Reject" lets her apply again after 30 days.
 - Rahma opens **My coaching** in Profile: she adds packages (start from a template), saves workout and meal plans as templates to reuse for every client, and sees requests on her desk.
 - **Auto-accept is on for every coach at first:** a member who asks to join, with no "yes" to the health questions, starts at once while the coach has room. To read every request first, turn auto-accept off in the coach space. A request then waits on her desk; tapping it shows the member's answers before Accept or Decline.
 - Other coaches do the same. Members find them under Train, **Find a coach**.

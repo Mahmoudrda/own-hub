@@ -355,17 +355,23 @@ class IntakeAnswersCard extends StatelessWidget {
           DeskFact(l10n.lifeStage, stage),
         if (intake.note.trim().isNotEmpty)
           DeskFact(l10n.herNote, intake.note.trim()),
-        if (yesNo.isNotEmpty) ...[
+        if (yesNo.isNotEmpty || intake.anyFlag) ...[
           const SizedBox(height: 4),
           _title(l10n.healthQuestions),
           ...yesNo,
+          if (intake.lifeStage == 'pregnant')
+            Text(l10n.pregnant, style: AppText.body),
+          if (intake.lifeStage == 'postpartum')
+            Text(l10n.hadABabyInTheLast12, style: AppText.body),
+          if (intake.eatingHistory)
+            Text(l10n.foodOrWeightHasFeltWorrying, style: AppText.body),
           _flag(
-            intake.anyHealthYes
+            intake.anyFlag
                 ? (intake.doctorAck
                       ? l10n.sheTickedThatSheWillCheckWith
                       : l10n.healthAnswersToReadFirst)
                 : l10n.noHealthFlagsInHerAnswers,
-            warn: intake.anyHealthYes,
+            warn: intake.anyFlag,
           ),
         ],
       ],

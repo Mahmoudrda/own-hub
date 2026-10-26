@@ -31,7 +31,7 @@ import '../../../ui/app_preparation_steps.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_step_progress.dart';
-import '../../../ui/hand/mascot/kitten.dart';
+import '../../../ui/hand/moment.dart';
 import '../domain/verification.dart';
 
 class CheckingView extends StatefulWidget {
@@ -336,17 +336,14 @@ class _CheckingViewState extends State<CheckingView> {
                 color: AppColors.pinkSoft,
                 shape: BoxShape.circle,
               ),
-              // Reading the card, then matching it, then a light cheer when it
-              // is done. Only here: every stop below is plain words.
-              child: Kitten(
-                pose: _verified
-                    ? KittenPose.cheer
-                    : _matching
-                    ? KittenPose.point
-                    : KittenPose.think,
-                size: 72,
-                sessionBudget: true,
-              ),
+              // A tick drawn on once when it is done; until then the card.
+              child: _verified
+                  ? const Moment(size: 64)
+                  : const Icon(
+                      Icons.badge_outlined,
+                      size: 56,
+                      color: AppColors.onPrimaryContainer,
+                    ),
             ),
           ),
         ),

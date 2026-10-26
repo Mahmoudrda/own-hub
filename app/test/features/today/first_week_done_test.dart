@@ -16,7 +16,7 @@ import 'package:own_hub/features/today/presentation/first_week_view.dart';
 import 'package:own_hub/features/today/presentation/today_cards.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
-import 'package:own_hub/ui/hand/mascot/kitten.dart';
+import 'package:own_hub/ui/hand/moment.dart';
 
 void _phone(WidgetTester tester) {
   tester.view.physicalSize = const Size(1170, 2532); // 390×844 at 3×
@@ -187,19 +187,12 @@ void main() {
     expect(firstWeekIsComplete(arc), isTrue, reason: 'T08 is reachable');
   });
 
-  group('the kitten', () {
-    setUp(Kitten.resetPlayed);
-
-    testWidgets('gives one small cheer for the first week done', (
-      tester,
-    ) async {
+  group('the tick', () {
+    testWidgets('draws one small tick for the first week done', (tester) async {
       _phone(tester);
       await tester.pumpWidget(_host(_view()));
       await tester.pump();
-      expect(find.byType(Kitten), findsOneWidget);
-      final kitten = tester.widget<Kitten>(find.byType(Kitten));
-      expect(kitten.pose, KittenPose.cheer);
-      expect(kitten.size, 40);
+      expect(find.byType(Moment), findsOneWidget);
       await tester.pumpAndSettle();
     });
 
@@ -216,7 +209,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(Kitten), findsNothing);
+      expect(find.byType(Moment), findsNothing);
     });
   });
 }

@@ -23,6 +23,7 @@ class Intake {
     this.lifeStage,
     this.health = const <String, bool>{},
     this.doctorAck = false,
+    this.eatingHistory = false,
     this.note = '',
   });
 
@@ -36,6 +37,9 @@ class Intake {
   /// Question id to her yes or no. All seven are sent.
   final Map<String, bool> health;
   final bool doctorAck;
+
+  /// Her yes to "Has food or weight ever felt out of control or worrying".
+  final bool eatingHistory;
   final String note;
 
   static const int allergiesMax = 16;
@@ -46,9 +50,20 @@ class Intake {
 
   bool get anyHealthYes => health.values.any((yes) => yes);
 
-  /// A yes means she ticks "I will check with my doctor"; the coach then
+  bool get hasLifeStageFlag =>
+      lifeStage == 'pregnant' || lifeStage == 'postpartum';
+
+  /// Anything that makes her coach read her answers first.
+  bool get anyFlag => anyHealthYes || hasLifeStageFlag || eatingHistory;
+
+  /// She answered yes to the eating-history question. Rahma reviews her
+  /// herself; the app writes no calorie or macro target for her.
+  bool get eatingHistoryFlag =>
+      eatingHistory || health['eatingHistory'] == true;
+
+  /// A flag means she ticks "I will check with my doctor"; the coach then
   /// accepts by hand.
-  bool get needsDoctorAck => anyHealthYes;
+  bool get needsDoctorAck => anyFlag;
 
   Intake copyWith({
     String? goal,
@@ -60,6 +75,7 @@ class Intake {
     bool clearLifeStage = false,
     Map<String, bool>? health,
     bool? doctorAck,
+    bool? eatingHistory,
     String? note,
   }) => Intake(
     goal: goal ?? this.goal,
@@ -70,6 +86,7 @@ class Intake {
     lifeStage: clearLifeStage ? null : (lifeStage ?? this.lifeStage),
     health: health ?? this.health,
     doctorAck: doctorAck ?? this.doctorAck,
+    eatingHistory: eatingHistory ?? this.eatingHistory,
     note: note ?? this.note,
   );
 
@@ -100,6 +117,8 @@ class Intake {
       lifeStage: readStringOrNull(map['lifeStage']),
       health: health,
       doctorAck: readBool(map['doctorAck']),
+      eatingHistory: readBool(map['eatingHistory']) ||
+          (rawHealth is Map ? readBool(rawHealth['eatingHistory']) : false),
       note: readString(map['note']),
     );
   }
@@ -136,6 +155,7 @@ class Intake {
     'place': place,
     'allergies': <String>[for (final a in allergies) a.trim()],
     'lifeStage': ?lifeStage,
+    'eatingHistory': eatingHistory,
     'health': <String, bool>{
       for (final id in CoachingEnums.healthQuestions) id: health[id] ?? false,
     },
@@ -222,6 +242,7 @@ class Subscription {
     this.acceptedAt,
     this.clientName = '',
     this.nextSessionAt,
+    this.healthReviewedAt,
   });
 
   final String id;
@@ -254,6 +275,9 @@ class Subscription {
 
   /// When her next live session starts, if one is booked.
   final DateTime? nextSessionAt;
+
+  /// When the coach marked the client's health answers as read.
+  final DateTime? healthReviewedAt;
 
   /// Null when the document is missing the parties or a known status.
   static Subscription? fromMap(String id, Object? raw) {
@@ -294,8 +318,13 @@ class Subscription {
       acceptedAt: readTime(map['acceptedAt']),
       clientName: readString(map['clientName']).trim(),
       nextSessionAt: readTime(map['nextSessionAt']),
+      healthReviewedAt: readTime(map['healthReviewedAt']),
     );
   }
+
+  /// Her answers carry a flag the coach has not yet marked as read. The
+  /// server refuses to publish a plan to her until she has.
+  bool get healthHeld => (intake?.anyFlag ?? false) && healthReviewedAt == null;
 
   /// Requested, awaiting payment, in payment review, or active.
   bool get isOpen => CoachingEnums.subscriptionOpen.contains(status.wire);

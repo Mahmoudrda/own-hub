@@ -1981,7 +1981,7 @@ class AppL10nAr extends AppL10n {
   String get grilledChickenAndSalad => 'فراخ مشوية وسلطة';
 
   @override
-  String get groceryList => 'قائمة المشتريات';
+  String get groceryList => 'قايمة المشتريات';
 
   @override
   String get groupedTheWayYouShopTickAs =>
@@ -3385,7 +3385,7 @@ class AppL10nAr extends AppL10n {
       'من الأحد للخميس، 9:00 لـ 17:00 · الرد خلال يوم شغل';
 
   @override
-  String get swap => 'غيّري';
+  String get swap => 'بدّلي';
 
   @override
   String get swapExercise => 'غيّري الحركة';
@@ -4936,9 +4936,6 @@ class AppL10nAr extends AppL10n {
   @override
   String get filledInFromHerIntakeChangeWhat =>
       'متعبّي من تقييمها الأول. غيّري اللي اتغيّر، ومفيش حاجة هتتبدّل غير لما تحفظي.';
-
-  @override
-  String get finishHere => 'خلّصي هنا';
 
   @override
   String get fiveTimesNoHands => 'خمس مرات، من غير إيدين';
@@ -6704,11 +6701,6 @@ class AppL10nAr extends AppL10n {
   @override
   String moveMoveOfTotal(String move, String total) {
     return 'الحركة $move من $total';
-  }
-
-  @override
-  String nextMoveMove(String move) {
-    return 'الحركة الجاية · $move';
   }
 
   @override
@@ -8513,13 +8505,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get yourWeekShowsHere => 'أسبوعك هيظهر هنا';
-
-  @override
-  String get theKittenShowsYouAroundAndMoves =>
-      'القطة بتعرّفك على التطبيق وبتتحرك مرة واحدة لما تظهر.';
-
-  @override
-  String get theKittenStaysStill => 'القطة بتفضل ثابتة.';
 
   @override
   String get helpImproveOwnHub => 'ساعدينا نحسّن Own Hub';
@@ -10520,13 +10505,6 @@ class AppL10nAr extends AppL10n {
   String get removeIt => 'شيليه';
 
   @override
-  String get tapAMoveYouLoggedToChange =>
-      'دوسي على حركة سجلتيها عشان تغيّري مجموعة فيها.';
-
-  @override
-  String get whichSet => 'أنهي مجموعة؟';
-
-  @override
   String get addToMyWeek => 'ضيفيها لأسبوعي';
 
   @override
@@ -10634,11 +10612,6 @@ class AppL10nAr extends AppL10n {
   @override
   String skippedName(String name) {
     return 'عدّيتي $name';
-  }
-
-  @override
-  String finishNowCountMovesLeft(String count) {
-    return 'خلّصي دلوقتي · الحركات الباقية: $count';
   }
 
   @override
@@ -11514,10 +11487,6 @@ class AppL10nAr extends AppL10n {
   String fullBodyStrengthMinutesMin(String minutes) {
     return 'قوة لكل الجسم، $minutes دقيقة';
   }
-
-  @override
-  String get onceADayQuiet10pmTo8am =>
-      'مرة في اليوم، وهدوء من 10 بالليل لـ 8 الصبح';
 
   @override
   String get onlyTheDishWhatsInItAnd =>
@@ -12483,16 +12452,6 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get logTheTotalBarIncluded => 'سجّلي الوزن الكلي مع البار.';
-
-  @override
-  String nextTimeWeightOnName(String weight, String name) {
-    return 'المرة الجاية: $weight على $name';
-  }
-
-  @override
-  String sameWeightOnNameNextTimeUntil(String name) {
-    return 'نفس الوزن على $name المرة الجاية، لحد ما تحسّيه ثابت';
-  }
 
   @override
   String weightMustBe0ToMaxKg(String max) {
@@ -14892,4 +14851,370 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get gentler => 'أخف';
+
+  @override
+  String get recordAVideoUpTo30Seconds => 'صوّري فيديو (لحد 30 ثانية)';
+
+  @override
+  String get chooseAVideo => 'اختاري فيديو';
+
+  @override
+  String get thatFileIsTooBigAPhoto =>
+      'حجم الملف كبير. الصورة لحد 10 ميجا والفيديو لحد 25 ميجا.';
+
+  @override
+  String get weCouldNotSendThatTryAgain => 'ماقدرناش نبعت ده. جرّبي تاني.';
+
+  @override
+  String get holdTheMicAndSpeak => 'افضلي دايسة على المايك واتكلمي';
+
+  @override
+  String get slideAwayToCancel => 'اسحبي لبعيد للإلغاء';
+
+  @override
+  String get releaseToCancel => 'سيبي عشان تلغي';
+
+  @override
+  String get allowTheMicrophoneInSettingsToSend =>
+      'اسمحي بالمايك من الإعدادات عشان تبعتي رسايل صوتية.';
+
+  @override
+  String get weCouldNotPlayThatVoiceNote =>
+      'ماقدرناش نشغّل الرسالة الصوتية دي.';
+
+  @override
+  String get editReply => 'عدّلي الرد';
+
+  @override
+  String get addAReply => 'ضيفي رد';
+
+  @override
+  String get newReply => 'رد جديد';
+
+  @override
+  String get writeYourReply => 'اكتبي الرد';
+
+  @override
+  String get delete => 'امسحي';
+
+  @override
+  String get greatWorkTodayIAmProudOf => 'برافو عليكي النهاردة. فخورة بيكي.';
+
+  @override
+  String get howDidTheSessionFeelTellMe =>
+      'إزاي كانت التمرينة؟ قوليلي إيه اللي كان سهل وإيه اللي كان صعب.';
+
+  @override
+  String get sendMeAShortVideoOfThat =>
+      'ابعتيلي فيديو قصير للتمرين ده من الجنب وأنا أراجع الوضعية.';
+
+  @override
+  String get lowerTheWeightALittleAndFocus =>
+      'قلّلي الوزن شوية وركّزي على حركة بطيئة وثابتة.';
+
+  @override
+  String get restWellTodayRecoveryIsPartOf =>
+      'ارتاحي كويس النهاردة. الراحة جزء من الخطة.';
+
+  @override
+  String get rememberToDrinkWaterAndEatYour =>
+      'افتكري تشربي مية وتاكلي البروتين بتاعك النهاردة.';
+
+  @override
+  String get ifAnythingHurtsStopAndTellMe =>
+      'لو حاجة وجعتك وقّفي وقوليلي. ماتكمّليش مع الوجع.';
+
+  @override
+  String get iSawYourWeeklyCheckInThank =>
+      'شفت متابعتك الأسبوعية. شكرًا ليكي. هعدّل الخطة بتاعتك.';
+
+  @override
+  String get missedADayNoProblemPickUp =>
+      'فاتك يوم؟ مفيش مشكلة. كمّلي بالتمرينة الجاية.';
+
+  @override
+  String get sendMeAPhotoOfYourMeal => 'ابعتيلي صورة وجبتك وأنا أقولك رأيي.';
+
+  @override
+  String todayWeightOnName(String weight, String name) {
+    return 'النهارده: $weight على $name';
+  }
+
+  @override
+  String sameWeightOnNameAsLastTime(String name) {
+    return 'نفس الوزن على $name زي المرة اللي فاتت، لحد ما تحسّيه ثابت';
+  }
+
+  @override
+  String get supersetGoStraightToTheNextMove =>
+      'سوبر سيت: روحي على الحركة اللي بعدها علطول، وبعدين ارتاحي.';
+
+  @override
+  String get moveDetails => 'تفاصيل الحركة';
+
+  @override
+  String get targetWeightKg => 'الوزن المطلوب (كجم)';
+
+  @override
+  String get leaveEmptyForBodyweight => 'سيبيها فاضية لو بوزن الجسم';
+
+  @override
+  String get supersetWithTheNextMove => 'سوبر سيت مع الحركة اللي بعدها';
+
+  @override
+  String get superset => 'سوبر سيت';
+
+  @override
+  String get saveDetails => 'حفظ التفاصيل';
+
+  @override
+  String get duplicate => 'نسخ اليوم';
+
+  @override
+  String get copy_1g7xp => '(نسخة)';
+
+  @override
+  String get repeatLastWeek => 'كرري آخر أسبوع';
+
+  @override
+  String nWeeks(String n) {
+    return '$n أسابيع';
+  }
+
+  @override
+  String weekNOfTotal(String n, String total) {
+    return 'الأسبوع $n من $total';
+  }
+
+  @override
+  String yourPlanStartsDate(String date) {
+    return 'خطتك بتبدأ $date';
+  }
+
+  @override
+  String get seeAllWeeks => 'شوفي كل الأسابيع';
+
+  @override
+  String get sendToMoreClients => 'ابعتيها لعميلات تانيات';
+
+  @override
+  String get whoGetsThisPlan => 'مين هتاخد الخطة دي؟';
+
+  @override
+  String chooseNClients(Object n) {
+    return 'تمام، $n عميلات';
+  }
+
+  @override
+  String publishToNClients(Object n) {
+    return 'ابعتيها لـ $n عميلات';
+  }
+
+  @override
+  String sentToNClients(Object n) {
+    return 'اتبعتت لـ $n عميلات';
+  }
+
+  @override
+  String tryAgainForN(Object n) {
+    return 'جرّبي تاني لـ $n';
+  }
+
+  @override
+  String get someClientsDidNotGetThePlan => 'في عميلات الخطة ماوصلتش لهم.';
+
+  @override
+  String startsDate(Object date) {
+    return 'بتبدأ $date';
+  }
+
+  @override
+  String joinMeOnOwnHubTheTraining_s0kkx(Object code, Object link) {
+    return 'انضمّي ليّا على Own Hub، تطبيق التمرين للستات بس. افتحي اللينك ده: $link ولو مافتحش التطبيق، نزّلي Own Hub، ولما تسجّلي اضغطي «معايا كود من مدرّبتي» واكتبي $code.';
+  }
+
+  @override
+  String get shareMyProfileLink => 'ابعتي لينك صفحتي';
+
+  @override
+  String get membersWhoOpenItLandOnYour =>
+      'أي عضوة تفتحه توصل لصفحتك وتقدر تطلب تنضم ليكي.';
+
+  @override
+  String trainWithMeOnOwnHubLink(Object link) {
+    return 'تدرّبي معايا على Own Hub: $link';
+  }
+
+  @override
+  String get yourCoachsInvitation => 'دعوة مدرّبتك';
+
+  @override
+  String get thisLinkDoesNotWorkAskYour =>
+      'اللينك ده مش شغّال. اطلبي من مدرّبتك تبعتهولك تاني.';
+
+  @override
+  String get weeklyCheckIn => 'التشيك إن الأسبوعي';
+
+  @override
+  String get fourQuickTapsItTakesUnderA =>
+      'أربع ضغطات سريعة. بياخد أقل من دقيقة.';
+
+  @override
+  String get answer => 'جاوبي';
+
+  @override
+  String get weeklyCheckInSent => 'التشيك إن الأسبوعي اتبعت';
+
+  @override
+  String get sentThankYou => 'اتبعت. شكرًا.';
+
+  @override
+  String get howDidYourTrainingGo => 'التمرين مشي إزاي؟';
+
+  @override
+  String get most => 'أغلبه';
+
+  @override
+  String get some => 'شوية';
+
+  @override
+  String get howIsYourEnergy => 'طاقتك عاملة إيه؟';
+
+  @override
+  String get n1IsLow5IsHigh => '1 قليلة، 5 عالية.';
+
+  @override
+  String get howDidEatingGo => 'الأكل مشي إزاي؟';
+
+  @override
+  String get n1IsHard5IsEasy => '1 صعب، 5 سهل.';
+
+  @override
+  String get anyPainOrInjuryThisWeek => 'حسيتي بألم أو إصابة الأسبوع ده؟';
+
+  @override
+  String get tellYourCoachMoreBelowIfYou =>
+      'لو حابة احكي لمدرّبتك أكتر تحت. ولو الألم حاد أو بيزيد، اروحي لدكتور.';
+
+  @override
+  String get anythingYouWantYourCoachToKnow =>
+      'حابة مدرّبتك تعرفي حاجة؟ (لو حابة)';
+
+  @override
+  String get sendToMyCoach => 'ابعتي لمدرّبتك';
+
+  @override
+  String get sentYourCoachWillSeeIt => 'اتبعت. مدرّبتك هتشوفه.';
+
+  @override
+  String get youAlreadySentThisOne => 'انتي بعتّي ده قبل كده.';
+
+  @override
+  String get weCouldNotSendItTryAgain =>
+      'ماقدرناش نبعته. جرّبي تاني كمان شوية.';
+
+  @override
+  String get needsAttention => 'محتاجة متابعة';
+
+  @override
+  String get noCheckInYet => 'لسه ماجاوبتش على التشيك إن';
+
+  @override
+  String get trainingSlippedThisWeek => 'التمرين اتأخر الأسبوع ده';
+
+  @override
+  String get healthAnswerToRead => 'فيه إجابة صحية محتاجة تقرأيها';
+
+  @override
+  String get unreadMessage => 'رسالة ماتقرتش';
+
+  @override
+  String get areYouPregnantOrDidYouHave =>
+      'انتي حامل، ولا خلّفتي في آخر 12 شهر؟';
+
+  @override
+  String get hadABaby => 'خلّفت من قريب';
+
+  @override
+  String get hasFoodOrWeightEverFeltOut =>
+      'الأكل أو الوزن حسّيتي قبل كده إنه خارج عن السيطرة أو بيقلقك؟';
+
+  @override
+  String get yourCoachReadsThisFirstYouDo =>
+      'مدرّبتك بتقراه الأول. مش لازم تقولي أكتر.';
+
+  @override
+  String get hadABabyInTheLast12 => 'خلّفت في آخر 12 شهر';
+
+  @override
+  String get foodOrWeightHasFeltWorrying => 'الأكل أو الوزن كان بيقلقها';
+
+  @override
+  String get readHerHealthAnswersFirst => 'اقري إجاباتها الصحية الأول';
+
+  @override
+  String get plansAreOnHoldUntilYouHave =>
+      'الخطط واقفة لحد ما تقريها. إجاباتها تحت.';
+
+  @override
+  String get iHaveReadThem => 'قريتها';
+
+  @override
+  String get readHerHealthAnswersFirstOpenHer =>
+      'اقري إجاباتها الصحية الأول. افتحي صفحتها وأكدي إنك قريتيها.';
+
+  @override
+  String get thisClientsAnswersOnEatingMeanYou =>
+      'إجابات العميلة دي عن الأكل معناها إنك تراجعيها بنفسك الأول. مينفعش تتبعت خطة فيها سعرات أو بروتين مطلوب.';
+
+  @override
+  String get dailyTargetForHer => 'الهدف اليومي ليها';
+
+  @override
+  String get calories => 'السعرات';
+
+  @override
+  String get between1200And4000Calories30To =>
+      'من 1200 لـ 4000 سعر، ومن 30 لـ 250 جم بروتين.';
+
+  @override
+  String get fillInBothNumbersOrLeaveBoth => 'املي الرقمين، أو سيبيهم فاضيين.';
+
+  @override
+  String get herAnswersOnEatingMeanYouReview =>
+      'إجاباتها عن الأكل معناها إنك تراجعيها بنفسك الأول. تقدري تبعتي منيو من غير سعرات أو بروتين مطلوب.';
+
+  @override
+  String get swaps => 'البدائل';
+
+  @override
+  String swapsN(String n) {
+    return 'البدائل ($n)';
+  }
+
+  @override
+  String get approvedSwaps => 'بدائل متاحة';
+
+  @override
+  String get threeAtMost => '3 بس.';
+
+  @override
+  String get saveSwaps => 'حفظ البدائل';
+
+  @override
+  String yourCoachsTargetKcalCaloriesAndProtein(String kcal, String protein) {
+    return 'هدف مدربتك: $kcal سعر و$protein جم بروتين';
+  }
+
+  @override
+  String get changeTo => 'غيّريها لـ';
+
+  @override
+  String get thePlannedDish => 'الأكلة المكتوبة في الخطة';
+
+  @override
+  String get forTheWholePlanAsTheDishes => 'للخطة كلها، زي ما الأكلات مكتوبة';
+
+  @override
+  String get nothingToBuyYet => 'مفيش حاجة تتشرى لسه.';
 }

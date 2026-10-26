@@ -47,7 +47,6 @@ import 'package:flutter/material.dart';
 import '../../../app_state/secure_screen.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
-import '../../../ui/hand/mascot/kitten.dart';
 import '../domain/id_capture.dart';
 import 'widgets/capture_scaffold.dart';
 
@@ -525,8 +524,6 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
           : counter ?? l10n.lookStraightAheadNoSmileNeeded,
       stepLabel: prompt != null ? counter : null,
       largeHeadline: prompt != null,
-      // The kitten acts the step out with its own face, above the words.
-      headlineGuide: prompt != null ? _kittenFor(prompt) : null,
       // "Matched to the photo on your card, then deleted." Rules 7 and 8 in one
       // line, at the moment she is being asked for her face.
       body: l10n.matchedToThePhotoOnYourCard,
@@ -534,9 +531,6 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView>
       guidance: hint != null
           ? captureGuidanceText(l10n, hint, isSelfie: true)
           : null,
-      // A session that sends the step as its only line still gets the kitten
-      // beside it. A framing correction is hers to read, not to copy.
-      guide: prompt == null ? _kittenFor(hint) : null,
       actionLabel: l10n.takePhoto,
       // Hers whenever the camera is live: no detector, sharpness or clock in
       // the way.
@@ -562,17 +556,6 @@ String _promptText(AppL10n l10n, CaptureGuidance prompt) => switch (prompt) {
   CaptureGuidance.turnRight => l10n.turnYourHeadALittleToYour_g5o1x,
   CaptureGuidance.blink => l10n.blinkSlowly,
   _ => captureGuidanceText(l10n, prompt, isSelfie: true),
-};
-
-Widget? _kittenFor(CaptureGuidance? step) => switch (step) {
-  CaptureGuidance.turnLeft => const Kitten(pose: KittenPose.lookLeft, size: 44),
-  CaptureGuidance.turnRight => const Kitten(
-    pose: KittenPose.lookRight,
-    size: 44,
-  ),
-  CaptureGuidance.blink => const Kitten(pose: KittenPose.blink, size: 44),
-  CaptureGuidance.lookStraight => const Kitten(pose: KittenPose.rest, size: 44),
-  _ => null,
 };
 
 /// The photos she just took, one per step, in the order they were taken.

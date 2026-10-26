@@ -460,12 +460,6 @@ void main() {
           // tour Pause asks her to join, so that is the one door.
           (0, 'notifications', () => find.byTooltip('Notifications'), null),
           (0, 'her profile', () => find.bySemanticsLabel('Your profile'), null),
-          (
-            0,
-            'her first week',
-            () => find.textContaining('Your first week'),
-            null,
-          ),
           (1, 'start', () => find.text("Start, everything's ready"), null),
           (1, 'a move', () => find.text('Donkey kick'), null),
           (1, 'more', () => _onStop(find.byTooltip('More')), null),

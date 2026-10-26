@@ -7,6 +7,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 
 import '../../../app_state/follow_up_state.dart';
 import '../../../domain/format/day_key.dart';
@@ -75,24 +76,32 @@ class _FollowUpCardState extends State<FollowUpCard> {
     final f = widget.followUp;
     final answered = _answered;
     final body = _body(context, l10n, f);
+    void notNow() => _state.notNow(f.kind, dayKey(widget.now));
+    // The one way out is a swipe (or the screen reader's "Not now" action)
+    // that sends the card away until tomorrow; a close button would be a
+    // second control on Home. Switching a kind off for good is on
+    // Notifications (A01).
     return _Appear(
-      child: AppCard(
-        children: [
-          // The one way out: a close that sends the card away until
-          // tomorrow. Switching a kind off for good is on Notifications (A01).
-          if (answered == null)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: body.first),
-                _close(l10n, f.kind),
-              ],
-            )
-          else
-            body.first,
-          ...body.skip(1),
-          if (answered == null) ..._notes(l10n, f),
-        ],
+      child: Dismissible(
+        key: ValueKey('follow-up-not-now-${f.kind.name}'),
+        direction: answered == null
+            ? DismissDirection.horizontal
+            : DismissDirection.none,
+        // The state removes the card; the widget must not leave the tree
+        // by itself.
+        confirmDismiss: (_) async {
+          notNow();
+          return false;
+        },
+        child: Semantics(
+          customSemanticsActions: {
+            if (answered == null)
+              CustomSemanticsAction(label: l10n.notNow): notNow,
+          },
+          child: AppCard(
+            children: [...body, if (answered == null) ..._notes(l10n, f)],
+          ),
+        ),
       ),
     );
   }
@@ -223,17 +232,6 @@ class _FollowUpCardState extends State<FollowUpCard> {
       if (f.safetyFirst)
         Text(l10n.onlyMovesScreenedForYouAndStop, style: quiet),
     ];
-  }
-
-  Widget _close(AppL10n l10n, FollowUpKind kind) {
-    return IconButton(
-      key: ValueKey('follow-up-not-now-${kind.name}'),
-      tooltip: l10n.notNow,
-      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-      icon: const Icon(Icons.close, size: 20),
-      color: AppColors.onSurfaceVariant,
-      onPressed: () => _state.notNow(kind, dayKey(widget.now)),
-    );
   }
 }
 

@@ -41,8 +41,18 @@ abstract final class CoachingLimits {
   static const int messageMaxChars = 2000;
   static const int messagePageSize = 50;
   static const int pushThrottleMinutes = 3;
+  static const int chatImageMaxBytes = 3000000;
+  static const int chatImageLongSidePx = 1600;
+  static const int chatVideoMaxBytes = 25000000;
+  static const int chatVideoMaxSeconds = 30;
+  static const int chatAudioMaxBytes = 2000000;
+  static const int chatAudioMaxSeconds = 120;
+  static const int chatMessagesPerMinute = 20;
+  static const int chatMediaPerHour = 30;
+  static const int reportsPerDay = 10;
   static const int planMaxDays = 7;
-  static const int planBodyMaxBytes = 60000;
+  static const int planMaxWeeks = 4;
+  static const int planBodyMaxBytes = 120000;
   static const int planNameMax = 60;
   static const int noteMax = 500;
   static const int fullNameMax = 80;
@@ -109,7 +119,17 @@ abstract final class CoachingLimits {
     'messageMaxChars': messageMaxChars,
     'messagePageSize': messagePageSize,
     'pushThrottleMinutes': pushThrottleMinutes,
+    'chatImageMaxBytes': chatImageMaxBytes,
+    'chatImageLongSidePx': chatImageLongSidePx,
+    'chatVideoMaxBytes': chatVideoMaxBytes,
+    'chatVideoMaxSeconds': chatVideoMaxSeconds,
+    'chatAudioMaxBytes': chatAudioMaxBytes,
+    'chatAudioMaxSeconds': chatAudioMaxSeconds,
+    'chatMessagesPerMinute': chatMessagesPerMinute,
+    'chatMediaPerHour': chatMediaPerHour,
+    'reportsPerDay': reportsPerDay,
     'planMaxDays': planMaxDays,
+    'planMaxWeeks': planMaxWeeks,
     'planBodyMaxBytes': planBodyMaxBytes,
     'planNameMax': planNameMax,
     'noteMax': noteMax,
@@ -302,7 +322,13 @@ abstract final class CoachingEnums {
     'active',
     'ended',
   ];
-  static const List<String> messageTypeClient = <String>['text', 'recipe'];
+  static const List<String> messageTypeClient = <String>[
+    'text',
+    'recipe',
+    'image',
+    'video',
+    'audio',
+  ];
   static const List<String> messageTypeServer = <String>[
     'workoutPlan',
     'mealPlan',
@@ -316,6 +342,7 @@ abstract final class CoachingEnums {
     'planUpdated',
     'sessionConfirmed',
     'sessionDone',
+    'checkIn',
     'hidden',
   ];
   static const List<String> planKind = <String>['workout', 'meal'];
@@ -396,6 +423,8 @@ abstract final class CoachingEnums {
     'newMessage',
     'sessionProposed',
     'endsSoon',
+    'checkInDue',
+    'checkInFollowUp',
     'coachingEnded',
     'payoutRecorded',
     'portfolioDecision',
@@ -518,6 +547,9 @@ abstract final class CoachingCallables {
   static const String confirmPortfolioConsent = 'confirm_portfolio_consent';
   static const String listPortfolioMedia = 'list_portfolio_media';
   static const String decidePortfolioMedia = 'decide_portfolio_media';
+  static const String submitCheckIn = 'submit_check_in';
+  static const String coachNeedsAttention = 'coach_needs_attention';
+  static const String reviewClientHealth = 'review_client_health';
   static const String submitPaymentProof = 'submit_payment_proof';
   static const String listPaymentProofs = 'list_payment_proofs';
   static const String decidePaymentProof = 'decide_payment_proof';
@@ -576,6 +608,9 @@ abstract final class CoachingCallables {
     confirmPortfolioConsent,
     listPortfolioMedia,
     decidePortfolioMedia,
+    submitCheckIn,
+    reviewClientHealth,
+    coachNeedsAttention,
   ];
 }
 
@@ -623,6 +658,7 @@ enum CoachingRefusal {
   alreadyRequested('already_requested'),
   requestNotFound('request_not_found'),
   wrongStatus('wrong_status'),
+  healthNotReviewed('health_not_reviewed'),
   pastPayBy('past_pay_by'),
   referenceUsed('reference_used'),
   proofNotFound('proof_not_found'),
@@ -635,6 +671,7 @@ enum CoachingRefusal {
   sellerNotSet('seller_not_set'),
   planInvalid('plan_invalid'),
   planTooLarge('plan_too_large'),
+  eatingHistoryHold('eating_history_hold'),
   sessionLinkInvalid('session_link_invalid'),
   sessionNotFound('session_not_found'),
   sessionNotStarted('session_not_started'),
@@ -850,6 +887,7 @@ enum SystemMessageKind with WireEnum {
   planUpdated('planUpdated'),
   sessionConfirmed('sessionConfirmed'),
   sessionDone('sessionDone'),
+  checkIn('checkIn'),
   hidden('hidden');
 
   const SystemMessageKind(this.wire);

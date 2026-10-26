@@ -19,7 +19,6 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/hand/draw_on.dart';
-import '../../../ui/hand/mascot/kitten.dart';
 import 'founder_video_player.dart';
 
 class FounderWelcomeView extends StatefulWidget {
@@ -216,10 +215,7 @@ class _FounderWelcomeViewState extends State<FounderWelcomeView> {
                         child: player.view(),
                       ),
                     )
-                  : const Center(
-                      key: ValueKey('founder-poster'),
-                      child: Kitten(pose: KittenPose.wave, size: 120),
-                    ),
+                  : const SizedBox.expand(key: ValueKey('founder-poster')),
             ),
             if (_state == _VideoState.unavailable)
               Align(

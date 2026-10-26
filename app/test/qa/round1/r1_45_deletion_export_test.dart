@@ -12,6 +12,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/ui/language_switch.dart';
 
 import 'round1_harness.dart';
 
@@ -38,10 +39,10 @@ void main() {
     final s = t.ensureSemantics();
     AppRouter.todayRepository.recordSession('s1');
     await open(t, appDestinations['A02']!.name, locale: const Locale('en'));
-    await tapLabel(t, RegExp('Language'));
+    // The switch lives in the top bar of every screen.
+    await t.tap(find.byType(LanguageSwitchButton).first);
+    await settle(t);
     print('after Language: top=${topScreen(t)}');
-    await tapLabel(t, RegExp('عربي'));
-    await tapLabel(t, RegExp('Continue|كمّلي'));
     print('after choosing Arabic: top=${topScreen(t)}');
     print('  PAINTED: ${paintedText(t).take(12).join(" | ")}');
     print(

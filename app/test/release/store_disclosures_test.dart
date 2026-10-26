@@ -34,6 +34,7 @@ void main() {
       'Health',
       'SensitiveInfo',
       'PhotosorVideos',
+      'AudioData',
       'OtherDataTypes',
     ]) {
       test(type, () {
@@ -83,7 +84,7 @@ void main() {
   });
 
   group('the Android manifest strips what the plugins add', () {
-    test('no microphone, no gallery', () {
+    test('microphone declared for voice notes, no gallery', () {
       expect(
         manifest,
         contains('xmlns:tools="http://schemas.android.com/tools"'),
@@ -91,8 +92,7 @@ void main() {
       expect(
         manifest,
         contains(
-          '<uses-permission android:name="android.permission.RECORD_AUDIO" '
-          'tools:node="remove" />',
+          '<uses-permission android:name="android.permission.RECORD_AUDIO" />',
         ),
       );
       expect(

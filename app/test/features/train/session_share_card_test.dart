@@ -11,8 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/train/presentation/session_share_card.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
-import 'package:own_hub/ui/hand/mascot/kitten.dart';
-import 'package:own_hub/ui/hand/mascot/kitten_painter.dart';
 
 final _data = ShareCardData(
   title: 'Legs and glutes',
@@ -117,32 +115,6 @@ void main() {
         }
       }
     }
-
-    testWidgets('draws no kitten: R10 already has its one', (tester) async {
-      _tall(tester);
-      await tester.pumpWidget(
-        _host(
-          SessionShareCard(
-            data: _data,
-            format: ShareFormat.story,
-            background: ShareBackground.linen,
-            shown: ShareStat.values.toSet(),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.byType(Kitten), findsNothing);
-      expect(
-        find.descendant(
-          of: find.byType(SessionShareCard),
-          matching: find.byWidgetPredicate(
-            (w) => w is CustomPaint && w.painter is KittenPainter,
-          ),
-        ),
-        findsNothing,
-      );
-    });
 
     testWidgets('a long workout name and a long name still fit', (
       tester,

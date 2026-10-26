@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/account/domain/safety.dart';
@@ -334,5 +336,52 @@ void main() {
         c.dispose();
       },
     );
+  });
+
+  group('sendMedia', () {
+    test('sendMedia records an upload and returns true', () async {
+      final repo = FakeChatRepository();
+      final c = make(repo)..start();
+      final ok = await c.sendMedia(
+        type: MessageType.image,
+        bytes: Uint8List.fromList([1, 2, 3]),
+        contentType: 'image/jpeg',
+      );
+      expect(ok, isTrue);
+      expect(repo.calls.last.$1, 'sendMedia');
+      expect(repo.calls.last.$2['bytes'], 3);
+      c.dispose();
+    });
+
+    test(
+      'sendMedia returns false when the repository throws a CoachingFailure',
+      () async {
+        final repo = FakeChatRepository()
+          ..failWith['sendMedia'] = const CoachingFailure(
+            CoachingRefusal.imageInvalid,
+          );
+        final c = make(repo)..start();
+        final ok = await c.sendMedia(
+          type: MessageType.image,
+          bytes: Uint8List.fromList([1, 2, 3]),
+          contentType: 'image/jpeg',
+        );
+        expect(ok, isFalse);
+        c.dispose();
+      },
+    );
+
+    test('sendMedia of zero bytes sends nothing', () async {
+      final repo = FakeChatRepository();
+      final c = make(repo)..start();
+      final ok = await c.sendMedia(
+        type: MessageType.image,
+        bytes: Uint8List(0),
+        contentType: 'image/jpeg',
+      );
+      expect(ok, isFalse);
+      expect(repo.count('sendMedia'), 0);
+      c.dispose();
+    });
   });
 }

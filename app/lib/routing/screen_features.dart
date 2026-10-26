@@ -61,7 +61,6 @@ const Map<String, Feature> kScreenFeatures = {
   // They stay in the generated route table, and stay dark.
   'R11': Feature.adminConsole,
   'R12': Feature.recordFromMemory,
-  'R13': Feature.train,
   'R14': Feature.adminConsole,
   'R15': Feature.exerciseLibrary,
 

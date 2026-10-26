@@ -41,6 +41,14 @@ Future<RecordingRepo> _open(
   return r;
 }
 
+/// End coaching lives behind the "..." in the top bar.
+Future<void> _endFromMenu(WidgetTester t) async {
+  await t.tap(find.byKey(const ValueKey('overflow-menu')));
+  await t.pumpAndSettle();
+  await t.tap(find.byKey(const ValueKey('overflow-row-End coaching')));
+  await t.pumpAndSettle();
+}
+
 void main() {
   test('the end request carries the subscription and a trimmed reason', () {
     expect(CoachingRequests.endMine('s', ' tired '), {
@@ -56,9 +64,7 @@ void main() {
       t,
     ) async {
       final repo = await _open(t, SubscriptionStatus.active);
-      await t.ensureVisible(find.byKey(const ValueKey('end-coaching')));
-      await t.tap(find.byKey(const ValueKey('end-coaching')));
-      await t.pumpAndSettle();
+      await _endFromMenu(t);
       expect(find.text('End this coaching?'), findsOneWidget);
       expect(
         find.text(
@@ -72,8 +78,7 @@ void main() {
       await t.pumpAndSettle();
       expect(repo.calls.where((c) => c.$1 == 'endMyCoaching'), isEmpty);
 
-      await t.tap(find.byKey(const ValueKey('end-coaching')));
-      await t.pumpAndSettle();
+      await _endFromMenu(t);
       await t.tap(find.byKey(const ValueKey('end-coaching-yes')));
       await t.pumpAndSettle();
       expect(repo.calls.last.$1, 'endMyCoaching');
@@ -85,9 +90,7 @@ void main() {
       final repo = RecordingRepo()
         ..failEnd = const CoachingFailure(CoachingRefusal.unreachable);
       await _open(t, SubscriptionStatus.active, repo: repo);
-      await t.ensureVisible(find.byKey(const ValueKey('end-coaching')));
-      await t.tap(find.byKey(const ValueKey('end-coaching')));
-      await t.pumpAndSettle();
+      await _endFromMenu(t);
       await t.tap(find.byKey(const ValueKey('end-coaching-yes')));
       await t.pumpAndSettle();
       expect(find.byKey(const ValueKey('coach-error')), findsOneWidget);
@@ -96,7 +99,13 @@ void main() {
 
     testWidgets('not offered once it has ended', (t) async {
       await _open(t, SubscriptionStatus.endedEarly);
-      expect(find.byKey(const ValueKey('end-coaching')), findsNothing);
+      await t.tap(find.byKey(const ValueKey('overflow-menu')));
+      await t.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('overflow-row-End coaching')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('overflow-row-Report')), findsOneWidget);
     });
   });
 

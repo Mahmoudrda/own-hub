@@ -251,4 +251,22 @@ void main() {
       );
     });
   });
+
+  test('a media line parses', () {
+    final m = ChatMessage.fromMap('m', {
+      'senderUid': 'u',
+      'type': 'audio',
+      'mediaPath': 'chat-media/a__b/u/x.m4a',
+      'durationMs': 4000,
+      'bytes': 900,
+    });
+    expect(m?.type, MessageType.audio);
+    expect(m?.durationMs, 4000);
+    expect(m?.bytes, 900);
+    expect(m?.mediaPath, 'chat-media/a__b/u/x.m4a');
+    expect(
+      ChatMessage.fromMap('m', {'senderUid': 'u', 'type': 'gif'}),
+      isNull,
+    );
+  });
 }

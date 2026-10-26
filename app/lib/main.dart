@@ -37,6 +37,7 @@ import 'app_state/notification_taps.dart';
 import 'app_state/widget_links.dart';
 import 'config/legal_links.dart';
 import 'features/account/domain/health_backup.dart';
+import 'features/coach/domain/coach_invite.dart';
 import 'features/onboarding/domain/starting_program.dart'
     show StartingProgrammes;
 import 'domain/analytics/analytics_gateway.dart';
@@ -402,7 +403,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     _locale.addListener(_relabelWidgets);
     // A language she chooses is counted, as the code alone.
     _locale.addListener(_reportLanguage);
-    // The facts every event carries (language, kitten, widget, channel), and
+    // The facts every event carries (language, widget, channel), and
     // a return after a quiet week, after the first frame and again whenever
     // she allows statistics. Nothing leaves the phone unless she allowed it.
     // Granting also counts this opening: the first frame ran before she chose.
@@ -466,6 +467,7 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   /// tried again (R1). Does nothing when nothing is owed.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) AppRouter.finishWorkoutIfClosing();
     if (state == AppLifecycleState.resumed) {
       // A phone left open overnight comes back on a new day, and on a Monday
       // on a new week.
@@ -636,6 +638,13 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
     // platform's own route over the `initialRoute` it was given, so on the one
     // path that matters — a deep link — this is the only place the decision
     // can be made. See [_openable].
+    // A link from the platform: keep what it names; the front door still opens.
+    final link = parseOwnHubLink(supplied);
+    if (link != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => AppRouter.followLink(link),
+      );
+    }
     final initial = _openable(supplied);
 
     Route<dynamic> routeFor(String name) =>

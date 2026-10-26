@@ -125,6 +125,8 @@ Future<void> _show(
   Locale locale = const Locale('en'),
 }) async {
   _phone(tester);
+  // A fresh navigator each time: an earlier call may have left the event open.
+  await tester.pumpWidget(const SizedBox());
   await tester.pumpWidget(
     _host(
       EventsView(
@@ -136,6 +138,9 @@ Future<void> _show(
       locale: locale,
     ),
   );
+  await tester.pumpAndSettle();
+  // The list shows the card; the seat lives on the event's own page.
+  await tester.tap(find.byKey(ValueKey('event-${event.id}')));
   await tester.pumpAndSettle();
 }
 
@@ -255,8 +260,8 @@ void main() {
     ) async {
       _phone(tester);
       Widget app(int taken) => _host(
-        EventsView(
-          events: [_event(seatsTaken: taken)],
+        EventDetailView(
+          event: _event(seatsTaken: taken),
           registrar: _FakeRegistrar(),
           now: () => _now,
         ),
@@ -513,10 +518,8 @@ void main() {
       final fetched = <String>[];
       await tester.pumpWidget(
         _host(
-          EventsView(
-            events: [
-              _event(videoFiles: ['intro.mp4']),
-            ],
+          EventDetailView(
+            event: _event(videoFiles: ['intro.mp4']),
             fetchClip: (path) async {
               fetched.add(path);
               return null;

@@ -61,7 +61,7 @@ import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_scaffold.dart';
-import '../../../ui/hand/mascot/kitten.dart';
+import '../../../ui/hand/moment.dart';
 import '../data/review_scheduling_repository.dart';
 import '../domain/review_request.dart';
 import '../domain/server_verification.dart';
@@ -97,7 +97,7 @@ class BeingCheckedView extends StatefulWidget {
   /// "Keep exploring": back to browsing as a guest while she waits.
   final VoidCallback? onKeepExploring;
 
-  /// How long the kitten cheers before [onApproved] moves her on.
+  /// How long the tick draws before [onApproved] moves her on.
   final Duration cheerFor;
 
   /// "Tell me when I'm in": asks for notifications and registers this phone
@@ -336,19 +336,14 @@ class _BeingCheckedViewState extends State<BeingCheckedView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (_cheering)
-                    const Kitten(pose: KittenPose.cheer, size: 56)
-                  else if (waiting)
-                    // Sits and waits, settling once. Only while the check is
-                    // still to come: never beside a refusal or a retry.
-                    const Kitten(
-                      pose: KittenPose.wait,
-                      size: 56,
-                      tint: KittenTint.sage,
-                      sessionBudget: true,
-                    )
+                    const Moment(size: 40)
                   else
                     Icon(
-                      approved ? Icons.check_circle : Icons.info_outline,
+                      approved
+                          ? Icons.check_circle
+                          : waiting
+                          ? Icons.schedule
+                          : Icons.info_outline,
                       size: 26,
                       color: AppColors.amber,
                     ),

@@ -81,6 +81,7 @@ class AuthoredMove {
     this.quiet = false,
     this.floorOnly = false,
     this.needsEquipment = false,
+    this.supersetWithNext = false,
   });
 
   final String exerciseId;
@@ -105,6 +106,10 @@ class AuthoredMove {
   final bool floorOnly;
   final bool needsEquipment;
 
+  /// She wants this move done, then the next one straight away, then the rest.
+  /// A prescription shown to the member; the session runner does not alternate.
+  final bool supersetWithNext;
+
   Map<String, Object?> toJson() => {
     'exerciseId': exerciseId,
     'nameEn': nameEn,
@@ -121,6 +126,7 @@ class AuthoredMove {
     'quiet': quiet,
     'floorOnly': floorOnly,
     'needsEquipment': needsEquipment,
+    'supersetWithNext': supersetWithNext,
   };
 
   static AuthoredMove fromJson(Map<String, Object?> j) => AuthoredMove(
@@ -142,6 +148,31 @@ class AuthoredMove {
     quiet: j['quiet'] == true,
     floorOnly: j['floorOnly'] == true,
     needsEquipment: j['needsEquipment'] == true,
+    supersetWithNext: j['supersetWithNext'] == true,
+  );
+
+  AuthoredMove copyWith({
+    int? restSeconds,
+    String? notesEn,
+    String? notesAr,
+    bool? supersetWithNext,
+  }) => AuthoredMove(
+    exerciseId: exerciseId,
+    nameEn: nameEn,
+    nameAr: nameAr,
+    sets: sets,
+    reps: reps,
+    holdSeconds: holdSeconds,
+    restSeconds: restSeconds ?? this.restSeconds,
+    notesEn: notesEn ?? this.notesEn,
+    notesAr: notesAr ?? this.notesAr,
+    safetyEn: safetyEn,
+    safetyAr: safetyAr,
+    contraindications: contraindications,
+    quiet: quiet,
+    floorOnly: floorOnly,
+    needsEquipment: needsEquipment,
+    supersetWithNext: supersetWithNext ?? this.supersetWithNext,
   );
 
   @override

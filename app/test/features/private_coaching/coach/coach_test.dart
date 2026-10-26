@@ -54,6 +54,8 @@ Future<void> _open(
   CoachRepo repo, {
   Locale locale = const Locale('en'),
   double scale = 1,
+  VoidCallback? onInviteClient,
+  void Function(String coachUid)? onShareProfile,
 }) async {
   tester.view.physicalSize = const Size(390, 3600);
   tester.view.devicePixelRatio = 1;
@@ -65,6 +67,8 @@ Future<void> _open(
         onPreviewPortfolio: (_) {},
         onOpenDashboard: () {},
         onOpenChats: () {},
+        onInviteClient: onInviteClient,
+        onShareProfile: onShareProfile,
       ),
       locale: locale,
       scale: scale,
@@ -292,6 +296,44 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Coach Sara'), findsOneWidget);
     });
+
+    testWidgets('K18 offers Invite a client first and calls back once', (
+      tester,
+    ) async {
+      final repo = CoachRepo()
+        ..coaches.value = [_me()]
+        ..packages['me'] = Feed<List<CoachPackage>>([package('a')]);
+      var taps = 0;
+      await _open(tester, repo, onInviteClient: () => taps++);
+      expect(find.text('Invite a client'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Invite a client')).dy,
+        lessThan(tester.getTopLeft(find.text('My portfolio')).dy),
+      );
+      await tester.tap(find.text('Invite a client'));
+      expect(taps, 1);
+
+      await _open(tester, repo);
+      expect(find.text('Invite a client'), findsNothing);
+    });
+
+    testWidgets(
+      'K18 shows Share my profile link only when live, and passes her uid',
+      (tester) async {
+        final repo = CoachRepo()
+          ..coaches.value = [_me()]
+          ..packages['me'] = Feed<List<CoachPackage>>([package('a')]);
+        String? got;
+        await _open(tester, repo, onShareProfile: (u) => got = u);
+        expect(find.text('Share my profile link'), findsOneWidget);
+        await tester.tap(find.text('Share my profile link'));
+        expect(got, 'me');
+
+        repo.coaches.value = [_me(published: false)];
+        await _open(tester, repo, onShareProfile: (u) => got = u);
+        expect(find.text('Share my profile link'), findsNothing);
+      },
+    );
   });
 
   group('portfolio', () {
@@ -411,7 +453,10 @@ void main() {
         existing: [package('a', price: 1150, active: false)],
       );
       expect(find.text('Package a'), findsOneWidget);
-      expect(find.textContaining('Members see EGP 1,150'), findsOneWidget);
+      expect(
+        find.textContaining('EGP 1,150 when payments open'),
+        findsOneWidget,
+      );
       expect(find.text('Off'), findsOneWidget);
       expect(
         find.text(
@@ -419,6 +464,19 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('with payments off her list says one thing about price', (
+      tester,
+    ) async {
+      await openPackages(tester, existing: [package('a', price: 2000)]);
+      expect(
+        find.textContaining(
+          'Free for members until payments open · EGP 2,000 when payments open · 28 days',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Members see EGP'), findsNothing);
     });
 
     testWidgets('six packages: no more to add', (tester) async {

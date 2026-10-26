@@ -143,7 +143,7 @@ class DemoCoachCard extends StatelessWidget {
   final VoidCallback? onBack;
   final VoidCallback? onNext;
 
-  /// Whether the kitten points at this stop. Off on the check-in stop: nothing
+  /// Whether the tick is drawn at this stop. Off on the check-in stop: nothing
   /// reacts to how she feels.
   final bool guide;
 
@@ -182,8 +182,8 @@ class DemoCoachCard extends StatelessWidget {
             children: [
               Expanded(child: heading),
               const SizedBox(width: 8),
-              // Points into the screen below, once each time Next moves on.
-              Kitten(pose: KittenPose.point, size: 48, replayKey: number),
+              // Drawn again each time Next moves on.
+              Moment(key: ValueKey('tour-tick-$number'), size: 32),
             ],
           )
         else
@@ -300,8 +300,8 @@ class DemoEndCard extends StatelessWidget {
                   ),
                 ),
               ),
-              // The end of the tour: one small cheer.
-              const Kitten(pose: KittenPose.cheer, size: 56),
+              // The end of the tour: a tick drawn on once.
+              const Moment(size: 40),
             ],
           ),
         ),

@@ -28,6 +28,57 @@ ENUMS = common.ENUMS
 
 CONTACT, PAYMENT, LINK, ABUSE = "contact", "payment", "link", "abuse"
 
+CHAT_MEDIA_HOLD = "after"
+"""Owner decision 4 (open). "after": media shows at once and can be reported.
+"before": media is hidden with reason "held"; NO release path exists yet, so
+do not switch it until the dashboard queue is built."""
+
+MEDIA_TYPES = ("image", "video", "audio")
+_MEDIA_MIME = {
+    "image": ("image/jpeg",),
+    "video": ("video/mp4", "video/quicktime"),
+    "audio": ("audio/mp4", "audio/aac", "audio/x-m4a"),
+}
+_MEDIA_MAX = {
+    "image": LIMITS["chatImageMaxBytes"],
+    "video": LIMITS["chatVideoMaxBytes"],
+    "audio": LIMITS["chatAudioMaxBytes"],
+}
+_MEDIA_SECONDS = {"video": LIMITS["chatVideoMaxSeconds"], "audio": LIMITS["chatAudioMaxSeconds"]}
+
+
+def media_problem(rel_id: str, sender: str, data: dict, blobs) -> Optional[str]:
+    """None when the media line is fine, else the hiddenReason."""
+    kind = data.get("type")
+    path = data.get("mediaPath")
+    if not isinstance(path, str) or not path.startswith(f"chat-media/{rel_id}/{sender}/") or ".." in path:
+        return "media"
+    found = blobs.info(path)
+    if found is None:
+        return "media"
+    size, content_type = found
+    if size <= 0 or size > _MEDIA_MAX[kind] or content_type not in _MEDIA_MIME[kind]:
+        return "media"
+    if kind in _MEDIA_SECONDS:
+        ms = data.get("durationMs")
+        if isinstance(ms, bool) or not isinstance(ms, int) or not 500 <= ms <= _MEDIA_SECONDS[kind] * 1000 + 1500:
+            return "media"
+    return None
+
+
+def too_fast(db, rel_ref, sender: str, kind: str, now: dt.datetime) -> bool:
+    """More than chatMessagesPerMinute lines in 60 s, or chatMediaPerHour media
+    lines in an hour, from this sender (the new line counts)."""
+    lines = rel_ref.collection("messages")
+    minute = lines.where("senderUid", "==", sender).where("createdAt", ">=", now - dt.timedelta(seconds=60))
+    if sum(1 for _ in minute.stream()) > LIMITS["chatMessagesPerMinute"]:
+        return True
+    if kind in MEDIA_TYPES:
+        hour = lines.where("senderUid", "==", sender).where("createdAt", ">=", now - dt.timedelta(hours=1))
+        if sum(1 for m in hour.stream() if (m.to_dict() or {}).get("type") in MEDIA_TYPES) > LIMITS["chatMediaPerHour"]:
+            return True
+    return False
+
 _INVISIBLE = re.compile("[​-‏‪-‮⁦-⁩ـ﻿]")
 _MARKS = re.compile("[ً-ٰٟ]")
 
@@ -148,6 +199,15 @@ def preview(data: dict, hidden: bool) -> dict:
     return {"text": words, "type": kind, "senderUid": data.get("senderUid")}
 
 
+def parties_client(db, rel_id: str):
+    return (db.collection("relationships").document(rel_id).get().to_dict() or {}).get("clientUid")
+
+
+def _coach_first_name(db, coach_uid: str) -> str:
+    name = (db.collection("coaches").document(coach_uid).get().to_dict() or {}).get("displayName") or ""
+    return name.split()[0][:20] if name.split() else ""
+
+
 def on_message(
     db,
     rel_id: str,
@@ -156,6 +216,8 @@ def on_message(
     *,
     now: dt.datetime,
     notify: common.Notify,
+    blobs=None,
+    reencode=None,
 ) -> dict:
     """Runs when a message is created. Client messages are screened and hidden
     when they fail; the other party is pushed at most once per throttle window,
@@ -170,6 +232,24 @@ def on_message(
     reason = None
     if is_client_type and isinstance(data.get("text"), str):
         reason = screen(data["text"])
+    kind = data.get("type")
+    if reason is None and is_client_type and too_fast(db, rel_ref, sender, kind, now):
+        reason = "rate"
+    if reason is None and kind in MEDIA_TYPES:
+        if blobs is None:
+            reason = "media"
+        elif CHAT_MEDIA_HOLD == "before":
+            reason = "held"
+        else:
+            reason = media_problem(rel_id, sender, data, blobs)
+        if reason is None and kind == "image" and reencode is not None:
+            try:
+                blobs.write(data["mediaPath"], reencode(blobs.read(data["mediaPath"]), long_side=LIMITS["chatImageLongSidePx"]), "image/jpeg")
+            except Exception:
+                reason = "media"
+        if reason is not None and blobs is not None and isinstance(data.get("mediaPath"), str) \
+                and data["mediaPath"].startswith(f"chat-media/{rel_id}/{sender}/"):
+            blobs.delete(data["mediaPath"])
     hidden = reason is not None or data.get("hidden") is True
     window = dt.timedelta(minutes=LIMITS["pushThrottleMinutes"])
 
@@ -193,7 +273,7 @@ def on_message(
         transaction.update(rel_ref, changes)
         if reason is not None:
             transaction.update(
-                message_ref, {"hidden": True, "hiddenReason": reason, "text": ""}
+                message_ref, {"hidden": True, "hiddenReason": reason, "text": "", "mediaPath": None}
             )
             transaction.set(
                 rel_ref.collection("messages").document(f"hidden_{message_id}"),
@@ -208,7 +288,13 @@ def on_message(
 
     recipient = common.run(db, body)
     if recipient is not None:
-        notify(recipient, "newMessage")
+        from . import push
+
+        label = "newMessage"
+        if push.NEW_MESSAGE_TEXT_MODE == "first_name" and recipient == parties_client(db, rel_id):
+            first = _coach_first_name(db, sender)
+            label = f"newMessageFrom:{first}" if first else "newMessage"
+        notify(recipient, label)
     return {
         "hidden": reason is not None,
         "reason": reason,

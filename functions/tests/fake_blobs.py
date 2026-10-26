@@ -15,6 +15,12 @@ class FakeBlobs:
     def exists(self, path: str) -> bool:
         return path in self.objects
 
+    def info(self, path: str):
+        if path not in self.objects:
+            return None
+        data, content_type = self.objects[path]
+        return len(data), content_type
+
     def read(self, path: str) -> bytes:
         return self.objects[path][0]
 

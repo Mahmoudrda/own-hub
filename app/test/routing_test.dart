@@ -53,7 +53,10 @@ void main() {
     //
     // 196 -> 197 on 23 October 2026 with `P07`, Insights: P01 became You, the
     // tab root, and the long record moved one tap behind its "See more".
-    expect(appRoutes.length, 197);
+    //
+    // 197 -> 196 on 24 October 2026: R13, Move logged, was removed. "I did them
+    // all" goes straight to the next move; corrections live in Recent sessions.
+    expect(appRoutes.length, 196);
   });
 
   test('every screen is a destination except the eight first-run states', () {
@@ -76,7 +79,8 @@ void main() {
     // 186 -> 185 on 17 October 2026: `O07` was folded into `O03`.
     // 185 -> 186: P06 is a destination, opened from P01 and R01.
     // 186 -> 188: E12 and E13 are destinations, opened from E01, E02 and E04.
-    expect(appDestinations.length, 189);
+    // 189 -> 188 on 24 October 2026: R13 was removed.
+    expect(appDestinations.length, 188);
     expect(appRoutes.length - firstRunStates.length, appDestinations.length);
   });
 

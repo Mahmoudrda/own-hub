@@ -2,6 +2,8 @@
 /// clients to follow up, and chats with something unread.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../app_state/app_changes.dart';
@@ -12,9 +14,11 @@ import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
 import '../../../../ui/app_chip_row.dart';
 import '../../../../ui/app_empty_state.dart';
+import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_scaffold.dart';
 import '../../../../ui/app_sheet.dart';
 import '../../../../ui/hand/skeleton.dart';
+import '../../domain/check_in.dart';
 import '../../domain/coaching_contract.dart';
 import '../../domain/coaching_failure.dart';
 import '../../domain/subscription.dart';
@@ -36,6 +40,7 @@ class CoachDeskView extends StatefulWidget {
     this.onOpenChat,
     this.onOpenClient,
     this.onOpenClients,
+    this.onInviteClient,
   });
 
   /// Defaults to the app's own.
@@ -54,12 +59,27 @@ class CoachDeskView extends StatefulWidget {
   /// Opens the client list with a filter on.
   final ValueChanged<DeskFilter>? onOpenClients;
 
+  /// "Invite a client" under the empty state.
+  final VoidCallback? onInviteClient;
+
   @override
   State<CoachDeskView> createState() => _CoachDeskViewState();
 }
 
 class _CoachDeskViewState extends State<CoachDeskView> {
   final Set<String> _busy = <String>{};
+  List<AttentionRow> _attention = const <AttentionRow>[];
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadAttention());
+  }
+
+  Future<void> _loadAttention() async {
+    final rows = await CheckIns.store.needsAttention();
+    if (mounted) setState(() => _attention = rows);
+  }
 
   PrivateCoachingState get _state =>
       widget.state ?? PrivateCoachingState.instance;
@@ -233,13 +253,26 @@ class _CoachDeskViewState extends State<CoachDeskView> {
         model.unreadClients.isEmpty;
     return <Widget>[
       _counts(l10n, model),
+      if (_attention.isNotEmpty) ...[
+        _title(l10n.needsAttention),
+        for (final row in _attention.take(kDeskSectionRows))
+          AppListItem(
+            variant: AppCardVariant.filled,
+            title: row.clientName,
+            subtitle: row.reasons
+                .map((r) => attentionReasonText(l10n, r))
+                .where((t) => t.isNotEmpty)
+                .join(' · '),
+            onTap: () => widget.onOpenClient?.call(row.subId),
+          ),
+      ],
       if (model.requests.isNotEmpty) ...[
         _title(l10n.newRequests),
         for (final request in model.requests)
           _RequestCard(
             request: request,
             busy: _busy.contains(request.id),
-            onAccept: () => (request.intake?.anyHealthYes ?? false)
+            onAccept: () => (request.intake?.anyFlag ?? false)
                 ? _openRequest(request)
                 : _respond(request, accept: true),
             onDecline: () => _decline(request),
@@ -277,6 +310,10 @@ class _CoachDeskViewState extends State<CoachDeskView> {
                 title: l10n.youAreAllCaughtUp,
                 body: l10n.nothingToAnswerOrFollowUpRight,
               ),
+      if (nothingToDo &&
+          model.clients.isEmpty &&
+          widget.onInviteClient != null)
+        AppButton(l10n.inviteAClient, onPressed: widget.onInviteClient),
       if (model.clients.isNotEmpty)
         AppButton(
           '${l10n.clients} · ${model.clients.length}',
@@ -391,7 +428,7 @@ class _RequestCard extends StatelessWidget {
     final name = clientName(l10n, request);
     final intake = request.intake;
     final summary = intake == null ? '' : intakeSummary(l10n, intake);
-    final flagged = intake?.anyHealthYes ?? false;
+    final flagged = intake?.anyFlag ?? false;
     final package = request.package.title;
     return AppCard(
       gap: 8,

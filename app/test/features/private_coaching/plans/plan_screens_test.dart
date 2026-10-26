@@ -1,12 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_failure.dart';
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
+import 'package:own_hub/features/private_coaching/presentation/plans/assign_clients_sheet.dart';
+import 'package:own_hub/features/private_coaching/presentation/plans/coach_day_editor_view.dart';
+import 'package:own_hub/features/private_coaching/presentation/plans/coach_plan_logic.dart';
 import 'package:own_hub/features/private_coaching/presentation/plans/schedule_session_sheet.dart';
 import 'package:own_hub/features/private_coaching/presentation/plans/share_meal_plan_view.dart';
 import 'package:own_hub/features/private_coaching/presentation/plans/share_workout_view.dart';
+import 'package:own_hub/features/onboarding/domain/starting_program.dart';
+import 'package:own_hub/features/train/domain/my_plan.dart';
+import 'package:own_hub/features/train/presentation/plan_editor_view.dart';
+import 'package:own_hub/routing/coaching_wiring.dart';
 
 import 'package:own_hub/ui/app_button.dart';
 
@@ -105,6 +114,36 @@ void main() {
     expect(find.byKey(const ValueKey('workout-error')), findsOneWidget);
   });
 
+  testWidgets('a publish refused as not reviewed says so', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1')
+      ..failPublish = const CoachingFailure(CoachingRefusal.healthNotReviewed);
+    await t.pumpWidget(
+      host(
+        ShareWorkoutView(
+          repository: repo,
+          subscription: sub(),
+          clientName: 'Mai',
+          existing: CoachPlan(
+            id: 'planX',
+            kind: PlanKind.workout,
+            revision: 2,
+            workout: workoutPlan(),
+          ),
+        ),
+      ),
+    );
+    await t.enterText(find.byKey(const ValueKey('workout-name')), 'Plan B');
+    await t.tap(find.byKey(const ValueKey('workout-publish')));
+    await t.pumpAndSettle();
+    expect(
+      find.text(
+        'Read her health answers first. Open her page and tick that you have.',
+      ),
+      findsWidgets,
+    );
+  });
+
   testWidgets('workout: save as a template writes a draft', (t) async {
     _phone(t);
     final repo = RecordingRepo(uid: 'coach1');
@@ -171,6 +210,7 @@ void main() {
         ),
       ),
     );
+    await t.ensureVisible(find.byKey(const ValueKey('meal-add-snack')));
     await t.tap(find.byKey(const ValueKey('meal-add-snack')));
     await t.pumpAndSettle();
     await t.tap(find.text('Her choice'));
@@ -305,4 +345,570 @@ void main() {
     expect(find.byKey(const ValueKey('session-none-left')), findsOneWidget);
     expect(find.byKey(const ValueKey('session-send')), findsNothing);
   });
+
+  testWidgets('day editor: details sheet saves weight, rest, note, superset', (
+    t,
+  ) async {
+    _phone(t);
+    final state = CoachPlanEditState(workoutPlan());
+    await t.pumpWidget(
+      host(
+        CoachDayEditorView(
+          state: state,
+          dayIndex: 0,
+          pickExercises: () async => null,
+        ),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('move-details-0')));
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const ValueKey('details-kg')), '12.5');
+    await t.tap(find.byKey(const ValueKey('details-rest-plus')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('details-rest-plus')));
+    await t.pump();
+    await t.enterText(find.byKey(const ValueKey('details-note')), 'Slow');
+    await t.tap(find.byKey(const ValueKey('details-superset')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('details-save')));
+    await t.pumpAndSettle();
+
+    final day = state.current!.days[0];
+    final move0 = day.session.moves[0];
+    expect(day.kgAt(0), 12.5);
+    expect(move0.restSeconds, 90);
+    expect(move0.notesEn, 'Slow');
+    expect(move0.supersetWithNext, isTrue);
+    final summary = t.widget<Text>(
+      find.byKey(const ValueKey('move-summary-0')),
+    );
+    expect(summary.data, contains('12.5'));
+  });
+
+  testWidgets('day editor: empty weight clears the target', (t) async {
+    _phone(t);
+    final state = CoachPlanEditState(
+      changeMoveDetails(workoutPlan(), 0, 0, kg: 15),
+    );
+    await t.pumpWidget(
+      host(
+        CoachDayEditorView(
+          state: state,
+          dayIndex: 0,
+          pickExercises: () async => null,
+        ),
+        locale: const Locale('ar'),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('move-details-0')));
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const ValueKey('details-kg')), '');
+    await t.tap(find.byKey(const ValueKey('details-save')));
+    await t.pumpAndSettle();
+    expect(state.current!.days[0].kgAt(0), isNull);
+  });
+
+  testWidgets('day editor: last move cannot be a superset', (t) async {
+    _phone(t);
+    final state = CoachPlanEditState(workoutPlan());
+    await t.pumpWidget(
+      host(
+        CoachDayEditorView(
+          state: state,
+          dayIndex: 0,
+          pickExercises: () async => null,
+        ),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('move-details-1')));
+    await t.pumpAndSettle();
+    final tile = t.widget<SwitchListTile>(
+      find.byKey(const ValueKey('details-superset')),
+    );
+    expect(tile.onChanged, isNull);
+  });
+
+  testWidgets('plan editor: Duplicate adds a named copy in one tap', (t) async {
+    _phone(t);
+    var p = workoutPlan();
+    p = p.withCopyOf(0);
+    expect(p.days.length, 3);
+    final state = CoachPlanEditState(p);
+    await t.pumpWidget(
+      host(
+        PlanEditorView(
+          state: state,
+          onEditDay: (_) {},
+          onPickMoves: () async => null,
+        ),
+      ),
+    );
+    final day0Title = p.days[0].session.titleEn;
+    await t.tap(find.byKey(const ValueKey('plan-duplicate-0')));
+    await t.pumpAndSettle();
+    final updated = state.current!;
+    expect(updated.days.length, 4);
+    expect(updated.days[3].session.titleEn, '$day0Title (copy)');
+    expect(updated.days[3].session.moves, p.days[0].session.moves);
+    expect(
+      updated.days[3].session.sessionId,
+      isNot(p.days[0].session.sessionId),
+    );
+  });
+
+  testWidgets('plan editor: Duplicate is off when the week is full', (t) async {
+    _phone(t);
+    var p = workoutPlan();
+    while (p.days.length < kMaxPlanDays) {
+      p = p.withCopyOf(0);
+    }
+    expect(p.days.length, 7);
+    final state = CoachPlanEditState(p);
+    await t.pumpWidget(
+      host(
+        PlanEditorView(
+          state: state,
+          onEditDay: (_) {},
+          onPickMoves: () async => null,
+        ),
+      ),
+    );
+    final btn = t.widget<ButtonStyleButton>(
+      find.descendant(
+        of: find.byKey(const ValueKey('plan-duplicate-0')),
+        matching: find.bySubtype<ButtonStyleButton>(),
+      ),
+    );
+    expect(btn.onPressed, isNull);
+  });
+
+  test('the seeded splits are offered: 3 families, 3 levels', () {
+    addTearDown(StartingProgrammes.reset);
+    StartingProgrammes.adopt(
+      File('assets/content/starting_programmes.json').readAsStringSync(),
+    );
+    final splits = coachSplits();
+    expect(splits.length, 9);
+    expect({for (final s in splits) programmeFamily(s.programId)}.length, 3);
+  });
+
+  testWidgets('assign: pick one more client and publish', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    await t.pumpWidget(
+      host(
+        ShareWorkoutView(
+          repository: repo,
+          subscription: sub(),
+          clientName: 'Mariam',
+          others: const [AssignClient(subId: 'nour', name: 'Nour')],
+          splits: [split()],
+        ),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('workout-split-0')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('assign-more')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('assign-client-nour')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('assign-done')));
+    await t.pumpAndSettle();
+    expect(find.text('Publish to 2 clients'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('workout-publish')));
+    await t.pumpAndSettle();
+    final publishes = [
+      for (final c in repo.calls)
+        if (c.$1 == 'publish') c.$2,
+    ];
+    expect(publishes.map((p) => p['subId']).toList(), ['sub1', 'nour']);
+    expect(publishes[0]['startsOn'], isNotNull);
+    expect(publishes[1]['startsOn'], publishes[0]['startsOn']);
+    final publishedText = t.widget<Text>(
+      find.byKey(const ValueKey('workout-published')),
+    );
+    expect(publishedText.data, 'Sent to 2 clients');
+  });
+
+  testWidgets(
+    'assign: a failure shows the partial card and retry sends only the failed one',
+    (t) async {
+      _phone(t);
+      var nourCalls = 0;
+      final repo = RecordingRepo(uid: 'coach1')
+        ..failPublishFor = (subId) {
+          if (subId == 'nour') {
+            nourCalls++;
+            if (nourCalls == 1) {
+              return const CoachingFailure(CoachingRefusal.badRequest);
+            }
+          }
+          return null;
+        };
+      await t.pumpWidget(
+        host(
+          ShareWorkoutView(
+            repository: repo,
+            subscription: sub(),
+            clientName: 'Mariam',
+            others: const [AssignClient(subId: 'nour', name: 'Nour')],
+            splits: [split()],
+          ),
+        ),
+      );
+      await t.tap(find.byKey(const ValueKey('workout-split-0')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('assign-more')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('assign-client-nour')));
+      await t.pump();
+      await t.tap(find.byKey(const ValueKey('assign-done')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('workout-publish')));
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('assign-partial')), findsOneWidget);
+      expect(find.text('Sent to 1 clients'), findsOneWidget);
+      await t.tap(find.byKey(const ValueKey('assign-retry')));
+      await t.pumpAndSettle();
+      final subIds = [
+        for (final c in repo.calls)
+          if (c.$1 == 'publish') c.$2['subId'],
+      ];
+      expect(subIds, ['sub1', 'nour', 'nour']);
+      expect(find.byKey(const ValueKey('workout-published')), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'assign button is hidden with no other clients and for a new version',
+    (t) async {
+      _phone(t);
+      final repo = RecordingRepo(uid: 'coach1');
+      await t.pumpWidget(
+        host(
+          ShareWorkoutView(
+            repository: repo,
+            subscription: sub(),
+            clientName: 'Mariam',
+            others: const [],
+            splits: [split()],
+          ),
+        ),
+      );
+      await t.tap(find.byKey(const ValueKey('workout-split-0')));
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('assign-more')), findsNothing);
+
+      await t.pumpWidget(
+        host(
+          ShareWorkoutView(
+            repository: repo,
+            subscription: sub(),
+            clientName: 'Mariam',
+            others: const [AssignClient(subId: 'nour', name: 'Nour')],
+            existing: CoachPlan(
+              id: 'planX',
+              kind: PlanKind.workout,
+              revision: 2,
+              workout: workoutPlan(),
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('assign-more')), findsNothing);
+    },
+  );
+
+  testWidgets('meal plan: same flow', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    await t.pumpWidget(
+      host(
+        ShareMealPlanView(
+          repository: repo,
+          subscription: sub(),
+          catalog: catalog(),
+          clientName: 'Mariam',
+          others: const [AssignClient(subId: 'nour', name: 'Nour')],
+        ),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('meal-add-breakfast')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('add-recipe-r1')));
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const ValueKey('meal-name')), 'Week');
+    await t.tap(find.byKey(const ValueKey('assign-more')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('assign-client-nour')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('assign-done')));
+    await t.pumpAndSettle();
+    expect(find.text('Publish to 2 clients'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('meal-publish')));
+    await t.pumpAndSettle();
+    final publishes = [
+      for (final c in repo.calls)
+        if (c.$1 == 'publish') c.$2,
+    ];
+    expect(publishes.map((p) => p['subId']).toList(), ['sub1', 'nour']);
+    expect(publishes[0]['startsOn'], isNotNull);
+    expect(publishes[1]['startsOn'], publishes[0]['startsOn']);
+    final publishedText = t.widget<Text>(
+      find.byKey(const ValueKey('meal-published')),
+    );
+    expect(publishedText.data, 'Sent to 2 clients');
+  });
+
+  testWidgets('assign sheet renders in Arabic with 6 clients without overflow', (
+    t,
+  ) async {
+    _phone(t);
+    await t.pumpWidget(
+      host(
+        Scaffold(
+          body: AssignClientsSheet(
+            mine: const AssignClient(subId: 'c1', name: 'مريم'),
+            others: const [
+              AssignClient(subId: 'c2', name: 'نور'),
+              AssignClient(subId: 'c3', name: 'سلمى'),
+              AssignClient(subId: 'c4', name: 'سارة'),
+              AssignClient(subId: 'c5', name: 'هبة'),
+              AssignClient(subId: 'c6', name: 'ياسمين'),
+            ],
+            initial: const {'c2'},
+            startsOn: DateTime(2026, 11, 1),
+          ),
+        ),
+        locale: const Locale('ar'),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('assign-done')), findsOneWidget);
+  });
+
+  testWidgets('meal: target needs both numbers', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    await t.pumpWidget(
+      host(
+        ShareMealPlanView(
+          repository: repo,
+          subscription: sub(),
+          catalog: catalog(),
+          clientName: 'Mai',
+          existing: CoachPlan(
+            id: 'm1',
+            kind: PlanKind.meal,
+            name: 'Week',
+            meal: mealBody(),
+          ),
+        ),
+      ),
+    );
+    await t.enterText(find.byKey(const ValueKey('meal-goal-kcal')), '1600');
+    await t.tap(find.byKey(const ValueKey('meal-publish')));
+    await t.pumpAndSettle();
+    expect(repo.calls, isEmpty);
+    expect(find.byKey(const ValueKey('meal-error')), findsOneWidget);
+    expect(
+      find.text('Fill in both numbers, or leave both empty.'),
+      findsOneWidget,
+    );
+
+    await t.enterText(find.byKey(const ValueKey('meal-goal-protein')), '110');
+    await t.tap(find.byKey(const ValueKey('meal-publish')));
+    await t.pumpAndSettle();
+    expect(repo.calls.length, 1);
+    final body = repo.calls.single.$2['body'] as Map;
+    final goal = body['goal'] as Map;
+    expect(goal['kcalPerDay'], 1600);
+    expect(goal['proteinGPerDay'], 110);
+  });
+
+  testWidgets(
+    'meal: flagged client sees the gate, no target fields, no figures',
+    (t) async {
+      _phone(t);
+      final repo = RecordingRepo(uid: 'coach1');
+      await t.pumpWidget(
+        host(
+          ShareMealPlanView(
+            repository: repo,
+            subscription: sub(
+              intake: const Intake(
+                health: {'eatingHistory': true},
+                eatingHistory: true,
+              ),
+            ),
+            catalog: catalog(),
+            clientName: 'Mai',
+            existing: CoachPlan(
+              id: 'm1',
+              kind: PlanKind.meal,
+              name: 'Week',
+              meal: mealBody(),
+            ),
+          ),
+        ),
+      );
+      expect(find.byKey(const ValueKey('meal-gate-banner')), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-goal-kcal')), findsNothing);
+      expect(find.byKey(const ValueKey('meal-goal-protein')), findsNothing);
+      expect(find.byKey(const ValueKey('meal-figures')), findsNothing);
+
+      await t.tap(find.byKey(const ValueKey('meal-publish')));
+      await t.pumpAndSettle();
+      expect(repo.calls.length, 1);
+      final body = repo.calls.single.$2['body'] as Map;
+      expect(body['goal'], isNull);
+    },
+  );
+
+  testWidgets('meal: swaps in 3 taps', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    final c = catalog(
+      recipes: [
+        recipe('r1'),
+        recipe('r2'),
+        recipe('r3'),
+        recipe('r4'),
+        recipe('r5'),
+      ],
+    );
+    final bodyWithRecipe = MealPlanBody(
+      days: [
+        MealDay(
+          label: 'Day 1',
+          slots: {
+            'lunch': [MealItem.recipe('r1', 1)],
+          },
+        ),
+      ],
+    );
+    await t.pumpWidget(
+      host(
+        ShareMealPlanView(
+          repository: repo,
+          subscription: sub(),
+          catalog: c,
+          clientName: 'Mai',
+          existing: CoachPlan(
+            id: 'm1',
+            kind: PlanKind.meal,
+            name: 'Week',
+            meal: bodyWithRecipe,
+          ),
+        ),
+      ),
+    );
+
+    await t.tap(find.byKey(const ValueKey('meal-swaps-0-lunch-0')));
+    await t.pumpAndSettle();
+
+    await t.tap(find.byKey(const ValueKey('swap-r2')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('swap-r3')));
+    await t.pump();
+
+    await t.tap(find.byKey(const ValueKey('swap-r4')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('swap-r5')));
+    await t.pump();
+    expect(find.text('Three at most.'), findsOneWidget);
+
+    await t.tap(find.byKey(const ValueKey('swap-r4')));
+    await t.pump();
+
+    await t.tap(find.byKey(const ValueKey('swaps-save')));
+    await t.pumpAndSettle();
+
+    expect(find.text('Swaps (2)'), findsOneWidget);
+
+    await t.tap(find.byKey(const ValueKey('meal-publish')));
+    await t.pumpAndSettle();
+    final body = repo.calls.single.$2['body'] as Map;
+    final item = (body['days'] as List)[0]['slots']['lunch'][0] as Map;
+    expect(item['swaps'], ['r2', 'r3']);
+  });
+
+  testWidgets('meal: out of range target is held back', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    await t.pumpWidget(
+      host(
+        ShareMealPlanView(
+          repository: repo,
+          subscription: sub(),
+          catalog: catalog(),
+          clientName: 'Mai',
+          existing: CoachPlan(
+            id: 'm1',
+            kind: PlanKind.meal,
+            name: 'Week',
+            meal: mealBody(),
+          ),
+        ),
+      ),
+    );
+    await t.enterText(find.byKey(const ValueKey('meal-goal-kcal')), '900');
+    await t.enterText(find.byKey(const ValueKey('meal-goal-protein')), '100');
+    await t.tap(find.byKey(const ValueKey('meal-publish')));
+    await t.pumpAndSettle();
+    expect(repo.calls, isEmpty);
+    expect(find.byKey(const ValueKey('meal-error')), findsOneWidget);
+    expect(
+      find.text('Fill in both numbers, or leave both empty.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'meal: Arabic pump on 320px width shows target card and sheet without overflow',
+    (t) async {
+      t.view.physicalSize = const Size(320 * 2, 640 * 2);
+      t.view.devicePixelRatio = 2;
+      addTearDown(t.view.reset);
+
+      final repo = RecordingRepo(uid: 'coach1');
+      final c = catalog(recipes: [recipe('r1'), recipe('r2')]);
+      final bodyWithRecipe = MealPlanBody(
+        days: [
+          MealDay(
+            label: 'Day 1',
+            slots: {
+              'lunch': [MealItem.recipe('r1', 1)],
+            },
+          ),
+        ],
+      );
+      await t.pumpWidget(
+        host(
+          ShareMealPlanView(
+            repository: repo,
+            subscription: sub(),
+            catalog: c,
+            clientName: 'مي',
+            existing: CoachPlan(
+              id: 'm1',
+              kind: PlanKind.meal,
+              name: 'خطة',
+              meal: bodyWithRecipe,
+            ),
+          ),
+          locale: const Locale('ar'),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('meal-goal-kcal')), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-goal-protein')), findsOneWidget);
+
+      await t.ensureVisible(find.byKey(const ValueKey('meal-swaps-0-lunch-0')));
+      await t.tap(find.byKey(const ValueKey('meal-swaps-0-lunch-0')));
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('swaps-save')), findsOneWidget);
+    },
+  );
 }

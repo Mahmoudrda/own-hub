@@ -9,7 +9,6 @@ import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/presentation/end_workout_sheet.dart';
 import 'package:own_hub/features/train/presentation/follow_along_view.dart';
 import 'package:own_hub/features/train/presentation/mid_set_view.dart';
-import 'package:own_hub/features/train/presentation/move_logged_view.dart';
 import 'package:own_hub/features/train/presentation/resting_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -151,14 +150,11 @@ void main() {
   group('the control on each live screen', () {
     final calls = _Calls();
 
-    testWidgets('R13 and R06 show it in the bar; R07 and R09 in Pause', (
+    testWidgets('R06 shows it in the bar; R07 and R09 in Pause', (
       tester,
     ) async {
       final end = calls.end(1);
-      for (final screen in <Widget>[
-        MoveLoggedView(end: end),
-        FollowAlongView(end: end),
-      ]) {
+      for (final screen in <Widget>[FollowAlongView(end: end)]) {
         await tester.pumpWidget(_host(screen));
         await tester.pump();
         expect(
@@ -205,7 +201,7 @@ void main() {
     });
 
     testWidgets('none of them shows it with no workout live', (tester) async {
-      final screens = <Widget>[const MoveLoggedView(), const FollowAlongView()];
+      final screens = <Widget>[const FollowAlongView()];
       for (final screen in screens) {
         await tester.pumpWidget(_host(screen));
         await tester.pump();
@@ -252,7 +248,6 @@ void main() {
             autoStart: false,
             end: calls.end(1),
           ),
-          MoveLoggedView(onPause: () {}, end: calls.end(1)),
         ];
         for (final screen in screens) {
           await tester.pumpWidget(_host(screen, locale: locale, scale: 2));
@@ -262,15 +257,11 @@ void main() {
             isNull,
             reason: '${screen.runtimeType} ${locale.languageCode}',
           );
-          if (screen is MoveLoggedView) {
-            expect(find.byKey(_end), findsOneWidget);
-          } else {
-            await openPause(tester);
-            expect(find.byKey(const ValueKey('pause-end')), findsOneWidget);
-            expect(tester.takeException(), isNull);
-            await tester.tap(find.byKey(const ValueKey('pause-resume')));
-            await tester.pumpAndSettle();
-          }
+          await openPause(tester);
+          expect(find.byKey(const ValueKey('pause-end')), findsOneWidget);
+          expect(tester.takeException(), isNull);
+          await tester.tap(find.byKey(const ValueKey('pause-resume')));
+          await tester.pumpAndSettle();
         }
       }
     });

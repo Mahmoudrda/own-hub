@@ -13,11 +13,19 @@ class AppStat {
 }
 
 class AppStatHero extends StatelessWidget {
-  const AppStatHero({super.key, required this.hero, this.others = const []})
-    : assert(others.length <= 3, 'a hero area carries at most 3 more figures');
+  const AppStatHero({
+    super.key,
+    required this.hero,
+    this.others = const [],
+    this.heroBuilder,
+  }) : assert(others.length <= 3, 'a hero area carries at most 3 more figures');
 
   final AppStat hero;
   final List<AppStat> others;
+
+  /// Draws the big figure itself, in the style the hero gives it, for a screen
+  /// that animates it. Null draws [hero]'s value as plain text.
+  final Widget Function(TextStyle style)? heroBuilder;
 
   static const _tabular = [FontFeature.tabularFigures()];
 
@@ -28,15 +36,15 @@ class AppStatHero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            hero.value,
-            style: AppText.display.copyWith(
+          () {
+            final style = AppText.display.copyWith(
               fontSize: 48,
               height: 1.1,
               color: AppColors.onSurface,
               fontFeatures: _tabular,
-            ),
-          ),
+            );
+            return heroBuilder?.call(style) ?? Text(hero.value, style: style);
+          }(),
           Text(
             hero.label,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),

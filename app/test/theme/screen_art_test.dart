@@ -28,8 +28,8 @@ List<String> _drawn(WidgetTester t) => t
     .map((n) => n.substring('assets/art/'.length).replaceAll('.webp', ''))
     .toList();
 
-/// Screens whose drawing was taken out on purpose: R01 sets the kitten beside
-/// its title instead, and A02 is a settings list.
+/// Screens whose drawing was taken out on purpose: R01 stands on its title
+/// alone, and A02 is a settings list.
 const Set<String> _drawsNoIllustration = {
   'R01',
   'A02',

@@ -31,6 +31,7 @@ class RecordingRepo implements CoachingRepository {
   int watchSessionCalls = 0;
   CoachingFailure? failEnd;
   CoachingFailure? failPublish;
+  CoachingFailure? Function(String subId)? failPublishFor;
 
   @override
   Future<SubscriptionStatus> endMyCoaching(
@@ -56,6 +57,7 @@ class RecordingRepo implements CoachingRepository {
     MyPlan? workout,
     MealPlanBody? meal,
     String? planId,
+    String? startsOn,
   }) async {
     calls.add((
       'publish',
@@ -65,9 +67,10 @@ class RecordingRepo implements CoachingRepository {
         workout: workout,
         meal: meal,
         planId: planId,
+        startsOn: startsOn,
       ),
     ));
-    final refused = failPublish;
+    final refused = failPublishFor?.call(subId) ?? failPublish;
     if (refused != null) throw refused;
     return (planId: planId ?? 'plan1', revision: 1);
   }
@@ -150,6 +153,7 @@ Subscription sub({
   int included = 4,
   int used = 1,
   DateTime? endsAt,
+  Intake? intake,
 }) => Subscription(
   id: 'sub1',
   coachUid: 'coach1',
@@ -159,7 +163,7 @@ Subscription sub({
   sessionsIncluded: included,
   sessionsUsed: used,
   endsAt: endsAt ?? DateTime.utc(2026, 11, 20),
-  intake: Intake(allergies: allergies),
+  intake: intake ?? Intake(allergies: allergies),
 );
 
 AuthoredMove move(String id, {List<String> tags = const ['none']}) =>
@@ -197,6 +201,8 @@ Recipe recipe(
   Set<String> allergens = const {},
   bool known = true,
   int? kcal = 400,
+  List<RecipeIngredient> ingredients = const [],
+  int serves = 1,
 }) => Recipe(
   recipeId: id,
   source: RecipeSource.book,
@@ -208,7 +214,8 @@ Recipe recipe(
   titleAr: 'طبق $id',
   titleSearch: [id],
   bodyAr: '',
-  ingredients: const [],
+  ingredients: ingredients,
+  serves: serves,
   ingredientsBasis: IngredientsBasis.measures,
   steps: const [],
   variants: const [],
@@ -247,8 +254,8 @@ Food food(String id, {Set<String>? allergens}) => Food(
   ],
 );
 
-MealCatalog catalog() => MealCatalog(
-  recipes: [
+MealCatalog catalog({List<Recipe>? recipes}) => MealCatalog(
+  recipes: recipes ?? [
     recipe('r1'),
     recipe('r2', allergens: {'sesame'}),
     recipe('r3', known: false),

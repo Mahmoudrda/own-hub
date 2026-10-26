@@ -54,7 +54,6 @@ class CaptureScaffold extends StatelessWidget {
     required this.body,
     required this.actionLabel,
     this.guidance,
-    this.guide,
     this.onAction,
     this.onClose,
     this.unavailable,
@@ -63,7 +62,6 @@ class CaptureScaffold extends StatelessWidget {
     this.onRetry,
     this.onAskReviewer,
     this.stepLabel,
-    this.headlineGuide,
     this.largeHeadline = false,
     this.secondaryActionLabel,
     this.onSecondaryAction,
@@ -72,10 +70,6 @@ class CaptureScaffold extends StatelessWidget {
 
   /// "Step 2 of 4", small, above the headline. Null outside the challenge.
   final String? stepLabel;
-
-  /// Drawn above the headline: the kitten acting out the step she is asked
-  /// to perform.
-  final Widget? headlineGuide;
 
   /// The headline is the instruction she is acting on right now, so it is set
   /// bigger: a step she has to read mid-turn has to be readable mid-turn.
@@ -121,10 +115,6 @@ class CaptureScaffold extends StatelessWidget {
   /// The live instruction, already translated, or null when there is nothing
   /// worth saying.
   final String? guidance;
-
-  /// Shown beside [guidance], outside the frame: the kitten acting out the
-  /// step. Never inside the viewfinder, which stays hers.
-  final Widget? guide;
 
   /// Null disables the shutter — which is the honest state whenever there is no
   /// camera behind it.
@@ -283,10 +273,6 @@ class CaptureScaffold extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                       ],
-                      if (headlineGuide case final kitten?) ...[
-                        kitten,
-                        const SizedBox(height: 8),
-                      ],
                       // Announced as it changes, like the guidance below: on
                       // the selfie this is the step she is being asked for.
                       Semantics(
@@ -330,10 +316,6 @@ class CaptureScaffold extends StatelessWidget {
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (guide case final guide?) ...[
-                            guide,
-                            const SizedBox(width: 10),
-                          ],
                           Flexible(
                             child: Semantics(
                               liveRegion: true,

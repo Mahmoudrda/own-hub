@@ -22,6 +22,7 @@ Subscription deskSub(
   DateTime? nextSessionAt,
   DateTime? createdAt,
   Intake? intake,
+  DateTime? healthReviewedAt,
 }) {
   final client = clientUid ?? 'u$id';
   return Subscription(
@@ -39,6 +40,7 @@ Subscription deskSub(
     nextSessionAt: nextSessionAt,
     createdAt: createdAt,
     intake: intake,
+    healthReviewedAt: healthReviewedAt,
   );
 }
 

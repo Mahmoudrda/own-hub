@@ -42,6 +42,7 @@ import 'dart:async';
 import '../../../app_state/haptics.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/format/number_label.dart';
+import '../../../domain/logging/log_command_bus.dart' show LogHandle;
 import '../../../domain/rewards/personal_best_detector.dart';
 import '../../../domain/rewards/stated_figure.dart';
 import '../../../domain/rewards/training_streak.dart';
@@ -57,6 +58,7 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
 import '../../../ui/app_overflow_menu.dart';
 import '../../../ui/app_sheet.dart';
+import '../../../ui/app_undo_bar.dart';
 import '../../../ui/app_stat_hero.dart';
 import '../../../ui/app_progress.dart';
 import '../../../ui/app_scaffold.dart';
@@ -67,14 +69,13 @@ import '../../../ui/hand/paper_confetti.dart';
 import '../domain/own_best_challenge.dart';
 import '../domain/session_summary.dart';
 import '../domain/train_repository.dart';
-import '../domain/weight_label.dart';
 import 'finish_reveal.dart';
 import 'session_share_card.dart';
 import 'set_labels.dart';
 import 'train_widgets.dart' show TrainTopBar;
 
 // The reveal's order: the day, the effort, the week filling, its figure
-// counting up, a best, the challenge, the kitten's cheer, then the paper.
+// counting up, a best, the challenge, a drawn tick, then the paper.
 // Under two seconds in all, so the burst is kept short.
 const int _cheerStage = 5;
 const int _confettiStage = 6;
@@ -99,7 +100,18 @@ class FinishedView extends StatelessWidget {
     this.displayName,
     this.onShareImage,
     this.onOpenRecentSessions,
+    this.lastLog,
+    this.onUndoLastLog,
   });
+
+  /// The last set (or move) of the workout, while its five seconds are open.
+  /// The page offers Undo for it, and the session is only finished once the
+  /// window closes. Null draws no bar.
+  final LogHandle? lastLog;
+
+  /// Puts her back on the set that [lastLog] took back. Runs only when the
+  /// undo landed.
+  final VoidCallback? onUndoLastLog;
 
   /// Her last sessions, where a set can be corrected. Offered in See details.
   final VoidCallback? onOpenRecentSessions;
@@ -129,8 +141,8 @@ class FinishedView extends StatelessWidget {
   /// previews, where the page shows only what it was told.
   final SessionSummary? summary;
 
-  /// Whether the kitten cheers: her first sessions, and the session that
-  /// counts her week. Within the mascot's one-per-sitting budget.
+  /// Whether the tick is drawn: her first sessions, and the session that
+  /// counts her week.
   final bool cheer;
 
   final VoidCallback? onBackToToday;
@@ -215,7 +227,7 @@ class FinishedView extends StatelessWidget {
         ? summary?.trainingStreak
         : null;
 
-    // One firm touch, as the kitten cheers (stage 5): the reveal's single
+    // One firm touch, as the tick draws (stage 5): the reveal's single
     // haptic, so what she feels lands with what she sees.
     void stageShown(int stage) {
       if (stage == _cheerStage) {
@@ -332,6 +344,17 @@ class FinishedView extends StatelessWidget {
           ),
       ],
       children: [
+        if (lastLog != null) ...[
+          // Five seconds to take the last set back and go on with the workout.
+          AppLiveUndoBar(
+            key: const ValueKey('r10-undo-last-set'),
+            handle: lastLog,
+            message: lastLog!.describe,
+            undoLabel: l10n.undo,
+            onUndo: onUndoLastLog,
+          ),
+          const SizedBox(height: 6),
+        ],
         const SizedBox(height: 6),
         // Stage 0 — the day, done. A finished session is the one
         // unambiguously good moment in this product. The drawing is
@@ -356,8 +379,8 @@ class FinishedView extends StatelessWidget {
                   // the session, so it plays once for each.
                   if (revealOn && summary != null)
                     Positioned.fill(
-                      // Last, after the kitten has cheered: the week fills, the
-                      // figure counts up, the kitten cheers, then the paper.
+                      // Last, after the tick has drawn: the week fills, the
+                      // figure counts up, the tick draws, then the paper.
                       child: RevealOnArrival(
                         index: _confettiStage,
                         child: PaperConfetti(
@@ -415,11 +438,23 @@ class FinishedView extends StatelessWidget {
                 ),
                 label: l10n.sessionsThisWeek,
               ),
+              // The one figure counts up to this week's total, from the week
+              // as it stood before this session. Still under Reduce Motion.
+              heroBuilder: (style) => RevealCount(
+                index: 1,
+                from: credited && weekDone > 0 ? weekDone - 1 : weekDone,
+                value: weekDone,
+                format: (shown) => l10n.countOfTotal(
+                  countLabel(shown),
+                  countLabel(weekTarget),
+                ),
+                style: style,
+              ),
               others: stats,
             ),
           ),
-          // Stage 5 — the kitten and one warm line: the full cheer on the
-          // sessions that earn it, a nod on the rest. The session that counted
+          // Stage 5 — one warm line, and a drawn tick on the sessions
+          // that earn it. The session that counted
           // the week says so instead, in sage.
           RevealStage(
             index: _cheerStage,
@@ -442,18 +477,12 @@ class FinishedView extends StatelessWidget {
                           ),
                         ),
                 ),
-                // Built as its stage arrives, so the one move it is allowed is
-                // the one she sees.
-                RevealOnArrival(
-                  index: _cheerStage,
-                  child: Kitten(
-                    pose: cheer ? KittenPose.cheer : KittenPose.nod,
-                    prop: cheer ? KittenProp.heart : null,
-                    size: cheer ? 56 : 48,
-                    moment: 'R10',
-                    sessionBudget: true,
+                // Built as its stage arrives, so the tick is drawn when she sees it.
+                if (cheer)
+                  RevealOnArrival(
+                    index: _cheerStage,
+                    child: const Moment(size: 40),
                   ),
-                ),
               ],
             ),
           ),
@@ -611,24 +640,6 @@ class FinishedView extends StatelessWidget {
             style: AppText.bodyM.copyWith(color: AppColors.onSurface),
           ),
         _points(context, l10n),
-        // Next time, for the loaded moves she weighed: a step up, or the same
-        // weight. Never a lower one.
-        if (measured && summary != null && summary.nextTime.isNotEmpty)
-          Column(
-            key: const ValueKey('r10-next-time'),
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final move in summary.nextTime)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    _nextTimeLine(l10n, move),
-                    style: AppText.bodyM.copyWith(color: AppColors.onSurface),
-                  ),
-                ),
-            ],
-          ),
         if (onOpenRecentSessions != null)
           AppButton(
             l10n.recentSessions,
@@ -694,18 +705,6 @@ class FinishedView extends StatelessWidget {
         Expanded(child: bar),
       ],
     );
-  }
-
-  /// A move name with no Arabic letters stays left to right inside an Arabic
-  /// sentence, so "Hip thrust" does not scramble the words around it.
-  static String _isolated(String name) =>
-      RegExp(r'[\u0600-\u06FF]').hasMatch(name) ? name : '\u2066$name\u2069';
-
-  static String _nextTimeLine(AppL10n l10n, NextTimeMove move) {
-    final name = _isolated(move.name);
-    return move.rises
-        ? l10n.nextTimeWeightOnName('${weightLabel(move.kg)} ${l10n.kg}', name)
-        : l10n.sameWeightOnNameNextTimeUntil(name);
   }
 
   static bool _showsStreak(StreakStatus? status) =>

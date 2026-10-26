@@ -76,11 +76,12 @@ PATHS = {
     "waitlist-joined": ("/waitlist/joined", "/ar/waitlist/joined"),
     "waitlist-check": ("/waitlist/check", "/ar/waitlist/check"),
     "waitlist-later": ("/waitlist/later", "/ar/waitlist/later"),
+    "join": ("/join", "/ar/join"),
 }
 
 # The pages the waitlist form lands on. Reached only by submitting the form,
 # so they are kept out of search results and out of the sitemap.
-NOINDEX = {"waitlist-joined", "waitlist-check", "waitlist-later"}
+NOINDEX = {"waitlist-joined", "waitlist-check", "waitlist-later", "join"}
 
 # Cloudflare Pages serves privacy.html at /privacy, the address the stores
 # hold, with a 200. A privacy/index.html would be served at /privacy/ instead,
@@ -99,6 +100,7 @@ FILES = {
     "waitlist-joined": ("waitlist/joined/index.html", "ar/waitlist/joined/index.html"),
     "waitlist-check": ("waitlist/check/index.html", "ar/waitlist/check/index.html"),
     "waitlist-later": ("waitlist/later/index.html", "ar/waitlist/later/index.html"),
+    "join": ("join.html", "ar/join.html"),
 }
 
 CHROME = {
@@ -776,7 +778,7 @@ def build_art() -> None:
 
 # The files, besides the pages, that a host serves. Everything else in
 # site/ (the generator, config.json) stays out of a publishable copy.
-STATIC = ("assets", "_headers", "_redirects")
+STATIC = ("assets", "_headers", "_redirects", ".well-known")
 
 
 def copy_static() -> None:

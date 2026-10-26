@@ -304,10 +304,6 @@ const Map<String, ({String file, String guard})> _killSwitchGuards = {
     file: 'lib/routing/app_router.dart',
     guard: "return hold && screenIsOn('R06');",
   ),
-  'R13->R06': (
-    file: 'lib/routing/app_router.dart',
-    guard: "return hold && screenIsOn('R06');",
-  ),
   'T01->R06': (
     file: 'lib/routing/app_router.dart',
     guard: "return hold && screenIsOn('R06');",

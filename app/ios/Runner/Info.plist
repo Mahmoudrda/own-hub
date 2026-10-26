@@ -25,12 +25,15 @@
 	     deliberately NO NSPhotoLibraryUsageDescription and no library
 	     entitlement anywhere in this target: the card is photographed live, and
 	     a flow that could take an existing picture could take a picture of
-	     someone else's card. The one place she can pick an existing picture is
-	     her own profile photo (A02), through the system picker, which hands the
-	     app only the single picture she chooses and needs no library
-	     permission; nothing in the identity check or the meal scan can use it. -->
+	     someone else's card. Photo-library access for her own profile photo (A02)
+	     and for coaching chat still uses the system picker, which hands the app
+	     only the single picture or video she chooses and needs no library
+	     permission (no NSPhotoLibraryUsageDescription, unchanged); nothing in the
+	     identity check or the meal scan can use it. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman, to photograph a meal if you choose so we can estimate what is on your plate, and to take a profile photo or coach photos if you choose. Nothing is uploaded until you tap send, analyse or submit. The ID card, selfie and meal photographs are read in memory and never stored. A profile photo you take stays on this phone. Photos you add as a coach (your photo, certificates, feedback and results) are uploaded for Own Hub to check, and the approved ones may be shown on your coach page.</string>
+	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman, to photograph a meal if you choose so we can estimate what is on your plate, and to take a profile photo or coach photos if you choose. Nothing is uploaded until you tap send, analyse or submit. The ID card, selfie and meal photographs are read in memory and never stored. A profile photo you take stays on this phone. Photos you add as a coach (your photo, certificates, feedback and results) are uploaded for Own Hub to check, and the approved ones may be shown on your coach page. Photos and videos you choose to send in a coaching chat are uploaded to your coach.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Own Hub uses the microphone only when you hold the mic button in a coaching chat to record a voice note, or record a video with sound to send your coach. Nothing is recorded until you press, and nothing is sent until you let go. Voice notes and videos you send are kept for the length of your coaching so you and your coach can listen and watch again.</string>
 	<!-- Read by sensors_plus for the gentle tilt on a few illustrations
 	     (lib/ui/hand/tilt_parallax.dart). Localised in the InfoPlist.strings
 	     files; this copy is the development-region fallback. -->

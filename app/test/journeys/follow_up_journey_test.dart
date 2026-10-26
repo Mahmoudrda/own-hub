@@ -153,7 +153,11 @@ void main() {
     AppRouter.todayRepository.rollTo(DateTime(2026, 10, 13, 9));
 
     await _openHome(tester);
-    await _tapKey(tester, 'follow-up-not-now-afterSession');
+    final card = find.byKey(const ValueKey('follow-up-not-now-afterSession'));
+    await tester.ensureVisible(card);
+    await tester.pumpAndSettle();
+    await tester.fling(card, const Offset(-500, 0), 1000);
+    await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('follow-up-afterSession')), findsNothing);
     expect(FollowUpState.instance.feels, isEmpty);
     expect(

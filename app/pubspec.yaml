@@ -131,6 +131,10 @@ dependencies:
   # for, and the camera uses the permission the app already has. The picture
   # is redrawn and kept on the phone; it is never uploaded.
   image_picker: ^1.2.4
+  # Chat voice notes (hold to record, AAC in an .m4a file, 120 s at most).
+  # The microphone is asked for only on the first hold. Declared as audio
+  # data in ios/Runner/PrivacyInfo.xcprivacy and android/play-data-safety.txt.
+  record: ^7.1.2
 
 dev_dependencies:
   flutter_test:

@@ -194,8 +194,8 @@ class YoureInView extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 20),
-            // The end of onboarding: the kitten's one cheer.
-            const Kitten(pose: KittenPose.cheer, size: 72, moment: 'C13'),
+            // The end of onboarding: a tick drawn on once.
+            const Moment(size: 64, delay: HandTiming.medium),
           ],
         ),
         Text(

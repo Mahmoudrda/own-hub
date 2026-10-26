@@ -13,7 +13,7 @@ from tests.coaching_helpers import Notes, _txn  # noqa: F401
 NOW = dt.datetime(2026, 11, 1, 12, tzinfo=dt.timezone.utc)
 IDS = {
     "exercises": frozenset({"squat", "plank", "row"}),
-    "recipes": frozenset({"rec1"}),
+    "recipes": frozenset({"rec1", "rec2", "rec3", "rec4"}),
     "foods": frozenset({"rice"}),
 }
 
@@ -367,10 +367,11 @@ def test_nutrition_words_in_free_text_are_only_text():
 def test_a_body_over_the_size_limit_is_too_large():
     body = workout()
     body["days"][0]["session"]["moves"] = [_move(notesEn="x" * 300, notesAr="y" * 300)] * 20
-    body["days"] = [copy.deepcopy(body["days"][0]) for _ in range(7)]
+    body["days"] = [copy.deepcopy(body["days"][0]) for _ in range(14)]
     for n, day in enumerate(body["days"]):
         day["session"]["sessionId"] = f"d{n}"
-    assert len(json.dumps(body)) > 60000
+        day["week"] = 1 if n < 7 else 2
+    assert len(json.dumps(body)) > 120000
     refused(make_db(), req("workout", body), errors.PLAN_TOO_LARGE)
 
 
@@ -397,10 +398,10 @@ def test_a_missing_body_is_invalid():
 def test_size_is_measured_as_escaped_json_so_arabic_counts_six_per_letter():
     body = workout()
     body["days"][0]["session"]["moves"] = [_move(notesAr="س" * 300)] * 20
-    body["days"] = [copy.deepcopy(body["days"][0]) for _ in range(2)]
+    body["days"] = [copy.deepcopy(body["days"][0]) for _ in range(4)]
     for n, day in enumerate(body["days"]):
         day["session"]["sessionId"] = f"d{n}"
-    assert len(json.dumps(body, ensure_ascii=False).encode("utf-8")) < 60000 < len(json.dumps(body))
+    assert len(json.dumps(body, ensure_ascii=False).encode("utf-8")) < 120000 < len(json.dumps(body))
     refused(make_db(), req("workout", body), errors.PLAN_TOO_LARGE)
 
 
@@ -415,3 +416,151 @@ def test_a_block_either_way_stops_a_plan(blocker, blocked):
     db = make_db()
     db.collection("users").document(blocker).collection("blocks").document(blocked).set({})
     refused(db, req(), "coach_unavailable")
+
+
+def test_superset_flag_is_accepted_and_must_be_a_bool():
+    db = make_db()
+    body = workout()
+    body["days"][0]["session"]["moves"][0]["supersetWithNext"] = True
+    out, _ = publish(db, req(body=body))
+    assert out["revision"] == 1
+    body["days"][0]["session"]["moves"][0]["supersetWithNext"] = "yes"
+    refused(db, req(body=body), errors.PLAN_INVALID)
+
+
+def test_start_date_is_stored():
+    db = make_db()
+    d = (NOW.astimezone(plans.CAIRO).date() + dt.timedelta(days=3)).isoformat()
+    out, _ = publish(db, req(startsOn=d))
+    doc = db.docs[f"plans/client1/coachPlans/{out['planId']}"]
+    assert doc["startsOn"] == d
+
+
+def test_start_date_in_the_past_or_too_far_is_refused():
+    db = make_db()
+    today = NOW.astimezone(plans.CAIRO).date()
+    yesterday = (today - dt.timedelta(days=1)).isoformat()
+    too_far = (today + dt.timedelta(days=61)).isoformat()
+    for bad in (yesterday, too_far, "2026-13-40", 5):
+        refused(db, req(startsOn=bad), errors.PLAN_INVALID)
+
+
+def test_no_start_date_writes_no_key():
+    db = make_db()
+    out, _ = publish(db, req())
+    doc = db.docs[f"plans/client1/coachPlans/{out['planId']}"]
+    assert "startsOn" not in doc
+
+
+def test_weeks_must_have_no_gaps_and_stay_within_limits():
+    db = make_db()
+    body = workout(days=14)
+    for n, day in enumerate(body["days"]):
+        day["week"] = 1 if n < 7 else 2
+    out, _ = publish(db, req(body=body))
+    assert out["revision"] == 1
+
+    gapped = workout(days=2)
+    gapped["days"][0]["week"] = 1
+    gapped["days"][1]["week"] = 3
+    refused(db, req(body=gapped), errors.PLAN_INVALID)
+
+    week5 = workout(days=5)
+    for n, day in enumerate(week5["days"]):
+        day["week"] = n + 1
+    refused(db, req(body=week5), errors.PLAN_INVALID)
+
+    eight_in_w1 = workout(days=8)
+    refused(db, req(body=eight_in_w1), errors.PLAN_INVALID)
+
+    too_many = workout(days=29)
+    for n, day in enumerate(too_many["days"]):
+        day["week"] = min(4, 1 + n // 7)
+    refused(db, req(body=too_many), errors.PLAN_INVALID)
+
+
+def test_meal_goal_is_accepted():
+    db = make_db()
+    body = meal()
+    body["goal"] = {"kcalPerDay": 1600, "proteinGPerDay": 110}
+    out, _ = publish(db, req(kind="meal", body=body))
+    doc = db.docs[f"plans/client1/coachPlans/{out['planId']}"]
+    assert doc["body"]["goal"] == {"kcalPerDay": 1600, "proteinGPerDay": 110}
+
+
+def test_meal_goal_bounds_and_shape():
+    db = make_db()
+    for bad_kcal in (1199, 4001, 1600.5, "1600"):
+        body = meal()
+        body["goal"] = {"kcalPerDay": bad_kcal, "proteinGPerDay": 110}
+        refused(db, req(kind="meal", body=body), errors.PLAN_INVALID)
+
+    for bad_protein in (29, 251, 110.5, "110"):
+        body = meal()
+        body["goal"] = {"kcalPerDay": 1600, "proteinGPerDay": bad_protein}
+        refused(db, req(kind="meal", body=body), errors.PLAN_INVALID)
+
+    body = meal()
+    body["goal"] = {"kcalPerDay": 1600, "proteinGPerDay": 110, "carbs": 1}
+    refused(db, req(kind="meal", body=body), errors.PLAN_INVALID)
+
+    body = meal()
+    body["goal"] = [{"kcalPerDay": 1600, "proteinGPerDay": 110}]
+    refused(db, req(kind="meal", body=body), errors.PLAN_INVALID)
+
+
+def test_swaps_ids_limits():
+    db = make_db()
+    body = meal()
+    body["days"][0]["slots"]["breakfast"][0]["swaps"] = ["rec2", "rec3", "rec4"]
+    out, _ = publish(db, req(kind="meal", body=body))
+    assert out["revision"] == 1
+
+    # 4 swaps
+    b4 = copy.deepcopy(body)
+    b4["days"][0]["slots"]["breakfast"][0]["swaps"] = ["rec2", "rec3", "rec4", "rec5"]
+    refused(db, req(kind="meal", body=b4), errors.PLAN_INVALID)
+
+    # unknown id
+    b_unk = copy.deepcopy(body)
+    b_unk["days"][0]["slots"]["breakfast"][0]["swaps"] = ["rec2", "unknown_rec"]
+    refused(db, req(kind="meal", body=b_unk), errors.PLAN_INVALID)
+
+    # the dish itself
+    b_self = copy.deepcopy(body)
+    b_self["days"][0]["slots"]["breakfast"][0]["swaps"] = ["rec1"]
+    refused(db, req(kind="meal", body=b_self), errors.PLAN_INVALID)
+
+    # duplicate
+    b_dup = copy.deepcopy(body)
+    b_dup["days"][0]["slots"]["breakfast"][0]["swaps"] = ["rec2", "rec2"]
+    refused(db, req(kind="meal", body=b_dup), errors.PLAN_INVALID)
+
+
+def test_goal_is_held_for_an_eating_history_flag():
+    db = make_db()
+    db.collection("subscriptions").document("sub1").update(
+        {"intake": {"health": {"eatingHistory": True}}, "healthReviewedAt": NOW}
+    )
+    body = meal()
+    body["goal"] = {"kcalPerDay": 1600, "proteinGPerDay": 110}
+    # With goal -> refused
+    refused(db, req(kind="meal", body=body), errors.EATING_HISTORY_HOLD)
+
+    # Without goal -> succeeds
+    out, _ = publish(db, req(kind="meal", body=meal()))
+    assert out["revision"] == 1
+
+    # Flag false with goal -> succeeds
+    db.collection("subscriptions").document("sub1").update(
+        {"intake": {"health": {"eatingHistory": False}}, "healthReviewedAt": NOW}
+    )
+    out2, _ = publish(db, req(kind="meal", body=body))
+    assert out2["revision"] == 1
+
+
+def test_nutrition_keys_are_still_refused():
+    db = make_db()
+    body = meal()
+    body["days"][0]["slots"]["lunch"][0]["kcal"] = 5
+    refused(db, req(kind="meal", body=body), errors.PLAN_INVALID)

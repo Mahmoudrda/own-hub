@@ -1,7 +1,6 @@
 /// "Take a deep breath": once, on the very first launch, before the first
 /// setup question. A soft circle breathes in and out over one 4 s breath, with
-/// the kitten (72 at most, on its own idle loop) resting inside it, then the
-/// questions open on their own. A tap anywhere, or Skip, goes straight on.
+/// the questions opening on their own. A tap anywhere, or Skip, goes straight on.
 ///
 /// With Reduce Motion on nothing moves: both lines are shown and a Continue
 /// button leaves.
@@ -126,8 +125,7 @@ class _DeepBreathViewState extends State<DeepBreathView>
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 24),
-                          // The circle does the breathing; the kitten stays
-                          // small (72 at most) and only breathes its own idle.
+                          // The circle does the breathing.
                           SizedBox(
                             width: 160,
                             height: 160,
@@ -139,13 +137,6 @@ class _DeepBreathViewState extends State<DeepBreathView>
                                   shape: BoxShape.circle,
                                   color: AppColors.brandPink.withValues(
                                     alpha: 0.35,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Kitten(
-                                    pose: KittenPose.rest,
-                                    size: 72,
-                                    holdStill: true,
                                   ),
                                 ),
                               ),

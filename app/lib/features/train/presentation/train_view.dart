@@ -214,14 +214,6 @@ class _TrainViewState extends State<TrainView> {
               ],
             ),
           ),
-          const Kitten(
-            pose: KittenPose.lift,
-            prop: KittenProp.dumbbell,
-            size: 40,
-            moment: 'R01',
-            holdStill: true,
-            blinkOnRevisit: true,
-          ),
         ],
       ),
       _TodayCard(

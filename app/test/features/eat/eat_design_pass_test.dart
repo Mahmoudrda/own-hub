@@ -248,9 +248,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('اختياراتك للغدا'), findsOneWidget);
-      expect(find.byKey(const ValueKey('pick-ful_baladi')), findsNothing);
-      expect(find.byKey(const ValueKey('pick-chicken_and_rice')), findsOne);
+      // Her picks are rows of the list now, so a row and its "+" stay one
+      // control; there is no heading of their own.
+      Finder pick(String id) => find.byWidgetPredicate(
+        (w) => w.key.toString().contains("'pick-$id-"),
+      );
+      expect(pick('ful_baladi'), findsNothing);
+      expect(pick('chicken_and_rice'), findsOne);
       await bus.flushAll();
     });
   });

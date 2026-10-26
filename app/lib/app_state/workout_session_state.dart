@@ -1,7 +1,7 @@
 /// The session she is actually doing, while she is doing it.
 ///
 /// The training screens are each correct on their own — R07 logs the set it is
-/// given, R09 rests, R13 closes a move — but nothing held the thread between
+/// given, R09 rests — but nothing held the thread between
 /// them, so the router handed R07 the same move and the same set every time
 /// and a finished session changed nothing anywhere. This holds that thread:
 /// which day, which move, which set, what she swapped, and what happens when
@@ -60,7 +60,7 @@ class WorkoutSessionState {
   /// Replacements she chose on R05, by the exercise they replace.
   final Map<String, PlannedMove> _swaps = <String, PlannedMove>{};
 
-  /// Where she was before each log, newest last, so Undo on R09 or R13 can put
+  /// Where she was before each log, newest last, so Undo on R09 can put
   /// her back on the set she took back. The bus took the write back; this
   /// takes the position back, which nothing did — she undid a set and was
   /// asked for the next one anyway.
@@ -133,7 +133,7 @@ class WorkoutSessionState {
   /// How many moves are behind her: zero-based, and also the count of moves
   /// struck off.
   ///
-  /// R13 was handed [loggedSetCount] for this — a count of *sets* rendered as
+  /// A screen was once handed [loggedSetCount] for this — a count of *sets* rendered as
   /// moves — so two moves of three sets each read "6 of 5".
   int get moveIndex => _moveIndex;
 
@@ -347,7 +347,7 @@ class WorkoutSessionState {
     AppChanges.bump();
   }
 
-  /// Every remaining set of this move at once — R13's "I did all 3 sets".
+  /// Every remaining set of this move at once — "I did all 3 sets".
   void moveLogged() {
     final move = currentMove;
     if (move == null) return;
@@ -513,7 +513,6 @@ class WorkoutSessionState {
     required ProgressStore progress,
     EndedReason reason = EndedReason.finished,
     ChallengeProgress? Function()? challengeNow,
-    bool difficult = false,
   }) async {
     // Finished or discarded, the workout no longer needs the screen held.
     ScreenAwake.instance.set(false);
@@ -531,7 +530,6 @@ class WorkoutSessionState {
       progress: progress,
       reason: reason,
       challengeNow: challengeNow,
-      difficult: difficult,
     );
     _finishing = done;
     _finishingId = session.id;
@@ -561,7 +559,6 @@ class WorkoutSessionState {
     required ProgressStore progress,
     required EndedReason reason,
     ChallengeProgress? Function()? challengeNow,
-    bool difficult = false,
   }) async {
     _lastFinished = session;
     _lastFinishedTitle = _day?.title;
@@ -600,7 +597,6 @@ class WorkoutSessionState {
             progress: progress,
           );
 
-    final finishedMoves = List<PlannedMove>.unmodifiable(moves);
     final flushed = repository is InMemoryTrainRepository
         ? repository.flushes
         : const <FlushRecord>[];
@@ -620,16 +616,6 @@ class WorkoutSessionState {
           : null,
       moveNames: moveNames,
       bestPoints: _bestPoints.remove(session.id) ?? 0,
-      // Nothing to look ahead to for a session that was discarded or empty.
-      nextTime: uncounted
-          ? const <NextTimeMove>[]
-          : nextTimeFor(
-              repository: repository,
-              moves: finishedMoves,
-              flushes: flushed,
-              sessionId: session.id,
-              difficult: difficult,
-            ),
     );
 
     _session = null;

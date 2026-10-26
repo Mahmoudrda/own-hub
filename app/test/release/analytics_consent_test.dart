@@ -335,18 +335,6 @@ void main() {
       }
     });
 
-    test('deleting everything on the phone resets it before the kitten', () {
-      final wipe = File('lib/app_state/account_data.dart').readAsStringSync();
-      final analytics = wipe.indexOf('AnalyticsConsent.instance.erase()');
-      final kitten = wipe.indexOf('KittenSetting.instance.erase()');
-      expect(analytics, greaterThan(-1));
-      expect(
-        analytics,
-        lessThan(kitten),
-        reason: 'putting the kitten back must not be counted',
-      );
-    });
-
     test('main reads the choice before Firebase starts', () {
       final main = File('lib/main.dart').readAsStringSync();
       final load = main.indexOf('AnalyticsConsent.instance.load()');

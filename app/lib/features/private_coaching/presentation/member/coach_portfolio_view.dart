@@ -26,7 +26,9 @@ import 'coach_labels.dart';
 import 'join_coach_sheet.dart';
 import 'report_coach_sheet.dart';
 
-class CoachPortfolioView extends StatelessWidget {
+/// The portfolio. With more than one package she taps the one she wants, and
+/// the pinned Ask to join asks for that one.
+class CoachPortfolioView extends StatefulWidget {
   const CoachPortfolioView({
     super.key,
     required this.coach,
@@ -38,6 +40,55 @@ class CoachPortfolioView extends StatelessWidget {
     this.blocks,
     this.onBack,
   });
+
+  final CoachProfile coach;
+  final List<CoachPackage> packages;
+  final List<ApprovedMedia> media;
+  final bool preview;
+  final CoachingRepository? repository;
+  final List<String> declaredAllergies;
+  final BlockService? blocks;
+  final VoidCallback? onBack;
+
+  @override
+  State<CoachPortfolioView> createState() => _CoachPortfolioViewState();
+}
+
+class _CoachPortfolioViewState extends State<CoachPortfolioView> {
+  int _selected = 0;
+
+  @override
+  Widget build(BuildContext context) => _PortfolioBody(
+    coach: widget.coach,
+    packages: widget.packages,
+    media: widget.media,
+    preview: widget.preview,
+    repository: widget.repository,
+    declaredAllergies: widget.declaredAllergies,
+    blocks: widget.blocks,
+    onBack: widget.onBack,
+    selected: _selected,
+    onSelect: (i) => setState(() => _selected = i),
+  );
+}
+
+class _PortfolioBody extends StatelessWidget {
+  const _PortfolioBody({
+    required this.selected,
+    required this.onSelect,
+    required this.coach,
+    required this.packages,
+    this.media = const <ApprovedMedia>[],
+    this.preview = false,
+    this.repository,
+    this.declaredAllergies = const <String>[],
+    this.blocks,
+    this.onBack,
+  });
+
+  /// The index of the package the pinned Ask to join asks for.
+  final int selected;
+  final ValueChanged<int> onSelect;
 
   final CoachProfile coach;
 
@@ -95,24 +146,51 @@ class CoachPortfolioView extends StatelessWidget {
     final languages = <String>[
       for (final k in coach.languages) languageLabel(l10n, k),
     ].join(coachListSep(l10n));
+    final pick = active.isEmpty ? 0 : selected.clamp(0, active.length - 1);
     return AppScaffold(
       appBar: AppTopBar(
         title: l10n.coachProfile,
         onBack: onBack,
         actions: [
-          if (!ownPage && blocks != null)
+          if (!ownPage && (repo != null || blocks != null))
             AppOverflowMenu(
               color: AppColors.ink,
               items: [
-                AppOverflowItem(
-                  icon: Icons.block,
-                  label: l10n.block,
-                  onTap: () => _block(context),
-                ),
+                if (repo != null)
+                  AppOverflowItem(
+                    icon: Icons.flag_outlined,
+                    label: l10n.reportThisProfile,
+                    onTap: () => showReportCoachSheet(
+                      context: context,
+                      repository: repo,
+                      coachUid: coach.uid,
+                    ),
+                  ),
+                if (blocks != null)
+                  AppOverflowItem(
+                    icon: Icons.block,
+                    label: l10n.block,
+                    onTap: () => _block(context),
+                  ),
               ],
             ),
         ],
       ),
+      footer: [
+        if (!ownPage && active.isNotEmpty)
+          AppButton(
+            l10n.askToJoin,
+            onPressed: repo == null
+                ? null
+                : () => showJoinCoachSheet(
+                    context: context,
+                    repository: repo,
+                    coach: coach,
+                    package: active[pick],
+                    declaredAllergies: declaredAllergies,
+                  ),
+          ),
+      ],
       children: [
         if (preview)
           AppCard(
@@ -141,7 +219,16 @@ class CoachPortfolioView extends StatelessWidget {
           ),
         _heading(l10n.packages),
         if (active.isEmpty) _muted(l10n.noPackagesYet),
-        for (final p in active) _package(context, l10n, p, repo, ownPage),
+        for (var i = 0; i < active.length; i++)
+          _package(
+            context,
+            l10n,
+            active[i],
+            repo,
+            ownPage,
+            picked: active.length > 1 && i == pick,
+            onPick: active.length > 1 ? () => onSelect(i) : null,
+          ),
         if (coach.approach.trim().isNotEmpty) ...[
           _heading(l10n.approach),
           Text(coach.approach, style: AppText.body),
@@ -182,20 +269,6 @@ class CoachPortfolioView extends StatelessWidget {
             ),
         ],
         ..._results(context, l10n),
-        if (!ownPage)
-          AppButton(
-            l10n.reportThisProfile,
-            variant: AppButtonVariant.text,
-            height: 48,
-            onPressed: () {
-              if (repo == null) return;
-              showReportCoachSheet(
-                context: context,
-                repository: repo,
-                coachUid: coach.uid,
-              );
-            },
-          ),
         const SizedBox(height: 24),
       ],
     );
@@ -407,65 +480,60 @@ class CoachPortfolioView extends StatelessWidget {
     AppL10n l10n,
     CoachPackage p,
     CoachingRepository? repo,
-    bool ownPage,
-  ) => AppCard(
-    gap: 8,
-    children: [
-      Text(p.title, style: AppText.titleM.copyWith(color: AppColors.ink)),
-      if (p.description.isNotEmpty) Text(p.description, style: AppText.bodyM),
-      if (p.includes.isNotEmpty) ...[
-        Text(
-          l10n.whatIsIncluded,
-          style: AppText.titleS.copyWith(color: AppColors.ink),
-        ),
-        for (final item in p.includes)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsetsDirectional.only(top: 3, end: 8),
-                child: Icon(Icons.check, size: 16, color: AppColors.primary),
-              ),
-              Expanded(child: Text(item, style: AppText.bodyM)),
-            ],
+    bool ownPage, {
+    bool picked = false,
+    VoidCallback? onPick,
+  }) {
+    final card = AppCard(
+      gap: 8,
+      onTap: onPick,
+      variant: picked ? AppCardVariant.selected : AppCardVariant.outlined,
+      children: [
+        Text(p.title, style: AppText.titleM.copyWith(color: AppColors.ink)),
+        if (p.description.isNotEmpty) Text(p.description, style: AppText.bodyM),
+        if (p.includes.isNotEmpty) ...[
+          Text(
+            l10n.whatIsIncluded,
+            style: AppText.titleS.copyWith(color: AppColors.ink),
           ),
-      ],
-      _muted(l10n.durationDaysPluralOne1DayOther(p.durationDays)),
-      _muted(l10n.countPluralOne1LiveSessionA(p.liveSessionsPerMonth)),
-      if (coachingPaymentsOn) ...[
-        Text(
-          l10n.egpPrice(formatEgp(p.priceFinalEgp)),
-          style: AppText.headline.copyWith(color: AppColors.primary),
-        ),
-        _muted(l10n.finalPriceTaxesAndFeesIncluded),
-      ] else ...[
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: AppPill(
-            l10n.freeForNow,
-            background: AppColors.tertiaryContainer,
-            foreground: AppColors.onTertiaryContainer,
-          ),
-        ),
-        _muted(l10n.egpPriceWhenPaymentsOpen(formatEgp(p.priceFinalEgp))),
-      ],
-      if (!ownPage) ...[
-        AppButton(
-          l10n.askToJoin,
-          onPressed: repo == null
-              ? null
-              : () => showJoinCoachSheet(
-                  context: context,
-                  repository: repo,
-                  coach: coach,
-                  package: p,
-                  declaredAllergies: declaredAllergies,
+          for (final item in p.includes)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsetsDirectional.only(top: 3, end: 8),
+                  child: Icon(Icons.check, size: 16, color: AppColors.primary),
                 ),
-        ),
-        if (coachingPaymentsOn) _muted(l10n.freeWhileOwnHubOpensCoaching),
+                Expanded(child: Text(item, style: AppText.bodyM)),
+              ],
+            ),
+        ],
+        _muted(l10n.durationDaysPluralOne1DayOther(p.durationDays)),
+        _muted(l10n.countPluralOne1LiveSessionA(p.liveSessionsPerMonth)),
+        if (coachingPaymentsOn) ...[
+          Text(
+            l10n.egpPrice(formatEgp(p.priceFinalEgp)),
+            style: AppText.headline.copyWith(color: AppColors.primary),
+          ),
+          _muted(l10n.finalPriceTaxesAndFeesIncluded),
+        ] else ...[
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: AppPill(
+              l10n.freeForNow,
+              background: AppColors.tertiaryContainer,
+              foreground: AppColors.onTertiaryContainer,
+            ),
+          ),
+          _muted(l10n.egpPriceWhenPaymentsOpen(formatEgp(p.priceFinalEgp))),
+        ],
+        if (!ownPage && coachingPaymentsOn)
+          _muted(l10n.freeWhileOwnHubOpensCoaching),
       ],
-    ],
-  );
+    );
+    if (onPick == null) return card;
+    return Semantics(selected: picked, button: true, child: card);
+  }
 }
 
 /// The portfolio drawn from the repository's live streams: the coach, her

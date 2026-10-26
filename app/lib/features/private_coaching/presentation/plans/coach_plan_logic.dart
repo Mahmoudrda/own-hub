@@ -155,6 +155,7 @@ MyPlan _withDay(
           for (var j = 0; j < session.moves.length; j++)
             j < old.targetKg.length ? old.targetKg[j] : null,
         ],
+    week: old.week,
   );
   return MyPlan(
     days: List.unmodifiable(days),
@@ -207,6 +208,7 @@ MyPlan changeMove(
     quiet: m.quiet,
     floorOnly: m.floorOnly,
     needsEquipment: m.needsEquipment,
+    supersetWithNext: m.supersetWithNext,
   );
   final moves = [...session.moves]..[move] = next;
   return _withDay(plan, i, _sessionWith(session, moves: moves));
@@ -223,6 +225,47 @@ MyPlan removeMove(MyPlan plan, int i, int move) {
   final moves = [...session.moves]..removeAt(move);
   kg.removeAt(move);
   return _withDay(plan, i, _sessionWith(session, moves: moves), kg: kg);
+}
+
+/// Move [move] of day [i] with a new rest, note, superset flag and target
+/// weight. Pass only what changes. [clearKg] says "no target weight"
+/// (bodyweight). The note is written in both languages, the way a day name is.
+MyPlan changeMoveDetails(
+  MyPlan plan,
+  int i,
+  int move, {
+  int? restSeconds,
+  String? note,
+  bool? superset,
+  double? kg,
+  bool clearKg = false,
+}) {
+  if (i < 0 || i >= plan.days.length) return plan;
+  final session = plan.days[i].session;
+  if (move < 0 || move >= session.moves.length) return plan;
+  final clean = note == null ? null : cleanNoteText(note);
+  final next = session.moves[move].copyWith(
+    restSeconds: restSeconds?.clamp(0, WorkoutLimits.maxRestSeconds),
+    notesEn: clean,
+    notesAr: clean,
+    supersetWithNext: superset,
+  );
+  final moves = [...session.moves]..[move] = next;
+  final targets = [...plan.days[i].targetKg]..length = session.moves.length;
+  if (clearKg) {
+    targets[move] = null;
+  } else if (kg != null && kg >= kMinWeightKg) {
+    targets[move] = kg.clamp(kMinWeightKg, kMaxWeightKg).toDouble();
+  }
+  return _withDay(plan, i, _sessionWith(session, moves: moves), kg: targets);
+}
+
+/// A note as one tidy line of at most the server's limit.
+String cleanNoteText(String text) {
+  final one = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+  return one.length > WorkoutLimits.maxText
+      ? one.substring(0, WorkoutLimits.maxText).trim()
+      : one;
 }
 
 MyPlan shiftMove(MyPlan plan, int i, int from, int to) {
@@ -280,6 +323,7 @@ MyPlan stampSafetyTags(MyPlan plan, LibraryExercise? Function(String) byId) {
           quiet: m.quiet,
           floorOnly: m.floorOnly,
           needsEquipment: m.needsEquipment,
+          supersetWithNext: m.supersetWithNext,
         ),
       );
     }
@@ -295,6 +339,7 @@ MyPlan stampSafetyTags(MyPlan plan, LibraryExercise? Function(String) byId) {
         ),
         sourceId: day.sourceId,
         targetKg: day.targetKg,
+        week: day.week,
       ),
     );
   }
@@ -394,6 +439,7 @@ MealPlanBody mealPlanWithDays(
         else
           MealDay(label: label(i + 1)),
     ],
+    goal: body.goal,
   );
 }
 
@@ -436,7 +482,36 @@ MealPlanBody _replaceDay(
       slot: items,
     },
   );
-  return MealPlanBody(days: days);
+  return MealPlanBody(days: days, goal: body.goal);
+}
+
+/// [body] with the target set, or removed with null.
+MealPlanBody mealPlanWithGoal(MealPlanBody body, MealGoal? goal) =>
+    MealPlanBody(days: body.days, goal: goal);
+
+/// [body] with [item]'s swaps at day/slot/index replaced.
+MealPlanBody mealPlanWithSwaps(
+  MealPlanBody body,
+  int day,
+  String slot,
+  int index,
+  List<String> swaps,
+) {
+  if (day < 0 || day >= body.days.length) return body;
+  final items = [...body.days[day].itemsIn(slot)];
+  if (index < 0 || index >= items.length) return body;
+  final it = items[index];
+  if (it.kind != MealItemKind.recipe) return body;
+  items[index] = MealItem.recipe(
+    it.recipeId!,
+    it.servings!,
+    note: it.note,
+    swaps: {
+      for (final s in swaps)
+        if (s != it.recipeId) s,
+    }.take(3).toList(),
+  );
+  return _replaceDay(body, day, items, slot);
 }
 
 /// Why a meal plan cannot go out yet.

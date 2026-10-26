@@ -1,6 +1,6 @@
-// R09 and R13: the in-page Undo lives exactly as long as the window it offers.
+// R09 and R10: the in-page Undo lives exactly as long as the window it offers.
 //
-// The bar used to keep Undo drawn for the whole rest, and on R13 for as long as
+// The bar used to keep Undo drawn for the whole rest, and on R10 for as long as
 // she stayed, while `handle.undo()` had been returning false since the fifth
 // second. A tap then did nothing at all.
 
@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:own_hub/domain/logging/log_command_bus.dart';
 import 'package:own_hub/features/train/presentation/mid_set_view.dart';
-import 'package:own_hub/features/train/presentation/move_logged_view.dart';
+import 'package:own_hub/features/train/presentation/finished_view.dart';
 import 'package:own_hub/features/train/presentation/resting_view.dart';
 import 'package:own_hub/features/train/presentation/session_notice.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -79,13 +79,15 @@ void main() {
     expect(undone, 0);
   });
 
-  testWidgets('R13: once the window closes Undo is gone', (tester) async {
+  testWidgets('R10: once the window closes Undo is gone', (tester) async {
     final bus = LogCommandBus();
     addTearDown(bus.dispose);
     final writes = <String>[];
     final handle = _log(bus, writes);
 
-    await tester.pumpWidget(_host(MoveLoggedView(handle: handle)));
+    await tester.pumpWidget(
+      _host(FinishedView(awaitingSummary: true, lastLog: handle)),
+    );
     await tester.pump();
     expect(find.text('Undo'), findsOneWidget);
 

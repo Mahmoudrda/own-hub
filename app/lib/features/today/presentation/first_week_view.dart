@@ -362,16 +362,8 @@ class _FirstWeekViewState extends State<FirstWeekView> {
             ),
           ),
         ),
-        // A small cheer, once, for the first week done.
-        const Center(
-          child: Kitten(
-            pose: KittenPose.cheer,
-            prop: KittenProp.heart,
-            size: 40,
-            moment: 'T08',
-            sessionBudget: true,
-          ),
-        ),
+        // The first week done: a tick drawn on once.
+        const Center(child: Moment(size: 40)),
         const SizedBox(height: 6),
         Text(
           l10n.youKnowYourWayAround,

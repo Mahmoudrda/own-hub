@@ -67,8 +67,6 @@ void main() {
     print('bests ledger: ${AppRouter.personalBestLedger.runtimeType}');
     await open(t, appDestinations['P03']!.name, locale: const Locale('en'));
     print('P03 right after: ${paintedText(t).join(" | ")}');
-    await open(t, appDestinations['R13']!.name, locale: const Locale('en'));
-    print('R13: ${paintedText(t).join(" | ")}');
     s.dispose();
   });
 
@@ -85,7 +83,6 @@ void main() {
       'R07',
       'R08',
       'R12',
-      'R13',
       'E01',
       'E02',
       'E03',

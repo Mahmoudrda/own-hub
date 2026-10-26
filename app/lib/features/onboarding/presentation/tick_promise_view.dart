@@ -1,6 +1,6 @@
 /// "Draw a tick to promise yourself": after she picks her plan, once. She draws
 /// a tick with her finger; any reasonable down, then up and to the right
-/// counts. The ideal tick is drawn on once she lifts, the kitten nods and she
+/// counts. The ideal tick is drawn on once she lifts, the tick settles and she
 /// goes on. Skip is always there, and "I promise" does the same for a screen
 /// reader or a switch.
 library;
@@ -109,11 +109,9 @@ class _TickPromiseViewState extends State<TickPromiseView> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
-                      Kitten(
-                        pose: _promised ? KittenPose.nod : KittenPose.rest,
-                        size: 72,
-                        holdStill: !_promised,
-                        replayKey: _promised,
+                      SizedBox(
+                        height: 48,
+                        child: _promised ? const Moment(size: 48) : null,
                       ),
                       const SizedBox(height: 16),
                       Semantics(

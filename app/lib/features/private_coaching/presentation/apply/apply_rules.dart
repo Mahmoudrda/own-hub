@@ -341,6 +341,7 @@ String applyFailureText(
   CoachingRefusal.alreadyRequested ||
   CoachingRefusal.requestNotFound ||
   CoachingRefusal.wrongStatus ||
+  CoachingRefusal.healthNotReviewed ||
   CoachingRefusal.pastPayBy ||
   CoachingRefusal.referenceUsed ||
   CoachingRefusal.proofNotFound ||
@@ -352,6 +353,7 @@ String applyFailureText(
   CoachingRefusal.sellerNotSet ||
   CoachingRefusal.planInvalid ||
   CoachingRefusal.planTooLarge ||
+  CoachingRefusal.eatingHistoryHold ||
   CoachingRefusal.sessionLinkInvalid ||
   CoachingRefusal.sessionNotFound ||
   CoachingRefusal.sessionNotStarted ||

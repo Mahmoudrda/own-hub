@@ -309,6 +309,56 @@ describe('chat messages', () => {
     await assertSucceeds(setDoc(at(her, REL, 'n7'), text(HER, '100 200 300 400')));
   });
 
+  const media = (sender, type, extra = {}) => ({
+    senderUid: sender, type, bytes: 1000,
+    mediaPath: `chat-media/${REL}/${sender}/a1.jpg`,
+    ...(type === 'image' ? {} : { durationMs: 5000 }),
+    createdAt: serverTimestamp(), ...extra,
+  });
+
+  test('both parties can send image, video and voice lines', async () => {
+    const her = await verified(HER);
+    const coach = await verifiedCoach(COACH);
+    await assertSucceeds(setDoc(at(her, REL, 'med_i'), media(HER, 'image')));
+    await assertSucceeds(setDoc(at(her, REL, 'med_v'), media(HER, 'video')));
+    await assertSucceeds(setDoc(at(coach, REL, 'med_a'), media(COACH, 'audio')));
+  });
+
+  test('media needs its own folder, a size and a duration', async () => {
+    const her = await verified(HER);
+    await assertFails(setDoc(at(her, REL, 'med_other'), media(HER, 'image', { mediaPath: `chat-media/${REL}/${COACH}/a1.jpg` })));
+    await assertFails(setDoc(at(her, REL, 'med_rel'), media(HER, 'image', { mediaPath: `chat-media/other__rel/${HER}/a1.jpg` })));
+    const { bytes, ...noBytes } = media(HER, 'image');
+    await assertFails(setDoc(at(her, REL, 'med_nobytes'), noBytes));
+    await assertFails(setDoc(at(her, REL, 'med_big'), media(HER, 'image', { bytes: 26000000 })));
+    const { durationMs, ...noDur } = media(HER, 'video');
+    await assertFails(setDoc(at(her, REL, 'med_nodur'), noDur));
+    await assertFails(setDoc(at(her, REL, 'med_short'), media(HER, 'video', { durationMs: 100 })));
+    await assertFails(setDoc(at(her, REL, 'med_imgdur'), media(HER, 'image', { durationMs: 1000 })));
+  });
+
+  test('media cannot carry text, a recipe id or an unknown key', async () => {
+    const her = await verified(HER);
+    await assertFails(setDoc(at(her, REL, 'med_txt'), media(HER, 'image', { text: 'hi' })));
+    await assertFails(setDoc(at(her, REL, 'med_rec'), media(HER, 'image', { recipeId: 'abc' })));
+    await assertFails(setDoc(at(her, REL, 'med_hid'), media(HER, 'image', { hidden: true })));
+    await assertFails(setDoc(at(her, REL, 'med_thb'), media(HER, 'image', { thumbPath: 'x' })));
+  });
+
+  test('text and recipe cannot carry a media path', async () => {
+    const her = await verified(HER);
+    await assertFails(setDoc(at(her, REL, 'txt_med'), { ...text(HER), mediaPath: 'x' }));
+    await assertFails(setDoc(at(her, REL, 'rec_med'), {
+      senderUid: HER, type: 'recipe', recipeId: 'abc', mediaPath: 'x', createdAt: serverTimestamp(),
+    }));
+  });
+
+  test('media obeys the open, active and block rules', async () => {
+    await assertFails(setDoc(at(await verified(HER), REL_ENDED, 'me1'), media(HER, 'image', { mediaPath: `chat-media/${REL_ENDED}/${HER}/a1.jpg` })));
+    await assertFails(setDoc(at(await verified(OTHER), REL_CLOSED, 'mc1'), media(OTHER, 'image', { mediaPath: `chat-media/${REL_CLOSED}/${OTHER}/a1.jpg` })));
+    await assertFails(setDoc(at(await verified(BLOCKED), REL_BLOCK, 'mb1'), media(BLOCKED, 'image', { mediaPath: `chat-media/${REL_BLOCK}/${BLOCKED}/a1.jpg` })));
+  });
+
   test('messages cannot be edited or deleted by either party', async () => {
     await assertFails(updateDoc(at(await verifiedCoach(COACH), REL, 'm_seed'), { text: 'edited' }));
     await assertFails(deleteDoc(at(await verifiedCoach(COACH), REL, 'm_seed')));

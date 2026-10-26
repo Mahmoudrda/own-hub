@@ -17,6 +17,7 @@ import '../../../../ui/app_scaffold.dart';
 import '../../domain/coach_plan.dart';
 import '../../domain/coaching_contract.dart';
 import '../../domain/coaching_failure.dart';
+import '../../domain/health_review.dart';
 import '../../domain/subscription.dart';
 import '../coach/coach_text.dart' show coachFailureText;
 import '../end_coaching_sheet.dart';
@@ -69,6 +70,22 @@ class _ClientDetailViewState extends State<ClientDetailView> {
   String _clientUid = '';
   String _error = '';
   bool _ending = false;
+  bool _marking = false;
+  final Set<String> _readSubIds = <String>{};
+
+  bool _held(Subscription sub) =>
+      sub.healthHeld && !_readSubIds.contains(sub.id);
+
+  Future<void> _markRead(Subscription sub) async {
+    setState(() => _marking = true);
+    final ok = await HealthReviews.store.markRead(sub.id);
+    if (!mounted) return;
+    setState(() => _marking = false);
+    if (ok) {
+      _readSubIds.add(sub.id);
+      setState(() {});
+    }
+  }
 
   PrivateCoachingState get _state =>
       widget.state ?? PrivateCoachingState.instance;
@@ -175,6 +192,25 @@ class _ClientDetailViewState extends State<ClientDetailView> {
           appBar: appBar,
           children: [
             _header(l10n, sub, now),
+            if (_held(sub))
+              AppCard(
+                gap: 8,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      l10n.readHerHealthAnswersFirst,
+                      style: AppText.titleL,
+                    ),
+                  ),
+                  Text(l10n.plansAreOnHoldUntilYouHave, style: AppText.bodyM),
+                  AppButton(
+                    l10n.iHaveReadThem,
+                    variant: AppButtonVariant.outlined,
+                    onPressed: _marking ? null : () => _markRead(sub),
+                  ),
+                ],
+              ),
             _actions(l10n, sub),
             if (sub.intake != null) IntakeAnswersCard(sub.intake!),
             _noteCard(l10n),
@@ -243,7 +279,7 @@ class _ClientDetailViewState extends State<ClientDetailView> {
           variant: AppButtonVariant.outlined,
           height: 48,
           fontSize: 16,
-          onPressed: call(widget.onShareWorkout),
+          onPressed: _held(sub) ? null : call(widget.onShareWorkout),
         ),
         const SizedBox(height: 10),
         AppButton(
@@ -251,7 +287,7 @@ class _ClientDetailViewState extends State<ClientDetailView> {
           variant: AppButtonVariant.outlined,
           height: 48,
           fontSize: 16,
-          onPressed: call(widget.onShareMeal),
+          onPressed: _held(sub) ? null : call(widget.onShareMeal),
         ),
         const SizedBox(height: 10),
         AppButton(

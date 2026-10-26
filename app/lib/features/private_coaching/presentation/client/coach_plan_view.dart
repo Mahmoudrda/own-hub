@@ -17,6 +17,7 @@ import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
+import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_scaffold.dart';
 import '../../../eat/domain/allergy_guard.dart';
 import '../../../onboarding/domain/intake.dart' show LifeStage;
@@ -28,8 +29,10 @@ import '../../../train/presentation/exercise_clip_player.dart';
 import '../../../train/presentation/exercise_demo_view.dart';
 import '../../domain/coach_plan.dart';
 import '../../domain/coaching_contract.dart';
+import '../desk/desk_text.dart' show dateText;
 import '../plans/coach_plan_logic.dart';
 import 'coach_meal_row.dart';
+import 'coach_today.dart';
 import '../plans/plan_labels.dart';
 
 /// The days of [plan] a woman at [stage] is offered, as indexes of the plan.
@@ -70,10 +73,14 @@ class CoachPlanView extends StatelessWidget {
     this.media = const NoExerciseMedia(),
     this.players,
     this.preview = false,
+    this.doneThisWeek = 0,
+    this.now,
     this.onStartWorkout,
     this.onOpenRecipe,
     this.onLog,
     this.onBack,
+    this.onGrocery,
+    this.allWeeks = false,
   }) : catalog = catalog ?? MealCatalog();
 
   final CoachPlan plan;
@@ -89,6 +96,13 @@ class CoachPlanView extends StatelessWidget {
   /// The coach looking at her own plan: no start and no log.
   final bool preview;
 
+  /// Sessions she has finished this week: with her stage they pick today's
+  /// workout day, the one day that carries the filled Start.
+  final int doneThisWeek;
+
+  /// The clock, for today's meal day. The phone's by default.
+  final DateTime Function()? now;
+
   /// Starts day [dayIndex] of the workout. Null hides the button.
   final void Function(int dayIndex)? onStartWorkout;
 
@@ -98,6 +112,8 @@ class CoachPlanView extends StatelessWidget {
   /// Logs one meal item. The caller runs the allergy guard and the undo.
   final void Function(MealItem item, String slot)? onLog;
   final VoidCallback? onBack;
+  final VoidCallback? onGrocery;
+  final bool allWeeks;
 
   LibraryExercise? _exercise(String id) {
     for (final e in exercises) {
@@ -170,9 +186,90 @@ class CoachPlanView extends StatelessWidget {
         ),
       ];
     }
+    final nowDay = (now ?? DateTime.now)();
+    final weekNow = currentWeekOf(workout, plan.startsOn, nowDay);
+    final started =
+        workout.weekCount <= 1 || plan.startsOn == null || weekNow != null;
+    final visible = workout.weekCount > 1 && !allWeeks && weekNow != null
+        ? [
+            for (final d in shown)
+              if (workout.days[d].week == weekNow) d,
+          ]
+        : shown;
+    final today = todaysWorkoutDay(
+      workout,
+      doneThisWeek,
+      lifeStage,
+      startsOn: plan.startsOn,
+      now: nowDay,
+    );
     return [
-      for (final d in shown)
-        _dayCard(context, l10n, lang, workout, d, shown.indexOf(d)),
+      if (workout.weekCount > 1)
+        Text(
+          !started
+              ? l10n.yourPlanStartsDate(dateText(l10n, plan.startsOn))
+              : l10n.weekNOfTotal(
+                  countLabel(weekNow ?? 1),
+                  countLabel(workout.weekCount),
+                ),
+          key: const ValueKey('plan-week-line'),
+          style: AppText.titleS,
+        ),
+      for (var i = 0; i < visible.length; i++) ...[
+        if (allWeeks &&
+            workout.weekCount > 1 &&
+            (i == 0 ||
+                workout.days[visible[i]].week !=
+                    workout.days[visible[i - 1]].week))
+          Text(
+            l10n.weekN(countLabel(workout.days[visible[i]].week)),
+            style: AppText.titleS,
+          ),
+        _dayCard(
+          context,
+          l10n,
+          lang,
+          workout,
+          visible[i],
+          allWeeks
+              ? [
+                  for (final d in visible)
+                    if (workout.days[d].week == workout.days[visible[i]].week) d,
+                ].indexOf(visible[i])
+              : i,
+          isToday: visible[i] == today,
+        ),
+      ],
+      if (workout.weekCount > 1 && !allWeeks)
+        AppButton(
+          l10n.seeAllWeeks,
+          key: const ValueKey('plan-all-weeks'),
+          variant: AppButtonVariant.text,
+          height: 48,
+          onPressed: () => unawaited(
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                builder: (route) => CoachPlanView(
+                  plan: plan,
+                  lifeStage: lifeStage,
+                  constraints: constraints,
+                  catalog: catalog,
+                  exercises: exercises,
+                  media: media,
+                  players: players,
+                  preview: preview,
+                  doneThisWeek: doneThisWeek,
+                  now: now,
+                  onStartWorkout: onStartWorkout,
+                  onOpenRecipe: onOpenRecipe,
+                  onLog: onLog,
+                  allWeeks: true,
+                  onBack: () => Navigator.of(route).maybePop(),
+                ),
+              ),
+            ),
+          ),
+        ),
     ];
   }
 
@@ -182,30 +279,21 @@ class CoachPlanView extends StatelessWidget {
     String lang,
     MyPlan workout,
     int d,
-    int position,
-  ) {
+    int position, {
+    required bool isToday,
+  }) {
     final session = workout.days[d].session;
     final held = heldBackMoves(workout, d, exercises, lifeStage);
     final canStart = !preview && onStartWorkout != null && held.isEmpty;
-    return AppCard(
+    return _DayCard(
       key: ValueKey('plan-workout-day-$d'),
-      variant: AppCardVariant.outlined,
-      borderRadius: AppRadius.md,
-      children: [
-        Semantics(
-          header: true,
-          child: Text(
-            '${countLabel(position + 1)}. ${session.title(lang)}',
-            style: AppText.titleM,
-          ),
-        ),
-        Text(
-          <String>[
-            l10n.minutesMin(countLabel(session.minutes)),
-            l10n.countPluralOne1MoveOtherCount(session.moves.length),
-          ].join(' · '),
-          style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-        ),
+      title: '${countLabel(position + 1)}. ${session.title(lang)}',
+      meta: <String>[
+        l10n.minutesMin(countLabel(session.minutes)),
+        l10n.countPluralOne1MoveOtherCount(session.moves.length),
+      ].join(' · '),
+      initiallyOpen: isToday,
+      body: [
         for (var m = 0; m < session.moves.length; m++)
           _moveRow(
             context,
@@ -225,6 +313,8 @@ class CoachPlanView extends StatelessWidget {
           AppButton(
             l10n.startThisWorkout,
             key: ValueKey('plan-start-$d'),
+            variant: isToday ? AppButtonVariant.filled : AppButtonVariant.text,
+            height: isToday ? 56 : 48,
             onPressed: canStart ? () => onStartWorkout!(d) : null,
           ),
       ],
@@ -249,54 +339,30 @@ class CoachPlanView extends StatelessWidget {
     final safety = lang == 'ar' && move.safetyAr.isNotEmpty
         ? move.safetyAr
         : move.safetyEn;
-    final content = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: AppText.titleS.copyWith(
-                    color: heldBack ? AppColors.onSurfaceVariant : null,
-                    decoration: heldBack ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                Text(
-                  moveAmount(l10n, move),
-                  style: AppText.bodyM.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-                if (safety.isNotEmpty) Text(safety, style: AppText.bodyM),
-                if (note.isNotEmpty)
-                  Text(
-                    note,
-                    style: AppText.bodyM.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (canWatch) const Icon(Icons.play_circle_outline, size: 24),
-        ],
-      ),
+    final nameStyle = AppText.titleM.copyWith(
+      color: heldBack ? AppColors.onSurfaceVariant : null,
+      decoration: heldBack ? TextDecoration.lineThrough : null,
     );
-    if (!canWatch) return KeyedSubtree(key: ValueKey(key), child: content);
+    final row = AppListItem(
+      key: ValueKey(key),
+      title: name,
+      titleWidget: Text(name, style: nameStyle),
+      subtitle: [
+        moveAmount(l10n, move),
+        if (safety.isNotEmpty) safety,
+        if (note.isNotEmpty) note,
+      ].join('\n'),
+      trailing: canWatch
+          ? const Icon(Icons.play_circle_outline, size: 24)
+          : null,
+      onTap: canWatch ? () => _watch(context, move.exerciseId) : null,
+    );
+    if (!canWatch) return row;
     return Semantics(
       button: true,
       label: '${l10n.watchTheClip}: $name',
-      child: InkWell(
-        key: ValueKey(key),
-        onTap: () => _watch(context, move.exerciseId),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 48),
-          child: ExcludeSemantics(child: content),
-        ),
-      ),
+      excludeSemantics: true,
+      child: row,
     );
   }
 
@@ -313,40 +379,30 @@ class CoachPlanView extends StatelessWidget {
     }
 
     var anyFigure = false;
+    final today = todaysMealDay(plan, (now ?? DateTime.now)());
     final cards = <Widget>[];
     for (var d = 0; d < meal.days.length; d++) {
       final day = meal.days[d];
       final total = dayNutrition(day, catalog);
       anyFigure = anyFigure || !total.isEmpty;
       cards.add(
-        AppCard(
+        _DayCard(
           key: ValueKey('plan-meal-day-$d'),
-          variant: AppCardVariant.outlined,
-          borderRadius: AppRadius.md,
-          children: [
-            Semantics(
-              header: true,
-              child: Text(mealDayLabel(l10n, day.label), style: AppText.titleM),
-            ),
+          title: mealDayLabel(l10n, day.label),
+          initiallyOpen: d == today,
+          body: [
             for (final slot in CoachingEnums.mealSlots)
-              if (day.itemsIn(slot).isNotEmpty) ...[
-                Text(
-                  slotLabel(l10n, slot),
-                  style: AppText.titleS.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
+              for (var i = 0; i < day.itemsIn(slot).length; i++)
+                CoachMealRow(
+                  item: day.itemsIn(slot)[i],
+                  slot: slot,
+                  catalog: catalog,
+                  keyPrefix: 'plan-item-$d-$slot-$i',
+                  flag: flagOf(d, slot, i),
+                  onOpenRecipe: onOpenRecipe,
+                  onLog: preview ? null : onLog,
+                  compact: true,
                 ),
-                for (var i = 0; i < day.itemsIn(slot).length; i++)
-                  CoachMealRow(
-                    item: day.itemsIn(slot)[i],
-                    slot: slot,
-                    catalog: catalog,
-                    keyPrefix: 'plan-item-$d-$slot-$i',
-                    flag: flagOf(d, slot, i),
-                    onOpenRecipe: onOpenRecipe,
-                    onLog: preview ? null : onLog,
-                  ),
-              ],
             if (!total.isEmpty)
               Text(
                 [
@@ -363,12 +419,82 @@ class CoachPlanView extends StatelessWidget {
       );
     }
     return [
+      if (meal.goal != null)
+        Text(
+          l10n.yourCoachsTargetKcalCaloriesAndProtein(
+            '${meal.goal!.kcalPerDay}',
+            '${meal.goal!.proteinGPerDay}',
+          ),
+          key: const ValueKey('plan-goal-line'),
+          style: AppText.bodyM,
+        ),
       ...cards,
       if (anyFigure)
         Text(
           l10n.figuresComeFromOwnHubsFoodTables,
           style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
         ),
+      if (!preview && onGrocery != null)
+        AppButton(
+          l10n.groceryList,
+          key: const ValueKey('plan-grocery'),
+          variant: AppButtonVariant.text,
+          height: 48,
+          fontSize: 15,
+          onPressed: onGrocery,
+        ),
     ];
+  }
+}
+
+/// One day of a plan. Today's day starts open; the others show their name and
+/// open on a tap, so the screen leads with the day she is on.
+class _DayCard extends StatefulWidget {
+  const _DayCard({
+    super.key,
+    required this.title,
+    required this.body,
+    required this.initiallyOpen,
+    this.meta = '',
+  });
+
+  final String title;
+  final String meta;
+  final List<Widget> body;
+  final bool initiallyOpen;
+
+  @override
+  State<_DayCard> createState() => _DayCardState();
+}
+
+class _DayCardState extends State<_DayCard> {
+  late bool _open = widget.initiallyOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_open) {
+      return AppListItem(
+        title: widget.title,
+        subtitle: widget.meta,
+        trailing: const Icon(Icons.expand_more, size: 24),
+        onTap: () => setState(() => _open = true),
+      );
+    }
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      borderRadius: AppRadius.md,
+      children: [
+        Semantics(
+          header: true,
+          child: Text(widget.title, style: AppText.titleM),
+        ),
+        if (widget.meta.isNotEmpty)
+          Text(
+            widget.meta,
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        ...widget.body,
+      ],
+    );
   }
 }

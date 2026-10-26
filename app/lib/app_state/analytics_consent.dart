@@ -70,7 +70,7 @@ class AnalyticsConsent {
   bool get allowed => _allowed;
 
   /// Called after her choice changes to on, so the facts every event carries
-  /// (language, kitten, widget, build channel) are set once there is somewhere to send them,
+  /// (language, widget, build channel) are set once there is somewhere to send them,
   /// and so this opening is counted (the first frame ran before she chose).
   /// Wired in `main.dart` as `_onStatisticsGranted`.
   static VoidCallback? onGranted;

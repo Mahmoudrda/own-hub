@@ -53,7 +53,7 @@ def _device(db, uid, device, **row):
 
 
 def test_every_contract_kind_has_english_and_arabic_text():
-    assert set(push.TEXT) == set(common.ENUMS["pushKinds"])
+    assert set(push.TEXT) == set(common.ENUMS["pushKinds"]) | {"newMessageFrom"}
     for kind, by_locale in push.TEXT.items():
         assert set(by_locale) == {"en", "ar"}, kind
         for title, body in by_locale.values():
@@ -65,7 +65,7 @@ def test_text_is_generic_and_free_of_em_dashes():
         for _, body in by_locale.values():
             assert "—" not in body and "–" not in body
             assert not any(ch.isdigit() for ch in body)
-            assert "{" not in body
+            assert "{" not in body.replace("{name}", "")
 
 
 def test_each_phone_hears_its_own_language_and_only_the_kind_travels():
@@ -117,3 +117,21 @@ def test_send_to_user_sends_one_text_to_every_phone():
     assert identity_push.send_to_user("her", "T", "B", {"k": "v"}, db, messaging) == 2
     assert {m.notification.body for m in messaging.sent} == {"B"}
     assert all(m.data == {"k": "v"} for m in messaging.sent)
+
+
+def test_first_name_variant_fills_the_name():
+    assert push.text_for("newMessageFrom", "en", "Rahma")[1] == "Rahma sent you a message."
+    assert push.text_for("newMessageFrom", "ar", "Rahma")[1] == "Rahma بعتتلك رسالة."
+
+
+def test_default_mode_is_generic():
+    assert push.NEW_MESSAGE_TEXT_MODE == "generic"
+
+
+def test_send_kind_with_a_name_suffix():
+    db = fake_firestore.FakeFirestore()
+    _device(db, "her", "a", token="t1")
+    messaging = _Messaging()
+    push.send_kind("her", "newMessageFrom:Rahma", db=db, messaging=messaging, locale="en")
+    assert messaging.sent[0].notification.body == "Rahma sent you a message."
+

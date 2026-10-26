@@ -392,7 +392,7 @@ if (fs.existsSync(dictPath)) {
       },
     },
     '{move} saved · {sets} sets': {
-      description: 'R13 undo snackbar after a whole move.',
+      description: 'Undo snackbar after a whole move (I did them all).',
       placeholders: {
         move: { type: 'String', example: 'Goblet squat' },
         sets: { type: 'int', example: '3' },
@@ -480,7 +480,6 @@ if (fs.existsSync(dictPath)) {
     "Days a week: {days} · Minutes a session: {minutes} · At home and the gym": {"description": "O05's headline read back from her own O02/O03 answers, home-and-gym variant.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "15"}}},
     "Nobody has listed what is in {dish} yet, so we cannot check it against what you avoid.": {"description": "Eat allergen sheet (G5 5.1), for a dish whose allergens are unknown while she has told us she avoids something. Unknown is treated as unsafe, so the log waits for her explicit choice. {dish} is the food's name in her language.", "placeholders": {"dish": {"type": "String", "example": "Koshari bowl"}}},
     "Move {move} of {total}": {"description": "R07/R08/R09 title. Her position in the day's moves, replacing the fixed 'Move 2 of 5'.", "placeholders": {"move": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "5"}}},
-    "Next move · {move}": {"description": "R13 primary button. The move she goes back to, replacing the fixed 'Next move · step-back lunge'.", "placeholders": {"move": {"type": "String", "example": "step-back lunge"}}},
     "{move}, set {set}": {"description": "R09 'Up next' card: the move and set she returns to after resting.", "placeholders": {"move": {"type": "String", "example": "Goblet squat"}, "set": {"type": "String", "example": "3"}}},
     "{weight} kg × {reps}": {"description": "One set's figure — what was asked, or what she did. Western digits in both languages.", "placeholders": {"weight": {"type": "String", "example": "12"}, "reps": {"type": "String", "example": "10"}}},
     "{reps} reps": {"description": "A bodyweight set's figure — no load to state, never '0 kg'.", "placeholders": {"reps": {"type": "String", "example": "12"}}},
@@ -543,7 +542,7 @@ if (fs.existsSync(dictPath)) {
     "{sets} × {reps}": {"description": "A move's prescription: sets times reps, Western digits.", "placeholders": {"sets": {"type": "String", "example": "3"}, "reps": {"type": "String", "example": "12"}}},
     "{sets} × {seconds} seconds": {"description": "A held move's prescription: sets times seconds.", "placeholders": {"sets": {"type": "String", "example": "3"}, "seconds": {"type": "String", "example": "30"}}},
     "Between {min} and {max} days, or leave it empty": {"description": "Y02, under the usual cycle length when what she typed is not a cycle length.", "placeholders": {"min": {"type": "String", "example": "15"}, "max": {"type": "String", "example": "60"}}},
-    "Sets done: {done} of {total}": {"description": "R07/R08/R09/R13 set bar: sets of today's session behind her, out of all of them.", "placeholders": {"done": {"type": "String", "example": "4"}, "total": {"type": "String", "example": "12"}}},
+    "Sets done: {done} of {total}": {"description": "R07/R08/R09 set bar: sets of today's session behind her, out of all of them.", "placeholders": {"done": {"type": "String", "example": "4"}, "total": {"type": "String", "example": "12"}}},
     "Training streak: {days} days": {"description": "T01 week block: her training streak (D37). Never shown when she has switched it off.", "placeholders": {"days": {"type": "String", "example": "12"}}},
     "{days} days": {"description": "P01 and the streak sheet: the length of her current training streak.", "placeholders": {"days": {"type": "String", "example": "12"}}},
     "Your best: {days} days": {"description": "P01 and the streak sheet: her longest training streak. Never taken away.", "placeholders": {"days": {"type": "String", "example": "21"}}},
@@ -602,7 +601,6 @@ if (fs.existsSync(dictPath)) {
     "Unblocked {name}": {"description": "A04 undo bar after unblocking a member.", "placeholders": {"name": {"type": "String", "example": "Mai"}}},
     "Swapped to {name} for today": {"description": "R05 undo bar after a swap. name is the move she swapped to.", "placeholders": {"name": {"type": "String", "example": "Glute bridge"}}},
     "Skipped {name}": {"description": "R06 undo bar after skipping a move. name is the move.", "placeholders": {"name": {"type": "String", "example": "Plank"}}},
-    "Finish now · {count} moves left": {"description": "R13 Finish here, second tap to confirm. count in Western digits.", "placeholders": {"count": {"type": "String", "example": "3"}}},
     "Your week is updated · {days} days, {minutes} minutes.": {"description": "O05 after saving changed setup answers from the profile. Numbers in Western digits.", "placeholders": {"days": {"type": "String", "example": "3"}, "minutes": {"type": "String", "example": "30"}}},
     "Check-in saved · {summary}": {"description": "Y04 undo bar. summary is label: value pairs joined by a middle dot.", "placeholders": {"summary": {"type": "String", "example": "Energy: Low · Cramps: Mild"}}},
     "Today: {summary}": {"description": "Y03 line under How are you feeling. summary is label: value pairs.", "placeholders": {"summary": {"type": "String", "example": "Energy: Low · Cramps: Mild"}}},
@@ -699,8 +697,6 @@ if (fs.existsSync(dictPath)) {
     "Just the {bar} kg bar": {"description": "Empty bar.", "placeholders": {"bar": {"type": "String", "example": "20"}}},
     "Closest you can load: {total} kg. {bar} kg bar + {side} kg each side.": {"description": "Total not loadable exactly.", "placeholders": {"total": {"type": "String", "example": "41.5"}, "bar": {"type": "String", "example": "20"}, "side": {"type": "String", "example": "10.5"}}},
     "Plates on one side: {plates} kg": {"description": "Screen reader label of the plate diagram.", "placeholders": {"plates": {"type": "String", "example": "20, 10"}}},
-    "Next time: {weight} on {name}": {"description": "R10 next-step line for a loaded move that goes up a step next time.", "placeholders": {"weight": {"type": "String", "example": "22.5 kg"}, "name": {"type": "String", "example": "Hip thrust"}}},
-    "Same weight on {name} next time, until it feels steady": {"description": "R10 next-step line for a loaded move that stays at the same weight next time.", "placeholders": {"name": {"type": "String", "example": "Hip thrust"}}},
     "Weight must be 0 to {max} kg": {"description": "Range error on the set editor's weight field.", "placeholders": {"max": {"type": "String", "example": "300"}}},
     "Reps must be 0 to {max}": {"description": "Range error on the set editor's reps field.", "placeholders": {"max": {"type": "String", "example": "100"}}},
     "Seconds must be 0 to {max}": {"description": "Range error on the set editor's seconds field.", "placeholders": {"max": {"type": "String", "example": "600"}}},
@@ -824,6 +820,13 @@ if (fs.existsSync(dictPath)) {
     "Transformation, {weeks, plural, one{1 week} other{{weeks} weeks}}": {"description": "A transformation's title in the coach's list. A plural message because Arabic counts agree differently at 1, 2, 3 to 10 and 11 and up.", "placeholders": {"weeks": {"type": "int", "example": "12"}}},
     "{eaten} of {target} kcal": {"description": "Home's one Eat line: calories eaten so far against today's target, in Western digits, e.g. 1,240 of 1,624 kcal.", "placeholders": {"eaten": {"type": "String", "example": "1,240"}, "target": {"type": "String", "example": "1,624"}}},
     "Set {n} of {total}": {"description": "R07: which set of the move she is on.", "placeholders": {"n": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "3"}}},
+    "Today: {weight} on {name}": {"description": "R03 weights line: the step up she has earned on a loaded move, from her last session.", "placeholders": {"weight": {"type": "String", "example": "22.5 kg"}, "name": {"type": "String", "example": "Hip thrust"}}},
+    "Same weight on {name} as last time, until it feels steady": {"description": "R03 weights line: a loaded move that stays at last time's weight.", "placeholders": {"name": {"type": "String", "example": "Leg press"}}},
+    "{n} weeks": {"description": "Weeks in a plan", "placeholders": {"n": {"type": "String", "example": "4"}}},
+    "Week {n} of {total}": {"description": "Which week of her plan she is in", "placeholders": {"n": {"type": "String", "example": "2"}, "total": {"type": "String", "example": "4"}}},
+    "Your plan starts {date}": {"description": "When her multi-week plan starts", "placeholders": {"date": {"type": "String", "example": "1 Nov"}}},
+    "Swaps ({n})": {"description": "Number of approved swaps for a meal item", "placeholders": {"n": {"type": "String", "example": "2"}}},
+    "Your coach's target: {kcal} calories and {protein} g protein": {"description": "Daily target set by coach for client", "placeholders": {"kcal": {"type": "String", "example": "1600"}, "protein": {"type": "String", "example": "110"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

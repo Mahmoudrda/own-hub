@@ -16,7 +16,6 @@ import 'package:own_hub/features/signup/presentation/selfie_capture_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_white_button.dart';
-import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 Widget _host(
   Widget child, {
@@ -69,40 +68,6 @@ class _LiveCaptureService implements CaptureService {
     opened.add(session);
     return session;
   }
-}
-
-/// A live challenge step: the server's prompt, shown as guidance.
-class _StepSession implements CaptureSession {
-  _StepSession(this.guidance);
-
-  final CaptureGuidance guidance;
-
-  @override
-  CaptureState get current => CaptureState.framing(
-    sharp: false,
-    guidance: guidance,
-    stepNumber: 2,
-    stepCount: 4,
-  );
-
-  @override
-  Stream<CaptureState> watch() => Stream<CaptureState>.value(current);
-
-  @override
-  Future<void> capture() async {}
-
-  @override
-  Future<void> close() async {}
-}
-
-class _StepService implements CaptureService {
-  _StepService(this.guidance);
-
-  final CaptureGuidance guidance;
-
-  @override
-  Future<CaptureSession> open(CaptureTarget target) async =>
-      _StepSession(guidance);
 }
 
 /// A camera that is still opening: never live, never refused. The screen as
@@ -254,39 +219,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('the kitten acts out each challenge step, beside the words', (
-    tester,
-  ) async {
-    const shown = {
-      CaptureGuidance.turnLeft: KittenPose.lookLeft,
-      CaptureGuidance.turnRight: KittenPose.lookRight,
-      CaptureGuidance.blink: KittenPose.blink,
-      CaptureGuidance.lookStraight: KittenPose.rest,
-    };
-    for (final MapEntry(key: guidance, value: pose) in shown.entries) {
-      await tester.pumpWidget(
-        _host(SelfieCaptureView(captureService: _StepService(guidance))),
-      );
-      await tester.pumpAndSettle();
-      final kitten = tester.widget<Kitten>(find.byType(Kitten));
-      expect(kitten.pose, pose, reason: guidance.name);
-      await tester.pumpWidget(const SizedBox());
-    }
-  });
-
-  testWidgets('a framing correction is hers to read: no kitten', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _host(
-        SelfieCaptureView(
-          captureService: _StepService(CaptureGuidance.centreYourFace),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.byType(Kitten), findsNothing);
   });
 }

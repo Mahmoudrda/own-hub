@@ -36,7 +36,6 @@ import '../../../ui/app_card.dart';
 import '../../../ui/app_code_field.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_step_progress.dart';
-import '../../../ui/hand/mascot/kitten.dart';
 import '../domain/auth_repository.dart';
 
 class CodeView extends StatefulWidget {
@@ -243,10 +242,6 @@ class _CodeViewState extends State<CodeView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Thinking, on its last frame: the wait has a face, and nothing
-              // on screen moves.
-              const Kitten(pose: KittenPose.think, size: 32, holdStill: true),
-              const SizedBox(width: 10),
               Flexible(
                 child: Semantics(
                   liveRegion: true,

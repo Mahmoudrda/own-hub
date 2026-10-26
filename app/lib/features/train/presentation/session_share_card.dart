@@ -24,7 +24,7 @@
 /// [WorkoutSharer]; nothing is uploaded and nothing is kept. The share sheet
 /// is the way to save the picture, so there is no separate save button.
 ///
-/// The card draws no kitten: R10 already has its one.
+/// The card draws no tick: R10 already has its one.
 library;
 
 import 'dart:typed_data';

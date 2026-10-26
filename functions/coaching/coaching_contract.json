@@ -42,8 +42,18 @@
     "messageMaxChars": 2000,
     "messagePageSize": 50,
     "pushThrottleMinutes": 3,
+    "chatImageMaxBytes": 3000000,
+    "chatImageLongSidePx": 1600,
+    "chatVideoMaxBytes": 25000000,
+    "chatVideoMaxSeconds": 30,
+    "chatAudioMaxBytes": 2000000,
+    "chatAudioMaxSeconds": 120,
+    "chatMessagesPerMinute": 20,
+    "chatMediaPerHour": 30,
+    "reportsPerDay": 10,
     "planMaxDays": 7,
-    "planBodyMaxBytes": 60000,
+    "planBodyMaxBytes": 120000,
+    "planMaxWeeks": 4,
     "planNameMax": 60,
     "noteMax": 500,
     "fullNameMax": 80,
@@ -290,7 +300,10 @@
     ],
     "messageTypeClient": [
       "text",
-      "recipe"
+      "recipe",
+      "image",
+      "video",
+      "audio"
     ],
     "messageTypeServer": [
       "workoutPlan",
@@ -305,6 +318,7 @@
       "planUpdated",
       "sessionConfirmed",
       "sessionDone",
+      "checkIn",
       "hidden"
     ],
     "planKind": [
@@ -399,6 +413,8 @@
       "newMessage",
       "sessionProposed",
       "endsSoon",
+      "checkInDue",
+      "checkInFollowUp",
       "coachingEnded",
       "payoutRecorded",
       "portfolioDecision"
@@ -1535,6 +1551,37 @@
       "responseKeys": [
         "status"
       ]
+    },
+    "submit_check_in": {
+      "who": "client of the relationship",
+      "module": "coaching.checkins.submit",
+      "requestKeys": [
+        "relId",
+        "weekKey",
+        "answers"
+      ],
+      "responseKeys": [
+        "ok"
+      ]
+    },
+    "review_client_health": {
+      "who": "coach of the subscription (active)",
+      "module": "coaching.subscriptions.review_health",
+      "requestKeys": [
+        "subId"
+      ],
+      "responseKeys": [
+        "ok"
+      ],
+      "note": "Records healthReviewedAt and healthReviewedBy once. A flagged subscription (any health yes, lifeStage pregnant or postpartum, or eatingHistory true) cannot receive a plan until then: publish_coach_plan refuses health_not_reviewed."
+    },
+    "coach_needs_attention": {
+      "who": "coach (active)",
+      "module": "coaching.checkins.needs_attention",
+      "requestKeys": [],
+      "responseKeys": [
+        "clients"
+      ]
     }
   },
   "triggers": {
@@ -1564,6 +1611,7 @@
     "already_requested",
     "request_not_found",
     "wrong_status",
+    "health_not_reviewed",
     "past_pay_by",
     "reference_used",
     "proof_not_found",
@@ -1576,6 +1624,7 @@
     "seller_not_set",
     "plan_invalid",
     "plan_too_large",
+    "eating_history_hold",
     "session_link_invalid",
     "session_not_found",
     "session_not_started",

@@ -10,6 +10,7 @@ import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart'
 import 'package:own_hub/features/private_coaching/domain/payments.dart';
 import 'package:own_hub/features/private_coaching/domain/session_link.dart';
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
+import 'package:own_hub/features/private_coaching/presentation/plans/coach_plan_logic.dart';
 import 'package:own_hub/features/train/domain/my_plan.dart';
 
 import 'support/fixtures.dart';
@@ -347,6 +348,30 @@ void main() {
       );
       final again = Intake.fromMap(intake.toRequest());
       expect(again.toRequest(), intake.toRequest());
+    });
+
+    test('Intake flags', () {
+      expect(const Intake(lifeStage: 'postpartum').anyFlag, isTrue);
+      expect(const Intake(eatingHistory: true).anyFlag, isTrue);
+      expect(const Intake(health: {'heart': true}).anyFlag, isTrue);
+      expect(const Intake().anyFlag, isFalse);
+      expect(Intake.fromMap({'eatingHistory': true}).eatingHistory, isTrue);
+      expect(
+        const Intake(eatingHistory: true).toRequest()['eatingHistory'],
+        isTrue,
+      );
+    });
+
+    test('Intake.eatingHistoryFlag', () {
+      expect(const Intake(eatingHistory: true).eatingHistoryFlag, isTrue);
+      expect(const Intake().eatingHistoryFlag, isFalse);
+      expect(Intake.fromMap({'eatingHistory': true}).eatingHistoryFlag, isTrue);
+      expect(
+        Intake.fromMap({
+          'health': {'eatingHistory': true},
+        }).eatingHistoryFlag,
+        isTrue,
+      );
     });
   });
 
@@ -815,6 +840,91 @@ void main() {
       );
     });
 
+    test('MealGoal and swaps round trip', () {
+      final input = <String, Object?>{
+        'days': <Object?>[
+          <String, Object?>{
+            'label': 'Day 1',
+            'slots': <String, Object?>{
+              for (final s in CoachingEnums.mealSlots) s: <Object?>[],
+              'breakfast': <Object?>[
+                <String, Object?>{
+                  'kind': 'recipe',
+                  'recipeId': 'r1',
+                  'servings': 1.0,
+                  'swaps': <String>['r2', 'r3'],
+                },
+              ],
+            },
+          },
+        ],
+        'goal': <String, Object?>{
+          'kcalPerDay': 1600,
+          'proteinGPerDay': 110,
+        },
+      };
+      final body = MealPlanBody.tryParse(input)!;
+      expect(body.goal, isNotNull);
+      expect(body.goal!.kcalPerDay, 1600);
+      expect(body.goal!.proteinGPerDay, 110);
+      expect(body.days.first.itemsIn('breakfast').first.swaps, ['r2', 'r3']);
+      expect(body.toJson(), input);
+
+      final badGoal = MealPlanBody.tryParse(<String, Object?>{
+        'days': input['days'],
+        'goal': <String, Object?>{
+          'kcalPerDay': 100,
+          'proteinGPerDay': 110,
+        },
+      })!;
+      expect(badGoal.goal, isNull);
+    });
+
+    test('mealPlanWithDays keeps the goal', () {
+      const goal = MealGoal(kcalPerDay: 1800, proteinGPerDay: 120);
+      const body = MealPlanBody(
+        days: <MealDay>[MealDay(label: 'Day 1')],
+        goal: goal,
+      );
+      final grown = mealPlanWithDays(body, 3, (n) => 'Day $n');
+      expect(grown.goal, goal);
+      expect(grown.days.length, 3);
+
+      final withItem = mealPlanWithItem(
+        body,
+        0,
+        'lunch',
+        const MealItem.free('Soup'),
+      );
+      expect(withItem.goal, goal);
+
+      final withGoal = mealPlanWithGoal(grown, null);
+      expect(withGoal.goal, isNull);
+
+      final withSwaps = mealPlanWithSwaps(
+        const MealPlanBody(
+          days: [
+            MealDay(
+              label: 'Day 1',
+              slots: {
+                'breakfast': [MealItem.recipe('r1', 1.0)],
+              },
+            ),
+          ],
+          goal: goal,
+        ),
+        0,
+        'breakfast',
+        0,
+        ['r2', 'r3', 'r1', 'r4'],
+      );
+      expect(withSwaps.goal, goal);
+      expect(
+        withSwaps.days.first.itemsIn('breakfast').first.swaps,
+        ['r2', 'r3', 'r4'],
+      );
+    });
+
     test('a coach plan reads by kind and skips a body of the wrong shape', () {
       final workout = CoachPlan.fromMap('p1', <String, Object?>{
         'kind': 'workout',
@@ -869,6 +979,47 @@ void main() {
         },
       });
       expect(plan?.workout?.days, hasLength(1));
+    });
+
+    test('CoachPlan reads startsOn', () {
+      final body = <String, Object?>{
+        'revision': 1,
+        'days': <Object?>[
+          <String, Object?>{
+            'session': <String, Object?>{
+              'sessionId': 'mine_1',
+              'titleEn': 'Legs',
+              'titleAr': 'رجل',
+              'minutes': 30,
+              'moves': <Object?>[
+                <String, Object?>{
+                  'exerciseId': 'squat',
+                  'nameEn': 'Squat',
+                  'nameAr': 'سكوات',
+                  'sets': 3,
+                  'reps': 10,
+                },
+              ],
+            },
+          },
+        ],
+      };
+      expect(
+        CoachPlan.fromMap('p', <String, Object?>{
+          'kind': 'workout',
+          'body': body,
+          'startsOn': '2026-11-07',
+        })!.startsOn,
+        DateTime(2026, 11, 7, 12),
+      );
+      expect(
+        CoachPlan.fromMap('p', <String, Object?>{
+          'kind': 'workout',
+          'body': body,
+          'startsOn': 'bad',
+        })!.startsOn,
+        isNull,
+      );
     });
 
     test('publish request holds exactly one body', () {

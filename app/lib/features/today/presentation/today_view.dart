@@ -106,6 +106,7 @@ class TodayView extends StatefulWidget {
     this.planLinks,
     this.followUp,
     this.coachCard,
+    this.onOpenCoach,
     this.onEditToday,
     this.onChangePlan,
     this.onShortVersion,
@@ -166,6 +167,10 @@ class TodayView extends StatefulWidget {
   /// Her coach's card while she is coached. It is the Today card: D11, her
   /// coach's workout, with its one Start.
   final Widget? coachCard;
+
+  /// Opens My coach, from the Change sheet: the Today card's only tap is
+  /// Start, so Home keeps to five controls.
+  final VoidCallback? onOpenCoach;
 
   /// Her training streak (D37), or null when it is off — by the build or by
   /// her. Null draws nothing at all.
@@ -519,14 +524,21 @@ class _TodayViewState extends State<TodayView> {
       gap: 8,
       children: [
         if (evening) ?alreadyDid,
-        if (coached)
+        if (coached) ...[
           row(
             const ValueKey('change-own-plan'),
             Icons.fitness_center,
             l10n.doMyOwnPlanInstead,
             () => openScreen(context, 'R07', widget.onStartSession),
-          )
-        else ...[
+          ),
+          if (widget.onOpenCoach case final coach?)
+            row(
+              const ValueKey('change-my-coach'),
+              Icons.sports_outlined,
+              l10n.myCoach,
+              coach,
+            ),
+        ] else ...[
           row(
             const ValueKey('change-edit-today'),
             Icons.edit_outlined,
@@ -654,7 +666,6 @@ class _TodayViewState extends State<TodayView> {
             countLabel(firstWeekDone(_day.arc)),
             countLabel(offeredFirstWeekSteps().length),
           ),
-          onTap: () => openScreen(context, 'T07', widget.onOpenFirstWeek),
         )
       // At day zero the line says what starts it, so she is never shown a
       // streak of nothing as though it were a failure.
@@ -664,7 +675,6 @@ class _TodayViewState extends State<TodayView> {
           key: const ValueKey('todayTrainingStreak'),
           icon: Icons.local_florist_outlined,
           text: trainingStreakLine(l10n, streakStatus),
-          onTap: widget.onOpenStreak,
         ),
     ];
     if (lines.isEmpty) return null;
@@ -863,17 +873,6 @@ class _TodayViewState extends State<TodayView> {
                 color: AppColors.onPrimaryContainer,
               ),
             ),
-          // Day one only: the kitten shows where to start. It goes with the
-          // day-one state, the moment she logs anything.
-          const Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: Kitten(
-              pose: KittenPose.point,
-              size: 48,
-              moment: 'T06',
-              sessionBudget: true,
-            ),
-          ),
           AppButton(
             l10n.startDay1,
             height: 56,
@@ -949,25 +948,23 @@ class _TodayViewState extends State<TodayView> {
   }
 }
 
-/// One line under the week's marks: an icon, a word or two, a sentence. A tap
-/// target of at least 48 points when it leads somewhere.
+/// One line under the week's marks: an icon, a word or two, a sentence. Not a
+/// control: Home keeps to five, and these counts are opened from You.
 class _BlockLine extends StatelessWidget {
   const _BlockLine({
     super.key,
     required this.icon,
     required this.text,
     this.label,
-    this.onTap,
   });
 
   final IconData icon;
   final String text;
   final String? label;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final row = ConstrainedBox(
+    return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48),
       child: Row(
         children: [
@@ -987,14 +984,8 @@ class _BlockLine extends StatelessWidget {
               ],
             ),
           ),
-          if (onTap != null) const AppChevron(),
         ],
       ),
-    );
-    if (onTap == null) return row;
-    return Semantics(
-      button: true,
-      child: InkWell(onTap: onTap, child: row),
     );
   }
 }

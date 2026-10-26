@@ -16,7 +16,7 @@ export const features = [
   // Today and logging
   { id: 'F08', area: 'Today and logging', name: 'Today screen', gets: "Today's workout, her usual meal for this hour and her week, on one screen.", who: 'Client', release: 'Launch', screens: ['T01'] },
   { id: 'F09', area: 'Today and logging', name: 'One-tap set logging', gets: 'Weights and reps already filled in from last time; one tap saves the set.', who: 'Client', release: 'Launch', screens: ['R07'] },
-  { id: 'F10', area: 'Today and logging', name: 'Log a whole move', gets: 'Did all three sets without the phone? One tap logs the move and returns you to the list.', who: 'Client', release: 'Launch', screens: ['R07', 'R13'] },
+  { id: 'F10', area: 'Today and logging', name: 'Log a whole move', gets: 'Did all three sets without the phone? One tap logs the move and takes you to the next one.', who: 'Client', release: 'Launch', screens: ['R07'] },
   { id: 'F11', area: 'Today and logging', name: 'Automatic progression', gets: 'The next weight or rep target is set for her, with the reason in one sentence.', who: 'Client', release: 'Launch', screens: ['R07'] },
   { id: 'F12', area: 'Today and logging', name: 'Change without typing', gets: 'The three likeliest values as chips; the keyboard only if she asks.', who: 'Client', release: 'Launch', screens: ['R08'] },
   { id: 'F13', area: 'Today and logging', name: 'Self-running rest timer', gets: 'Starts when a set is saved, ends on its own, names the next set.', who: 'Client', release: 'Launch', screens: ['R09'] },

@@ -35,6 +35,8 @@ import '../../../ui/hand/hand.dart';
 import '../data/exercise_media_store.dart';
 import '../domain/custom_workout.dart';
 import '../domain/exercise_library.dart';
+import '../domain/session_summary.dart' show nextWeightsFor;
+import '../domain/weight_label.dart';
 import '../domain/train_repository.dart';
 import 'authored_workout.dart';
 import 'exercise_clip_player.dart';
@@ -292,7 +294,11 @@ class WorkoutDayView extends StatefulWidget {
     this.exerciseFor,
     this.media = const NoExerciseMedia(),
     this.players,
+    this.holdLoad = false,
   });
+
+  /// "Very sore" twice running: the weights below stay where they were.
+  final bool holdLoad;
 
   /// Opens with Edit workout already on. Asked for by a door that means
   /// "change this workout" (Home's Edit, the plan editor's Edit).
@@ -884,6 +890,35 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
     );
   }
 
+  /// What to lift today on up to three loaded moves she has weighed before:
+  /// a step up, or the same weight. Never a lower one. Nothing when there is
+  /// nothing to say.
+  Widget _weightsToday(AppL10n l10n, List<PlannedMove> moves) {
+    final weights = nextWeightsFor(
+      repository: widget.repository,
+      moves: moves,
+      difficult: widget.holdLoad,
+    );
+    if (weights.isEmpty) return const SizedBox.shrink();
+    return Column(
+      key: const ValueKey('r03-weights-today'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 4,
+      children: [
+        for (final move in weights)
+          Text(
+            move.rises
+                ? l10n.todayWeightOnName(
+                    '${weightLabel(move.kg)} ${l10n.kg}',
+                    isolateLtr(l10n, move.name),
+                  )
+                : l10n.sameWeightOnNameAsLastTime(isolateLtr(l10n, move.name)),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -1028,6 +1063,7 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
               ),
             ],
           ),
+          if (!_editing) _weightsToday(l10n, moves),
           if (_editable && gymMove >= 0)
             AppCard(
               key: const ValueKey('r03-gym-note'),
@@ -1058,18 +1094,6 @@ class _WorkoutDayViewState extends State<WorkoutDayView> {
                 ),
               ],
             ),
-          // A long stretch before the moves begin, still; it blinks once the
-          // second time she opens the day in a run.
-          const Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: Kitten(
-              pose: KittenPose.stretch,
-              size: 40,
-              moment: 'R03',
-              holdStill: true,
-              blinkOnRevisit: true,
-            ),
-          ),
           // One block, so a different day eases in rather than the list jumping.
           // Keyed by which moves are in it, not by their labels: an edit changes
           // a label on every tap and must not replay the swap.

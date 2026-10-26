@@ -974,6 +974,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           join, and performing the free coaching you asked for.</li>
         </ul>
 
+""" + h3("c-chat-media", "Voice notes, photos and videos in coaching chat") + """
+        <p>If you coach with a coach on Own Hub you can send her, and she can send you, voice notes, photos and short videos (up to 120 seconds of audio and 30 seconds of video). Own Hub asks for your microphone only when you press and hold the mic button, and for your camera or a photo you pick only when you choose to send one. We store these files so that you and your coach, and nobody else, can listen and watch again. They are sent over an encrypted connection and are not used for advertising, for training any model, or for anything other than showing them in the chat. Photos are re-saved without the location and device details your phone adds. Videos can still contain such details, so film in a place you are happy to share. If a message is reported, a woman reviewer at Own Hub may see that file. The files are deleted when the coaching chat is deleted and when you delete your account.</p>
+
 """ + h3("c-reports", "3.17 Reports and blocks") + """
         <p>You can report a coach&rsquo;s portfolio or a message, and you can
         block the coach or the client you are talking to.</p>
@@ -2055,6 +2058,22 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p class="small">Line drawings: <a href="https://github.com/lucasmarkes/hairline">Hairline
         by Lucas Marques</a>, under the MIT licence.</p>
+      </div>
+    </div>
+""",
+    }
+
+    pages["join"] = {
+        "title": "Open this in Own Hub",
+        "description": "How to open a coach's invitation or profile link in Own Hub.",
+        "body": """
+    <div class="wrap">
+      <div class="prose">
+        <h1>Open this in Own Hub</h1>
+        <p class="lede">Own Hub is a training app for women only. If your coach
+        sent you this link, install the app. When you sign up, tap <b>I have a
+        code from my coach</b> and type the code from her message.</p>
+        <p><a href="/ar/join">العربية</a></p>
       </div>
     </div>
 """,

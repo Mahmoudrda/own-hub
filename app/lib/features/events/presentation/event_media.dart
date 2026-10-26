@@ -21,6 +21,7 @@ import '../../train/presentation/exercise_clip_player.dart';
 import '../data/event_clip_cache.dart';
 
 const double kEventPictureHeight = 180;
+const double kEventCardPictureHeight = 120;
 
 class EventGallery extends StatefulWidget {
   const EventGallery({super.key, required this.paths});

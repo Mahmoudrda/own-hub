@@ -217,11 +217,22 @@ void main() {
       expect(AppRouter.screenIsOn('E02'), isTrue);
     });
 
-    test('the release manifest still strips RECORD_AUDIO', () {
+    test('the release manifest declares RECORD_AUDIO and strips external storage', () {
       final manifest = File('android/app/src/main/AndroidManifest.xml')
           .readAsStringSync();
       expect(
-        RegExp(r'android\.permission\.RECORD_AUDIO"\s+tools:node="remove"')
+        manifest,
+        contains(
+          '<uses-permission android:name="android.permission.RECORD_AUDIO" />',
+        ),
+      );
+      expect(
+        RegExp(r'android\.permission\.READ_EXTERNAL_STORAGE"\s+tools:node="remove"')
+            .hasMatch(manifest),
+        isTrue,
+      );
+      expect(
+        RegExp(r'android\.permission\.WRITE_EXTERNAL_STORAGE"\s+tools:node="remove"')
             .hasMatch(manifest),
         isTrue,
       );

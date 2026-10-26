@@ -29,6 +29,41 @@ enum MealItemKind with WireEnum {
   static MealItemKind? fromWire(Object? value) => enumFromWire(values, value);
 }
 
+/// What Rahma wants a client to eat on an ordinary day. Her number, not a food
+/// figure; the dish figures still come from the food tables.
+class MealGoal {
+  const MealGoal({required this.kcalPerDay, required this.proteinGPerDay});
+
+  static const int kcalMin = 1200;
+  static const int kcalMax = 4000;
+  static const int proteinMin = 30;
+  static const int proteinMax = 250;
+
+  final int kcalPerDay;
+  final int proteinGPerDay;
+
+  static MealGoal? tryParse(Object? raw) {
+    final map = asMap(raw);
+    if (map == null) return null;
+    final k = map['kcalPerDay'];
+    final p = map['proteinGPerDay'];
+    if (k is! int || p is! int) return null;
+    final g = MealGoal(kcalPerDay: k, proteinGPerDay: p);
+    return g.isValid ? g : null;
+  }
+
+  bool get isValid =>
+      kcalPerDay >= kcalMin &&
+      kcalPerDay <= kcalMax &&
+      proteinGPerDay >= proteinMin &&
+      proteinGPerDay <= proteinMax;
+
+  Json toJson() => <String, Object?>{
+    'kcalPerDay': kcalPerDay,
+    'proteinGPerDay': proteinGPerDay,
+  };
+}
+
 class MealItem {
   const MealItem._({
     required this.kind,
@@ -38,15 +73,21 @@ class MealItem {
     this.grams,
     this.text,
     this.note,
+    this.swaps = const <String>[],
   });
 
-  const MealItem.recipe(String recipeId, double servings, {String? note})
-    : this._(
-        kind: MealItemKind.recipe,
-        recipeId: recipeId,
-        servings: servings,
-        note: note,
-      );
+  const MealItem.recipe(
+    String recipeId,
+    double servings, {
+    String? note,
+    List<String> swaps = const <String>[],
+  }) : this._(
+         kind: MealItemKind.recipe,
+         recipeId: recipeId,
+         servings: servings,
+         note: note,
+         swaps: swaps,
+       );
 
   const MealItem.food(String foodId, int grams, {String? note})
     : this._(kind: MealItemKind.food, foodId: foodId, grams: grams, note: note);
@@ -63,6 +104,9 @@ class MealItem {
   final String? text;
   final String? note;
 
+  /// Recipe ids she approved as swaps, at most 3.
+  final List<String> swaps;
+
   /// Null for an item that is not shaped like one.
   static MealItem? fromMap(Object? raw) {
     final map = asMap(raw);
@@ -75,7 +119,13 @@ class MealItem {
         final id = readStringOrNull(map['recipeId']);
         final servings = map['servings'];
         if (id == null || servings is! num || !servings.isFinite) return null;
-        return MealItem.recipe(id, servings.toDouble(), note: note);
+        final swaps = readStrings(map['swaps']).take(3).toList();
+        return MealItem.recipe(
+          id,
+          servings.toDouble(),
+          note: note,
+          swaps: swaps,
+        );
       case MealItemKind.food:
         final id = readStringOrNull(map['foodId']);
         final grams = map['grams'];
@@ -94,6 +144,7 @@ class MealItem {
       MealItemKind.recipe => <String, Object?>{
         'recipeId': recipeId,
         'servings': servings,
+        if (swaps.isNotEmpty) 'swaps': swaps,
       },
       MealItemKind.food => <String, Object?>{'foodId': foodId, 'grams': grams},
       MealItemKind.free => <String, Object?>{'text': text},
@@ -108,7 +159,8 @@ class MealItem {
         (recipeId ?? '').isNotEmpty &&
             servings != null &&
             servings! >= _servingsMin &&
-            servings! <= _servingsMax,
+            servings! <= _servingsMax &&
+            swaps.length <= 3,
       MealItemKind.food =>
         (foodId ?? '').isNotEmpty &&
             grams != null &&
@@ -168,9 +220,10 @@ class MealDay {
 }
 
 class MealPlanBody {
-  const MealPlanBody({this.days = const <MealDay>[]});
+  const MealPlanBody({this.days = const <MealDay>[], this.goal});
 
   final List<MealDay> days;
+  final MealGoal? goal;
 
   /// Null for anything that is not a meal body. A bad day costs that day.
   static MealPlanBody? tryParse(Object? raw) {
@@ -180,17 +233,20 @@ class MealPlanBody {
       days: <MealDay>[
         for (final day in map['days'] as List) ?MealDay.fromMap(day),
       ].take(CoachingLimits.planMaxDays).toList(),
+      goal: MealGoal.tryParse(map['goal']),
     );
   }
 
   Json toJson() => <String, Object?>{
     'days': <Object?>[for (final day in days) day.toJson()],
+    if (goal != null) 'goal': goal!.toJson(),
   };
 
   bool get isValid =>
       days.isNotEmpty &&
       days.length <= CoachingLimits.planMaxDays &&
-      days.every((d) => d.isValid);
+      days.every((d) => d.isValid) &&
+      (goal == null || goal!.isValid);
 }
 
 class CoachPlan {
@@ -205,6 +261,7 @@ class CoachPlan {
     this.workout,
     this.meal,
     this.publishedAt,
+    this.startsOn,
   });
 
   final String id;
@@ -221,6 +278,7 @@ class CoachPlan {
   /// Set for a meal plan.
   final MealPlanBody? meal;
   final DateTime? publishedAt;
+  final DateTime? startsOn;
 
   /// Null when the kind is unknown or the body does not read as that kind.
   static CoachPlan? fromMap(String id, Object? raw) {
@@ -245,6 +303,7 @@ class CoachPlan {
       revision: readInt(map['revision'], 1),
       workout: workout,
       meal: meal,
+      startsOn: _dateOnly(map['startsOn']),
       publishedAt: readTime(map['publishedAt']),
     );
   }
@@ -257,6 +316,7 @@ Json publishPlanRequest({
   MyPlan? workout,
   MealPlanBody? meal,
   String? planId,
+  String? startsOn,
 }) {
   assert((workout == null) != (meal == null), 'exactly one body');
   return <String, Object?>{
@@ -265,6 +325,7 @@ Json publishPlanRequest({
     'name': name.trim(),
     'body': workout != null ? workout.toJson() : meal!.toJson(),
     'planId': ?planId,
+    'startsOn': ?startsOn,
   };
 }
 
@@ -306,4 +367,11 @@ class CoachDraft {
     'name': name,
     'body': body,
   };
+}
+
+/// "2026-11-01" as a date-only DateTime, or null.
+DateTime? _dateOnly(Object? raw) {
+  if (raw is! String || raw.length != 10) return null;
+  final d = DateTime.tryParse(raw);
+  return d == null ? null : DateTime(d.year, d.month, d.day, 12);
 }

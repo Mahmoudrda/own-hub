@@ -116,7 +116,7 @@ void main() {
     expect(find.text('Strong at home'), findsOneWidget);
   });
 
-  testWidgets('the kitten has a caption beside it', (tester) async {
+  testWidgets('the header has a caption', (tester) async {
     await tester.pumpWidget(_host(const TrainView()));
     await tester.pumpAndSettle();
 

@@ -43,6 +43,7 @@ class PlanEditorView extends StatefulWidget {
     this.state,
     this.title,
     this.undoBus,
+    this.allowWeeks = false,
   });
 
   /// Opens day [index] of the plan in R03 with Edit workout on.
@@ -63,6 +64,7 @@ class PlanEditorView extends StatefulWidget {
   /// The bar title; "My plan" when null.
   final String? title;
   final LogCommandBus? undoBus;
+  final bool allowWeeks;
 
   @override
   State<PlanEditorView> createState() => _PlanEditorViewState();
@@ -105,6 +107,12 @@ class _PlanEditorViewState extends State<PlanEditorView> {
         if (mounted) _state.save(_plan.insertDay(i, gone));
       },
     );
+  }
+
+  void _duplicate(int i) {
+    final copy = lookupAppL10n(const Locale('en')).copy_1g7xp;
+    final copyAr = lookupAppL10n(const Locale('ar')).copy_1g7xp;
+    _state.save(_plan.withCopyOf(i, suffixEn: ' $copy', suffixAr: ' $copyAr'));
   }
 
   Future<void> _replace(int i) async {
@@ -283,7 +291,18 @@ class _PlanEditorViewState extends State<PlanEditorView> {
                   : l10n.theseAreYourTrainingDaysOpenA,
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
-            for (var i = 0; i < plan.days.length; i++)
+            for (var i = 0; i < plan.days.length; i++) ...[
+              if (widget.allowWeeks &&
+                  plan.weekCount > 1 &&
+                  (i == 0 || plan.days[i].week != plan.days[i - 1].week))
+                Semantics(
+                  header: true,
+                  child: Text(
+                    l10n.weekN(countLabel(plan.days[i].week)),
+                    key: ValueKey('plan-week-${plan.days[i].week}'),
+                    style: AppText.titleS,
+                  ),
+                ),
               AppCard(
                 key: ValueKey('plan-day-$i'),
                 variant: AppCardVariant.outlined,
@@ -347,6 +366,12 @@ class _PlanEditorViewState extends State<PlanEditorView> {
                           onPressed: () => unawaited(_replace(i)),
                         ),
                       _DayAction(
+                        key: ValueKey('plan-duplicate-$i'),
+                        label: l10n.duplicate,
+                        icon: Icons.copy_outlined,
+                        onPressed: plan.isFull ? null : () => _duplicate(i),
+                      ),
+                      _DayAction(
                         key: ValueKey('plan-remove-$i'),
                         label: l10n.removeDay,
                         icon: Icons.delete_outline,
@@ -355,6 +380,18 @@ class _PlanEditorViewState extends State<PlanEditorView> {
                     ],
                   ),
                 ],
+              ),
+            ],
+            if (widget.allowWeeks)
+              AppButton(
+                l10n.repeatLastWeek,
+                key: const ValueKey('plan-repeat-week'),
+                variant: AppButtonVariant.outlined,
+                height: 48,
+                fontSize: 16,
+                onPressed: plan.isBlank || plan.weekCount >= kMaxCoachPlanWeeks
+                    ? null
+                    : () => _state.save(_plan.withRepeatedLastWeek()),
               ),
             AppButton(
               l10n.startFromScratch,
@@ -390,7 +427,7 @@ class _DayAction extends StatelessWidget {
 
   final String label;
   final IconData icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) => TextButton.icon(

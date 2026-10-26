@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
-import '../../../../ui/hand/mascot/kitten.dart';
 import '../../domain/subscription.dart';
 import '../desk/desk_model.dart' show tagOf;
 import '../member/coach_card.dart';
@@ -302,8 +301,6 @@ class _Empty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Kitten(pose: KittenPose.rest, size: 72, moment: 'chat-list'),
-            const SizedBox(height: 12),
             Text(
               title,
               textAlign: TextAlign.center,

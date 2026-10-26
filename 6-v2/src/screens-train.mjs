@@ -104,7 +104,7 @@ const R07 = phone(
       + sageNote('Last Tuesday: 10 kg × 10, every set finished. So we added 2 kg.'), { gap: 12, pad: '18px' })
     + col(`${m('This move')}${setRow('Set 1', '12 kg × 10', 'done')}${setRow('Set 2', '12 kg × 10', 'now')}${setRow('Set 3', '12 kg × 10', 'next')}`, { gap: 8 })
   , { pad: '0 16px 0', gap: 14 })
-  + footer(bigBtn('Done · 12 kg × 10', 'Rest starts itself', { go: 'R09' }) + btn('I did all 3 sets, log them', { v: 'text', h: 44, size: 15, go: 'R13' })));
+  + footer(bigBtn('Done · 12 kg × 10', 'Rest starts itself', { go: 'R09' }) + btn('I did all 3 sets, log them', { v: 'text', h: 44, size: 15, go: 'R07' })));
 
 const R08 = phone(
   statusBar()
@@ -175,23 +175,8 @@ const R12 = phone(
   , { pad: '4px 16px 0', gap: 12 })
   + footer(btn('Back to today', { h: 56, go: 'T01' })));
 
-const R13 = phone(
-  statusBar()
-  + appBar({ title: 'Legs and glutes', leadGo: 'R03', actions: [{ icon: 'pause' }] })
-  + body(
-    snackbar('Goblet squat saved · 3 sets', { action: 'Undo', go: 'R07' })
-    + col(`${h('2 of 5 moves done', 'titleL')}${m('Quiet · no equipment · floor')}`, { gap: 2 })
-    + moveRow('Glute bridge', '3 × 12 · bodyweight', { done: true })
-    + moveRow('Goblet squat', '3 × 12 · 12 kg', { done: true })
-    + moveRow('Step-back lunge', '3 × 10 each side', { now: true })
-    + moveRow('Hip thrust hold', '3 × 30 seconds')
-    + moveRow('Dead bug', '3 × 8 each side')
-  , { pad: '0 16px 0', gap: 10 })
-  + footer(btn('Next move · step-back lunge', { h: 56, ic: 'play_arrow', go: 'R07' }) + btn('Finish here', { v: 'text', h: 44, size: 15, go: 'R10' })));
-
 export const screens = [
   { id: 'R12', html: R12, metric: 'counts, but sets no best', note: 'The product states in two places that a session logged from memory never sets a personal best, because the numbers were copied. This is the screen that honours it: the week still counts, points are smaller, and the reason is written where the trophy would have been.' },
-  { id: 'R13', html: R13, metric: 'the move, not the session', note: 'Logging a whole move returns her to the list with that move struck through and the next one live. Before this, the same tap declared the entire session finished with three moves untrained.' },
   { id: 'R01', html: R01, metric: 'her program first, library second', note: 'Train opens on the one thing she is in the middle of, with the week drawn as three chips she can tap. Short sessions sit above the library because a 10-minute floor session is what gets done on a bad day, and it counts the same.' },
   { id: 'R02', html: R02, metric: 'three levels deep, never four', note: 'The program page carries the week, and the offer to download it where data cost is a decision she is already making. It does NOT carry a life-stage promise: this note used to say it carried "pelvic floor first, cleared from week six with a doctor", which is a clinical claim the app cannot make and a filter the build does not have. See the note on O04 in screens-onboarding.mjs.' },
   { id: 'R03', html: R03, metric: '1 tap to start · 1 to log it after', note: 'The day is a list of moves with the suggested weights already on them. Both ways in are on the same screen: start now, or say she already did it.' },

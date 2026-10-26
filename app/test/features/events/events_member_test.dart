@@ -153,16 +153,21 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // The list is cards: the title and the date, nothing to press inside.
       expect(find.text('Upcoming events'), findsOneWidget);
       expect(find.text('Morning stretch, together'), findsOneWidget);
       expect(
         find.text('Thursday · 2026-11-05 · 18:30 to 19:30 · Cairo time'),
         findsOneWidget,
       );
-      expect(find.text('Online'), findsOneWidget);
-      expect(find.text('Zamalek ladies gym'), findsOneWidget);
-      expect(find.text('Thirty quiet minutes on the floor.'), findsOneWidget);
+      expect(find.text('Open event link'), findsNothing);
+      expect(find.text('Thirty quiet minutes on the floor.'), findsNothing);
 
+      // A tap opens the event, where the details and the link are.
+      await tester.tap(find.byKey(const ValueKey('event-e1')));
+      await tester.pumpAndSettle();
+      expect(find.text('Online'), findsOneWidget);
+      expect(find.text('Thirty quiet minutes on the floor.'), findsOneWidget);
       await tester.tap(find.text('Open event link'));
       expect(opened, ['https://meet.example.com/stretch']);
     });
@@ -187,6 +192,8 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('tamaddud'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('event-e1')));
+      await tester.pumpAndSettle();
       expect(find.text('wasf'), findsOneWidget);
       final direction = tester.widget<Directionality>(
         find

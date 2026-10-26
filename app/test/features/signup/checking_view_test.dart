@@ -18,7 +18,7 @@ import 'package:own_hub/features/signup/presentation/checking_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_button.dart';
-import 'package:own_hub/ui/hand/mascot/kitten.dart';
+import 'package:own_hub/ui/hand/moment.dart';
 
 Widget _host(
   Widget child, {
@@ -565,13 +565,8 @@ void main() {
     expect(approved, 1);
   });
 
-  group('the kitten', () {
-    setUp(Kitten.resetPlayed);
-
-    KittenPose pose(WidgetTester tester) =>
-        tester.widget<Kitten>(find.byType(Kitten)).pose;
-
-    testWidgets('thinks while the card is read, points while it is matched', (
+  group('the tick', () {
+    testWidgets('is not drawn while the card is read or matched', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -585,14 +580,12 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.byType(Kitten), findsOneWidget);
-      expect(pose(tester), KittenPose.think);
+      expect(find.byType(Moment), findsNothing);
       await tester.pumpAndSettle();
-      expect(find.byType(Kitten), findsOneWidget);
-      expect(pose(tester), KittenPose.point);
+      expect(find.byType(Moment), findsNothing);
     });
 
-    testWidgets('gives a light cheer when the check is done', (tester) async {
+    testWidgets('is drawn on when the check is done', (tester) async {
       final repository = FakeVerificationRepository(
         const VerificationState.checking(),
       );
@@ -609,8 +602,7 @@ void main() {
       repository.decide(_verified());
       await tester.pump();
       await tester.pump();
-      expect(find.byType(Kitten), findsOneWidget);
-      expect(pose(tester), KittenPose.cheer);
+      expect(find.byType(Moment), findsOneWidget);
       await tester.pumpAndSettle();
     });
 
@@ -632,7 +624,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.byType(Kitten), findsNothing, reason: '$stop');
+        expect(find.byType(Moment), findsNothing, reason: '$stop');
       }
     });
   });

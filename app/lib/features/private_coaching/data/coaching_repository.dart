@@ -166,6 +166,7 @@ abstract class CoachingRepository {
     MyPlan? workout,
     MealPlanBody? meal,
     String? planId,
+    String? startsOn,
   });
 
   Future<String> scheduleLiveSession({

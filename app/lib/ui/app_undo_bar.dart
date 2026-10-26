@@ -101,8 +101,7 @@ class AppUndoBar extends StatelessWidget {
 
 /// [AppUndoBar] for a log whose window is still open, and only while it is.
 ///
-/// The in-page bar on R09 and R13 used to keep Undo drawn for the whole rest,
-/// and on R13 for as long as she stayed, while `handle.undo()` had been
+/// The in-page bar on R09 used to keep Undo drawn for the whole rest, while `handle.undo()` had been
 /// returning false since the fifth second. Tapping it did nothing at all. The
 /// snackbar was fixed for exactly this; this is the same fix for the bar: the
 /// handle says when the window shut, and the button goes with it, leaving the

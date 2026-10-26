@@ -6,8 +6,8 @@ import pathlib
 
 import pytest
 
-from coaching import chat, common
-from tests import fake_firestore
+from coaching import chat, common, push
+from tests import fake_blobs, fake_firestore
 from tests.coaching_helpers import Notes, _txn  # noqa: F401
 
 VECTORS = json.loads(
@@ -259,3 +259,142 @@ def test_a_wrong_rules_tick_is_refused_and_writes_nothing(bad):
     with pytest.raises(Exception):
         chat.accept_rules(db, "u1", _rules(**bad), live=True, now=NOW)
     assert db.document("users/u1/consents/chat-rules-v1").get().to_dict() is None
+
+
+# ------------------------------------------------------- media and rate limits
+
+def test_a_good_image_is_kept_and_reencoded():
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    path = f"chat-media/{REL}/client1/a.jpg"
+    blobs.put(path, b"raw", "image/jpeg")
+    row = _add(db, "m1", senderUid="client1", type="image", mediaPath=path)
+    notes = Notes()
+    result = chat.on_message(
+        db, REL, "m1", row, now=NOW, notify=notes, blobs=blobs,
+        reencode=lambda raw, long_side=None: b"clean:" + raw,
+    )
+    assert result["hidden"] is False
+    assert blobs.objects[path][0] == b"clean:raw"
+    assert notes.sent == [("coach1", "newMessage")]
+
+
+def test_media_from_the_wrong_path_is_hidden_and_deleted():
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    wrong_owner = f"chat-media/{REL}/coach1/a.jpg"
+    blobs.put(wrong_owner, b"raw", "image/jpeg")
+    row1 = _add(db, "m1", senderUid="client1", type="image", mediaPath=wrong_owner)
+    notes = Notes()
+    result1 = chat.on_message(db, REL, "m1", row1, now=NOW, notify=notes, blobs=blobs)
+    assert result1["hidden"] is True and result1["reason"] == "media" and notes.sent == []
+
+    traversal = f"chat-media/{REL}/client1/../a.jpg"
+    blobs.put(traversal, b"raw", "image/jpeg")
+    row2 = _add(db, "m2", senderUid="client1", type="image", mediaPath=traversal)
+    result2 = chat.on_message(db, REL, "m2", row2, now=NOW, notify=notes, blobs=blobs)
+    assert result2["hidden"] is True and result2["reason"] == "media"
+    assert traversal in blobs.deleted
+    assert notes.sent == []
+
+
+def test_missing_file_oversize_and_wrong_type_are_hidden():
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    p1 = f"chat-media/{REL}/client1/missing.jpg"
+    p2 = f"chat-media/{REL}/client1/big.jpg"
+    p3 = f"chat-media/{REL}/client1/png.png"
+    blobs.put(p2, b"x" * 3_000_001, "image/jpeg")
+    blobs.put(p3, b"x", "image/png")
+    for idx, path in enumerate((p1, p2, p3), start=1):
+        row = _add(db, f"m{idx}", senderUid="client1", type="image", mediaPath=path)
+        result = chat.on_message(db, REL, f"m{idx}", row, now=NOW, notify=Notes(), blobs=blobs)
+        assert result["reason"] == "media"
+
+
+def test_video_and_audio_need_a_sane_duration():
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    v1 = f"chat-media/{REL}/client1/v1.mp4"
+    v2 = f"chat-media/{REL}/client1/v2.mp4"
+    a1 = f"chat-media/{REL}/client1/a1.m4a"
+    a2 = f"chat-media/{REL}/client1/a2.m4a"
+    blobs.put(v1, b"x", "video/mp4")
+    blobs.put(v2, b"x", "video/mp4")
+    blobs.put(a1, b"x", "audio/mp4")
+    blobs.put(a2, b"x", "audio/mp4")
+
+    r_v1 = chat.on_message(
+        db, REL, "mv1",
+        _add(db, "mv1", senderUid="client1", type="video", mediaPath=v1, durationMs=31600),
+        now=NOW, notify=Notes(), blobs=blobs,
+    )
+    r_v2 = chat.on_message(
+        db, REL, "mv2",
+        _add(db, "mv2", senderUid="client1", type="video", mediaPath=v2, durationMs=30000),
+        now=NOW, notify=Notes(), blobs=blobs,
+    )
+    r_a1 = chat.on_message(
+        db, REL, "ma1",
+        _add(db, "ma1", senderUid="client1", type="audio", mediaPath=a1, durationMs=0),
+        now=NOW, notify=Notes(), blobs=blobs,
+    )
+    r_a2 = chat.on_message(
+        db, REL, "ma2",
+        _add(db, "ma2", senderUid="client1", type="audio", mediaPath=a2, durationMs=120000),
+        now=NOW, notify=Notes(), blobs=blobs,
+    )
+    assert r_v1["hidden"] is True and r_v1["reason"] == "media"
+    assert r_v2["hidden"] is False
+    assert r_a1["hidden"] is True and r_a1["reason"] == "media"
+    assert r_a2["hidden"] is False
+
+
+def test_hold_before_hides_media_with_reason_held(monkeypatch):
+    monkeypatch.setattr(chat, "CHAT_MEDIA_HOLD", "before")
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    path = f"chat-media/{REL}/client1/a.jpg"
+    blobs.put(path, b"raw", "image/jpeg")
+    row = _add(db, "m1", senderUid="client1", type="image", mediaPath=path)
+    result = chat.on_message(db, REL, "m1", row, now=NOW, notify=Notes(), blobs=blobs)
+    assert result["reason"] == "held"
+
+
+def test_the_21st_message_in_a_minute_is_hidden_as_rate():
+    db = _db()
+    for i in range(1, 21):
+        row = _add(db, f"m{i}", senderUid="client1", type="text", text="ok", createdAt=NOW)
+        res, _ = _run(db, f"m{i}", row)
+        assert res["hidden"] is False
+    row21 = _add(db, "m21", senderUid="client1", type="text", text="ok", createdAt=NOW)
+    res21, _ = _run(db, "m21", row21)
+    assert res21["reason"] == "rate"
+
+
+def test_the_31st_media_line_in_an_hour_is_hidden():
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    for i in range(30, 0, -1):
+        path = f"chat-media/{REL}/client1/{i}.jpg"
+        blobs.put(path, b"raw", "image/jpeg")
+        at = NOW - dt.timedelta(seconds=100 * i)
+        row = _add(db, f"m{i}", senderUid="client1", type="image", mediaPath=path, createdAt=at)
+        res = chat.on_message(db, REL, f"m{i}", row, now=at, notify=Notes(), blobs=blobs)
+        assert res["hidden"] is False
+    path31 = f"chat-media/{REL}/client1/31.jpg"
+    blobs.put(path31, b"raw", "image/jpeg")
+    row31 = _add(db, "m31", senderUid="client1", type="image", mediaPath=path31, createdAt=NOW)
+    res31 = chat.on_message(db, REL, "m31", row31, now=NOW, notify=Notes(), blobs=blobs)
+    assert res31["reason"] == "rate"
+
+
+def test_first_name_mode_names_only_the_coach(monkeypatch):
+    monkeypatch.setattr(push, "NEW_MESSAGE_TEXT_MODE", "first_name")
+    db = _db()
+    db.collection("coaches").document("coach1").set({"displayName": "Rahma Mohsen"})
+    _, coach_notes = _run(db, "m1", _add(db, "m1", senderUid="coach1", type="text", text="Hello"))
+    assert coach_notes.sent == [("client1", "newMessageFrom:Rahma")]
+    _, client_notes = _run(db, "m2", _add(db, "m2", senderUid="client1", type="text", text="Hi"))
+    assert client_notes.sent == [("coach1", "newMessage")]
+

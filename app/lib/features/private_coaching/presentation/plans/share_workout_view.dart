@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../app_state/app_changes.dart';
 import '../../../../app_state/honest_notice.dart';
+import '../../../../domain/format/day_key.dart';
 import '../../../../domain/format/number_label.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
@@ -22,6 +23,7 @@ import '../../../../ui/app_card.dart';
 import '../../../../ui/app_field.dart';
 import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_scaffold.dart';
+import '../../../../ui/app_sheet.dart';
 import '../../../train/data/exercise_media_store.dart';
 import '../../../train/domain/custom_workout.dart';
 import '../../../train/domain/exercise_library.dart';
@@ -39,6 +41,9 @@ import '../../domain/coaching_failure.dart';
 import '../../domain/subscription.dart';
 import '../client/coach_plan_view.dart';
 import '../coach/coach_text.dart';
+import '../desk/desk_text.dart';
+import 'assign_clients_sheet.dart';
+import 'assign_many.dart';
 import 'coach_day_editor_view.dart';
 import 'coach_plan_logic.dart';
 import 'plan_labels.dart';
@@ -49,6 +54,7 @@ class ShareWorkoutView extends StatefulWidget {
     required this.repository,
     required this.subscription,
     this.clientName = '',
+    this.others = const <AssignClient>[],
     this.splits = const <AuthoredProgramme>[],
     this.templates = const <CoachDraft>[],
     this.existing,
@@ -64,6 +70,9 @@ class ShareWorkoutView extends StatefulWidget {
 
   /// What the client is called on the buttons.
   final String clientName;
+
+  /// Her other active clients, for "Send to more clients".
+  final List<AssignClient> others;
 
   /// The three coach splits, as they are written.
   final List<AuthoredProgramme> splits;
@@ -99,6 +108,42 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
   bool _published = false;
   bool _templateSaved = false;
   String _error = '';
+  Set<String> _also = <String>{};
+  DateTime? _startsOn;
+  final Set<String> _sentSubs = <String>{};
+  Map<String, CoachingFailure> _failed = <String, CoachingFailure>{};
+  int _sentCount = 0;
+
+  Future<void> _assign() async {
+    final choice = await showAppSheet<AssignChoice>(
+      context: context,
+      children: [
+        AssignClientsSheet(
+          mine: AssignClient(
+            subId: widget.subscription.id,
+            name: widget.clientName,
+          ),
+          others: widget.others,
+          initial: _also,
+          startsOn: _startsOn ?? DateTime.now(),
+        ),
+      ],
+    );
+    if (choice == null || !mounted) return;
+    setState(() {
+      _also = choice.subIds;
+      _startsOn = choice.startsOn;
+    });
+  }
+
+  String _nameOf(String subId) => subId == widget.subscription.id
+      ? widget.clientName
+      : widget.others
+            .firstWhere(
+              (c) => c.subId == subId,
+              orElse: () => AssignClient(subId: subId, name: subId),
+            )
+            .name;
 
   @override
   void dispose() {
@@ -151,6 +196,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
       MaterialPageRoute<void>(
         builder: (editor) => PlanEditorView(
           state: _edit,
+          allowWeeks: true,
           original: _split == null ? null : () => _split,
           onBack: () => Navigator.of(editor).maybePop(),
           onPickMoves: _pickMoves,
@@ -202,21 +248,68 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
     setState(() {
       _busy = true;
       _error = '';
+      _failed = <String, CoachingFailure>{};
     });
     try {
       final stamped = stampSafetyTags(plan, _byId);
-      final sent = await widget.repository.publishCoachPlan(
-        subId: widget.subscription.id,
-        name: _name.text.trim(),
-        workout: stamped,
-        planId: widget.existing?.id,
+      final start = _startsOn == null ? null : dayKey(_startsOn!);
+      if (_also.isEmpty) {
+        final sent = await widget.repository.publishCoachPlan(
+          subId: widget.subscription.id,
+          name: _name.text.trim(),
+          workout: stamped,
+          planId: widget.existing?.id,
+          startsOn: start,
+        );
+        if (!mounted) return;
+        _sentSubs.add(widget.subscription.id);
+        setState(() {
+          _busy = false;
+          _published = true;
+        });
+        widget.onPublished?.call(sent.planId, sent.revision);
+        return;
+      }
+      final ids = <String>[
+        if (!_sentSubs.contains(widget.subscription.id)) widget.subscription.id,
+        for (final id in _also)
+          if (!_sentSubs.contains(id)) id,
+      ];
+      String? firstPlanId;
+      var firstRevision = 1;
+      final outcome = await publishToMany(
+        subIds: ids,
+        send: (subId) async {
+          final sent = await widget.repository.publishCoachPlan(
+            subId: subId,
+            name: _name.text.trim(),
+            workout: stamped,
+            planId: subId == widget.subscription.id
+                ? widget.existing?.id
+                : null,
+            startsOn: start,
+          );
+          if (subId == widget.subscription.id) {
+            firstPlanId = sent.planId;
+            firstRevision = sent.revision;
+          }
+        },
       );
       if (!mounted) return;
+      _sentSubs.addAll(outcome.sent);
       setState(() {
         _busy = false;
-        _published = true;
+        _failed = outcome.failed;
+        _sentCount = _sentSubs.length;
+        _published = outcome.allSent;
       });
-      widget.onPublished?.call(sent.planId, sent.revision);
+      if (outcome.allSent) {
+        if (firstPlanId != null) {
+          widget.onPublished?.call(firstPlanId!, firstRevision);
+        }
+      } else {
+        showHonestNotice(context, l10n.someClientsDidNotGetThePlan);
+      }
     } on CoachingFailure catch (failure) {
       if (!mounted) return;
       setState(() {
@@ -308,9 +401,11 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
               ? const []
               : [
                   AppButton(
-                    widget.existing == null
+                    widget.existing != null
+                        ? l10n.publishAsANewVersion
+                        : _also.isEmpty
                         ? l10n.publishToName(first)
-                        : l10n.publishAsANewVersion,
+                        : l10n.publishToNClients(countLabel(_also.length + 1)),
                     key: const ValueKey('workout-publish'),
                     onPressed: _busy ? null : _publish,
                   ),
@@ -323,6 +418,27 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                   color: AppColors.onSurfaceVariant,
                 ),
               ),
+            if (_failed.isNotEmpty)
+              AppCard(
+                variant: AppCardVariant.amber,
+                key: const ValueKey('assign-partial'),
+                children: [
+                  Text(
+                    l10n.sentToNClients(countLabel(_sentCount)),
+                    style: AppText.titleS,
+                  ),
+                  for (final e in _failed.entries)
+                    Text(
+                      '${_nameOf(e.key)}: ${coachFailureText(l10n, e.value)}',
+                      style: AppText.bodyM,
+                    ),
+                  AppButton(
+                    l10n.tryAgainForN(countLabel(_failed.length)),
+                    key: const ValueKey('assign-retry'),
+                    onPressed: _busy ? null : _publish,
+                  ),
+                ],
+              ),
             if (_published)
               AppCard(
                 variant: AppCardVariant.sage,
@@ -330,7 +446,9 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      l10n.publishedNameCanSeeItNow(first),
+                      _sentSubs.length > 1
+                          ? l10n.sentToNClients(countLabel(_sentSubs.length))
+                          : l10n.publishedNameCanSeeItNow(first),
                       key: const ValueKey('workout-published'),
                       style: AppText.titleS,
                     ),
@@ -354,6 +472,23 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                 ],
                 onChanged: (_) => setState(() => _error = ''),
               ),
+              if (widget.existing == null && widget.others.isNotEmpty)
+                AppButton(
+                  l10n.sendToMoreClients,
+                  key: const ValueKey('assign-more'),
+                  variant: AppButtonVariant.text,
+                  height: 48,
+                  fontSize: 15,
+                  onPressed: _busy ? null : _assign,
+                ),
+              if (_startsOn != null && _also.isNotEmpty)
+                Text(
+                  l10n.startsDate(dateText(l10n, _startsOn)),
+                  key: const ValueKey('assign-summary'),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               if (widget.existing != null)
                 Text(
                   l10n.versionN(countLabel(widget.existing!.revision + 1)),
@@ -361,7 +496,21 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                     color: AppColors.onSurfaceVariant,
                   ),
                 ),
-              for (var i = 0; i < plan.days.length; i++)
+              if (plan.weekCount > 1)
+                Text(
+                  l10n.nWeeks(countLabel(plan.weekCount)),
+                  key: const ValueKey('workout-weeks'),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              for (var i = 0; i < plan.days.length; i++) ...[
+                if (plan.weekCount > 1 &&
+                    (i == 0 || plan.days[i].week != plan.days[i - 1].week))
+                  Text(
+                    l10n.weekN(countLabel(plan.days[i].week)),
+                    style: AppText.titleS,
+                  ),
                 AppListItem(
                   key: ValueKey('workout-day-$i'),
                   title: plan.days[i].session.title(lang),
@@ -372,6 +521,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                     ),
                   ].join(' · '),
                 ),
+              ],
               AppButton(
                 l10n.editDaysAndMoves,
                 key: const ValueKey('workout-edit'),

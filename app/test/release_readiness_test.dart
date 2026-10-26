@@ -29,6 +29,7 @@ import 'package:own_hub/features/today/presentation/today_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/ui/language_switch.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
@@ -716,11 +717,13 @@ void _shippingFlagsTests() {
     ) async {
       await _open(tester, 'A02');
       final l10n = await AppL10n.delegate.load(const Locale('en'));
-      expect(find.text(l10n.myCoach), findsOneWidget);
       expect(find.text(l10n.coachWomenOnOwnHub), findsOneWidget);
-      // And the language chooser is still there, because a build that cannot
-      // change language is a build a woman can be trapped in.
-      expect(find.text(l10n.language), findsOneWidget);
+      // The coach row is on You, and the language switch is in the top bar,
+      // because a build that cannot change language is a build a woman can be
+      // trapped in.
+      expect(find.byType(LanguageSwitchButton), findsOneWidget);
+      await _open(tester, 'P01');
+      expect(find.text(l10n.findACoach), findsOneWidget);
     });
 
     testWidgets('the language chooser opens rather than the switched-off '

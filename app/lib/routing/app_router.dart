@@ -82,6 +82,8 @@ import '../ui/app_step_progress.dart';
 import '../ui/app_undo_snackbar.dart';
 import '../ui/language_switch.dart';
 import '../ui/screen_scope.dart';
+import '../ui/app_list_item.dart';
+import '../ui/app_sheet.dart';
 import '../domain/identity/user_roles.dart';
 import '../domain/rewards/personal_best_ledger.dart';
 import '../domain/week/week_key.dart';
@@ -130,6 +132,7 @@ import '../features/signup/domain/verification.dart';
 import '../features/signup/domain/verification_provider.dart';
 import '../features/coach/domain/coach_invite.dart';
 import '../features/coach/presentation/certificate_camera_view.dart';
+import '../features/coach/presentation/own_hub_link_view.dart';
 import '../features/signup/presentation/being_checked_view.dart';
 import '../features/signup/presentation/coach_interest_sheet.dart';
 import '../features/signup/presentation/founder_welcome_view.dart';
@@ -187,7 +190,6 @@ import '../features/train/presentation/logged_from_memory_view.dart';
 import '../features/train/presentation/mid_set_view.dart';
 import '../features/train/presentation/move_history_sheet.dart';
 import '../features/train/presentation/recent_sessions_view.dart';
-import '../features/train/presentation/move_logged_view.dart';
 import '../features/train/presentation/my_plan_day.dart';
 import '../features/train/presentation/plan_editor_view.dart';
 import '../features/train/presentation/plan_entry_cards.dart'
@@ -257,7 +259,7 @@ import '../features/onboarding/domain/starting_program.dart'
         StartingProgrammes,
         rankStartingPrograms,
         topStartingPrograms;
-import '../domain/training/prescribed_set.dart' show LoggedSet, PrescribedSet;
+import '../domain/training/prescribed_set.dart' show PrescribedSet;
 import '../features/train/domain/load_advice.dart';
 import '../features/train/domain/weight_label.dart' show weightLabel;
 import '../features/train/domain/programme_week.dart';
@@ -435,6 +437,10 @@ import '../features/private_coaching/presentation/client/coach_home_card.dart';
 import '../features/private_coaching/presentation/client/coach_today.dart'
     show todaysWorkoutDay;
 import '../features/private_coaching/presentation/client/from_your_coach_section.dart';
+import '../app_state/coach_meal_swaps.dart';
+import '../features/private_coaching/presentation/client/grocery_list.dart';
+import '../features/private_coaching/presentation/client/grocery_list_view.dart'
+    as coach_grocery;
 import 'app_routes.dart';
 import 'screen_features.dart';
 import 'session_over_redirect.dart';
@@ -481,6 +487,11 @@ String? screenIdForRoute(String routeName) {
   }
   return null;
 }
+
+/// A path shaped like a link (`/c/...` or `/p/...`) that did not parse, so she
+/// sees "This link does not work" rather than a developer page.
+bool _looksLikeOwnHubLink(String name) =>
+    name.startsWith('/c/') || name.startsWith('/p/');
 
 class AppRouter {
   /// Where usage statistics go: the tour, each sign-up step reached and
@@ -530,6 +541,13 @@ class AppRouter {
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final name = settings.name;
     if (name == null) return null;
+    final link = parseOwnHubLink(name);
+    if (link != null || _looksLikeOwnHubLink(name)) {
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => OwnHubLinkView(link: link, onOpen: followLink),
+      );
+    }
     final id = screenIdForRoute(name);
     if (id == null) return null;
 
@@ -2507,6 +2525,7 @@ class AppRouter {
         ),
         followUp: _followUpCard(context),
         coachCard: _coachHomeCard(context),
+        onOpenCoach: () => goTo(context, 'H05'),
         onOpenStreak: () => unawaited(openTrainingStreak(context)),
         challengeLine: challengeLineFor(
           context,
@@ -2937,6 +2956,7 @@ class AppRouter {
               (_plannedWorkoutDay(context) ??
                       sampleWorkoutDay(AppL10n.of(context)))
                   .moves,
+          holdLoad: _holdsLoad(),
           exerciseFor: ExerciseLibraryState.instance.byId,
           media: ExerciseLibraryState.instance.media,
           players: ExerciseLibraryState.instance.players,
@@ -3105,8 +3125,8 @@ class AppRouter {
             _trackSetLogged('set');
             // The last set of the workout has no rest after it.
             if (session.isComplete) {
-              _finishWorkout();
-              goTo(context, 'R10');
+              _finishAfterWindow(handle);
+              _goCarryingHandle(context, 'R10', handle);
             } else {
               _goCarryingHandle(context, 'R09', handle);
             }
@@ -3121,7 +3141,7 @@ class AppRouter {
     // One tap logs the set and starts the rest timer.
     //
     // The LogHandle is carried forward, not discarded. It IS the five-second
-    // undo: R09 and R13 render `handle.describe` in the snackbar and call
+    // undo: R09 and R10 render `handle.describe` in the page and call
     // `handle.undo()`. Dropping it here would leave the next screen with a
     // canned message and no way to take the log back — rule 9 broken by the
     // wiring while every widget test stayed green, because each screen is
@@ -3200,8 +3220,8 @@ class AppRouter {
             // The last set of the workout has no rest after it (3.3): it goes
             // straight to the finish, like Finish and save.
             if (WorkoutSessionState.instance.isComplete) {
-              _finishWorkout();
-              goTo(context, 'R10');
+              _finishAfterWindow(handle);
+              _goCarryingHandle(context, 'R10', handle);
             } else {
               _goCarryingHandle(context, 'R09', handle);
             }
@@ -3212,8 +3232,8 @@ class AppRouter {
             session.moveLogged();
             _trackSetLogged('move');
             if (session.isComplete) {
-              _finishWorkout();
-              goTo(context, 'R10');
+              _finishAfterWindow(handle);
+              _goCarryingHandle(context, 'R10', handle);
               return;
             }
             // The next move at once, with the five seconds of Undo carried in
@@ -3243,12 +3263,11 @@ class AppRouter {
         ),
       );
     },
-    // Opened from R13 with a set she already logged, R08 corrects it instead.
     'R08': (context) => SessionEndFrame(
       end: _sessionEnd(context),
       overlay: true,
       guardPop: false,
-      child: _setCorrectionFrom(context) ?? _changeCurrentSet(context),
+      child: _changeCurrentSet(context),
     ),
     'R09': (context) {
       final end = _sessionEnd(context);
@@ -3313,54 +3332,72 @@ class AppRouter {
         ),
       );
     },
-    'R10': (context) => FinishedView(
-      // The session this page is reporting on. Without it the page could not
-      // tell a measured session from a recalled one and drew the personal-best
-      // card for every woman who finished anything at all.
-      session: WorkoutSessionState.instance.lastFinished,
-      // What the session really was, once its credit has landed (D40). R10
-      // redraws when it does.
-      summary: WorkoutSessionState.instance.lastSummary,
-      // The workout's own name on the share card. The day is cleared when the
-      // session finishes, so the name is kept beside the finished session.
-      workoutName: WorkoutSessionState.instance.lastFinishedTitle,
-      // Hands the card's PNG to the share sheet, anchored at the button.
-      onShareImage: AppRouter.shareProgressCard,
-      awaitingSummary:
-          WorkoutSessionState.instance.lastFinished != null &&
-          WorkoutSessionState.instance.lastSummary == null,
-      // The kitten cheers her first sessions and the one that counts her
-      // week, within its one-per-sitting budget.
-      cheer: _cheerOnFinish,
-      // Her week, her points — the same numbers Home and Progress read.
-      sessionsThisWeek: todayRepository.day.week.sessionsLogged,
-      sessionsPrescribed: todayRepository.day.week.sessionsTarget,
-      levelProgressPercent: _levelProgressPercent,
-      // Home with the session's screens cleared, so a back gesture from Home
-      // does not walk back through the finished workout.
-      onBackToToday: () =>
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
-      // Offered once the credit has landed, so there is a credit to take back.
-      onRemove: switch ((
-        WorkoutSessionState.instance.lastFinished,
-        WorkoutSessionState.instance.lastSummary,
-      )) {
-        (final TrainSession session, final SessionSummary summary) =>
-          () => _removeSession(
-            context,
-            sessionId: session.id,
-            source: session.source,
-            sessionPoints: summary.credit.sessionPoints,
-            bestPoints: summary.bestPoints,
-          ),
-        _ => null,
-      },
-      onShare: () => goTo(context, 'M03'),
-      onOpenRecentSessions: featureFlags.isOn(Feature.trainHistory)
-          ? () => openRecentSessions(context)
-          : null,
-    ),
+    'R10': (context) {
+      // While the last set's five seconds are open the session is not finished
+      // yet, so the page holds only its first stage and the Undo.
+      final closing = _closingLog != null;
+      return FinishedView(
+        lastLog: closing ? handleFrom(context) : null,
+        onUndoLastLog: () {
+          _closingLog = null;
+          if (WorkoutSessionState.instance.undoLast()) _backToSet(context);
+        },
+        // The session this page is reporting on. Without it the page could not
+        // tell a measured session from a recalled one and drew the personal-best
+        // card for every woman who finished anything at all.
+        session: closing ? null : WorkoutSessionState.instance.lastFinished,
+        // What the session really was, once its credit has landed (D40). R10
+        // redraws when it does.
+        summary: closing ? null : WorkoutSessionState.instance.lastSummary,
+        // The workout's own name on the share card. The day is cleared when the
+        // session finishes, so the name is kept beside the finished session.
+        workoutName: WorkoutSessionState.instance.lastFinishedTitle,
+        // Hands the card's PNG to the share sheet, anchored at the button.
+        onShareImage: AppRouter.shareProgressCard,
+        awaitingSummary:
+            closing ||
+            (WorkoutSessionState.instance.lastFinished != null &&
+                WorkoutSessionState.instance.lastSummary == null),
+        // The tick draws her first sessions and the one that counts her
+        // week, within its one-per-sitting budget.
+        cheer: _cheerOnFinish,
+        // Her week, her points — the same numbers Home and Progress read.
+        sessionsThisWeek: todayRepository.day.week.sessionsLogged,
+        sessionsPrescribed: todayRepository.day.week.sessionsTarget,
+        levelProgressPercent: _levelProgressPercent,
+        // Home with the session's screens cleared, so a back gesture from Home
+        // does not walk back through the finished workout.
+        onBackToToday: () {
+          _finishNow();
+          unawaited(
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil(appRoutes['T01']!.name, (_) => false),
+          );
+        },
+        // Offered once the credit has landed, so there is a credit to take back.
+        onRemove: switch ((
+          closing ? null : WorkoutSessionState.instance.lastFinished,
+          closing ? null : WorkoutSessionState.instance.lastSummary,
+        )) {
+          (final TrainSession session, final SessionSummary summary) =>
+            () => _removeSession(
+              context,
+              sessionId: session.id,
+              source: session.source,
+              sessionPoints: summary.credit.sessionPoints,
+              bestPoints: summary.bestPoints,
+            ),
+          _ => null,
+        },
+        onShare: () {
+          _finishNow();
+          goTo(context, 'M03');
+        },
+        onOpenRecentSessions: featureFlags.isOn(Feature.trainHistory)
+            ? () => openRecentSessions(context)
+            : null,
+      );
+    },
     // Eat. E09 is a BRANCH of E01, not a destination: `firstRunStates` keeps it
     // out of `appDestinations` and `routing_test.dart` pins that, so "Eat,
     // empty" cannot be opened over an Eat screen that is not empty.
@@ -3583,78 +3620,6 @@ class AppRouter {
         _ => null,
       },
     ),
-    // Logs a whole move and returns to the move list — the session does NOT end.
-    'R13': (context) {
-      if (_sessionIsOver) {
-        return SessionOverRedirect(onLeave: () => _backToToday(context));
-      }
-      final end = _sessionEnd(context);
-      return SessionEndFrame(
-        end: end,
-        child: MoveLoggedView(
-          end: end,
-          handle: handleFrom(context),
-          moves: WorkoutSessionState.instance.moves,
-          // Moves struck off, not sets. This passed `loggedSetCount` into a count
-          // rendered as moves, so two moves of three sets each read "6 of 5" over
-          // a list of five, every row struck through and none marked next.
-          loggedCount: WorkoutSessionState.instance.moveIndex,
-          title: WorkoutSessionState.instance.day?.title,
-          sets: _setsProgress,
-          // A move she logged opens its sets on R08, to change one after the
-          // five seconds. Anything still inside its window is written first, so
-          // what she corrects is what was saved.
-          editableSets: (index) async {
-            final session = WorkoutSessionState.instance;
-            await session.bus.flushAll();
-            final moves = session.moves;
-            if (index >= moves.length) return const <LoggedSet>[];
-            return trainRepository.loggedSetsFor(
-              sessionId: session.sessionId,
-              exerciseId: moves[index].exerciseId,
-            );
-          },
-          onEditSet: (index, set) => Navigator.of(context).pushNamed(
-            appRoutes['R08']!.name,
-            arguments: SetCorrection(
-              move: WorkoutSessionState.instance.moves[index],
-              moveNumber: index + 1,
-              set: set,
-            ),
-          ),
-          // Back to the set she took back, on R07 — never to R08 if the set was
-          // saved from there.
-          onUndo: () {
-            if (WorkoutSessionState.instance.undoLast()) _backToSet(context);
-          },
-          onClose: () => Navigator.of(context).maybePop(),
-          // The next move, or the end of the session when that was the last one.
-          onNextMove: () {
-            if (WorkoutSessionState.instance.isComplete) {
-              _finishWorkout();
-              goTo(context, 'R10');
-            } else if (_sessionIsOver) {
-              _backToToday(context);
-            } else {
-              if (_holdIsNext()) {
-                goTo(context, 'R06');
-              } else {
-                goTo(context, 'R07');
-              }
-            }
-          },
-          onFinishHere: () {
-            // Read before the finish lands: with moves still left, this session
-            // ended early. Sent ahead of the `workout_complete` every finish sends.
-            if (!WorkoutSessionState.instance.isComplete) {
-              unawaited(analytics.track(AnalyticsEvent.workoutEndedEarly));
-            }
-            _finishWorkout();
-            goTo(context, 'R10');
-          },
-        ),
-      );
-    },
     // One move's clip. Re-screened here, so a move hidden for her cannot be
     // reached by an id left over from before her answers changed.
     'R15': (context) => ExerciseDemoView(
@@ -3699,8 +3664,9 @@ class AppRouter {
         ),
         onOpenSettings: () => goTo(context, 'A02'),
         onOpenInsights: () => goTo(context, 'P07'),
-        onOpenCoach: () =>
-            goTo(context, currentCoachingAsClient() == null ? 'H01' : 'H05'),
+        onOpenCoach: () => currentCoachingAsClient() == null
+            ? goTo(context, 'H01')
+            : goTo(context, 'H05'),
         onOpenEvents: () => goTo(context, 'T09'),
         onOpenCycle: () => goTo(context, 'Y03'),
         onOpenCommunity: () => goTo(context, 'M01'),
@@ -3842,23 +3808,6 @@ class AppRouter {
     'A02': (context) => ProfileView(
       dietaryRepository: dietaryRepository,
       onBack: () => Navigator.of(context).maybePop(),
-      onOpenCycle: () => goTo(context, 'Y03'),
-      // D11's promised door into coaching, and it was built and never
-      // connected. `traineeTabs` records that the fifth Coaching tab was
-      // deleted because "D11 moves it into her profile instead", and warns
-      // that dropping the tab and the capability together "would have quietly
-      // dropped a launch feature nobody asked to lose". That is exactly what
-      // had happened: ProfileView renders the row, `onOpenCoach` existed, and
-      // this builder wired seven callbacks and silently omitted it -- so the
-      // entire marketplace was reachable only down the sign-up chain, six to
-      // eight taps deep.
-      //
-      // H01, the directory, because with no relationship store wired every
-      // woman is `browsing`. When one exists this should read her stage and
-      // send a coached woman to H05 instead; `MarketplaceStage` already draws
-      // that distinction.
-      // My coach: her coach, or the way to find one.
-      onOpenCoach: () => goTo(context, 'H05'),
       onOpenCoachSpace: PrivateCoachingState.instance.isCoach
           ? () => goTo(context, 'K18')
           : null,
@@ -3882,8 +3831,6 @@ class AppRouter {
           ..editingFromProfile = true;
         goTo(context, 'O01');
       },
-      onOpenLanguage: () => goTo(context, 'C02'),
-      onOpenNotifications: () => goTo(context, 'A01'),
       onOpenPrivacy: () => goTo(context, 'A03'),
       onOpenSafetyCentre: () => goTo(context, 'A04'),
       // Apple 5.1.1(v). The row rendered and this callback was never passed,
@@ -5064,6 +5011,9 @@ class AppRouter {
         ),
         onOpenDashboard: () => goToTab(context, 'K07'),
         onOpenChats: () => goToTab(context, 'W10'),
+        onInviteClient: () => unawaited(shareCoachInvite(context)),
+        onShareProfile: (coachUid) =>
+            unawaited(shareProfileLink(context, coachUid)),
         onBack: () => Navigator.of(context).maybePop(),
       ),
     ),
@@ -5080,6 +5030,7 @@ class AppRouter {
               .pushNamed(appRoutes['W02']!.name, arguments: subId),
         ),
         onOpenClients: (filter) => goToTab(context, 'W01', arguments: filter),
+        onInviteClient: () => unawaited(shareCoachInvite(context)),
       ),
     ),
     'W01': (context) {
@@ -5234,6 +5185,7 @@ class AppRouter {
     },
     'H03': (context) => CoachPlanScreen(
       planId: _routeString(context),
+      doneThisWeek: sessionsDoneThisWeek(trainRepository.sessions),
       lifeStage: intakeRepository.read().lifeStage,
       constraints: eatConstraints,
       onStartWorkout: (plan, dayIndex) {
@@ -5261,6 +5213,23 @@ class AppRouter {
           goTo(context, 'E06');
         },
       ),
+      onGrocery: (plan) {
+        if (plan.meal == null) return;
+        unawaited(
+          Navigator.of(context).push<void>(
+            MaterialPageRoute<void>(
+              builder: (route) => coach_grocery.GroceryListView(
+                lines: groceryFor(
+                  plan.meal!,
+                  coachMealCatalog(AppL10n.of(context)),
+                  Localizations.localeOf(context).languageCode,
+                ),
+                onBack: () => Navigator.of(route).maybePop(),
+              ),
+            ),
+          ),
+        );
+      },
       onBack: () => Navigator.of(context).maybePop(),
     ),
     'H05': (context) => _whenCoaching(context, (repository) {
@@ -6505,7 +6474,7 @@ class AppRouter {
   };
 
   /// A set logged in a workout: `set` for one (`R07`, `R08`), `move` for a
-  /// whole move at once (`R13`). Never the move, the load or the reps.
+  /// whole move at once ("I did them all"). Never the move, the load or the reps.
   static void _trackSetLogged(String source) => unawaited(
     analytics.track(AnalyticsEvent.setLogged, {
       AnalyticsProp.source: AnalyticsValue.token(source),
@@ -6578,6 +6547,32 @@ class AppRouter {
     return args is LogHandle ? args : null;
   }
 
+  /// The workout's last log, while its five seconds are open. R10 offers Undo
+  /// for it, and the session is finished when the window closes, so taking the
+  /// set back can still put her on it. Null once the session is finished or
+  /// the log is taken back.
+  static Object? _closingLog;
+
+  /// Finishes the workout when [handle]'s window closes, unless she took it
+  /// back (R10's Undo clears [_closingLog] first) or finished sooner.
+  static void _finishAfterWindow(LogHandle handle) {
+    final token = _closingLog = Object();
+    handle.whenClosed(
+      () => scheduleMicrotask(() {
+        if (identical(_closingLog, token)) _finishWorkout();
+      }),
+    );
+  }
+
+  /// Finishes at once if R10 is still waiting out the last set's window. The
+  /// app calls it when it goes to the background, so a phone killed inside
+  /// the window does not lose the last set.
+  static void finishWorkoutIfClosing() => _finishNow();
+
+  static void _finishNow() {
+    if (_closingLog != null) _finishWorkout();
+  }
+
   /// Ends the session. The caller navigates, so the route it goes to stays
   /// visible in the builder above — `nav_reachability_test` reads those
   /// literals, and a `goTo` hidden in here makes R10 look like dead code.
@@ -6586,6 +6581,7 @@ class AppRouter {
   /// the award ledger and in Today's copy — so finishing twice, or a tap that
   /// arrives late, counts once.
   static void _finishWorkout() {
+    _closingLog = null;
     // Read before the finish lands: whether this was her first session, and
     // how far her week was from its target.
     final firstEver = todayRepository.day.isDayOne;
@@ -6599,7 +6595,6 @@ class AppRouter {
       today: todayRepository,
       progress: progressStore,
       challengeNow: plan == null ? null : () => challengeFor(plan),
-      difficult: _holdsLoad(),
     );
     if (!counted) {
       unawaited(done);
@@ -6747,7 +6742,7 @@ class AppRouter {
     return null;
   }
 
-  /// Whether R10's kitten cheers: the first three sessions she ever finishes,
+  /// Whether R10's tick draws: the first three sessions she ever finishes,
   /// and the session that counts her week.
   static bool get _cheerOnFinish {
     final summary = WorkoutSessionState.instance.lastSummary;
@@ -6817,55 +6812,6 @@ class AppRouter {
   /// rearranged week.
   static LogCommandBus changeBus = LogCommandBus();
 
-  /// R08 opened from R13 on a set she already logged: the save replaces that
-  /// set, the session stays where it is, and she is back on the list with
-  /// Undo. Null when R08 was opened for the set she is on.
-  static Widget? _setCorrectionFrom(BuildContext context) {
-    final correction = ModalRoute.of(context)?.settings.arguments;
-    if (correction is! SetCorrection) return null;
-    final session = WorkoutSessionState.instance;
-    final prescribed = correction.set.prescribed;
-    final lifted = correction.set.outcome?.weightKg;
-    final equipment = _equipmentOf(correction.move);
-    return ChangeSetView(
-      correcting: true,
-      repository: trainRepository,
-      sessionId: session.sessionId,
-      moveNumber: correction.moveNumber,
-      moveCount: session.moveCount,
-      prescribed: prescribed,
-      moveName: correction.move.name,
-      weightOptionsKg: weightOptionsAround(
-        lifted == null
-            ? prescribed
-            : PrescribedSet(
-                exerciseId: prescribed.exerciseId,
-                order: prescribed.order,
-                weightKg: lifted,
-                reps: prescribed.reps,
-                holdSeconds: prescribed.holdSeconds,
-              ),
-        equipment: equipment,
-      ),
-      equipment: equipment,
-      plateHelper: featureFlags.isOn(Feature.gymHelpers),
-      askWeight: correction.move.needsEquipment,
-      // The session's bus, without attaching: closing this page must not
-      // commit the correction early and take its Undo away with it.
-      bus: session.bus,
-      sets: _setsProgress,
-      onClose: () => Navigator.of(context).maybePop(),
-      onSaved: (handle) {
-        showUndoSnackBar(
-          context,
-          handle: handle,
-          undoLabel: AppL10n.of(context).undo,
-        );
-        Navigator.of(context).maybePop();
-      },
-    );
-  }
-
   /// R10 and R12: asks, then takes the session off her week with Undo, and
   /// lands her on Home. The session and its own credit come off when the
   /// window closes; see `RewardsState.uncreditSession` for what stays.
@@ -6917,7 +6863,7 @@ class AppRouter {
     return (done: session.setsDone, total: session.setsTotal);
   }
 
-  /// Pops back to the R07 under this screen: R09 or R13 sits on R07, or on
+  /// Pops back to the R07 under this screen: R09 or R10 sits on R07, or on
   /// R08 over R07 when the set was changed there. Never more than two
   /// screens, so a stack shaped any other way is left where it is rather than
   /// emptied down to whatever happens to be first.
@@ -7388,6 +7334,24 @@ class AppRouter {
     );
   }
 
+  /// A link the platform opened. An invite is kept and sent when she may send
+  /// it ([redeemPendingInvite] checks); a profile opens that coach's page, and
+  /// the verification gate in [onGenerateRoute] decides if she may see it.
+  static void followLink(OwnHubLink link) {
+    switch (link.kind) {
+      case OwnHubLinkKind.invite:
+        CoachInviteState.instance.keepPending(link.value);
+        unawaited(redeemPendingInvite());
+      case OwnHubLinkKind.profile:
+        unawaited(
+          navigatorKey?.currentState?.pushNamed(
+            appRoutes['H02']!.name,
+            arguments: CoachPortfolioArgs(link.value),
+          ),
+        );
+    }
+  }
+
   /// `K07`'s "Invite a client": her code, in a WhatsApp message she sends to
   /// whoever she chooses. Said plainly when it cannot be made or opened.
   static Future<void> shareCoachInvite(BuildContext context) async {
@@ -7402,11 +7366,24 @@ class AppRouter {
     }
     final shown = displayInviteCode(code);
     final opened = await openOutside(
-      whatsAppShareUri(l10n.joinMeOnOwnHubTheTraining(shown)),
+      whatsAppShareUri(
+        l10n.joinMeOnOwnHubTheTraining_s0kkx(inviteLinkFor(code), shown),
+      ),
     );
     if (!opened) {
       showHonestNoticeOn(messenger, l10n.weCouldNotOpenWhatsappYourCode(shown));
     }
+  }
+
+  /// `K18`'s "Share my profile link": the phone's share sheet with one line.
+  static Future<void> shareProfileLink(
+    BuildContext context,
+    String coachUid,
+  ) async {
+    final text = AppL10n.of(
+      context,
+    ).trainWithMeOnOwnHubLink(profileLinkFor(coachUid));
+    await SharePlus.instance.share(ShareParams(text: text));
   }
 
   /// `K02`: the camera, then the upload, then a word if it did not go.
@@ -8697,8 +8674,8 @@ class AppRouter {
         session.setLogged();
         _trackSetLogged('set');
         if (session.isComplete) {
-          _finishWorkout();
-          goTo(context, 'R10');
+          _finishAfterWindow(handle);
+          _goCarryingHandle(context, 'R10', handle);
         } else {
           _goCarryingHandle(context, 'R09', handle);
         }
@@ -8840,6 +8817,7 @@ class AppRouter {
               plan,
               sessionsDoneThisWeek(trainRepository.sessions),
               stage,
+              startsOn: workout?.startsOn,
             ) ==
             null) {
       return null;
@@ -8854,7 +8832,6 @@ class AppRouter {
           hasUnread: coaching.hasUnread(sub.relId),
           doneThisWeek: sessionsDoneThisWeek(trainRepository.sessions),
           lifeStage: stage,
-          onOpen: () => goTo(context, 'H05'),
           onStartWorkout: (plan, day) {
             if (!startCoachWorkout(plan, day, stage)) return;
             _startToday(
@@ -8912,6 +8889,61 @@ class AppRouter {
       onOpenPlan: () => unawaited(
         Navigator.of(context)
             .pushNamed(appRoutes['H03']!.name, arguments: shown.id),
+      ),
+      onSwap: (day, slot, index, item) => unawaited(
+        showAppSheet<void>(
+          context: context,
+          children: [
+            Builder(builder: (sheet) {
+              final l10n = AppL10n.of(sheet);
+              final lang = Localizations.localeOf(sheet).languageCode;
+              final catalog = coachMealCatalog(l10n);
+              String title(String id) {
+                final r = catalog.recipe(id);
+                if (r == null) return id;
+                final ar = r.titleAr;
+                return lang == 'ar' && ar != null && ar.isNotEmpty ? ar : r.titleEn;
+              }
+              void pick(String? id) {
+                CoachMealSwaps.instance.choose(shown.id, day, slot, index, id);
+                Navigator.of(sheet).pop();
+              }
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(l10n.changeTo, style: AppText.titleL),
+                  AppListItem(
+                    key: const ValueKey('swap-keep'),
+                    title: title(item.recipeId!),
+                    subtitle: l10n.thePlannedDish,
+                    onTap: () => pick(null),
+                  ),
+                  for (final id in item.swaps)
+                    AppListItem(
+                      key: ValueKey('swap-choice-$id'),
+                      title: title(id),
+                      onTap: () => pick(id),
+                    ),
+                ],
+              );
+            }),
+          ],
+        ),
+      ),
+      onGrocery: () => unawaited(
+        Navigator.of(context).push<void>(
+          MaterialPageRoute<void>(
+            builder: (route) => coach_grocery.GroceryListView(
+              lines: groceryFor(
+                shown.meal!,
+                coachMealCatalog(AppL10n.of(context)),
+                Localizations.localeOf(context).languageCode,
+              ),
+              onBack: () => Navigator.of(route).maybePop(),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -9394,7 +9426,7 @@ class AppRouter {
   /// closed, down to the one below R03.
   static void _leaveSession(BuildContext context) {
     final inSession = {
-      for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09', 'R13'])
+      for (final id in ['R03', 'R05', 'R06', 'R07', 'R08', 'R09'])
         appRoutes[id]!.name,
     };
     final navigator = Navigator.of(context);
@@ -9418,8 +9450,8 @@ class AppRouter {
   }
 
   /// The "End workout" control for a live workout screen, or null when no
-  /// workout is live. Finish and save takes the same path as R13's "Finish
-  /// here"; Discard puts the workout away uncounted.
+  /// workout is live. Finish and save takes the same path
+  /// as finishing the last set; Discard puts the workout away uncounted.
   static SessionEnd? _sessionEnd(BuildContext context) {
     final session = WorkoutSessionState.instance;
     if (!session.isLive) return null;

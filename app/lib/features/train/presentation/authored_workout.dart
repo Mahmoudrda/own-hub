@@ -58,6 +58,7 @@ PlannedMove plannedMoveFrom(
     cues: [
       for (final text in [
         _pick(languageCode, move.safetyEn, move.safetyAr),
+        if (move.supersetWithNext) l10n.supersetGoStraightToTheNextMove,
         _pick(languageCode, move.notesEn, move.notesAr),
       ])
         if (text.trim().isNotEmpty) text.trim(),

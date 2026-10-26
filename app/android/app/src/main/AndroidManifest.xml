@@ -23,11 +23,15 @@
     <!-- Stripped from the MERGED manifest, because plugins add them. The
          camera plugin declares RECORD_AUDIO for video, and this app records no
          sound (enableAudio is false in camera_capture_service.dart); a library
-         can also bring READ_EXTERNAL_STORAGE. Neither may reach a store build:
+         can also bring READ_EXTERNAL_STORAGE. READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE may not reach a store build:
          each is a Data safety declaration for a capability we do not use.
          WRITE_EXTERNAL_STORAGE goes too: camerax writes only to the app's
          cache. -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
+    <!-- Voice notes in the coaching chat (hold to record). Asked at the
+         first hold, never at launch. The camera capture still records no
+         sound (enableAudio is false); video messages use the system camera
+         app through image_picker. Declared in play-data-safety.txt. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
 
@@ -113,6 +117,13 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="own-hub.app" android:pathPrefix="/c/"/>
+                <data android:scheme="https" android:host="own-hub.app" android:pathPrefix="/p/"/>
             </intent-filter>
         </activity>
         <!-- Crash reporting is off until Dart turns it on, and Dart turns it

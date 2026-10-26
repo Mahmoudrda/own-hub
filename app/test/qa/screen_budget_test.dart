@@ -10,7 +10,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/events_state.dart';
+import 'package:own_hub/app_state/follow_up_state.dart';
+import 'package:own_hub/app_state/private_coaching_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
+import 'package:own_hub/domain/clock/app_clock.dart';
+import 'package:own_hub/features/events/domain/hub_event.dart';
+import 'package:own_hub/features/followup/presentation/follow_up_card.dart';
+import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
+import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/onboarding/domain/starting_program.dart';
 import 'package:own_hub/features/train/presentation/workout_day_view.dart';
@@ -23,9 +31,14 @@ import 'package:own_hub/routing/app_router.dart';
 
 import '../helpers/control_counter.dart';
 import '../helpers/primary_actions.dart';
+import '../features/private_coaching/plans/plans_support.dart' show workoutPlan;
+import '../features/private_coaching/support/fake_coaching_repository.dart';
+import '../features/private_coaching/support/fixtures.dart';
 import 'round1/round1_harness.dart';
 
-const bool kChromeCounts = false; // provisional: owner decides whether the shared top bar counts like the tab bar
+/// Owner decision (24 Oct 2026): the shared top bar (her picture and the
+/// language switch) is chrome, excluded from every budget like the tab bar.
+const bool kChromeCounts = false;
 
 const maxOtherControls = 5;
 const maxPrimaryActions = 1;
@@ -37,7 +50,17 @@ final Map<String, ({int controls, int primary})> budgets = {
 };
 
 /// Screens whose assertion is on.
-const simplified = {'P01'};
+const simplified = {
+  'T01',
+  'E01',
+  'E02',
+  'P01',
+  'A02',
+  'H05',
+  'H02',
+  'H03',
+  'T09',
+};
 
 /// The Train and workout screens, asserted in their main states below.
 const trainScreens = ['R01', 'R02', 'R03', 'R07', 'R09', 'R10'];
@@ -55,6 +78,8 @@ const screenIds = [
   'P01',
   'A02',
   'H05',
+  'H02',
+  'H03',
   'T09',
 ];
 
@@ -237,10 +262,122 @@ void main() {
     }
   });
 
-  group('Home and Eat, reported only', () {
+  group('Home, asserted in every state', () {
+    final tuesday = DateTime(2026, 9, 15, 9, 41);
+    late FakeCoachingRepository coaching;
+
+    setUp(() {
+      AppRouter.featureFlags = shippingFlags().with_(<Feature, bool>{
+        Feature.events: true,
+        Feature.followUps: true,
+      });
+      wipe();
+      FollowUpState.instance.reset();
+      FollowUpCard.lastThanks = null;
+      EventsState.instance.seed(const []);
+      AppRouter.intakeRepository.markSetupDone();
+      coaching = FakeCoachingRepository(uid: 'me');
+      AppClock.debugNow = () => tuesday;
+    });
+    tearDown(() {
+      AppClock.debugNow = null;
+      PrivateCoachingState.instance.stop();
+      AppRouter.trainRepository.reset();
+      AppRouter.intakeRepository.reset();
+      EventsState.instance.seed(const []);
+      FollowUpState.instance.reset();
+      wipe();
+    });
+
+    Future<void> arrange(String state) async {
+      if (state != 'newWoman') {
+        await AppRouter.todayRepository.countWalk();
+        AppRouter.todayRepository.rollTo(tuesday);
+      }
+      if (state == 'followUp') {
+        AppRouter.trainRepository.restore(
+          sessions: [
+            TrainSession(
+              id: 'live-2026-09-14',
+              source: SessionSource.live,
+              dateKey: '2026-09-14',
+              completed: true,
+              endedReason: EndedReason.finished,
+              sets: [
+                for (var i = 0; i < 3; i++)
+                  LoggedSet(
+                    prescribed: PrescribedSet(
+                      exerciseId: 'goblet_squat',
+                      order: i,
+                      weightKg: 12.5,
+                      reps: 10,
+                    ),
+                    outcome: const SetOutcome(weightKg: 12.5, reps: 10),
+                  ),
+              ],
+            ),
+          ],
+        );
+      }
+      if (state == 'event') {
+        EventsState.instance.seed([
+          HubEvent(
+            id: 'e1',
+            titleEn: 'Morning stretch, together',
+            titleAr: 'تمدد الصبح',
+            startsAt: DateTime.utc(2026, 11, 5, 16, 30),
+            endsAt: DateTime.utc(2026, 11, 5, 17, 30),
+            mode: EventMode.online,
+            link: 'https://meet.example.com/stretch',
+            status: EventStatus.published,
+          ),
+        ]);
+      }
+      if (state == 'coached') {
+        coaching.clientSubs.value = [
+          sub('s1', SubscriptionStatus.active, coachUid: 'c1'),
+        ];
+        coaching.plans.value = [
+          CoachPlan(
+            id: 'w1',
+            kind: PlanKind.workout,
+            coachUid: 'c1',
+            name: 'Strength',
+            workout: workoutPlan(),
+          ),
+        ];
+        PrivateCoachingState.instance.start(coaching);
+      }
+    }
+
     for (final locale in const [Locale('en'), Locale('ar')]) {
       for (final size in const [Size(390, 844), Size(375, 667)]) {
-        for (final id in const ['T01', 'E01']) {
+        for (final state in const [
+          'newWoman',
+          'midWeek',
+          'coached',
+          'followUp',
+          'event',
+        ]) {
+          testWidgets('T01 $state ${locale.languageCode} '
+              '${size.width.toInt()}x${size.height.toInt()}', (tester) async {
+            tester.view.physicalSize = size * 3;
+            tester.view.devicePixelRatio = 3.0;
+            addTearDown(tester.view.reset);
+            await arrange(state);
+            await open(tester, appDestinations['T01']!.name, locale: locale);
+            expect(topScreen(tester), 'T01');
+            expectWithinBudget(tester, 'T01');
+          });
+        }
+      }
+    }
+  });
+
+  group('Eat, reported only', () {
+    for (final locale in const [Locale('en'), Locale('ar')]) {
+      for (final size in const [Size(390, 844), Size(375, 667)]) {
+        for (final id in const ['E01']) {
           testWidgets('$id report ${locale.languageCode} ${size.width.toInt()}x'
               '${size.height.toInt()}', (tester) async {
             tester.view.physicalSize = size * 3;

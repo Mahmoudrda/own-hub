@@ -169,15 +169,13 @@ class WelcomeView extends StatelessWidget {
         ),
       ],
       children: [
-        // The kitten waves hello from the top row, in space the screen was
-        // not using, so nothing below it moves. A wrap, so at the largest
-        // text sizes the language toggle takes a line of its own.
+        // A wrap, so at the largest text sizes the language toggle takes a
+        // line of its own.
         Wrap(
-          alignment: WrapAlignment.spaceBetween,
+          alignment: WrapAlignment.end,
           crossAxisAlignment: WrapCrossAlignment.center,
           runSpacing: 8,
           children: [
-            const Kitten(pose: KittenPose.wave, size: 52, moment: 'C01'),
             if (preference case final preference?)
               LanguageToggle(preference: preference),
           ],

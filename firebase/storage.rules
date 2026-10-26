@@ -93,6 +93,10 @@ service firebase.storage {
       return false;
     }
 
+    function coachClientsLiveStorage() {
+      return true;
+    }
+
     // ------------------------------------------------ the content library
     //
     // Exercise demonstrations, recipe photographs, programme artwork. Uploaded
@@ -265,6 +269,41 @@ service firebase.storage {
     match /payment-proofs/{uid}/{file} {
       allow read: if coachPaymentsLive() && (isAdmin() || isFinance());
       allow write: if false;
+    }
+
+    // -------------------------------------------------- coaching chat media
+    //
+    // chat-media/{relId}/{uid}/{file}. relId is {coachUid}__{clientUid}. The
+    // two people of the thread read; only the folder's owner (one of the two)
+    // writes, verified, within the limits. The service re-checks every file
+    // when the message arrives and deletes what does not pass.
+    function inThread(relId) {
+      return signedIn() && request.auth.uid in relId.split('__');
+    }
+
+    function isChatVideo() {
+      return request.resource.contentType in ['video/mp4', 'video/quicktime'];
+    }
+
+    function isChatAudio() {
+      return request.resource.contentType in ['audio/mp4', 'audio/aac'];
+    }
+
+    function chatMediaWrite(relId, uid) {
+      return coachClientsLiveStorage()
+          && isOwner(uid)
+          && inThread(relId)
+          && request.auth.token.get('verified', false) == true
+          && ((request.resource.contentType == 'image/jpeg' && request.resource.size <= 3 * 1024 * 1024)
+              || (isChatVideo() && request.resource.size <= 25 * 1024 * 1024)
+              || (isChatAudio() && request.resource.size <= 2 * 1024 * 1024));
+    }
+
+    match /chat-media/{relId}/{uid}/{file} {
+      allow read: if coachClientsLiveStorage() && inThread(relId);
+      allow create: if chatMediaWrite(relId, uid) && resource == null;
+      allow update: if false;
+      allow delete: if isOwner(uid);
     }
 
     // ------------------------------------------------------------- default

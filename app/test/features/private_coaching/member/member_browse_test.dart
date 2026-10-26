@@ -264,13 +264,25 @@ Future<void> tapText(WidgetTester tester, Finder finder) async {
   await tester.pump();
 }
 
+/// Report and Block live behind the "..." in the top bar.
+Future<void> tapMenuRow(WidgetTester tester, String label) async {
+  await tester.tap(find.byTooltip('More options'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}
+
 Future<void> openJoin(WidgetTester tester) async {
   await tapText(tester, find.text('Ask to join'));
   await tester.pumpAndSettle();
 }
 
 /// Fills every question; [yesAt] answers yes to that health question.
-Future<void> fillJoin(WidgetTester tester, {int? yesAt}) async {
+Future<void> fillJoin(
+  WidgetTester tester, {
+  int? yesAt,
+  bool pregnancyFood = true,
+}) async {
   await tapText(tester, find.text('Get stronger'));
   await tapText(tester, find.text('Beginner'));
   await tapText(tester, find.text('3'));
@@ -279,6 +291,16 @@ Future<void> fillJoin(WidgetTester tester, {int? yesAt}) async {
     await tapText(
       tester,
       yesAt == i ? find.text('Yes').at(i) : find.text('No').at(i),
+    );
+  }
+  if (pregnancyFood) {
+    await tapText(
+      tester,
+      find.text('No').at(CoachingEnums.healthQuestions.length),
+    );
+    await tapText(
+      tester,
+      find.text('No').at(CoachingEnums.healthQuestions.length + 1),
     );
   }
 }
@@ -418,14 +440,57 @@ void main() {
     expect(find.text('Booking opens soon'), findsNothing);
   });
 
+  testWidgets('no testimonials: the reviews block is not drawn', (
+    tester,
+  ) async {
+    phone(tester);
+    final base = coach('c2', 'Amal');
+    await tester.pumpWidget(
+      host(
+        CoachPortfolioView(
+          coach: CoachProfile(
+            uid: base.uid,
+            displayName: base.displayName,
+            headline: base.headline,
+            languages: base.languages,
+            specialties: base.specialties,
+            trainsWhere: base.trainsWhere,
+            published: true,
+            acceptingClients: true,
+            approach: base.approach,
+            testimonials: const <PublicTestimonial>[],
+          ),
+          packages: <CoachPackage>[pkg('a', 2000)],
+          media: const <ApprovedMedia>[],
+          repository: MemberRepo(),
+          preview: false,
+          declaredAllergies: const <String>[],
+        ),
+      ),
+    );
+    expect(find.text('What members say'), findsNothing);
+    expect(find.text('Very patient and clear.'), findsNothing);
+  });
+
+  testWidgets('with a testimonial the block is drawn', (tester) async {
+    phone(tester);
+    await tester.pumpWidget(portfolio(MemberRepo()));
+    await tester.scrollUntilVisible(
+      find.text('What members say'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('What members say'), findsOneWidget);
+    expect(find.text('Very patient and clear.'), findsOneWidget);
+  });
+
   testWidgets('report writes once with the contract keys and thanks her', (
     tester,
   ) async {
     phone(tester);
     final repo = MemberRepo();
     await tester.pumpWidget(portfolio(repo));
-    await tapText(tester, find.text('Report this profile'));
-    await tester.pumpAndSettle();
+    await tapMenuRow(tester, 'Report this profile');
     await tester.tap(find.text('Spam or advertising'));
     await tester.pump();
     await tester.enterText(find.byType(TextField), 'sells outside');
@@ -455,20 +520,25 @@ void main() {
     expect(blocks.blocks().single.source, BlockSource.profile);
   });
 
-  testWidgets('no menu on a coach own page or without a block list', (
-    tester,
-  ) async {
-    phone(tester);
-    await tester.pumpWidget(portfolio(MemberRepo()));
-    expect(find.byTooltip('More options'), findsNothing);
-    await tester.pumpWidget(
-      portfolio(
-        MemberRepo(uid: 'c2'),
-        blocks: InMemoryBlockService(selfUid: 'c2'),
-      ),
-    );
-    expect(find.byTooltip('More options'), findsNothing);
-  });
+  testWidgets(
+    'no menu on a coach own page; without a block list it holds Report only',
+    (tester) async {
+      phone(tester);
+      await tester.pumpWidget(portfolio(MemberRepo()));
+      await tester.tap(find.byTooltip('More options'));
+      await tester.pumpAndSettle();
+      expect(find.text('Report this profile'), findsOneWidget);
+      expect(find.text('Block'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(
+        portfolio(
+          MemberRepo(uid: 'c2'),
+          blocks: InMemoryBlockService(selfUid: 'c2'),
+        ),
+      );
+      expect(find.byTooltip('More options'), findsNothing);
+    },
+  );
 
   testWidgets('a failed report keeps the sheet and says so', (tester) async {
     phone(tester);
@@ -477,8 +547,7 @@ void main() {
         CoachingRefusal.unreachable,
       );
     await tester.pumpWidget(portfolio(repo));
-    await tapText(tester, find.text('Report this profile'));
-    await tester.pumpAndSettle();
+    await tapMenuRow(tester, 'Report this profile');
     await tester.tap(find.text('Spam or advertising'));
     await tester.pump();
     await tester.tap(find.text('Send report'));
@@ -696,6 +765,88 @@ void main() {
         expect(find.text('Request sent'), findsNothing);
       });
     }
+
+    testWidgets('the two new questions must be answered before Send', (
+      tester,
+    ) async {
+      phone(tester);
+      final repo = MemberRepo();
+      await tester.pumpWidget(portfolio(repo));
+      await openJoin(tester);
+      final send = find.widgetWithText(AppButton, 'Send request');
+      bool enabled() => tester.widget<AppButton>(send).onPressed != null;
+
+      await fillJoin(tester, pregnancyFood: false);
+      await tickConsents(tester);
+      expect(enabled(), isFalse);
+
+      await tapText(
+        tester,
+        find.text('No').at(CoachingEnums.healthQuestions.length),
+      );
+      expect(enabled(), isFalse);
+
+      await tapText(
+        tester,
+        find.text('No').at(CoachingEnums.healthQuestions.length + 1),
+      );
+      expect(enabled(), isTrue);
+    });
+
+    testWidgets('Pregnant shows the doctor tick and sends lifeStage', (
+      tester,
+    ) async {
+      phone(tester);
+      final repo = MemberRepo();
+      await tester.pumpWidget(portfolio(repo));
+      await openJoin(tester);
+      final send = find.widgetWithText(AppButton, 'Send request');
+      bool enabled() => tester.widget<AppButton>(send).onPressed != null;
+
+      await fillJoin(tester, pregnancyFood: false);
+      await tapText(tester, find.text('Pregnant'));
+      await tapText(
+        tester,
+        find.text('No').at(CoachingEnums.healthQuestions.length + 1),
+      );
+      expect(
+        find.text('I will check with my doctor before I start'),
+        findsOneWidget,
+      );
+      await tickConsents(tester);
+      expect(enabled(), isFalse);
+      await tapText(tester, find.byType(CheckboxListTile).first);
+      expect(enabled(), isTrue);
+      await tapText(tester, find.text('Send request'));
+      await tester.pumpAndSettle();
+      expect(repo.lastIntake!.lifeStage, 'pregnant');
+      expect(repo.lastIntake!.eatingHistory, isFalse);
+    });
+
+    testWidgets('eating history yes is sent', (tester) async {
+      phone(tester);
+      final repo = MemberRepo();
+      await tester.pumpWidget(portfolio(repo));
+      await openJoin(tester);
+      await fillJoin(tester, pregnancyFood: false);
+      await tapText(
+        tester,
+        find.text('No').at(CoachingEnums.healthQuestions.length),
+      );
+      await tapText(
+        tester,
+        find.text('Yes').at(CoachingEnums.healthQuestions.length),
+      );
+      expect(
+        find.text('I will check with my doctor before I start'),
+        findsOneWidget,
+      );
+      await tickConsents(tester);
+      await tapText(tester, find.byType(CheckboxListTile).first);
+      await tapText(tester, find.text('Send request'));
+      await tester.pumpAndSettle();
+      expect(repo.lastIntake!.eatingHistory, isTrue);
+    });
   });
 
   group('results and photos', () {
@@ -746,7 +897,7 @@ void main() {
       expect(find.text('She made training feel doable.'), findsOneWidget);
       expect(find.text('Photos'), findsOneWidget);
       expect(find.bySemanticsLabel('My studio'), findsOneWidget);
-      expect(find.text('Report this profile'), findsOneWidget);
+      expect(find.byTooltip('More options'), findsOneWidget);
     });
 
     testWidgets('a photo opens full screen and closes', (tester) async {

@@ -1339,7 +1339,6 @@ final List<_Shot> _shots = <_Shot>[
         ),
         hasUnread: true,
         doneThisWeek: 1,
-        onOpen: () {},
         onStartWorkout: (_, _) {},
       ),
     );

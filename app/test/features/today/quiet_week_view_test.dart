@@ -25,7 +25,6 @@ import 'package:own_hub/features/today/presentation/quiet_week_view.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
 import 'package:own_hub/ui/app_card.dart';
-import 'package:own_hub/ui/hand/mascot/kitten.dart';
 
 // 14 September 2026 is a Monday — the fresh start this screen speaks on.
 final DateTime _monday = DateTime(2026, 9, 14);
@@ -317,30 +316,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-  });
-
-  group('the kitten', () {
-    setUp(Kitten.resetPlayed);
-
-    testWidgets('waves once, and not again for the same week', (tester) async {
-      final repository = _repoWith(logged: 0, target: 2);
-      await tester.pumpWidget(_host(_view(repository: repository)));
-      await tester.pump();
-      expect(find.byType(Kitten), findsOneWidget);
-      final first = tester.widget<Kitten>(find.byType(Kitten));
-      expect(first.pose, KittenPose.wave);
-      expect(first.size, 40);
-      expect(first.holdStill, isFalse);
-      await tester.pumpAndSettle();
-
-      // The notice was marked seen on that first render: back here the same
-      // week, the kitten is simply there.
-      await tester.pumpWidget(const SizedBox());
-      await tester.pumpWidget(_host(_view(repository: repository)));
-      await tester.pump();
-      expect(find.byType(Kitten), findsOneWidget);
-      expect(tester.widget<Kitten>(find.byType(Kitten)).holdStill, isTrue);
-      await tester.pumpAndSettle();
-    });
   });
 }

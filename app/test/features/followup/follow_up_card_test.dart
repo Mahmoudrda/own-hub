@@ -245,16 +245,20 @@ void main() {
   });
 
   group('the way out', () {
-    testWidgets('the one close hides the kind until tomorrow', (tester) async {
+    testWidgets('swiping it away hides the kind until tomorrow', (
+      tester,
+    ) async {
       _phone(tester);
       await tester.pumpWidget(_host(_card(_back)));
-      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(Icons.close), findsNothing);
       expect(find.text('Not now'), findsNothing);
       expect(find.text("Don't show this kind again"), findsNothing);
-      await tester.tap(
+      await tester.fling(
         find.byKey(const ValueKey('follow-up-not-now-comeBack')),
+        const Offset(-500, 0),
+        1000,
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
       expect(
         FollowUpState.instance.notBefore[FollowUpKind.comeBack],
         '2026-10-17',

@@ -398,21 +398,6 @@ void main() {
       expect(src.substring(from, next), contains("_trackSetLogged('set')"));
     });
 
-    test('finishing early is counted only with moves left, before the '
-        'finish', () {
-      final r13 = _builderBlock('R13');
-      final here = r13.indexOf('onFinishHere: () {');
-      final early = r13.indexOf('AnalyticsEvent.workoutEndedEarly');
-      final finish = r13.indexOf('_finishWorkout();', here);
-      expect(here, greaterThan(-1));
-      expect(early, greaterThan(here));
-      expect(finish, greaterThan(early));
-      expect(
-        r13.substring(here, early),
-        contains('if (!WorkoutSessionState.instance.isComplete)'),
-      );
-    });
-
     test('C07 counts a code sent again, and a resend refused', () {
       final block = _builderBlock('C07');
       final resent = block.indexOf('onResent: () {');

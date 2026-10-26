@@ -55,6 +55,7 @@ import 'package:own_hub/ui/hand/tilt_parallax.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers/pause_menu.dart' show finishEarly;
 import '../qa/round1/font_harness.dart';
 
 /// One store size: the folder it is written to, its pixels, its density, and
@@ -359,22 +360,18 @@ Future<void> _render(
 
       // ...and finished, so the week has a session in it.
       Future<void> finishTheWorkout() async {
-        var guard = 0;
-        while (!WorkoutSessionState.instance.isComplete && guard++ < 12) {
-          final all = find.textContaining('I did').hitTestable();
-          if (all.evaluate().isEmpty) break;
-          await tester.tap(all.first);
-          await _settle(tester);
-          final next = find.textContaining('Next move').hitTestable();
-          if (next.evaluate().isEmpty) break;
-          await tester.tap(next.first);
-          await _settle(tester);
-        }
-        final finish = find.text(l10n.finishHere).hitTestable();
-        if (finish.evaluate().isNotEmpty) {
-          await tester.tap(finish.first);
-          await _settle(tester);
-        }
+        // One set logged, then Pause > End workout > Finish and save: the
+        // week gets a session, and R10 is what is on screen after it.
+        await tester.tap(find.textContaining('Done').hitTestable().first);
+        await _settle(tester);
+        await finishEarly(tester);
+        await _settle(tester);
+        expect(WorkoutSessionState.instance.lastFinished, isNotNull);
+        expect(
+          WorkoutSessionState.instance.lastFinished!.sets,
+          isNotEmpty,
+          reason: 'the session the week counts has the set she logged',
+        );
         await _home(tester);
       }
 

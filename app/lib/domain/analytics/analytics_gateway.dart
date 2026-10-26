@@ -104,7 +104,8 @@ enum AnalyticsEvent {
   /// [AnalyticsProp.durationBucket] is the days away as a range.
   quietWeekReturn,
 
-  /// She tapped "Finish here" on `R13` with moves still left. Sent before
+  /// She finished a workout early (End workout, Finish and save) with moves
+  /// still left. Sent before
   /// the `workout_complete` that every finished session sends, so the two
   /// together say how many sessions ended early. Nothing about which moves.
   workoutEndedEarly,
@@ -270,7 +271,7 @@ abstract final class AnalyticsVocabulary {
     AnalyticsProp.method: {'phone', 'automatic', 'reviewer'},
     AnalyticsProp.source: {
       'bar', 'sheet', 'end', 'welcome', 'tour', 'live',
-      // a set logged on its own (`R07`, `R08`) or a whole move at once (`R13`)
+      // a set logged on its own (`R07`, `R08`) or a whole move at once (from the Pause sheet)
       'set', 'move',
     },
     AnalyticsProp.installAge: {
@@ -315,20 +316,14 @@ abstract final class AnalyticsVocabulary {
 }
 
 /// Facts set once and carried with every later event, each from a closed
-/// vocabulary and none about her: the language the app is in, whether the
-/// kitten moves, whether a Home Screen widget is placed, and which build she
-/// installed. Firebase allows 25; this is four.
-enum AnalyticsUserProperty {
-  appLanguage,
-  kittenMoves,
-  hasHomeWidget,
-  buildChannel,
-}
+/// vocabulary and none about her: the language the app is in, whether a Home
+/// Screen widget is placed, and which build she installed. Firebase allows
+/// 25; this is three.
+enum AnalyticsUserProperty { appLanguage, hasHomeWidget, buildChannel }
 
 /// The name each user property carries to Firebase: at most 24 characters.
 const Map<AnalyticsUserProperty, String> analyticsUserPropertyWireNames = {
   AnalyticsUserProperty.appLanguage: 'app_language',
-  AnalyticsUserProperty.kittenMoves: 'kitten_moves',
   AnalyticsUserProperty.hasHomeWidget: 'has_home_widget',
   AnalyticsUserProperty.buildChannel: 'build_channel',
 };
@@ -336,7 +331,6 @@ const Map<AnalyticsUserProperty, String> analyticsUserPropertyWireNames = {
 /// The values each user property may take.
 const Map<AnalyticsUserProperty, Set<String>> analyticsUserPropertyValues = {
   AnalyticsUserProperty.appLanguage: {'en', 'ar'},
-  AnalyticsUserProperty.kittenMoves: {'on', 'off'},
   AnalyticsUserProperty.hasHomeWidget: {'yes', 'no'},
   AnalyticsUserProperty.buildChannel: {'store', 'direct', 'debug'},
 };

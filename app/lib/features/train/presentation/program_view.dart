@@ -320,13 +320,6 @@ class ProgramView extends StatelessWidget {
             title: l10n.noProgramYet,
             body: l10n.aProgramSetsOutYourWeeksAnd,
           ),
-          // First view with no plan only: it waves once.
-          const Kitten(
-            pose: KittenPose.wave,
-            size: 56,
-            moment: 'R02',
-            sessionBudget: true,
-          ),
         ] else
           for (final day in days)
             MoveRow(

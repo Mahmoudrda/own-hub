@@ -24,6 +24,15 @@ class PersonalBlobs:
         except Exception:
             return False
 
+    def info(self, path: str):
+        """(size in bytes, content type) of a file, or None when it is not there."""
+        try:
+            blob = self._bucket.blob(path)
+            blob.reload()
+            return int(blob.size or 0), blob.content_type or ""
+        except Exception:
+            return None
+
     def read(self, path: str) -> bytes:
         return self._bucket.blob(path).download_as_bytes()
 

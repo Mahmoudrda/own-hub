@@ -440,6 +440,8 @@ class FirebaseBackend:
         relationships = db.collection("relationships")
         for field in ("clientUid", "coachUid"):
             for snapshot in relationships.where(field, "==", uid).stream():
+                for bucket in (None, PERSONAL_BUCKET):
+                    self.delete_storage_prefix(bucket, f"chat-media/{snapshot.id}/")
                 db.recursive_delete(snapshot.reference)
 
         db.recursive_delete(db.collection("coaches").document(uid))

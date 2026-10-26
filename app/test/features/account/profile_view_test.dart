@@ -254,7 +254,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('My coach'), findsOneWidget);
+      // My coach and My cycle live on You; settings repeats neither.
+      expect(find.text('My coach'), findsNothing);
+      expect(find.text('My cycle'), findsNothing);
       expect(find.text('Sara Hany · day 9 of 30'), findsNothing);
       expect(find.text('Period day 2 · symptom tracking'), findsNothing);
     });

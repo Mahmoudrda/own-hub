@@ -20,3 +20,9 @@ COACH_CLIENTS_LIVE = True
 # Payment proofs, refunds, payouts, receipts, receiving accounts and the
 # ledger. Stays off until the legal steps for taking money are done.
 COACH_PAYMENTS_LIVE = False
+
+# The weekly check-in card, its push and the coach's "Needs attention" list.
+# Stays False until the app version that renders `systemKind: "checkIn"` is in
+# both stores: older builds show an unknown system line as a hidden message.
+CHECK_INS_LIVE = False
+

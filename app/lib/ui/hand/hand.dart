@@ -31,4 +31,4 @@ export 'spring_pop.dart';
 export 'stagger_in.dart';
 export 'skeleton.dart';
 export 'tilt_parallax.dart';
-export 'mascot/kitten.dart';
+export 'moment.dart';

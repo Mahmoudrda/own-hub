@@ -17,6 +17,7 @@ import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
 import '../../../../ui/app_list_item.dart';
+import '../../../../ui/app_overflow_menu.dart';
 import '../../../../ui/app_scaffold.dart';
 import '../../../../ui/app_sheet.dart';
 import '../coaching_when.dart';
@@ -230,34 +231,30 @@ class _MyCoachViewState extends State<MyCoachView> {
                 title: l10n.myCoach,
                 onBack: _back,
                 actions: [
-                  PopupMenuButton<String>(
-                    key: const ValueKey('coach-menu'),
-                    tooltip: l10n.myCoach,
-                    constraints: const BoxConstraints(minWidth: 48),
-                    onSelected: (v) {
-                      if (v == 'report') {
-                        unawaited(
+                  AppOverflowMenu(
+                    items: [
+                      AppOverflowItem(
+                        icon: Icons.flag_outlined,
+                        label: l10n.report,
+                        onTap: () => unawaited(
                           showReportCoachSheet(
                             context: context,
                             repository: widget.repository,
                             coachUid: sub.coachUid,
                           ),
-                        );
-                      } else if (v == 'block') {
-                        unawaited(_confirmBlock());
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem<String>(
-                        value: 'report',
-                        height: 48,
-                        child: Text(l10n.report),
+                        ),
                       ),
                       if (widget.onBlock != null)
-                        PopupMenuItem<String>(
-                          value: 'block',
-                          height: 48,
-                          child: Text(l10n.block),
+                        AppOverflowItem(
+                          icon: Icons.block,
+                          label: l10n.block,
+                          onTap: () => unawaited(_confirmBlock()),
+                        ),
+                      if (_active && !_busy)
+                        AppOverflowItem(
+                          icon: Icons.logout,
+                          label: l10n.endCoaching,
+                          onTap: () => unawaited(_confirmEnd(name)),
                         ),
                     ],
                   ),
@@ -310,17 +307,8 @@ class _MyCoachViewState extends State<MyCoachView> {
                       header: true,
                       child: Text(l10n.upcomingSession, style: AppText.titleL),
                     ),
-                    for (final s in sessions) _sessionCard(l10n, s),
+                    for (final s in sessions) _sessionRow(l10n, s),
                   ],
-                  AppButton(
-                    l10n.endCoaching,
-                    key: const ValueKey('end-coaching'),
-                    variant: AppButtonVariant.text,
-                    height: 48,
-                    onPressed: _busy
-                        ? null
-                        : () => unawaited(_confirmEnd(name)),
-                  ),
                 ],
                 if (_error.isNotEmpty)
                   Semantics(
@@ -429,102 +417,138 @@ class _MyCoachViewState extends State<MyCoachView> {
     );
   }
 
-  Widget _sessionCard(AppL10n l10n, LiveSession s) {
+  /// One session, one tap: the row opens a sheet with what she can do with it.
+  Widget _sessionRow(AppL10n l10n, LiveSession s) {
     final me = widget.repository.uid ?? '';
     final at = s.startsAt;
     final confirmed = s.status == SessionStatus.confirmed;
     final mine = s.doneByMe(me);
     final canDone = s.canMarkDone(_now) && !mine;
-    return AppCard(
+    final canJoin = confirmed && s.link.isNotEmpty;
+    final needsAnswer = !confirmed;
+    final action = needsAnswer
+        ? l10n.confirm
+        : canDone
+        ? l10n.markDone
+        : canJoin
+        ? l10n.join
+        : '';
+    final when = at == null
+        ? ''
+        : '${coachWhen(l10n, at, cairo: true)} · ${l10n.cairoTime}';
+    final tappable = needsAnswer || canDone || canJoin;
+    return AppListItem(
       key: ValueKey('session-${s.id}'),
-      variant: AppCardVariant.outlined,
-      borderRadius: AppRadius.md,
+      titleWidget: Text(
+        when.isEmpty ? l10n.upcomingSession : when,
+        style: AppText.titleM,
+        textDirection: TextDirection.ltr,
+      ),
+      title: when,
+      subtitle: [
+        l10n.minutesMinSession(countLabel(s.minutes)),
+        if (mine) l10n.waitingForTheOtherSideToMark else action,
+      ].where((t) => t.isNotEmpty).join(' · '),
+      trailing: tappable ? const Icon(Icons.chevron_right, size: 24) : null,
+      onTap: tappable
+          ? () => unawaited(
+              _openSession(l10n, s, when, canDone: canDone, canJoin: canJoin),
+            )
+          : null,
+    );
+  }
+
+  Future<void> _openSession(
+    AppL10n l10n,
+    LiveSession s,
+    String when, {
+    required bool canDone,
+    required bool canJoin,
+  }) {
+    final confirmed = s.status == SessionStatus.confirmed;
+    Future<void> respond(bool confirm) => _run(
+      () => widget.repository.respondLiveSession(
+        subId: widget.subscription.id,
+        sessionId: s.id,
+        confirm: confirm,
+      ),
+    );
+    return showAppSheet<void>(
+      context: context,
       children: [
-        if (at != null)
-          Text(
-            '${coachWhen(l10n, at, cairo: true)} · ${l10n.cairoTime}',
-            style: AppText.titleS,
-            textDirection: TextDirection.ltr,
-          ),
+        Text(
+          when.isEmpty ? l10n.upcomingSession : when,
+          style: AppText.titleL,
+          textDirection: TextDirection.ltr,
+        ),
         Text(
           l10n.minutesMinSession(countLabel(s.minutes)),
           style: AppText.bodyM,
         ),
-        if (!_ended && !confirmed)
-          Row(
-            children: [
-              Expanded(
-                child: AppButton(
-                  l10n.confirm,
-                  key: ValueKey('session-confirm-${s.id}'),
-                  height: 48,
-                  onPressed: _busy
-                      ? null
-                      : () => unawaited(
-                          _run(
-                            () => widget.repository.respondLiveSession(
-                              subId: widget.subscription.id,
-                              sessionId: s.id,
-                              confirm: true,
-                            ),
+        if (!confirmed) ...[
+          Builder(
+            builder: (sheet) => AppButton(
+              l10n.confirm,
+              key: ValueKey('session-confirm-${s.id}'),
+              onPressed: _busy
+                  ? null
+                  : () {
+                      Navigator.of(sheet).pop();
+                      unawaited(respond(true));
+                    },
+            ),
+          ),
+          Builder(
+            builder: (sheet) => AppButton(
+              l10n.decline,
+              key: ValueKey('session-decline-${s.id}'),
+              variant: AppButtonVariant.text,
+              height: 48,
+              onPressed: _busy
+                  ? null
+                  : () {
+                      Navigator.of(sheet).pop();
+                      unawaited(respond(false));
+                    },
+            ),
+          ),
+        ],
+        if (canDone)
+          Builder(
+            builder: (sheet) => AppButton(
+              l10n.markDone,
+              key: ValueKey('session-done-${s.id}'),
+              onPressed: _busy
+                  ? null
+                  : () {
+                      Navigator.of(sheet).pop();
+                      unawaited(
+                        _run(
+                          () => widget.repository.markSessionDone(
+                            subId: widget.subscription.id,
+                            sessionId: s.id,
                           ),
                         ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AppButton(
-                  l10n.decline,
-                  key: ValueKey('session-decline-${s.id}'),
-                  height: 48,
-                  variant: AppButtonVariant.outlined,
-                  onPressed: _busy
-                      ? null
-                      : () => unawaited(
-                          _run(
-                            () => widget.repository.respondLiveSession(
-                              subId: widget.subscription.id,
-                              sessionId: s.id,
-                              confirm: false,
-                            ),
-                          ),
-                        ),
-                ),
-              ),
-            ],
+                      );
+                    },
+            ),
           ),
-        if (!_ended && confirmed && s.link.isNotEmpty)
-          AppButton(
-            l10n.join,
-            key: ValueKey('session-join-${s.id}'),
-            height: 48,
-            variant: AppButtonVariant.tonal,
-            icon: Icons.videocam_outlined,
-            onPressed: () => _join(s.link),
+        if (canJoin)
+          Builder(
+            builder: (sheet) => AppButton(
+              l10n.join,
+              key: ValueKey('session-join-${s.id}'),
+              variant: canDone
+                  ? AppButtonVariant.outlined
+                  : AppButtonVariant.filled,
+              icon: Icons.videocam_outlined,
+              onPressed: () {
+                Navigator.of(sheet).pop();
+                _join(s.link);
+              },
+            ),
           ),
-        if (!_ended && canDone)
-          AppButton(
-            l10n.markDone,
-            key: ValueKey('session-done-${s.id}'),
-            height: 48,
-            variant: AppButtonVariant.outlined,
-            onPressed: _busy
-                ? null
-                : () => unawaited(
-                    _run(
-                      () => widget.repository.markSessionDone(
-                        subId: widget.subscription.id,
-                        sessionId: s.id,
-                      ),
-                    ),
-                  ),
-          ),
-        if (mine)
-          Text(
-            l10n.waitingForTheOtherSideToMark,
-            key: ValueKey('session-waiting-${s.id}'),
-            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
-          ),
+        const SizedBox(height: 12),
       ],
     );
   }

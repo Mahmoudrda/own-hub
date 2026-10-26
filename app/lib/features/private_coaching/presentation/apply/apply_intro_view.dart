@@ -10,7 +10,6 @@ import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
 import '../../../../ui/app_sage_note.dart';
 import '../../../../ui/app_scaffold.dart';
-import '../../../../ui/hand/hand.dart';
 import 'apply_rules.dart';
 
 class ApplyIntroView extends StatelessWidget {
@@ -55,9 +54,6 @@ class ApplyIntroView extends StatelessWidget {
           AppButton(l10n.verifyMyAccount, onPressed: onVerify),
       ],
       children: [
-        const Center(
-          child: Kitten(pose: KittenPose.wave, size: 96, moment: 'coachApply'),
-        ),
         Semantics(
           header: true,
           child: Text(
