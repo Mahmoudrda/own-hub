@@ -89,11 +89,11 @@ def new_reference(transaction, db, *, rng: random.Random | None = None) -> str:
 3. File `functions/payments/engine.py` (WO-10a2). Anchor: in `move`, the line `transaction.update(ref, update)`. Immediately after that line insert (4-space indent, inside the function):
 ```python
     lock = payment.get("lockId")
-    if lock:
-        held = now + model.days(30) if to in model.HOLDS_AMOUNT else now
+    if lock and (to in model.LONG_HOLD or to not in model.HOLDS_AMOUNT):
+        held = now + model.days(30) if to in model.LONG_HOLD else now
         transaction.update(db.collection("paymentAmountLocks").document(lock), {"heldUntil": held})
 ```
-This is a blind update (no read), so it never breaks the reads-before-writes rule of a Firestore transaction.
+Moves to `awaiting_payment`/`expired` leave the lock as it is (held until `lateUntil`). This is a blind update (no read), so it never breaks the reads-before-writes rule of a Firestore transaction.
 4. File `functions/payments/risk.py`, create:
 ```python
 """The outcome of a proof, and a score that only orders staff work (spec 13.3, 13.4, 13.12)."""

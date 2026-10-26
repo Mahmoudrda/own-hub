@@ -217,7 +217,7 @@ def coach_report(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify)
 
     out = common.run(db, body)
     if held:
-        notify(held["payment"]["clientUid"], "coachReported")
+        notify(held["payment"]["clientUid"], "instapayCoachReported")
     return out
 
 
@@ -305,17 +305,17 @@ def set_auto_confirm_green(request: https_fn.CallableRequest) -> dict:
 8. File `functions/tests/test_payments_amounts.py`, create. Each test: `seed_world(db)`; `make_payment(db, status=..., ...)`; calls the module functions directly with `coach_v="active"` and `notes`.
 | test | arrange, act, assert |
 |---|---|
-| `test_coach_marks_less_and_the_client_is_told` | status `proof_submitted`; `amounts.mark(..., receivedPiasters=40000, acceptLower=False)`; status `different_amount`, `coachDecision.differentAmountPiasters == 40000`; push `differentAmount` to the client; repeat is harmless |
+| `test_coach_marks_less_and_the_client_is_told` | status `proof_submitted`; `amounts.mark(..., receivedPiasters=40000, acceptLower=False)`; status `different_amount`, `coachDecision.differentAmountPiasters == 40000`; push `instapayDifferentAmount` to the client; repeat is harmless |
 | `test_equal_or_more_is_not_a_different_amount` | `receivedPiasters=50037` and `60000` -> `bad_request`; status unchanged |
 | `test_from_awaiting_payment_it_is_illegal` | status `awaiting_payment` -> `(PRECONDITION, ILLEGAL_TRANSITION)` |
 | `test_client_agrees_to_a_written_lower_amount_and_the_package_starts` | status `different_amount` with `coachDecision {differentAmountPiasters: 40000, acceptLower: True}`; `amounts.respond(..., decision="agree")` -> `confirmed`, subscription `active`, `fee` on 40000 (`feePiasters == 6000`), access `full` |
 | `test_agree_without_the_coach_accepting_is_refused_and_nothing_starts` | `acceptLower False`, `agree` -> `(PRECONDITION, WRONG_STATUS)`; subscription still `awaiting_payment` (the package never starts on a partial payment) |
-| `test_client_disputes_a_different_amount_and_it_goes_to_review` | `dispute` -> `in_review`, `dispute.kind == "different_amount"`; push `disputeOpened` to the coach |
+| `test_client_disputes_a_different_amount_and_it_goes_to_review` | `dispute` -> `in_review`, `dispute.kind == "different_amount"`; push `instapayDisputeOpened` to the coach |
 | `test_pay_the_rest_makes_a_new_reference_cancels_the_old_one_and_fees_the_whole_price` | status `different_amount` (40000 of 50037, `acceptLower False`) with a lock; `create.create(..., {"subId", "idempotencyKey", "topUpOf": PAY})`; new payment `topUpOf == PAY`, new `baseAmountPiasters == 10037`, a new reference, `feeBasePiasters == 50000`; old payment `cancelled`; confirming the new one gives `feePiasters == 7500` |
 | `test_top_up_of_someone_elses_or_a_wrong_status_payment_is_refused` | status `proof_submitted` -> `WRONG_STATUS`; `acceptLower True` -> `WRONG_STATUS` |
-| `test_coach_reports_a_payment_by_reference_and_by_subscription` | status `awaiting_payment`; `report.coach_report(..., reference="OH-4821", txnNumber="301234567890123")` -> `coachReport` stored, push `coachReported` to the client; a second call returns the same answer; the same with `subId` |
+| `test_coach_reports_a_payment_by_reference_and_by_subscription` | status `awaiting_payment`; `report.coach_report(..., reference="OH-4821", txnNumber="301234567890123")` -> `coachReport` stored, push `instapayCoachReported` to the client; a second call returns the same answer; the same with `subId` |
 | `test_report_refuses_unknown_closed_and_reused` | unknown reference -> `PAYMENT_NOT_FOUND`; status `confirmed` -> `WRONG_STATUS`; `paymentTxnNumbers/<key>` owned by another payment -> `(PRECONDITION, TXN_REUSED)`; after `lateUntil` -> `WRONG_STATUS` |
-| `test_client_says_yes_and_the_package_starts_with_the_fee` | after a report, `report.client_answer(..., "yes")` -> `confirmed`, subscription `active` full, fee owed, push `paymentConfirmedByClient` to the coach; also works from `expired` |
+| `test_client_says_yes_and_the_package_starts_with_the_fee` | after a report, `report.client_answer(..., "yes")` -> `confirmed`, subscription `active` full, fee owed, push `instapayConfirmedByClient` to the coach; also works from `expired` |
 | `test_client_says_no_and_nothing_changes_but_the_note` | `"no"` -> status unchanged, `coachReport.clientAnswer == "no"`; no access |
 | `test_client_answer_needs_a_report` | no `coachReport` -> `(PRECONDITION, NO_COACH_REPORT)` |
 | `test_auto_confirm_needs_three_clean_payments` | profile `cleanConfirmed 2` enabling -> `WRONG_STATUS`; `3` -> `autoConfirmGreen True`; disabling always works; non-bool -> `bad_request` |
@@ -323,7 +323,7 @@ def set_auto_confirm_green(request: https_fn.CallableRequest) -> dict:
 Command: `cd functions && venv/bin/python -m pytest tests/test_payments_amounts.py tests/test_payments_create.py tests/test_payments_proof.py tests/test_entrypoints.py -q`
 
 ## Strings to add
-None. New codes the app maps: `txn_reused, no_coach_report`. Pushes already defined: `differentAmount, coachReported, paymentConfirmedByClient`.
+None. New codes the app maps: `txn_reused, no_coach_report`. Pushes already defined: `instapayDifferentAmount, instapayCoachReported, instapayConfirmedByClient`.
 
 ## Tests to add or change
 As above; the top-up test also needs one new row in `test_payments_create.py`? No: it lives in `test_payments_amounts.py`.

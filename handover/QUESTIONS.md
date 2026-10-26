@@ -1,0 +1,5 @@
+# Handover Questions & Verification Notes
+
+## WO-02d — Step 9 (`functions/account/deletion.py:78,440-446`)
+- **What we saw**: `STORAGE_PREFIXES` in `functions/account/deletion.py:78` only lists `{uid}`-keyed prefixes (`user-media/{uid}/`, `user-exports/{uid}/`, `coach-docs/{uid}/`, `coach-public/{uid}/`, `payment-proofs/{uid}/`). Coaching chat media lives under `chat-media/{relId}/{uid}/{file}`, keyed first by `relId`.
+- **Action taken**: In `FirebaseBackend.purge_group_hook` (`functions/account/deletion.py:440-446`), where every relationship matching `clientUid == uid` or `coachUid == uid` is deleted, we added `self.delete_storage_prefix(bucket, f"chat-media/{snapshot.id}/")` across `(None, PERSONAL_BUCKET)` before `db.recursive_delete(snapshot.reference)`. Please confirm whether you also want a separate row in `contracts/deletion_manifest.json` or whether `chat-media/{relId}/{uid}/` should instead delete only the `{uid}` sub-prefix vs. the whole `{relId}` thread prefix when the relationship is deleted.

@@ -1,4 +1,4 @@
-# WO-10b2: State machine part 2: submit_payment_proof (checks, outcome, bounded access) and coach_confirm_payment (with the fee owed at activation)
+# WO-10b2: State machine part 2: submit_instapay_proof (checks, outcome, bounded access) and coach_confirm_payment (with the fee owed at activation)
 Depends on: WO-10b, WO-10l-server
 Size: L
 Reads first: `docs/plan/INSTAPAY-PAYMENTS-SPEC.md` 4.2, 4.6, 4.7, 4.12, 13.1, 13.3, 13.4, 13.9, 13.12; `functions/coaching/proofs.py` lines 40-168 (the older proof flow: pattern for images, hashes, registry and rollback); `functions/payments/risk.py`, `receipt_checks.py`, `activation.py`, `engine.py`; `functions/coaching/dhash.py`; `functions/main.py` lines 78-120 (`_decode_image`), 1862-1875 (`_coaching_notify`)
@@ -8,7 +8,7 @@ This is the heart of the flow. The client sends one to three screenshots (one ta
 
 ## Final result
 No screen. Callables:
-- `submit_payment_proof` request `{paymentId, idempotencyKey, amountPiasters, images: [base64, ...] (1 to 3), txnNumber?, paidAtClaimed?, senderHandle?, otherPayerOk?}`. Answer `{paymentId, status, outcome: "green"|"amber"|"red", reasons: [codes], retry: bool}`. `retry: true` means nothing was recorded except the attempt: ask her for a better picture.
+- `submit_instapay_proof` request `{paymentId, idempotencyKey, amountPiasters, images: [base64 PNG or JPEG, ...] (1 to 3), txnNumber?, paidAtClaimed?, senderHandle?, otherPayerOk?, phoneReading?}`. Answer `{paymentId, status, outcome: "green"|"amber"|"red", reasons: [codes], retry: bool}`. `retry: true` means nothing was recorded except the attempt: ask her for a better picture.
 - `coach_confirm_payment` request `{paymentId, receivedPiasters?}`. Answer `{status: "confirmed"}`.
 
 Behaviour in numbers: images at most 3 per call and 5 per payment, each at most 5 MB (`LIMITS`); a proof is accepted while the payment is `awaiting_payment`, or `expired` and still before `lateUntil` (7 days); GREEN gives provisional access for `min(7, package days)` days; an AMBER that stands gets access only after 24 hours with no objection (WO-10c); RED goes to `in_review`.
@@ -141,7 +141,7 @@ def confirm(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> d
 ```
 5. File `functions/payments/proof.py`, create:
 ```python
-"""submit_payment_proof (spec 4.2, 13.3, 13.4, 13.9, 13.12)."""
+"""submit_instapay_proof (spec 4.2, 13.3, 13.4, 13.9, 13.12)."""
 
 from __future__ import annotations
 
@@ -188,6 +188,8 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
         sender = common.text(sender, max_len=60).lower()
         if not _HANDLE.match(sender):
             raise common.bad()
+    reading = data.get("phoneReading")
+    phone = reading if isinstance(reading, dict) and len(str(reading)) <= 2000 else None  # a hint for staff, never trusted
     claimed = common.optional_text(data.get("paidAtClaimed"), max_len=40) or None  # only a claim: the server clock decides
     if not isinstance(images, list) or not (1 <= len(images) <= MAX_IMAGES_PER_CALL):
         raise common.bad()
@@ -311,7 +313,7 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
         transaction.set(
             ref.collection("staff").document("review"),
             {"riskScore": out.score, "flags": flags, "reasons": reasons, "checks": checks, "hashes": shas,
-             "dHashes": dhashes, "updatedAt": now},
+             "dHashes": dhashes, "phoneReading": phone, "updatedAt": now},
             merge=True,
         )
         proof = {
@@ -321,7 +323,7 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
             "imageFlags": visible,
             "amberAttempts": (cur.get("proof") or {}).get("amberAttempts", 0) + (1 if outcome == risk.AMBER else 0),
         }
-        base = {"proof": proof, "outcome": outcome, "proofSubmittedAt": now}
+        base = {"proof": proof, "outcome": outcome, "reasons": reasons, "proofSubmittedAt": now}
         pay = engine.move(transaction, db, ref, cur, "proof_submitted", states.CLIENT, uid, now, changes=base, code=f"proof_{outcome}")
         held["payment"], held["moves"] = pay, [(cur["status"], "proof_submitted")]
 
@@ -366,7 +368,7 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
         engine.notify_moves(notify, held["payment"], held["moves"])
     return result
 ```
-(A replayed call has no `held` entries, so it sends no second push. In the green provisional branch `held["moves"]` has one entry, so the coach gets `proofSent` only.)
+(A replayed call has no `held` entries, so it sends no second push. In the green provisional branch `held["moves"]` has one entry, so the coach gets `instapayProofSent` only.)
 6. File `functions/main.py`. (i) Anchor: the function `_instapay_on` (WO-10b). After it add:
 ```python
 def _payments_notify(uid: str, kind: str) -> None:
@@ -383,7 +385,7 @@ def _payments_notify(uid: str, kind: str) -> None:
    (ii) After `cancel_payment` add:
 ```python
 @https_fn.on_call()
-def submit_payment_proof(request: https_fn.CallableRequest) -> dict:
+def submit_instapay_proof(request: https_fn.CallableRequest) -> dict:
     """PAY2: screenshots and the transaction number. Works with the kill switch off."""
     uid = _require_auth(request)
     _require_verified(request)
@@ -414,16 +416,16 @@ def coach_confirm_payment(request: https_fn.CallableRequest) -> dict:
     )
 ```
    (`_decode_image` refuses images above 8 MB before decoding; `proof.submit` then refuses above 5 MB through `receipt_checks.sanity`. A list longer than 3 reaches `submit` as 4 images and is refused there with `bad_request`.)
-7. File `functions/tests/test_entrypoints.py`: add `"submit_payment_proof", "coach_confirm_payment",` after `"create_payment", "cancel_payment",`.
+7. File `functions/tests/test_entrypoints.py`: add `"submit_instapay_proof", "coach_confirm_payment",` after `"create_payment", "cancel_payment",`.
 8. File `functions/tests/test_payments_proof.py`, create. Imports: `from tests.test_coaching_subscriptions import make_jpeg` (a real small JPEG), `from tests.fake_blobs import FakeBlobs`, `from payments import coach, proof, risk, errors`, helpers from `payments_helpers`. Fixtures in the file: `class Reader` with `__init__(self, *texts)` and `read(self, jpeg)` returning the next text in order (cycling the last); `keep = lambda raw, long_side=None: raw`; `GREEN_TEXTS = (the INSTAPAY_FIRST and DETAILS strings, copied from WO-10l's test file, with 500.37 matching AMOUNT=50037)`. Helper `send(db, blobs, notes, reader, *, images=None, key="key-0001-abcd", **over)` calls `proof.submit(db, CLIENT, {"paymentId": PAY, "idempotencyKey": key, "amountPiasters": AMOUNT, **over}, images or [make_jpeg(1), make_jpeg(2)], now=NOW + 10 minutes, blobs=blobs, reencode=keep, reader=reader, notify=notes)`. Each test starts with `seed_world(db); make_payment(db)`.
 Tests:
 | test | arrange, act, assert |
 |---|---|
-| `test_green_two_screenshots_give_bounded_access_and_tell_the_coach` | reader GREEN_TEXTS; send; outcome `green`, status `proof_submitted`; payment `access.state == "provisional"`, `until == now + 7 days`; subscription `active` with `provisionalUntil`; relationship `active`; `feePiasters == 7500` (15 percent of 50000), `feeState == "owed"`; blobs hold `payment-proofs/pay-1/client-1.jpg` and `client-2.jpg`; `notes.sent == [(COACH, "proofSent")]`; staff review doc has `riskScore`, `hashes`; registries `paymentTxnNumbers/301234567890123` and two `paymentImageHashes` exist; events `[(None,"awaiting_payment","client"), ("awaiting_payment","proof_submitted","client")]` |
+| `test_green_two_screenshots_give_bounded_access_and_tell_the_coach` | reader GREEN_TEXTS; send; outcome `green`, status `proof_submitted`; payment `access.state == "provisional"`, `until == now + 7 days`; subscription `active` with `provisionalUntil`; relationship `active`; `feePiasters == 7500` (15 percent of 50000), `feeState == "owed"`; blobs hold `payment-proofs/pay-1/client-1.jpg` and `client-2.jpg`; `notes.sent == [(COACH, "instapayProofSent")]`; staff review doc has `riskScore`, `hashes`; registries `paymentTxnNumbers/301234567890123` and two `paymentImageHashes` exist; events `[(None,"awaiting_payment","client"), ("awaiting_payment","proof_submitted","client")]` |
 | `test_the_first_screen_alone_is_amber_with_one_retry_and_records_only_the_attempt` | reader returns INSTAPAY_FIRST; send with one image; `retry True`, outcome amber, reasons contain `needDetails`; status still `awaiting_payment`; no blob; `proof.amberAttempts == 1`, `screenshotCount == 1`; then send again with another key and reader GREEN_TEXTS -> green |
 | `test_a_second_amber_stands_and_waits_for_the_coach_for_24_hours` | after one retry used (`proof.amberAttempts = 1` in make_payment), amber text -> `retry False`, status `proof_submitted`, no access, subscription still `awaiting_payment`, `amberUntil == now + 24h` |
 | `test_a_typed_transaction_number_lets_an_amber_stand_at_once` | one image amber text plus `txnNumber="301234567890123"` -> status `proof_submitted` (no retry) |
-| `test_wrong_amount_is_red_and_goes_to_review` | text with 450.00 -> `outcome red`, `status in_review`, `dispute.kind == "proof_red"`, no access, notes include `(CLIENT,"reviewStarted")` and `(COACH,"disputeOpened")`; events end with `("proof_submitted","in_review","system")` |
+| `test_wrong_amount_is_red_and_goes_to_review` | text with 450.00 -> `outcome red`, `status in_review`, `dispute.kind == "proof_red"`, no access, notes include `(CLIENT,"instapayReviewStarted")` and `(COACH,"instapayDisputeOpened")`; events end with `("proof_submitted","in_review","system")` |
 | `test_a_reused_transaction_number_is_red_and_flagged_for_both` | `paymentTxnNumbers/301234567890123 = {"paymentId":"other"}`; GREEN_TEXTS -> red, `proof.imageFlags` contains `txnReused`; the registry owner is unchanged |
 | `test_the_same_picture_for_another_payment_is_red` | `paymentImageHashes/<sha256 of make_jpeg(1)> = {"paymentId":"other","dHash":"0000000000000000"}` -> red `sameImage` |
 | `test_a_near_copy_is_red` | registry holds the `dHash` of `make_jpeg(1)` for `other`; the new image is `make_jpeg(1, noise=3)` -> red `nearImage` (UNVERIFIED that noise 3 stays within hamming 6: run the test; if it fails use `noise=1`) |
@@ -436,12 +438,12 @@ Tests:
 | `test_a_suspended_client_cannot_send_proof` | `paymentStanding/CLIENT.clientSuspended` -> `CLIENT_PAYMENTS_SUSPENDED` |
 | `test_a_phone_clock_claim_changes_nothing` | `paidAtClaimed="2031-01-01T00:00:00Z"` -> same green result; the stored field is the text only |
 | `test_someone_else_paying_is_amber_then_allowed_once` | `senderHandle="mine@instapay"` while the text shows `layla@instapay` and the coach handle -> amber `someoneElsePaid`; with `otherPayerOk=True` -> green and `paymentStanding.otherPayerCount == 1`; a second time with `otherPayerCount` 1 -> amber again |
-| `test_auto_confirm_green_confirms_at_once_and_keeps_the_audit` | profile `autoConfirmGreen` True; green -> status `confirmed`, `coachDecision.autoConfirmed`, access `full`, an event with role `system`, push to the client `paymentConfirmed` |
+| `test_auto_confirm_green_confirms_at_once_and_keeps_the_audit` | profile `autoConfirmGreen` True; green -> status `confirmed`, `coachDecision.autoConfirmed`, access `full`, an event with role `system`, push to the client `instapayConfirmed` |
 | `test_a_stranger_cannot_send_proof` | other uid -> `PAYMENT_NOT_FOUND` |
 Confirm tests (same file):
 | test | arrange, act, assert |
 |---|---|
-| `test_coach_confirms_after_a_green_proof_and_access_becomes_full` | green via send, then `coach.confirm(db, COACH, {"paymentId": PAY}, coach_v="active", now=..., notify=notes)`; status `confirmed`, access `full`, subscription `provisionalUntil` None, coach `activeClients == 1` (not 2), profile `paymentsConfirmed == 1`, `cleanConfirmed == 1`, push `paymentConfirmed` to the client |
+| `test_coach_confirms_after_a_green_proof_and_access_becomes_full` | green via send, then `coach.confirm(db, COACH, {"paymentId": PAY}, coach_v="active", now=..., notify=notes)`; status `confirmed`, access `full`, subscription `provisionalUntil` None, coach `activeClients == 1` (not 2), profile `paymentsConfirmed == 1`, `cleanConfirmed == 1`, push `instapayConfirmed` to the client |
 | `test_coach_confirms_an_amber_and_the_coaching_starts_then` | amber committed (no access), confirm -> subscription `active` full |
 | `test_a_repeat_confirm_changes_nothing` | confirm twice; one `confirmed` event |
 | `test_nobody_but_the_payments_coach_can_confirm_and_a_record_is_needed` | other coach -> `PAYMENT_NOT_FOUND`; unknown id -> same; client calling -> same |

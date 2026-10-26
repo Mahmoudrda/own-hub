@@ -110,6 +110,9 @@ HOLDS_AMOUNT = (
     "in_review", "different_amount",
 )
 
+# Statuses in which the amount lock is pushed out to 30 days (a review can take long).
+LONG_HOLD = ("proof_submitted", "coach_not_received", "in_review", "different_amount")
+
 # The package may run (fully) only in these (spec section 3).
 PAID_STATUSES = ("confirmed", "resolved_paid")
 
@@ -234,28 +237,28 @@ def check(frm: str, to: str, role: str) -> None:
 # (from, to) -> [(who gets it, notice kind)]. Kinds are keys of notices.TEXT.
 # A pair missing here sends nothing (for example expiry, which is silent).
 _NOTICES: dict[tuple[str, str], list[tuple[str, str]]] = {
-    ("awaiting_payment", "proof_submitted"): [(COACH, "proofSent")],
-    ("expired", "proof_submitted"): [(COACH, "proofSent")],
-    ("awaiting_payment", "confirmed"): [(COACH, "paymentConfirmedByClient")],
-    ("proof_submitted", "confirmed"): [(CLIENT, "paymentConfirmed")],
-    ("proof_submitted", "coach_not_received"): [(CLIENT, "coachNotReceived")],
-    ("proof_submitted", "different_amount"): [(CLIENT, "differentAmount")],
-    ("proof_submitted", "in_review"): [(CLIENT, "reviewStarted"), (COACH, "disputeOpened")],
-    ("awaiting_payment", "in_review"): [(CLIENT, "reviewStarted"), (COACH, "disputeOpened")],
-    ("expired", "in_review"): [(CLIENT, "reviewStarted"), (COACH, "disputeOpened")],
-    ("coach_not_received", "in_review"): [(CLIENT, "reviewStarted")],
-    ("different_amount", "in_review"): [(COACH, "disputeOpened")],
-    ("in_review", "resolved_paid"): [(CLIENT, "reviewDecided"), (COACH, "reviewDecided")],
-    ("in_review", "resolved_unpaid"): [(CLIENT, "reviewDecided"), (COACH, "reviewDecided")],
-    ("in_review", "confirmed"): [(CLIENT, "reviewDecided"), (COACH, "reviewDecided")],
-    ("in_review", "refunded"): [(CLIENT, "refundRecorded")],
-    ("refund_requested", "refunded"): [(CLIENT, "refundRecorded")],
-    ("confirmed", "refund_requested"): [(COACH, "refundRequested")],
-    ("resolved_paid", "refund_requested"): [(COACH, "refundRequested")],
-    ("refund_requested", "refund_denied"): [(CLIENT, "reviewDecided")],
-    ("refund_requested", "in_review"): [(CLIENT, "reviewStarted"), (COACH, "disputeOpened")],
-    ("service_dispute", "in_review"): [(CLIENT, "reviewStarted"), (COACH, "disputeOpened")],
-    ("refund_denied", "in_review"): [(CLIENT, "reviewStarted"), (COACH, "disputeOpened")],
+    ("awaiting_payment", "proof_submitted"): [(COACH, "instapayProofSent")],
+    ("expired", "proof_submitted"): [(COACH, "instapayProofSent")],
+    ("awaiting_payment", "confirmed"): [(COACH, "instapayConfirmedByClient")],
+    ("proof_submitted", "confirmed"): [(CLIENT, "instapayConfirmed")],
+    ("proof_submitted", "coach_not_received"): [(CLIENT, "instapayNotReceived")],
+    ("proof_submitted", "different_amount"): [(CLIENT, "instapayDifferentAmount")],
+    ("proof_submitted", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
+    ("awaiting_payment", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
+    ("expired", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
+    ("coach_not_received", "in_review"): [(CLIENT, "instapayReviewStarted")],
+    ("different_amount", "in_review"): [(COACH, "instapayDisputeOpened")],
+    ("in_review", "resolved_paid"): [(CLIENT, "instapayReviewDecided"), (COACH, "instapayCoachReviewDecided")],
+    ("in_review", "resolved_unpaid"): [(CLIENT, "instapayReviewDecided"), (COACH, "instapayCoachReviewDecided")],
+    ("in_review", "confirmed"): [(CLIENT, "instapayReviewDecided"), (COACH, "instapayCoachReviewDecided")],
+    ("in_review", "refunded"): [(CLIENT, "instapayRefundRecorded")],
+    ("refund_requested", "refunded"): [(CLIENT, "instapayRefundRecorded")],
+    ("confirmed", "refund_requested"): [(COACH, "instapayRefundRequested")],
+    ("resolved_paid", "refund_requested"): [(COACH, "instapayRefundRequested")],
+    ("refund_requested", "refund_denied"): [(CLIENT, "instapayReviewDecided")],
+    ("refund_requested", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
+    ("service_dispute", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
+    ("refund_denied", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
 }
 
 
@@ -363,44 +366,46 @@ TITLE = "Own Hub"
 
 TEXT: dict[str, dict[str, tuple[str, str]]] = {
     # to the client
-    "payReminder": {"en": (TITLE, "Your payment request is still open. Open Own Hub to finish or cancel."),
+    "instapayReminder": {"en": (TITLE, "Your payment request is still open. Open Own Hub to finish or cancel."),
                     "ar": (TITLE, "طلب الدفع لسه مفتوح. افتحي Own Hub وكمّلي أو الغي الطلب.")},
-    "paymentConfirmed": {"en": (TITLE, "Your coach confirmed your payment."),
+    "instapayConfirmed": {"en": (TITLE, "Your coach confirmed your payment."),
                          "ar": (TITLE, "المدربة أكدت إنها استلمت الدفع.")},
-    "coachNotReceived": {"en": (TITLE, "Your coach says the payment has not reached her yet. Open Own Hub to add your proof."),
+    "instapayNotReceived": {"en": (TITLE, "Your coach says the payment has not reached her yet. Open Own Hub to add your proof."),
                          "ar": (TITLE, "المدربة بتقول إن الدفع لسه ماوصلهاش. افتحي Own Hub وضيفي إثبات التحويل.")},
-    "differentAmount": {"en": (TITLE, "Your coach received a different amount. Open Own Hub to see it."),
+    "instapayDifferentAmount": {"en": (TITLE, "Your coach received a different amount. Open Own Hub to see it."),
                         "ar": (TITLE, "المدربة استلمت مبلغ مختلف. افتحي Own Hub وشوفيه.")},
-    "coachReported": {"en": (TITLE, "Your coach says you paid. Open Own Hub to confirm."),
+    "instapayCoachReported": {"en": (TITLE, "Your coach says you paid. Open Own Hub to confirm."),
                       "ar": (TITLE, "المدربة بتقول إنك دفعتي. افتحي Own Hub وأكدي.")},
-    "reviewStarted": {"en": (TITLE, "Our team is looking at your payment. You do not need to do anything now."),
+    "instapayReviewStarted": {"en": (TITLE, "Our team is looking at your payment. You do not need to do anything now."),
                       "ar": (TITLE, "فريقنا بيراجع الدفع. مش مطلوب منك حاجة دلوقتي.")},
-    "reviewDecided": {"en": (TITLE, "Your payment review has a decision. Open Own Hub to see it."),
+    "instapayReviewDecided": {"en": (TITLE, "Your payment review has a decision. Open Own Hub to see it."),
                       "ar": (TITLE, "مراجعة الدفع ليها قرار. افتحي Own Hub وشوفيه.")},
-    "refundRecorded": {"en": (TITLE, "A refund was recorded. Open Own Hub to see it."),
+    "instapayCoachReviewDecided": {"en": (TITLE, "Your payment review has a decision. Open Own Hub to see it."),
+                                   "ar": (TITLE, "مراجعة الدفع ليها قرار. افتحي Own Hub وشوفيه.")},
+    "instapayRefundRecorded": {"en": (TITLE, "A refund was recorded. Open Own Hub to see it."),
                        "ar": (TITLE, "اتسجّل استرداد. افتحي Own Hub وشوفيه.")},
-    "addressChanged": {"en": (TITLE, "Your coach updated her payment details. Open Own Hub before you pay."),
+    "instapayAddressChanged": {"en": (TITLE, "Your coach updated her payment details. Open Own Hub before you pay."),
                        "ar": (TITLE, "المدربة غيّرت بيانات الدفع بتاعتها. افتحي Own Hub قبل ما تدفعي.")},
-    "accessEndsSoon": {"en": (TITLE, "Your temporary access ends soon. Open Own Hub to see what is left to do."),
+    "instapayAccessEndsSoon": {"en": (TITLE, "Your temporary access ends soon. Open Own Hub to see what is left to do."),
                        "ar": (TITLE, "الفتح المؤقت هيخلص قريب. افتحي Own Hub وشوفي المطلوب.")},
-    "paymentsPaused": {"en": (TITLE, "InstaPay payments are paused for your account. Open Own Hub for details."),
+    "instapayPaused": {"en": (TITLE, "InstaPay payments are paused for your account. Open Own Hub for details."),
                        "ar": (TITLE, "الدفع بإنستا باي موقوف لحسابك. افتحي Own Hub للتفاصيل.")},
     # to the coach
-    "proofSent": {"en": (TITLE, "A client sent proof of payment. Open Own Hub to check your bank."),
+    "instapayProofSent": {"en": (TITLE, "A client sent proof of payment. Open Own Hub to check your bank."),
                   "ar": (TITLE, "عميلة بعتت إثبات الدفع. افتحي Own Hub وراجعي حسابك البنكي.")},
-    "proofReminder48": {"en": (TITLE, "A payment is waiting for you to check. Please open Own Hub today."),
+    "instapayCoachReminder": {"en": (TITLE, "A payment is waiting for you to check. Please open Own Hub today."),
                         "ar": (TITLE, "فيه دفع مستنيكي تراجعيه. افتحي Own Hub النهارده.")},
-    "paymentConfirmedByClient": {"en": (TITLE, "A client confirmed she paid. Open Own Hub to see it."),
+    "instapayConfirmedByClient": {"en": (TITLE, "A client confirmed she paid. Open Own Hub to see it."),
                                  "ar": (TITLE, "عميلة أكدت إنها دفعت. افتحي Own Hub وشوفي.")},
-    "disputeOpened": {"en": (TITLE, "A payment needs a second look. Open Own Hub to see what we need."),
+    "instapayDisputeOpened": {"en": (TITLE, "A payment needs a second look. Open Own Hub to see what we need."),
                       "ar": (TITLE, "فيه دفع محتاج مراجعة تانية. افتحي Own Hub وشوفي المطلوب.")},
-    "refundRequested": {"en": (TITLE, "A client asked for a refund. Open Own Hub to answer within 3 days."),
+    "instapayRefundRequested": {"en": (TITLE, "A client asked for a refund. Open Own Hub to answer within 3 days."),
                         "ar": (TITLE, "عميلة طلبت استرداد. افتحي Own Hub وردّي خلال 3 أيام.")},
-    "statementReady": {"en": (TITLE, "Your fee statement for last month is ready."),
+    "instapayStatementReady": {"en": (TITLE, "Your fee statement for last month is ready."),
                        "ar": (TITLE, "كشف الرسوم عن الشهر اللي فات جاهز.")},
-    "feeOverdue": {"en": (TITLE, "Your Own Hub fee is late. Open Own Hub to see the statement."),
+    "instapayFeeOverdue": {"en": (TITLE, "Your Own Hub fee is late. Open Own Hub to see the statement."),
                    "ar": (TITLE, "رسوم Own Hub متأخرة. افتحي Own Hub وشوفي الكشف.")},
-    "paymentsSuspended": {"en": (TITLE, "Taking payments is paused on your account. Open Own Hub for details."),
+    "instapaySuspended": {"en": (TITLE, "Taking payments is paused on your account. Open Own Hub for details."),
                           "ar": (TITLE, "استلام الدفع موقوف على حسابك. افتحي Own Hub للتفاصيل.")},
 }
 
@@ -658,7 +663,7 @@ def test_pounds_text_uses_western_digits_and_two_decimals():
 ```
 
 ## Strings to add
-None in the app. The push texts above are server constants (the app has no strings for them). The table of kinds the app must handle on tap: `payReminder, paymentConfirmed, coachNotReceived, differentAmount, coachReported, reviewStarted, reviewDecided, refundRecorded, addressChanged, accessEndsSoon, paymentsPaused, proofSent, proofReminder48, paymentConfirmedByClient, disputeOpened, refundRequested, statementReady, feeOverdue, paymentsSuspended`.
+None in the app. The push texts above are server constants (the app has no strings for them). The table of kinds the app must handle on tap: `instapayReminder, instapayConfirmed, instapayNotReceived, instapayDifferentAmount, instapayCoachReported, instapayReviewStarted, instapayReviewDecided, instapayCoachReviewDecided, instapayRefundRecorded, instapayAddressChanged, instapayAccessEndsSoon, instapayPaused, instapayProofSent, instapayCoachReminder, instapayConfirmedByClient, instapayDisputeOpened, instapayRefundRequested, instapayStatementReady, instapayFeeOverdue, instapaySuspended`.
 
 ## Tests to add or change
 | file | test name | arrange, act, assert |
