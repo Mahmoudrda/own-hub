@@ -12,7 +12,7 @@ The full plan with reasons is `reference/PRODUCTION-RELEASE-PLAN.md`. This file 
 | 6 | WO-06 food safety | calorie floors, pregnancy rules, data accuracy tests | TO WRITE |
 | 7 | WO-07 batch B | guest first workout, walking session, rewards | TO WRITE |
 | 8 | WO-08 sound and motion | synthesised sounds, sound service, moments | TO WRITE |
-| 10 | WO-10a to 10k InstaPay payments | governed peer-to-peer payments per reference/INSTAPAY-PAYMENTS-SPEC.md section 11 | TO WRITE |
+| 10 | WO-10a to 10p InstaPay payments (live in release, anti-fraud in section 13) | governed peer-to-peer payments per reference/INSTAPAY-PAYMENTS-SPEC.md section 11 | TO WRITE |
 | 9 | WO-09 release | version 1.1.0, store listings, screenshots, Android first release, test program | TO WRITE |
 
 Owner decisions that block some orders are in `reference/PRODUCTION-RELEASE-PLAN.md` section 3.

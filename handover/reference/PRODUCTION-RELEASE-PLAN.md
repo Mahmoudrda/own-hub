@@ -26,7 +26,7 @@ P0 (must ship):
 | C9 | Intake with health flags: PAR-Q+ style screen, injuries, pregnancy and postpartum, eating history; any "yes" raises a flag and limits what plan can be assigned until she reviews; no calorie or macro targets for flagged eating-history answers | extend onboarding intake; K07 already shows flags on Accept | under 3 min |
 | C10 | Reachability and safety: no screen reachable that looks like it publishes but is local only (old `coachplan` routes W04 to W09, K19 to K23); rate limits on chat, report and upload; push text decision (generic or first name) | trace every `goTo`, remove or gate; server limits | n/a |
 
-| C11 | InstaPay payments, governed peer-to-peer (owner decision 26 Oct): full spec in `docs/plan/INSTAPAY-PAYMENTS-SPEC.md`; ships behind `Feature.instapayPayments`, off until the owner and counsel steps in its section 12 are done | work orders WO-10a to 10k | pay in 4 taps, coach confirms in 2 |
+| C11 | InstaPay payments, governed peer-to-peer (owner decision 26 Oct): full spec in `docs/plan/INSTAPAY-PAYMENTS-SPEC.md`; ships LIVE in this release (flag on, server kill switch); section 13 of the spec holds the anti-fraud design and screenshot verification; the owner and counsel steps in its section 12 must be done before submission | work orders WO-10a to 10p | pay in 4 taps, coach confirms in 2 |
 
 Should have (cut these first if time forces it): progress photos and measurements (client controlled, private), habits, broadcast message, Rahma's own video per exercise (library), multi-week "repeat last week" polish.
 Skip for now (later release): scheduling calendar, payments, community forum, branded storefront, wearables, AI plan generation.

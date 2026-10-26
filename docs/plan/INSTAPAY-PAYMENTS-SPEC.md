@@ -1,6 +1,6 @@
 # InstaPay payments inside Own Hub: governed peer-to-peer spec
 
-Written 26 Oct 2026. Owner decision: this release ships InstaPay payments. The client pays the coach's own InstaPay address directly. Own Hub never holds, receives or moves the money. The app governs the process: it shows who to pay and how much, records the payment, makes the coach confirm receipt, runs disputes through staff, and keeps a trail. This changes the earlier plan (payments after counsel and a licensed provider, D63 and D64 in `DECISIONS.md`). The build ships behind a feature flag `Feature.instapayPayments`, default off, which the owner turns on only after the owner steps in section 12 are done. This is not legal advice; counsel confirms the legal points listed in section 12 before the flag is on.
+Written 26 Oct 2026. Owner decision: this release ships InstaPay payments. The client pays the coach's own InstaPay address directly. Own Hub never holds, receives or moves the money. The app governs the process: it shows who to pay and how much, records the payment, makes the coach confirm receipt, runs disputes through staff, and keeps a trail. This changes the earlier plan (payments after counsel and a licensed provider, D63 and D64 in `DECISIONS.md`). UPDATE 27 Oct (owner): this ships LIVE in the next release. The flag `Feature.instapayPayments` is ON in the release build, with a server-side kill switch (`config/payments.enabled`) the owner can turn off instantly. The owner and counsel steps in section 12 must be finished before the app is submitted, because the feature is live. Section 13 (anti-fraud and screenshot verification) overrides sections 4.1, 4.2 and 10 wherever they differ. This is not legal advice; counsel confirms the legal points listed in section 12 before the flag is on.
 
 Fixed facts: InstaPay has no connection I know of that lets an app see that a payment arrived in a person's account. So the app can never prove a payment by itself. Everything below limits fraud and makes disputes decidable; it cannot make fraud impossible. Say this plainly in the coach and client terms.
 
@@ -115,10 +115,10 @@ Client: payment created reminder (once, at 12 hours), coach confirmed, coach say
 Card payments, Fawry, installments, automatic fee debit, holding funds, automatic reconciliation with any bank, partial instalment plans, group payments.
 
 ## 10. Release gating
-`Feature.instapayPayments` and a server config switch must both be on. While off the app shows "Free for now" exactly as today, so the 1.1.0 build is safe if the legal steps are not finished. Add a test that the flag off leaves every existing screen unchanged.
+`Feature.instapayPayments` is on in the release; the server kill switch `config/payments.enabled` is the off button. If the switch is off, the app shows "Free for now" exactly as today. Add a test that the switch off leaves every existing screen unchanged, and a test that turning it off mid-payment leaves open payments readable and resolvable.
 
 ## 11. Work orders to write (WO-10a to 10k, same template as `handover/00-WORK-ORDER-TEMPLATE.md`)
-10a data model, rules and storage rules with tests; 10b state machine functions; 10c scheduled functions and fee statements; 10d coach address setup and OTP delay; 10e client payment screens PAY1 to PAY3, PAY6; 10f coach inbox and decisions PAY4, PAY5; 10g refunds and service disputes PAY8; 10h receipts and statement PAY9, PAY10; 10i staff dashboard dispute queue; 10j notifications, strings, privacy text and store answers; 10k test program and manual script. Order: 10a, 10b, 10d, 10e, 10f, 10c, 10g, 10h, 10i, 10j, 10k.
+10a data model, rules and storage rules with tests; 10b state machine functions; 10c scheduled functions and fee statements; 10d coach address setup and OTP delay; 10e client payment screens PAY1 to PAY3, PAY6; 10f coach inbox and decisions PAY4, PAY5; 10g refunds and service disputes PAY8; 10h receipts and statement PAY9, PAY10; 10i staff dashboard dispute queue; 10j notifications, strings, privacy text and store answers; 10k test program and manual script. Order: 10a, 10b, 10m, 10l, 10d, 10e, 10f, 10n, 10c, 10g, 10h, 10o, 10i, 10j, 10p, 10k.
 
 ## 12. Owner and counsel steps (the flag stays off until these are done)
 1. Tax: Rahma and any coach receiving payments needs her own tax status; Own Hub needs a way to receive its fee income lawfully (commercial registration and tax card, or the company).
@@ -127,3 +127,61 @@ Card payments, Fawry, installments, automatic fee debit, holding funds, automati
 4. Decide retention (12.4), the fee percentage (12.5), provisional access after 48 hours of coach silence (12.6, default yes), staff dispute target (default two working days), who the dispute reviewers are (a woman reviewer for any dispute with a woman's private data).
 5. Look up the current InstaPay transaction and daily limits and set the maximum package price below them.
 6. Do a real transfer test with two phones before turning the flag on.
+
+## 13. Anti-fraud and screenshot verification (live release; overrides 4.1, 4.2, 10)
+
+Principle: make honest use take almost no effort, make cheating pointless or detectable, and keep the damage of any one successful cheat small. No check can prove a payment, because only the coach's bank knows the truth; so the design removes the reasons to lie and ties every account to a verified identity.
+
+### 13.1 Remove the reasons to lie (the strongest control)
+- **A coach lies about non-receipt only to dodge the Own Hub fee or to refuse service.** Fix both: the fee (D63) is owed when the client's package becomes active, not when the coach taps confirm; and a package that was activated by a green proof (13.4) cannot be deactivated by the coach's claim alone, only by a staff decision. So denying receipt gains her nothing.
+- **A client fakes proof only to get service without paying.** Fix: green proof gives short, bounded access (at most 7 days or the first package week, whichever is shorter) until the coach confirms or the 72 hour escalation completes; after the coach confirms, access continues. A forged proof therefore buys at most a week, and the account is tied to a verified identity (13.7).
+- **Cap the exposure:** a new client's first payment can only be for the shortest package (the coach can allow longer); a coach's first 3 payments are always staff-visible.
+
+### 13.2 A unique amount and a reference on every payment (no hassle for honest users)
+- Every payment request has a unique amount in piasters, for example 500.37 instead of 500.00 (the extra piasters, 0.01 to 0.99, go to the coach and are shown clearly: "pay exactly 500.37"). Both the coach's bank SMS and the client's receipt then show an amount that matches only this payment. The app copies the exact amount to the clipboard.
+- The reference code goes in the transfer note when the bank allows a note (UNVERIFIED: the agent checks which banks' InstaPay screens have a note field and writes the exact steps for each; if not supported the unique amount carries the weight).
+- Result: a coach cannot say "I do not know which payment this is"; a client cannot reuse one transfer for two packages; staff decide by one searchable number.
+
+### 13.3 Screenshot processing pipeline (client side, automatic, one tap for her)
+Flow for her: she taps "I have paid", picks her bank screenshot (one tap, photo picker). The app reads it on the phone (OCR) and fills the transaction number, amount, time and beneficiary for her to confirm; she taps "Send". No typing in the normal case.
+Checks, in this order, run on the phone first (instant feedback) and again on the server (the authority):
+1. **Image sanity:** screenshot-like dimensions for a phone display, no camera EXIF, no editing-software tags, creation time not before the request and not in the future; size and type limits; metadata stripped before storing.
+2. **OCR extraction:** on-device text recognition (ML Kit text recognition or the platform's own; the agent checks which is already in `pubspec.yaml` and licensing, UNVERIFIED), Arabic and English, Arabic-Indic and Western digits normalised; the server re-runs OCR with its own engine (the agent verifies availability of a server OCR in `functions/`, for example Cloud Vision or Tesseract with `ara+eng`; Google Vertex is currently blocked for this project, so confirm Cloud Vision is not also blocked, UNVERIFIED).
+3. **Field match (deterministic):** amount equals the unique amount to the piaster; beneficiary account name or InstaPay address fuzzy-matches the coach's `addressSnapshot`; a success status phrase appears (for example "تمت بنجاح" or "Successful", per bank templates); date and time fall between the request creation and now; the transaction number matches the format for that bank.
+4. **Template match:** each bank app draws its receipt the same way. The owner supplies 3 real receipts from each major bank (at least CIB, NBE, Banque Misr, QNB, Banque du Caire, plus the InstaPay app itself); the agent stores their layout fingerprints (relative positions of the labelled fields, colours of the success banner, fonts) as test fixtures and a template table. A screenshot whose layout matches no known template is "unknown bank" and goes to amber, not red.
+5. **Uniqueness:** the transaction number must be new across all payments; the re-encoded image hash and a perceptual hash (reuse `functions/coaching/` `dhash`) must not match any earlier payment's image; a near match is red.
+6. **Tamper heuristics (a score only, never a rejection):** JPEG double compression, error-level differences around the amount and number fields, font or digit-shape inconsistencies in those fields, copy-paste seams, mismatched status bar clock versus the claimed time. These add to the risk score and prioritise staff review; they never block an honest client by themselves because they give false alarms.
+7. **Outcome:** GREEN (all deterministic checks pass, no flags), AMBER (one deterministic field unreadable or unknown template: she gets one friendly retry, "we could not read the amount, please pick a clearer screenshot or type the transaction number"), RED (a deterministic mismatch such as a wrong amount, a reused transaction number or image, or a name that does not match: no access; she is told what did not match and can add her bank's transaction history instead; goes to staff).
+Be honest in the terms and the code comments: a skilled forger can still make an image that passes pixels. That is why 13.1, 13.2, 13.5 and 13.7 exist.
+
+### 13.4 What each outcome does for the user (no hassle)
+- **GREEN:** the coach sees "Paid, matches your records" with the unique amount and transaction number; the package is active for the bounded period; she confirms with one tap (or the coach may turn on "auto-confirm green payments", which confirms them at once and still lets her flag within 48 hours; default off for a new coach, offered after 3 clean payments).
+- **AMBER:** the coach sees a yellow "please check your bank" card with the exact amount; no access until she confirms or 24 hours pass with no objection.
+- **RED:** no access; staff queue; the client is told calmly and can add evidence.
+
+### 13.5 Make a false "not received" costly and detectable
+- To mark "not received" the coach must: tick "I searched my bank for amount 500.37 and transaction number X"; attach a screenshot of her own bank's transaction list for that day (OCR'd). If the OCR of her screenshot contains the expected amount or transaction number, the system rejects her claim automatically and shows "This payment appears in your statement". If her list cannot be read, it goes to staff with both images.
+- A lost dispute is an automatic strike; two strikes in 90 days suspend her ability to take payments; a suspension is a staff decision recorded with a reason. Dispute rate (lost disputes over payments) is tracked per coach and shown to staff; a rate over a threshold (for example 10 percent over 10 or more payments, owner-tunable) flags her account.
+- Because the fee is owed from activation (13.1), a false claim also does not save her the fee; the fee statement lists it as "disputed, pending" and is settled on the decision.
+- Client strikes work the same: a proven false proof is a strike; two strikes remove InstaPay payments for that client and are reported in the terms as a breach.
+
+### 13.6 Evidence staff use, in this order
+1. unique amount and reference; 2. transaction number and its format for the bank; 3. OCR fields of both sides' screenshots and their match score; 4. template and uniqueness flags; 5. timeline of events and notifications; 6. the coach's and the client's dispute history; 7. a request for a bank statement line (other lines blacked out) from both parties. The dashboard shows a one-screen evidence summary with these seven items, a recommended decision from a simple rule set, and requires a typed reason. Two staff approve any decision that suspends a coach.
+
+### 13.7 Identity makes strikes real
+Every client and coach is a phone-verified, ID and selfie checked woman (women-only verification). Strikes and suspensions attach to that identity, so a new account does not wipe a record. The terms say fraud may be reported to the authorities and that evidence is kept for that purpose (counsel confirms wording; retention per 4.15). Do not weaken the verification.
+
+### 13.8 Keeping it light for honest users
+- Client: pay in her bank app, return, pick the screenshot, confirm the filled fields, send. Typing is only the fallback.
+- Coach: one notification, one tap. Auto-confirm for trusted clients and green proofs.
+- No extra screens for green payments beyond PAY1 to PAY3 and PAY4.
+- No waiting for staff in the normal case.
+
+### 13.9 Additional cases to cover (each needs a test)
+Screenshot of a failed or pending transfer (status text not success: RED with a clear message); transfer made to a different account that happens to show the coach's name; the same screenshot sent for two coaches; a cropped screenshot hiding the amount; a screenshot in a language the OCR does not read; a dark mode or high contrast screenshot; very long names; two payments with the same amount at the same time (the unique piasters prevent clashes: reject collisions at creation); coach changes the address after a client's proof was OCR-matched to the old snapshot (the snapshot wins); the coach is suspended between payment and confirmation (the client is still protected); the client pays after the request expired (accepted within 7 days if every check passes); a coach confirms and later disputes (confirmation is final unless staff reopen); a client claims the coach never delivered after a green payment (service dispute 4.9); staff decision disagreement (second reviewer); a kill switch turned off mid-dispute (disputes continue to be resolvable); offline submission; clock skew on the phone (the server clock is the authority; the phone time is only a claim); daylight saving (Egypt changes; store UTC); a proof submitted twice by double tap (idempotency); reused transaction number by a different client (RED and both reported to staff); and image bombs and oversized uploads (rejected before OCR).
+
+### 13.10 Tests specific to this section
+Unit tests for each deterministic check with fixtures; a fixture folder of receipts per bank (real, owner supplied, with account details blacked out) plus synthetic bad ones (edited amount, edited name, reused image, cropped, wrong status); OCR accuracy test: at least 95 percent of the real fixtures reach GREEN; false-positive test: no real fixture is RED; tamper heuristics tests assert they only change the score; a state machine test for the coach's statement auto-reject; a load test of the OCR function for latency under 10 seconds on a mid-range phone and on the server; privacy tests that screenshots are stored privately, hashed, metadata stripped, and removed on the schedule in 4.15.
+
+### 13.11 Work orders added
+WO-10l receipt OCR and screenshot checks (on phone and server); WO-10m risk score, outcomes and unique amount allocation; WO-10n coach non-receipt evidence flow and auto-reject; WO-10o strikes, suspensions and dispute-rate flags; WO-10p kill switch and release gating. Order after 10b: 10m, 10l, 10n, 10o, then 10p last.
