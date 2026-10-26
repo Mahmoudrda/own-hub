@@ -6,7 +6,7 @@ Do not scan the whole repository. Read only these, in order:
 3. `handover/02-IMPLEMENTATION-GUIDE.md`
 
 Then do the work orders in `handover/work-orders/` one at a time, in this exact order:
-WO-02a to WO-02g (chat), then WO-03a to WO-03g (builders), then WO-04a to WO-04j (coach setup), then WO-03h to WO-03j (meals; they need the health flag from WO-04h and WO-04i). Each group has an `INDEX-NN.md` that confirms the order. Orders not in this list are not written yet: do not start them.
+WO-01a to WO-01g (close-out of earlier work, do these first), then WO-02a to WO-02g (chat), then WO-03a to WO-03g (builders), then WO-04a to WO-04j (coach setup), then WO-03h to WO-03j (meals; they need the health flag from WO-04h and WO-04i). Each group has an `INDEX-NN.md` that confirms the order. Orders not in this list are not written yet: do not start them.
 
 How to work:
 - Open only the files the work order names. Follow its steps exactly, in order. Run its verify commands and compare with the expected output. Tick its checklist and report it to me.
