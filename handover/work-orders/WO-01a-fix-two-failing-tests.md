@@ -13,6 +13,8 @@ Two tests fail on the current tree: `app/test/features/train/training_reminders_
 2. `rootBundle.loadString` decodes the file in a separate isolate only when the file is 50 KiB or larger (`packages/flutter/lib/src/services/asset_bundle.dart`, `data.lengthInBytes < 50 * 1024` decodes at once). Before commit `fe5a732` (25 Oct 2026, "Notifications: remove the playful tone and 20 filler calm lines") the file was 63,520 bytes, so the decode finished after the test had ended. That commit cut it to 27,257 bytes, so the decode now finishes inside the first test that schedules anything, and a second `apply` lands in the middle of it.
 3. In `training_reminders_test` that second `apply` is the second entry in `applied`. In `getting_started_test` the second `apply` runs with the real date (26 Oct 2026) against a tip series anchored on 14 Oct 2026, so the series is over and `scheduler.tips` (which reads `applied.last`) is empty.
 
+Check the two sizes: `git show fe5a732^:app/assets/content/notification_lines.json | wc -c` prints 63520 and `wc -c app/assets/content/notification_lines.json` prints 27257. What is proven by running: the stack of the second `apply` ends in `_loadBank`, and an empty bank removes it (both files then pass). The 50 KiB timing reason is read from the Flutter source, so treat it as the explanation, not as a second proof.
+
 The production behaviour (first plan with fixed texts, then the same plan again in the new words) is intended and stays. The fix is in the two tests: they must not load the real bank, so they set the bank to the empty one, which `NotificationSync` already allows (`@visibleForTesting static set bank`). With an empty bank every note keeps its fixed text, which is what both tests assert.
 
 ## Final result

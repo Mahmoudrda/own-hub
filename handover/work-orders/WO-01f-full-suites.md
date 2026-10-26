@@ -30,7 +30,8 @@ None.
 5. Storage rules: `cd ~/ownhub/test/rules && npm run test:storage 2>&1 | tail -12`. Success: `ℹ tests 33`, `ℹ pass 33`, `ℹ fail 0`. (The owner's launch guide still says 32; 33 is the current count.)
 6. Dashboard: `cd ~/ownhub/admin-web && node --test 2>&1 | tail -9`. Success: `ℹ tests 77`, `ℹ pass 77`, `ℹ fail 0`.
 7. Wireframe dictionary (the strings check from WO-01b): `cd ~/ownhub/6-v2 && node src/merge-i18n.mjs | head -2`. Success, exactly: `source files: 14 | dictionary entries: 4243` then `strings on screens now: 1831 | covered: 1813 | missing: 18`. Run `cd ~/ownhub && git diff --stat -- 6-v2/i18n/ar.json` before and after this command: it must print the same line both times (the script rewrites the same bytes).
-8. Write the table. For every suite that is not green: the suite name, the first failing test name, and the first 10 lines of its error text, copied exactly. Do not summarise errors in your own words.
+8. Record the state the commits will use: `cd ~/ownhub && git status --short -- app 6-v2 | wc -l; git rev-parse HEAD` (the count is limited to `app` and `6-v2` because other sessions add files under `handover/` all the time; before WO-01a it was 132, including the one `zz_probe` file). Write both values into your report (WO-01g compares against them).
+9. Write the table. For every suite that is not green: the suite name, the first failing test name, and the first 10 lines of its error text, copied exactly. Do not summarise errors in your own words.
 
 ## Strings to add
 None.
