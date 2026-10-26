@@ -25,6 +25,8 @@ import '../../../../ui/app_field.dart';
 import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_scaffold.dart';
 import '../../../../ui/app_sheet.dart';
+import '../../../../ui/gamified_target_bar.dart';
+import '../../domain/inbody_scan.dart';
 import '../../../eat/domain/allergy_guard.dart';
 import '../../data/coaching_repository.dart';
 import '../member/coach_labels.dart' show allergenNames;
@@ -607,6 +609,62 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                       color: AppColors.onSurfaceVariant,
                     ),
                   ),
+                  if (widget.subscription.intake?.inbodyScan case final scan?) ...[
+                    Builder(
+                      builder: (context) {
+                        final targets = InBodyTargetEstimator.estimate(
+                          scan: scan,
+                          goal: ClientFitnessGoal.fromString(
+                            widget.subscription.intake?.goal,
+                          ),
+                          daysPerWeek:
+                              (widget.subscription.intake?.daysPerWeek ?? 0) > 0
+                                  ? widget.subscription.intake!.daysPerWeek
+                                  : 4,
+                        );
+                        return GestureDetector(
+                          key: const ValueKey('meal-apply-inbody-targets'),
+                          onTap: () {
+                            setState(() {
+                              _kcal.text = '${targets.dailyCaloriesKcal}';
+                              _protein.text = '${targets.dailyProteinGrams}';
+                              _error = '';
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceContainer,
+                              borderRadius: BorderRadius.circular(AppRadius.sm),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.auto_awesome,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'InBody suggested: ${targets.dailyCaloriesKcal} kcal · ${targets.dailyProteinGrams}g protein (tap to apply)',
+                                    style: AppText.nav.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ],
               ),
             AppCard(
@@ -623,6 +681,24 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                 ),
                 for (final slot in CoachingEnums.mealSlots)
                   ..._slot(l10n, lang, slot, day, dayIndex, flags),
+                if (!_flagged && _goal != null) ...[
+                  const SizedBox(height: 8),
+                  GamifiedTargetBar(
+                    key: const ValueKey('meal-target-protein-bar'),
+                    label: l10n.proteinGrams,
+                    current: total.proteinG,
+                    target: _goal!.proteinGPerDay,
+                    unit: lang == 'ar' ? 'جم' : 'g',
+                  ),
+                  const SizedBox(height: 8),
+                  GamifiedTargetBar(
+                    key: const ValueKey('meal-target-kcal-bar'),
+                    label: l10n.calories,
+                    current: total.kcal,
+                    target: _goal!.kcalPerDay,
+                    unit: lang == 'ar' ? 'سعر' : 'kcal',
+                  ),
+                ],
                 if (!_flagged && !total.isEmpty)
                   Text(
                     [

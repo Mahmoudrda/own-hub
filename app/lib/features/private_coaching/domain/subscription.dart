@@ -8,6 +8,7 @@ library;
 import 'chat_message.dart' show MessageType;
 import 'coach_profile.dart' show PackageSnapshot;
 import 'coaching_contract.dart';
+import 'inbody_scan.dart';
 import 'parse.dart';
 import 'payments.dart';
 import 'pricing.dart' as pricing;
@@ -25,6 +26,7 @@ class Intake {
     this.doctorAck = false,
     this.eatingHistory = false,
     this.note = '',
+    this.inbodyScan,
   });
 
   final String goal;
@@ -41,6 +43,7 @@ class Intake {
   /// Her yes to "Has food or weight ever felt out of control or worrying".
   final bool eatingHistory;
   final String note;
+  final InBodyScan? inbodyScan;
 
   static const int allergiesMax = 16;
   static const int allergyMax = 30;
@@ -77,6 +80,7 @@ class Intake {
     bool? doctorAck,
     bool? eatingHistory,
     String? note,
+    InBodyScan? inbodyScan,
   }) => Intake(
     goal: goal ?? this.goal,
     level: level ?? this.level,
@@ -88,6 +92,7 @@ class Intake {
     doctorAck: doctorAck ?? this.doctorAck,
     eatingHistory: eatingHistory ?? this.eatingHistory,
     note: note ?? this.note,
+    inbodyScan: inbodyScan ?? this.inbodyScan,
   );
 
   /// Reads a stored intake. The health answers may be a map by question or a
@@ -120,6 +125,9 @@ class Intake {
       eatingHistory: readBool(map['eatingHistory']) ||
           (rawHealth is Map ? readBool(rawHealth['eatingHistory']) : false),
       note: readString(map['note']),
+      inbodyScan: map['inbody'] is Map
+          ? InBodyScan.fromJson(asMap(map['inbody']) ?? const <String, Object?>{})
+          : null,
     );
   }
 
@@ -161,6 +169,7 @@ class Intake {
     },
     'doctorAck': doctorAck,
     'note': note.trim(),
+    if (inbodyScan != null) 'inbody': inbodyScan!.toJson(),
   };
 }
 
