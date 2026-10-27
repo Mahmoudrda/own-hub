@@ -264,6 +264,10 @@ service firebase.storage {
       allow write: if false;
     }
 
+    // InstaPay payments (functions/payments) keep their screenshots under this
+    // same prefix, payment-proofs/{paymentId}/{file}. Neither party reads or
+    // writes them from a phone; the server returns them to a party or to a
+    // woman reviewer through a callable that logs the access.
     // A member's screenshot of her transfer. The service writes it and deletes
     // it after the decision; staff with the finance claim, or the admin, read it.
     match /payment-proofs/{uid}/{file} {

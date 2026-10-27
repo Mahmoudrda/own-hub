@@ -1458,6 +1458,62 @@ service cloud.firestore {
     match /paymentProofs/{proofId} { allow read, write: if false; }
     match /paymentRefs/{refId}     { allow read, write: if false; }
 
+    // ---------------------------------------------------- InstaPay payments
+    // docs/plan/INSTAPAY-PAYMENTS-SPEC.md. Own Hub never moves the money; the
+    // server (functions/payments) is the only writer of everything here. The
+    // two parties read the payment and its event timeline. Risk scores, image
+    // hashes and staff notes live under /staff and are closed to everyone.
+    // Reads do not depend on the kill switch (config/payments), so an open
+    // payment stays readable when the switch is turned off.
+    function paymentParty(data) {
+      return signedIn()
+        && (data.clientUid == request.auth.uid || data.coachUid == request.auth.uid);
+    }
+
+    match /payments/{paymentId} {
+      allow get, list: if isVerified() && paymentParty(resource.data);
+      allow create, update, delete: if false;
+
+      match /events/{eventId} {
+        allow read: if isVerified()
+                    && paymentParty(get(/databases/$(database)/documents/payments/$(paymentId)).data);
+        allow write: if false;
+      }
+
+      match /staff/{docId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /paymentTxnNumbers/{id}    { allow read, write: if false; }
+    match /paymentImageHashes/{id}   { allow read, write: if false; }
+    match /paymentAmountLocks/{id}   { allow read, write: if false; }
+    match /paymentIdempotency/{id}   { allow read, write: if false; }
+    match /paymentStrikes/{id}       { allow read, write: if false; }
+    match /paymentAlerts/{id}        { allow read, write: if false; }
+
+    match /coachPaymentProfiles/{uid} {
+      allow get: if isVerified() && isSelf(uid);
+      allow list, write: if false;
+    }
+
+    match /paymentStanding/{uid} {
+      allow get: if isVerified() && isSelf(uid);
+      allow list, write: if false;
+    }
+
+    match /feeStatements/{statementId} {
+      allow get: if isVerified() && resource.data.coachUid == request.auth.uid;
+      allow list, write: if false;
+    }
+
+    // The kill switch. Only {enabled: bool, updatedAt} lives here, so reading
+    // it leaks nothing. The owner flips it with the set_payments_enabled callable.
+    match /config/payments {
+      allow get: if signedIn();
+      allow list, write: if false;
+    }
+
     // ---------------------------------------------------------- moderation
     // She can report; she can never read the queue, and she can never learn
     // whether a report led anywhere.

@@ -199,6 +199,24 @@ def held_places(
     return sum(1 for _ in query.stream(transaction=transaction))
 
 
+INSTAPAY_PAY_BY_DAYS = 7
+"""How long an InstaPay acceptance waits for the client: the late-proof window."""
+
+
+def instapay_acceptance(now: dt.datetime) -> dict:
+    """The fields that move a request to awaiting_payment when the client pays
+    the coach's own InstaPay address (functions/payments). No payment code and
+    no `payTo`: the payment document carries the address and the amount."""
+    return {
+        "status": "awaiting_payment",
+        "acceptedAt": now,
+        "paymentCode": None,
+        "payBy": now + common.days(INSTAPAY_PAY_BY_DAYS),
+        "payment": {"state": "awaiting", "attempts": 0, "lastReason": None, "proofId": None},
+        "statusAt": now,
+    }
+
+
 def free_start(package: dict, now: dt.datetime) -> dict:
     """The fields of a coaching that starts at once because nothing is paid."""
     return {
@@ -250,6 +268,7 @@ def request(
     now: dt.datetime,
     notify,
     payments_live: bool = False,
+    instapay: bool = False,
     code=common.payment_code,
 ) -> dict:
     common.require_clients_live(live)
@@ -304,6 +323,8 @@ def request(
         cap = row.get("maxActiveClients", LIMITS["maxActiveClientsDefault"])
         if row.get("activeClients", 0) >= cap:
             raise unavailable
+        if instapay and row.get("instapayReady") is not True:
+            raise unavailable  # 4.11: no address yet, the package shows "Message the coach"
         pack = package.to_dict() if package.exists else None
         if pack is None or pack.get("active") is not True or not price.exists:
             raise common.refuse(errors.NOT_FOUND, errors.PACKAGE_NOT_FOUND)
@@ -332,13 +353,16 @@ def request(
         auto = (
             row.get("autoAccept") is True
             and not intake_flagged(intake)
-            and held_places(db, transaction, coach_uid, payments_live, asked=True) < cap
+            and held_places(db, transaction, coach_uid, payments_live or instapay, asked=True) < cap
         )
-        free = auto and not payments_live
+        free = auto and not (payments_live or instapay)
         if free:
             sub.update(free_start(sub["package"], now))
         elif auto:
-            sub.update(acceptance(accounts, now, lambda: fresh_code(db, transaction, code)))
+            sub.update(
+                acceptance(accounts, now, lambda: fresh_code(db, transaction, code))
+                if payments_live else instapay_acceptance(now)
+            )
 
         if free:
             begin(
@@ -399,6 +423,7 @@ def respond(
     now: dt.datetime,
     notify,
     payments_live: bool = False,
+    instapay: bool = False,
     code=common.payment_code,
 ) -> dict:
     common.require_clients_live(live)
@@ -420,10 +445,16 @@ def respond(
             coach_ref = db.collection("coaches").document(uid)
             coach = coach_ref.get(transaction=transaction)
             cap = (coach.to_dict() or {}).get("maxActiveClients", LIMITS["maxActiveClientsDefault"])
-            if held_places(db, transaction, uid, payments_live) >= cap:
+            if held_places(db, transaction, uid, payments_live or instapay) >= cap:
                 raise common.refuse(errors.PRECONDITION, errors.COACH_UNAVAILABLE)
-            if payments_live:
-                changes = acceptance(_accounts(db, transaction), now, lambda: fresh_code(db, transaction, code))
+            if instapay and not payments_live and (coach.to_dict() or {}).get("instapayReady") is not True:
+                from payments import errors as p_errors
+                raise common.refuse(errors.PRECONDITION, p_errors.COACH_NOT_READY)
+            if payments_live or instapay:
+                changes = (
+                    acceptance(_accounts(db, transaction), now, lambda: fresh_code(db, transaction, code))
+                    if payments_live else instapay_acceptance(now)
+                )
             else:
                 rel = db.collection("relationships").document(sub["relId"]).get(transaction=transaction)
                 changes = free_start(sub["package"], now)

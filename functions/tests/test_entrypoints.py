@@ -89,6 +89,25 @@ CALLABLES = {
     "save_coach_package",
     "request_coaching",
     "respond_coaching_request",
+    "create_payment",
+    "cancel_payment",
+    "submit_instapay_proof",
+    "coach_confirm_payment",
+    "coach_mark_different_amount",
+    "client_respond_different_amount",
+    "coach_report_payment",
+    "client_confirm_coach_report",
+    "set_auto_confirm_green",
+    "request_refund",
+    "deny_refund",
+    "record_instapay_refund",
+    "open_service_dispute",
+    "get_payment_image",
+    "staff_list_payment_queue",
+    "staff_get_payment_evidence",
+    "staff_resolve_payment",
+    "set_coach_instapay_address",
+    "set_coach_payment_options",
     "cancel_coaching_request",
     "submit_payment_proof",
     "list_payment_proofs",
@@ -664,3 +683,21 @@ def test_an_iphone_wrapped_consent_version_is_recorded(monkeypatch, stubbed):
     answer = inner("record_consent")(request({"consentVersion": wrapped, "locale": "en"}))
     assert answer == {"ok": True, "consentVersion": config.CONSENT_VERSION}
     assert writes == ["uid-1"]
+
+
+def test_the_address_change_needs_a_sign_in_from_the_last_five_minutes():
+    import time
+    fresh = request({}, token={"auth_time": time.time() - 60, "firebase": {"sign_in_provider": "phone"}})
+    stale = request({}, token={"auth_time": time.time() - 3600, "firebase": {"sign_in_provider": "phone"}})
+    assert main._recent_sign_in(fresh) is True
+    assert main._recent_sign_in(stale) is False
+    assert main._recent_sign_in(request({}, token={"firebase": {"sign_in_provider": "phone"}})) is False
+    assert main._recent_sign_in(request({}, token={"auth_time": time.time(), "firebase": {"sign_in_provider": "password"}})) is False
+
+
+@pytest.mark.parametrize("name", ["staff_list_payment_queue", "staff_get_payment_evidence", "staff_resolve_payment"])
+def test_the_payment_staff_callables_refuse_a_member_and_a_plain_admin(name, stubbed):
+    fn = inner(name)
+    raises(lambda: fn(request({})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+    raises(lambda: fn(request({}, token={"admin": True})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+

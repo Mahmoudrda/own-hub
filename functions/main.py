@@ -1967,6 +1967,29 @@ def _coaching_notify(uid: str, kind: str) -> None:
         logs.error("coaching_push_failed")
 
 
+def _payments_notify(uid: str, kind: str) -> None:
+    """Push for payments using the payments notice texts."""
+    try:
+        from firebase_admin import messaging
+
+        from payments import notices
+
+        notices.send_kind(uid, kind, db=store.db(), messaging=messaging)
+    except Exception:
+        logs.error("payments_push_failed")
+
+
+def _recent_sign_in(request: https_fn.CallableRequest, max_age_seconds: int = 300) -> bool:
+    """True when this ID token comes from a phone sign-in made in the last five
+    minutes. The app gets there by re-authenticating with a fresh SMS code,
+    which is the 'one-time code to her phone' of spec 4.4."""
+    token = request.auth.token if request.auth is not None else None
+    auth_time = token.get("auth_time") if isinstance(token, dict) else None
+    if isinstance(auth_time, bool) or not isinstance(auth_time, (int, float)):
+        return False
+    return _sign_in_provider(request) == "phone" and 0 <= time.time() - auth_time <= max_age_seconds
+
+
 def _coaching_merge_claims(uid: str, changes: dict) -> None:
     from firebase_admin import auth
 
@@ -2007,6 +2030,13 @@ def _payments_live() -> bool:
     import coaching
 
     return coaching.COACH_PAYMENTS_LIVE
+
+
+def _instapay_on() -> bool:
+    """The InstaPay kill switch (config/payments.enabled). Off when missing."""
+    from payments import model as payments_model
+
+    return payments_model.enabled(store.db())
 
 
 def common_limits() -> dict:
@@ -2194,7 +2224,7 @@ def request_coaching(request: https_fn.CallableRequest) -> dict:
 
     return _coaching_call(
         subscriptions.request, store.db(), uid, data,
-        live=_clients_live(), payments_live=_payments_live(), verified=_verified(request),
+        live=_clients_live(), payments_live=_payments_live(), instapay=_instapay_on(), verified=_verified(request),
         now=_coaching_now(), notify=_coaching_notify,
     )
 
@@ -2208,9 +2238,219 @@ def respond_coaching_request(request: https_fn.CallableRequest) -> dict:
 
     return _coaching_call(
         subscriptions.respond, store.db(), uid, data,
-        live=_clients_live(), payments_live=_payments_live(), coach_v=_claim(request, "coachV"),
+        live=_clients_live(), payments_live=_payments_live(), instapay=_instapay_on(), coach_v=_claim(request, "coachV"),
         now=_coaching_now(), notify=_coaching_notify,
     )
+
+
+@https_fn.on_call()
+def create_payment(request: https_fn.CallableRequest) -> dict:
+    """PAY1: a client starts a payment for her accepted package. {subId, idempotencyKey}."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import create
+
+    return _coaching_call(create.create, store.db(), uid, data, now=_coaching_now(), on=_instapay_on())
+
+
+@https_fn.on_call()
+def cancel_payment(request: https_fn.CallableRequest) -> dict:
+    """PAY3: the client withdraws an unpaid request. {paymentId}. Works with the switch off."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import cancel
+
+    return _coaching_call(cancel.cancel, store.db(), uid, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def set_coach_instapay_address(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import address
+
+    return _coaching_call(
+        address.set_address, store.db(), uid, data, coach_v=_claim(request, "coachV"),
+        recent_sign_in=_recent_sign_in(request), now=_coaching_now(), notify=_payments_notify,
+    )
+
+
+@https_fn.on_call()
+def set_coach_payment_options(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import address
+
+    return _coaching_call(address.set_options, store.db(), uid, data, coach_v=_claim(request, "coachV"), now=_coaching_now())
+
+
+@https_fn.on_call()
+def submit_instapay_proof(request: https_fn.CallableRequest) -> dict:
+    """PAY2: screenshots and the transaction number. Works with the kill switch off."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import ocr, proof
+
+    budget: dict = {}
+    raw = data.get("images")
+    if not isinstance(raw, list):
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR)
+    images = [_decode_image(item, budget) for item in raw[: proof.MAX_IMAGES_PER_CALL + 1]]
+    return _coaching_call(
+        proof.submit, store.db(), uid, data, images,
+        now=_coaching_now(), blobs=_PersonalBlobs(), reencode=_reencode, reader=ocr.TextReader(), notify=_payments_notify,
+    )
+
+
+@https_fn.on_call()
+def coach_confirm_payment(request: https_fn.CallableRequest) -> dict:
+    """PAY4: 'I received it'. Works with the kill switch off."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import coach
+
+    return _coaching_call(
+        coach.confirm, store.db(), uid, data, coach_v=_claim(request, "coachV"), now=_coaching_now(), notify=_payments_notify,
+    )
+
+
+@https_fn.on_call()
+def coach_mark_different_amount(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import amounts
+
+    return _coaching_call(amounts.mark, store.db(), uid, data, coach_v=_claim(request, "coachV"),
+                          now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def client_respond_different_amount(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import amounts
+
+    return _coaching_call(amounts.respond, store.db(), uid, data, now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def coach_report_payment(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import report
+
+    return _coaching_call(report.coach_report, store.db(), uid, data, coach_v=_claim(request, "coachV"),
+                          now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def client_confirm_coach_report(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import report
+
+    return _coaching_call(report.client_answer, store.db(), uid, data, now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def set_auto_confirm_green(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import coach
+
+    return _coaching_call(coach.set_auto_confirm, store.db(), uid, data, coach_v=_claim(request, "coachV"), now=_coaching_now())
+
+
+@https_fn.on_call()
+def request_refund(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import refund
+
+    return _coaching_call(refund.request, store.db(), uid, data, now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def deny_refund(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import refund
+
+    return _coaching_call(refund.deny, store.db(), uid, data, coach_v=_claim(request, "coachV"),
+                          now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def record_instapay_refund(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import refund
+
+    return _coaching_call(refund.record, store.db(), uid, data, coach_v=_claim(request, "coachV"),
+                          now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def open_service_dispute(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import refund
+
+    return _coaching_call(refund.open_service_dispute, store.db(), uid, data, now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def get_payment_image(request: https_fn.CallableRequest) -> dict:
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import staff
+
+    return _coaching_call(staff.party_image, store.db(), uid, data, blobs=_PersonalBlobs())
+
+
+@https_fn.on_call()
+def staff_list_payment_queue(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request)  # no admin: a woman's private payment data
+    data = _body(request)
+    from payments import staff
+
+    return _coaching_call(staff.queue, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def staff_get_payment_evidence(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request)
+    data = _body(request)
+    from payments import staff
+
+    return _coaching_call(staff.get_evidence, store.db(), actor, data, now=_coaching_now(), blobs=_PersonalBlobs())
+
+
+@https_fn.on_call()
+def staff_resolve_payment(request: https_fn.CallableRequest) -> dict:
+    actor = _require_woman_reviewer(request)
+    data = _body(request)
+    from payments import staff
+
+    return _coaching_call(staff.resolve, store.db(), actor, data, now=_coaching_now(), notify=_payments_notify)
+
+
 
 
 @https_fn.on_call()
@@ -2564,7 +2804,7 @@ def coaching_sweeper(event: scheduler_fn.ScheduledEvent) -> None:
         applications.retry_claims(db, merge_claims=_coaching_merge_claims)
     except Exception:
         logs.error("coaching_claim_retry_failed")
-    clients, payments = _clients_live(), _payments_live()
+    clients, payments = _clients_live(), _payments_live() or _instapay_on()
     if not (clients or payments):
         return
     counts = subscriptions.sweep(
