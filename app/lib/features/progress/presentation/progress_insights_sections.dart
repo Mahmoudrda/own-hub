@@ -193,14 +193,16 @@ class InsightsFood extends StatelessWidget {
             l10n.proteinAverageOfTheDaysYouLogged,
             l10n.nGProtein(countLabel(avgProtein ?? 0)),
           ),
-          _line(
-            l10n.proteinTarget,
-            l10n.nGProtein(countLabel(week.proteinTargetG)),
-          ),
-          _line(
-            l10n.caloriesAverageOfTheDaysYouLogged,
-            l10n.kcalKcal(countLabel(avgKcal ?? 0)),
-          ),
+          if (!week.targetsWithheld) ...[
+            _line(
+              l10n.proteinTarget,
+              l10n.nGProtein(countLabel(week.proteinTargetG)),
+            ),
+            _line(
+              l10n.caloriesAverageOfTheDaysYouLogged,
+              l10n.kcalKcal(countLabel(avgKcal ?? 0)),
+            ),
+          ],
         ],
       ],
     );

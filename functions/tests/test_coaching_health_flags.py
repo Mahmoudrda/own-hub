@@ -109,3 +109,21 @@ def test_only_her_own_coach_can_mark_it_read_and_twice_is_fine():
     assert first == second == {"ok": True}
     assert row["healthReviewedAt"] == stamp == NOW
     assert row["healthReviewedBy"] == "coach1"
+
+
+@pytest.mark.parametrize("kind", ["workout", "meal"])
+def test_the_owner_can_make_the_hold_mandatory_for_a_build_that_never_asks_for_it(kind):
+    store = make_db()
+    store.document("subscriptions/sub1").update({"intake": {"lifeStage": "postpartum", "health": {}}})
+    store.document("coachingConfig/plans").set({"healthHoldMandatory": True})
+    assert refusal(lambda: publish(store, req(kind))) == (errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
+    assert subscriptions.review_health(store, "coach1", {"subId": "sub1"}, live=True, coach_v="active", now=NOW) == {"ok": True}
+    assert publish(store, req(kind))[0]["revision"] == 1
+
+
+@pytest.mark.parametrize("value", [False, "true", 1, None])
+def test_the_mandatory_switch_is_off_unless_exactly_true(value):
+    store = make_db()
+    store.document("subscriptions/sub1").update({"intake": {"lifeStage": "postpartum", "health": {}}})
+    store.document("coachingConfig/plans").set({"healthHoldMandatory": value})
+    assert publish(store, req("workout"))[0]["revision"] == 1

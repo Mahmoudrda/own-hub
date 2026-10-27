@@ -252,7 +252,10 @@ abstract final class FollowUpPlan {
       case FollowUpKind.food:
         final pick = f.proteinPick;
         if (pick == null || f.lastLoggedDays.length < 5) return null;
-        final low = f.lastLoggedDays.where((d) => d.protein < d.target).length;
+        // A target of 0 is a withheld one: nothing is "low" against it.
+        final low = f.lastLoggedDays
+            .where((d) => d.target > 0 && d.protein < d.target)
+            .length;
         if (low < 3) return null;
         return FollowUp(
           kind: kind,

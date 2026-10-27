@@ -14,7 +14,7 @@ from typing import Optional
 
 from coaching import common
 
-from . import engine, model, states
+from . import activation, coach, engine, fees, model, states
 
 TERMINAL_FOR_TIMERS = ("confirmed", "resolved_paid", "resolved_unpaid", "cancelled", "refunded", "refund_denied")
 
@@ -89,4 +89,158 @@ def sweep(db, now: dt.datetime, notify) -> dict:
         moved = expire(db, payment_id, now)
         if moved:
             counts[moved] += 1
+    return counts
+
+
+# ------------------------------------------------------------------ the rest of the clock
+#
+# Each rule below re-reads the payment inside its own transaction, so a pass
+# that overlaps a party's action does the right thing. Pushes go out after the
+# commit. None of these reads the kill switch: open payments must keep moving
+# with the switch off.
+
+
+def _stream(db, field: str, value):
+    return [s.id for s in db.collection("payments").where(field, "==", value).stream()]
+
+
+def remind_client(db, payment_id: str, now: dt.datetime) -> Optional[dict]:
+    """Once, 12 hours into the 24 hour request: 'your request is still open'."""
+
+    def body(transaction):
+        ref, cur = engine.load(transaction, db, payment_id)
+        expires = common.as_utc(cur.get("expiresAt"))
+        if cur["status"] != "awaiting_payment" or cur.get("reminded12h") or expires is None or expires <= now \
+                or expires > now + model.hours(model.LIMITS["expiryHours"] - 12):
+            return None
+        transaction.update(ref, {"reminded12h": True})
+        return cur
+
+    return common.run(db, body)
+
+
+def remind_coach(db, payment_id: str, now: dt.datetime) -> Optional[dict]:
+    """Once, 48 hours after a proof she has not answered (4.1)."""
+
+    def body(transaction):
+        ref, cur = engine.load(transaction, db, payment_id)
+        sent = common.as_utc(cur.get("proofSubmittedAt"))
+        if cur["status"] != "proof_submitted" or cur.get("reminded48h") or sent is None \
+                or now < sent + model.hours(model.LIMITS["coachRemindHours"]):
+            return None
+        transaction.update(ref, {"reminded48h": True})
+        return cur
+
+    return common.run(db, body)
+
+
+def grant_amber(db, payment_id: str, now: dt.datetime, cfg: dict) -> bool:
+    """An AMBER proof nobody objected to for 24 hours gives bounded access (13.4)."""
+
+    def body(transaction):
+        ref, cur = engine.load(transaction, db, payment_id)
+        until = common.as_utc(cur.get("amberUntil"))
+        if cur["status"] != "proof_submitted" or cur.get("outcome") != "amber" or until is None or until > now \
+                or (cur.get("access") or {}).get("state") != "none":
+            return False
+        seen = activation.read_for_start(transaction, db, cur["subId"])
+        coach.grant_provisional(transaction, db, ref, cur, seen, cfg, now)
+        return True
+
+    return common.run(db, body)
+
+
+def warn_access(db, payment_id: str, now: dt.datetime) -> Optional[dict]:
+    """Once, in the last day of bounded access that is not yet a paid one."""
+
+    def body(transaction):
+        ref, cur = engine.load(transaction, db, payment_id)
+        access = cur.get("access") or {}
+        until = common.as_utc(access.get("until"))
+        if access.get("state") != "provisional" or cur["status"] in model.PAID_STATUSES or cur.get("warned") \
+                or until is None or not (now < until <= now + model.days(1)):
+            return None
+        transaction.update(ref, {"warned": True})
+        return cur
+
+    return common.run(db, body)
+
+
+def lapse_access(db, payment_id: str, now: dt.datetime) -> bool:
+    """Bounded access that ran out: the payment stops saying 'provisional'. Only
+    the payment field changes. The hourly sweeper ends the subscription at its
+    own `endsAt` and keeps `provisionalUntil`, which is what lets a later paid
+    decision restart the coaching (`activation.lapsed`)."""
+
+    def body(transaction):
+        ref, cur = engine.load(transaction, db, payment_id)
+        access = cur.get("access") or {}
+        until = common.as_utc(access.get("until"))
+        if access.get("state") != "provisional" or until is None or until > now or cur["status"] in model.PAID_STATUSES:
+            return False
+        transaction.update(ref, {"access": {"state": "none", "until": None}})
+        return True
+
+    return common.run(db, body)
+
+
+def promote_addresses(db, now: dt.datetime) -> int:
+    """A coach's new address, after its 24 hour delay, becomes her address
+    (`profile.effective` already honours it from that moment; this makes the
+    stored profile say so)."""
+    done = 0
+    for snap in list(db.collection("coachPaymentProfiles").where("pending.effectiveAt", "<=", now).stream()):
+        def body(transaction, ref=snap.reference):
+            row = common.read(ref, transaction) or {}
+            pending = row.get("pending") or {}
+            when = common.as_utc(pending.get("effectiveAt"))
+            if not pending.get("address") or when is None or when > now:
+                return False
+            transaction.update(ref, {"address": pending["address"], "accountName": pending["accountName"], "pending": None})
+            return True
+
+        done += bool(common.run(db, body))
+    return done
+
+
+def _notify(notify, uid: str, kind: str) -> None:
+    try:
+        notify(uid, kind)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def half_hourly(db, now: dt.datetime, notify) -> dict:
+    """The 30 minute pass: silence first, then the coach reminder and AMBER access."""
+    counts = {**sweep(db, now, notify), "coachReminded": 0, "amberGranted": 0}
+    cfg = model.config(db)
+    for payment_id in _stream(db, "status", "proof_submitted"):
+        row = remind_coach(db, payment_id, now)
+        if row:
+            _notify(notify, row["coachUid"], "instapayCoachReminder")
+            counts["coachReminded"] += 1
+        counts["amberGranted"] += bool(grant_amber(db, payment_id, now, cfg))
+    return counts
+
+
+def hourly(db, now: dt.datetime, notify) -> dict:
+    """The hourly pass: expiry and silence, the client reminder, bounded access
+    running out, a coach's address coming due, late fee statements."""
+    counts = {**sweep(db, now, notify), "clientReminded": 0, "accessWarned": 0, "accessLapsed": 0}
+    soon = db.collection("payments").where("status", "==", "awaiting_payment").where("expiresAt", "<=", now + model.hours(12))
+    for snap in list(soon.stream()):
+        row = remind_client(db, snap.id, now)
+        if row:
+            _notify(notify, row["clientUid"], "instapayReminder")
+            counts["clientReminded"] += 1
+    for payment_id in [s.id for s in db.collection("payments").where("access.state", "==", "provisional").stream()]:
+        if lapse_access(db, payment_id, now):
+            counts["accessLapsed"] += 1
+            continue
+        row = warn_access(db, payment_id, now)
+        if row:
+            _notify(notify, row["clientUid"], "instapayAccessEndsSoon")
+            counts["accessWarned"] += 1
+    counts["addresses"] = promote_addresses(db, now)
+    counts["feesOverdue"] = fees.mark_overdue(db, now=now, notify=notify)
     return counts

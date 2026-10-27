@@ -13,7 +13,22 @@ from . import activation, engine, errors, fees, model, profile, states
 
 
 def can_grant(seen: dict) -> bool:
-    return activation.grantable(seen["sub"])
+    return activation.grantable(seen)
+
+
+def grant_provisional(transaction, db, ref, pay: dict, seen: dict, cfg: dict, now: dt.datetime) -> dict:
+    """Bounded access (13.1): at most `provisionalMaxDays` or the package, the
+    fee owed from this moment (13.1), the coaching started or extended by
+    `activation.grant`. Used by a GREEN proof and by an AMBER nobody objected
+    to. Returns the payment as it now stands. All reads done by the caller."""
+    days = min(model.LIMITS["provisionalMaxDays"], (seen["sub"].get("package") or {}).get("durationDays", 7))
+    until = now + model.days(days)
+    rel_source = (seen["rel"].to_dict() or {}).get("source") if seen["rel"].exists else None
+    changes = {"access": {"state": "provisional", "until": until}, **fees.at_activation(pay, cfg, rel_source, now)}
+    transaction.update(ref, changes)
+    if can_grant(seen):
+        activation.grant(transaction, db, seen, now, provisional_until=until)
+    return {**pay, **changes}
 
 
 def apply_confirmation(transaction, db, ref, cur: dict, seen: dict, prof_ref, prof: dict, cfg: dict,

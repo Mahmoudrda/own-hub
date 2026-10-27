@@ -15292,4 +15292,27 @@ class AppL10nAr extends AppL10n {
   String videosCanBeUpToSecondsSeconds(String seconds) {
     return 'الفيديو لحد $seconds ثانية. اختاري واحد أقصر.';
   }
+
+  @override
+  String get yourCoachSetsYourFoodPlanWith =>
+      'مدرّبتك هي اللي بتظبط خطة أكلك معاكي. سجّلي أكلك وكلّميها فيه.';
+
+  @override
+  String get weNeverSetATargetBelow1 => 'مبنحطش أبدًا هدف أقل من 1,200 سعرة.';
+
+  @override
+  String get weDoNotSetWeightLossTargets =>
+      'مبنحطش أهداف لإنقاص الوزن تحت 18 سنة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.';
+
+  @override
+  String get weDoNotSetWeightLossTargets_14owx =>
+      'مبنحطش أهداف لإنقاص الوزن وانتي حامل أو بعد الولادة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.';
+
+  @override
+  String get forAClientWhoIsPregnantOr =>
+      'للعميلة الحامل أو بعد الولادة، أقل هدف يومي هو 1,800 سعرة.';
+
+  @override
+  String get proteinCanBeAtMost35Of =>
+      'البروتين مينفعش يزيد عن 35% من سعرات اليوم.';
 }

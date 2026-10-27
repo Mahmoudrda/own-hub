@@ -68,6 +68,9 @@ class FakeReader:
             "checkIns": {"coach-9__her-uid/2026-W44": {"state": "answered", "answers": {"pain": True, "note": "knee"}}},
             "private": {"account": {"payoutState": "none"}},
             "receipts": {},
+            "payments": {"pay1": {"clientUid": uid, "coachUid": "coach-9", "amountPiasters": 50037, "status": "confirmed"}},
+            "paymentProfile": {"paymentStanding": {"clientStrikes": 1}, "coachPaymentProfiles": {}},
+            "feeStatements": {},
         }
 
     files = {"chat-media/rel__x/her-uid/a.jpg": b"jpeg-bytes"}
@@ -223,3 +226,28 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
     assert got["application"] == {"status": "approved"}
     assert got["packages"] == {"p1": {"title": "T"}}
     assert got["media"] == {"m1": {"kind": "photo"}}
+
+
+def test_the_export_carries_her_own_payments_and_standing_but_no_staff_data():
+    data = export_user.build_export(HER, FakeReader(), "en", NOW)["sections"]["coaching"]["data"]
+    assert data["payments"]["pay1"]["amountPiasters"] == 50037
+    assert data["paymentProfile"]["paymentStanding"] == {"clientStrikes": 1}
+    assert "staff" not in repr(data["payments"]) and "riskScore" not in repr(data)
+
+
+def test_the_live_reader_reads_payments_as_client_and_as_coach_and_never_their_subcollections():
+    from tests import fake_firestore
+
+    db = fake_firestore.FakeFirestore()
+    db.docs["payments/p1"] = {"clientUid": HER, "coachUid": "c9", "amountPiasters": 50037}
+    db.docs["payments/p2"] = {"clientUid": "x1", "coachUid": HER, "amountPiasters": 70012}
+    db.docs["payments/p3"] = {"clientUid": "x1", "coachUid": "c9", "amountPiasters": 1}
+    db.docs["payments/p1/staff/review"] = {"riskScore": 40}
+    db.docs["payments/p1/events/e1"] = {"to": "confirmed"}
+    db.docs[f"paymentStanding/{HER}"] = {"coachStrikes": 1}
+    db.docs[f"feeStatements/{HER}__2026-10"] = {"coachUid": HER, "totalDuePiasters": 7500}
+    out = export_user.FirestoreReader(db).coaching(HER)
+    assert set(out["payments"]) == {"p1", "p2"}
+    assert "riskScore" not in repr(out) and "confirmed" not in repr(out["payments"])
+    assert out["paymentProfile"]["paymentStanding"] == {"coachStrikes": 1}
+    assert list(out["feeStatements"]) == [f"{HER}__2026-10"]

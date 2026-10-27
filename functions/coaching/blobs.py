@@ -47,6 +47,11 @@ class PersonalBlobs:
             if type(error).__name__ != "NotFound":
                 raise
 
+    def list_files(self, prefix: str):
+        """(name, created) of every file under `prefix`, lazily, a page at a time."""
+        for blob in self._bucket.list_blobs(prefix=prefix):
+            yield blob.name, blob.time_created
+
     def lock(self, path: str) -> None:
         """Marks a coach's file as evidence: storage rules then refuse to let her
         delete or replace it. Removing the portfolio item deletes it from here."""

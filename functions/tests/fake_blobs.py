@@ -8,9 +8,14 @@ class FakeBlobs:
         self.objects: dict[str, tuple[bytes, str]] = dict(objects or {})
         self.deleted: list[str] = []
         self.locked: list[str] = []
+        self.created: dict[str, object] = {}
 
-    def put(self, path: str, data: bytes = b"x", content_type: str = "image/jpeg") -> None:
+    def put(self, path: str, data: bytes = b"x", content_type: str = "image/jpeg", created=None) -> None:
         self.objects[path] = (data, content_type)
+        self.created[path] = created
+
+    def list_files(self, prefix: str):
+        return [(name, self.created.get(name)) for name in sorted(self.objects) if name.startswith(prefix)]
 
     def exists(self, path: str) -> bool:
         return path in self.objects

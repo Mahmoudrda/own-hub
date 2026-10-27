@@ -38,6 +38,7 @@ class NutritionWeek {
     required this.days,
     required this.proteinTargetG,
     required this.kcalTarget,
+    this.targetsWithheld = false,
   });
 
   /// Seven days, oldest first, the last one today.
@@ -49,6 +50,7 @@ class NutritionWeek {
     return NutritionWeek(
       proteinTargetG: targets.proteinG,
       kcalTarget: targets.kcal,
+      targetsWithheld: targets.withheld,
       days: [
         for (var back = 6; back >= 0; back--)
           _day(DateTime(today.year, today.month, today.day - back), totalsFor),
@@ -80,6 +82,10 @@ class NutritionWeek {
   final List<NutritionDay> days;
   final int proteinTargetG;
   final int kcalTarget;
+
+  /// She has no calorie or macro target: the page shows what she ate and no
+  /// figure to compare it with.
+  final bool targetsWithheld;
 
   Iterable<NutritionDay> get _logged => days.where((d) => d.logged);
 

@@ -13,13 +13,33 @@ from coaching import errors as coaching_errors
 
 
 def read_for_start(transaction, db, sub_id: str) -> dict:
-    """Every read `grant` needs. Call before any write."""
+    """Every read `grant` needs. Call before any write. A subscription the
+    sweeper ended at its provisional limit is only restarted when the coaching
+    could be opened today (`restartable`): the coach has a place free, nobody
+    blocked anybody, and no other subscription of the pair is open."""
     sub_ref = db.collection("subscriptions").document(sub_id)
     sub = common.read(sub_ref, transaction) or {}
     coach_ref = db.collection("coaches").document(sub.get("coachUid", "none"))
     rel_ref = db.collection("relationships").document(sub.get("relId", "none"))
-    return {"subRef": sub_ref, "sub": sub, "coachRef": coach_ref, "coach": coach_ref.get(transaction=transaction),
+    seen = {"subRef": sub_ref, "sub": sub, "coachRef": coach_ref, "coach": coach_ref.get(transaction=transaction),
             "rel": rel_ref.get(transaction=transaction)}
+    if lapsed(sub):
+        seen["restartable"] = _restartable(transaction, db, sub_id, sub, seen)
+    return seen
+
+
+def _restartable(transaction, db, sub_id: str, sub: dict, seen: dict) -> bool:
+    coach = seen["coach"].to_dict() if seen["coach"].exists else None
+    if coach is None or coach.get("activeClients", 0) >= coach.get("maxActiveClients", common.LIMITS["maxActiveClientsDefault"]):
+        return False
+    if subscriptions.blocked_either(transaction, db, sub["coachUid"], sub["clientUid"]):
+        return False
+    rel = seen["rel"].to_dict() if seen["rel"].exists else {}
+    if rel.get("status") == "active" and rel.get("activeSubId") not in (None, sub_id):
+        return False
+    pair = (db.collection("subscriptions").where("clientUid", "==", sub["clientUid"]).where("coachUid", "==", sub["coachUid"])
+            .where("status", "in", list(subscriptions.OPEN)))
+    return not any(snap.id != sub_id for snap in pair.stream(transaction=transaction))
 
 
 def lapsed(sub: dict) -> bool:
@@ -28,10 +48,11 @@ def lapsed(sub: dict) -> bool:
     return sub.get("status") == "ended" and sub.get("provisionalUntil") is not None
 
 
-def grantable(sub: Optional[dict]) -> bool:
-    """Whether a confirmation can still start (or restart) the coaching."""
-    sub = sub or {}
-    return sub.get("status") in ("awaiting_payment", "active") or lapsed(sub)
+def grantable(seen: dict) -> bool:
+    """Whether a confirmation can still start (or restart) the coaching. `seen`
+    is what `read_for_start` returned."""
+    sub = seen.get("sub") or {}
+    return sub.get("status") in ("awaiting_payment", "active") or (lapsed(sub) and seen.get("restartable") is True)
 
 
 def grant(transaction, db, seen: dict, now: dt.datetime, *, provisional_until: Optional[dt.datetime] = None) -> str:
@@ -52,8 +73,7 @@ def grant(transaction, db, seen: dict, now: dt.datetime, *, provisional_until: O
                                          "payment": {**payment, "state": "approved"}})
             return "upgraded"
         return "unchanged"
-    revive = lapsed(sub)
-    if sub.get("status") != "awaiting_payment" and not revive:
+    if sub.get("status") != "awaiting_payment" and not grantable(seen):
         raise common.refuse(coaching_errors.PRECONDITION, coaching_errors.WRONG_STATUS)
     full_end = now + common.days(package["durationDays"])
     ends = min(provisional_until, full_end) if provisional_until else full_end

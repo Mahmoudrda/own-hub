@@ -1979,6 +1979,18 @@ def _payments_notify(uid: str, kind: str) -> None:
         logs.error("payments_push_failed")
 
 
+def _payments_after_decision(db, payment_id, **kwargs) -> None:
+    """Strikes and counters after a staff decision. A failure is logged and
+    never undoes the decision (a strike has one document per payment, and
+    reopening then deciding again repairs a missed one)."""
+    from payments import strikes
+
+    try:
+        strikes.after_decision(db, payment_id, **kwargs)
+    except Exception:
+        logs.error("payments_after_decision_failed")
+
+
 def _recent_sign_in(request: https_fn.CallableRequest, max_age_seconds: int = 300) -> bool:
     """True when this ID token comes from a phone sign-in made in the last five
     minutes. The app gets there by re-authenticating with a fresh SMS code,
@@ -2448,7 +2460,158 @@ def staff_resolve_payment(request: https_fn.CallableRequest) -> dict:
     data = _body(request)
     from payments import staff
 
-    return _coaching_call(staff.resolve, store.db(), actor, data, now=_coaching_now(), notify=_payments_notify)
+    return _coaching_call(staff.resolve, store.db(), actor, data, now=_coaching_now(), notify=_payments_notify,
+                          on_decision=_payments_after_decision)
+
+
+@https_fn.on_call()
+def staff_set_coach_payment_status(request: https_fn.CallableRequest) -> dict:
+    """Suspend (two different staff, each with a reason) or lift a coach's InstaPay payments. {coachUid, action, reason}."""
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from payments import strikes
+
+    return _coaching_call(strikes.set_coach_status, store.db(), actor, data, now=_coaching_now(), notify=_payments_notify)
+
+
+@https_fn.on_call()
+def staff_list_payment_flags(request: https_fn.CallableRequest) -> dict:
+    """Flagged women and open alerts: {flagged: [...], alerts: [...]}."""
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from payments import strikes
+
+    return _coaching_call(strikes.list_flags, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def coach_mark_not_received(request: https_fn.CallableRequest) -> dict:
+    """PAY5: 'not received' with the ticked search and her bank list. Works with the kill switch off."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import claims, ocr
+
+    budget: dict = {}
+    raw = data.get("images")
+    if not isinstance(raw, list):
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR)
+    images = [_decode_image(item, budget) for item in raw[: claims.MAX_IMAGES + 1]]
+    return _coaching_call(
+        claims.not_received, store.db(), uid, data, images, coach_v=_claim(request, "coachV"), now=_coaching_now(),
+        blobs=_PersonalBlobs(), reencode=_reencode, reader=ocr.TextReader(), notify=_payments_notify,
+    )
+
+
+@https_fn.on_call()
+def add_payment_evidence(request: https_fn.CallableRequest) -> dict:
+    """PAY6: either party adds pictures to a payment under review. Works with the kill switch off."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import claims, ocr
+
+    budget: dict = {}
+    raw = data.get("images")
+    if not isinstance(raw, list):
+        raise https_fn.HttpsError(https_fn.FunctionsErrorCode.INVALID_ARGUMENT, reasons.INTERNAL_ERROR)
+    images = [_decode_image(item, budget) for item in raw[: claims.MAX_IMAGES + 1]]
+    return _coaching_call(
+        claims.add_evidence, store.db(), uid, data, images, now=_coaching_now(),
+        blobs=_PersonalBlobs(), reencode=_reencode, reader=ocr.TextReader(),
+    )
+
+
+@https_fn.on_call()
+def record_fee_payment(request: https_fn.CallableRequest) -> dict:
+    """PAY9: the coach says she paid Own Hub's fee by InstaPay. {statementId, txnNumber}."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from payments import fees
+
+    return _coaching_call(fees.record_payment, store.db(), uid, data, coach_v=_claim(request, "coachV"), now=_coaching_now())
+
+
+@https_fn.on_call()
+def list_fee_statements(request: https_fn.CallableRequest) -> dict:
+    """The owner's overview of fee statements (finance or admin): totals only."""
+    actor = _require_finance(request)
+    data = _body(request)
+    from payments import fees
+
+    return _coaching_call(fees.list_statements, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def confirm_fee_payment(request: https_fn.CallableRequest) -> dict:
+    """The owner (finance or admin) confirms a coach's fee payment: {statementId}."""
+    actor = _require_finance(request)
+    data = _body(request)
+    from payments import fees
+
+    return _coaching_call(fees.confirm_payment, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def set_payments_enabled(request: https_fn.CallableRequest) -> dict:
+    """The owner's off button for NEW InstaPay payments: {enabled, reason}. Admin claim only."""
+    actor = _require_admin(request)
+    data = _body(request)
+    from payments import switch
+
+    return _coaching_call(switch.set_enabled, store.db(), actor, data, now=_coaching_now())
+
+
+@scheduler_fn.on_schedule(schedule="every 1 hours", region=config.REGION)
+def expire_payments(event: scheduler_fn.ScheduledEvent) -> None:
+    """Hourly: unpaid requests expire (24 hours), the 12 hour reminder, bounded access
+    running out, a coach's address coming due, fee statements 30 days late. Runs with the kill switch off."""
+    from payments import timers
+
+    try:
+        timers.hourly(store.db(), _coaching_now(), _payments_notify)
+    except Exception:
+        logs.error("payments_expire_failed")
+
+
+@scheduler_fn.on_schedule(schedule="every 30 minutes", region=config.REGION)
+def escalate_silent_payments(event: scheduler_fn.ScheduledEvent) -> None:
+    """The 48 and 72 hour silences, the refund and report waits, AMBER access. Runs with the kill switch off."""
+    from payments import timers
+
+    try:
+        timers.half_hourly(store.db(), _coaching_now(), _payments_notify)
+    except Exception:
+        logs.error("payments_escalate_failed")
+
+
+@scheduler_fn.on_schedule(schedule="0 6 1 * *", timezone="Africa/Cairo", region=config.REGION)
+def generate_fee_statements(event: scheduler_fn.ScheduledEvent) -> None:
+    """The 1st of each month, 06:00 Cairo: last month's fee statement for each coach."""
+    from payments import fees
+
+    try:
+        fees.generate(store.db(), now=_coaching_now(), notify=_payments_notify)
+    except Exception:
+        logs.error("payments_statements_failed")
+
+
+@scheduler_fn.on_schedule(schedule="0 3 * * *", timezone="Africa/Cairo", region=config.REGION)
+def payments_retention(event: scheduler_fn.ScheduledEvent) -> None:
+    """Daily: payment pictures past their retention period, and uploads (chat
+    photos, payment pictures) that no message or payment ever named."""
+    from payments import retention
+
+    db, now, blobs = store.db(), _coaching_now(), _PersonalBlobs()
+    try:
+        retention.sweep_screenshots(db, now=now, blobs=blobs)
+    except Exception:
+        logs.error("payments_retention_failed")
+    try:
+        retention.sweep_orphan_uploads(db, now=now, blobs=blobs)
+    except Exception:
+        logs.error("orphan_uploads_failed")
 
 
 

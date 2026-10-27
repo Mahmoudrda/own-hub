@@ -8,6 +8,7 @@
 library;
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import '../../../../app_state/app_changes.dart';
 import '../../../../app_state/honest_notice.dart';
 import '../../../../domain/format/day_key.dart';
 import '../../../../domain/format/number_label.dart';
+import '../../../../domain/nutrition/target_safety.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
@@ -139,6 +141,25 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
 
   bool get _flagged => widget.subscription.intake?.eatingHistoryFlag ?? false;
 
+  /// Pregnant or after a birth, from her intake. Her age is not known here.
+  TargetStage get _stage =>
+      TargetStage.fromWire(widget.subscription.intake?.lifeStage);
+
+  /// What is unsafe about the pair in the fields, if both are whole numbers.
+  GoalProblem? get _safetyProblem {
+    if (_flagged) return null;
+    final k = int.tryParse(_kcal.text.trim());
+    final p = int.tryParse(_protein.text.trim());
+    if (k == null || p == null) return null;
+    return TargetSafety.goalProblem(kcal: k, proteinG: p, stage: _stage);
+  }
+
+  String? _safetyText(AppL10n l10n) => switch (_safetyProblem) {
+    GoalProblem.belowStageFloor => l10n.forAClientWhoIsPregnantOr,
+    GoalProblem.proteinTooHigh => l10n.proteinCanBeAtMost35Of,
+    _ => null,
+  };
+
   /// Null when both fields are empty or the client is flagged. Throws nothing:
   /// a half-filled or out-of-range pair is reported by [_goalProblem].
   MealGoal? get _goal {
@@ -147,7 +168,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
     final p = int.tryParse(_protein.text.trim());
     if (k == null || p == null) return null;
     final g = MealGoal(kcalPerDay: k, proteinGPerDay: p);
-    return g.isValid ? g : null;
+    return g.isValid && _safetyProblem == null ? g : null;
   }
 
   bool get _goalProblem {
@@ -260,7 +281,10 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
   Future<void> _publish() async {
     final l10n = AppL10n.of(context);
     if (_goalProblem) {
-      setState(() => _error = l10n.fillInBothNumbersOrLeaveBothEmpty);
+      setState(
+        () => _error =
+            _safetyText(l10n) ?? l10n.fillInBothNumbersOrLeaveBothEmpty,
+      );
       return;
     }
     final problems = _problems();
@@ -642,8 +666,16 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                       color: AppColors.onSurfaceVariant,
                     ),
                   ),
-                  if (widget.subscription.intake?.inbodyScan
-                      case final scan?) ...[
+                  if (_stage.isProtected || _safetyText(l10n) != null)
+                    Text(
+                      _safetyText(l10n) ?? l10n.forAClientWhoIsPregnantOr,
+                      key: const ValueKey('meal-goal-safety'),
+                      style: AppText.bodyM.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  if (widget.subscription.intake?.inbodyScan case final scan?
+                      when !_stage.isProtected) ...[
                     Builder(
                       builder: (context) {
                         final targets = InBodyTargetEstimator.estimate(
@@ -656,12 +688,20 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                               ? widget.subscription.intake!.daysPerWeek
                               : 4,
                         );
+                        final kcal = math.max(
+                          targets.dailyCaloriesKcal,
+                          TargetSafety.floorKcal,
+                        );
+                        final protein = math.min(
+                          targets.dailyProteinGrams,
+                          (TargetSafety.maxProteinShare * kcal / 4).floor(),
+                        );
                         return GestureDetector(
                           key: const ValueKey('meal-apply-inbody-targets'),
                           onTap: () {
                             setState(() {
-                              _kcal.text = '${targets.dailyCaloriesKcal}';
-                              _protein.text = '${targets.dailyProteinGrams}';
+                              _kcal.text = '$kcal';
+                              _protein.text = '$protein';
                               _error = '';
                             });
                           },
@@ -685,7 +725,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'InBody suggested: ${targets.dailyCaloriesKcal} kcal · ${targets.dailyProteinGrams}g protein (tap to apply)',
+                                    'InBody suggested: $kcal kcal · ${protein}g protein (tap to apply)',
                                     style: AppText.nav.copyWith(
                                       color: AppColors.primary,
                                       fontWeight: FontWeight.w600,

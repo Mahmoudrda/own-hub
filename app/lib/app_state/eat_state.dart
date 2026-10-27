@@ -40,6 +40,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/widgets.dart';
 
 import '../domain/clock/app_clock.dart';
+import '../domain/nutrition/target_safety.dart';
 import '../features/eat/data/egyptian_food_pack.dart';
 import '../features/eat/data/firestore_recipe_source.dart';
 import '../features/eat/data/recipe_sync.dart';
@@ -72,6 +73,7 @@ import 'rewards_state.dart';
 import 'firebase_boot.dart';
 import 'getting_started.dart';
 import 'honest_notice.dart';
+import 'private_coaching_state.dart';
 
 /// A plate she has actually eaten, with the figure her own log carried.
 ///
@@ -138,13 +140,22 @@ class EatAppState {
   // ------------------------------------------------------------ targets ----
 
   /// The day's targets from her goal, her training week and her body data.
+  ///
+  /// The one place every screen gets them, so the safety rules apply to all:
+  /// her life stage (what she told the app, or her coach) and an eating-history
+  /// answer to her coach (no target at all) are read here.
   DailyTargets targets() {
     final intake = AppRouter.intakeRepository.read();
+    final coaching = PrivateCoachingState.instance;
     return DailyTargets.compute(
       body: BodyDataStore.instance.read(),
       goal: intake.goal,
       daysPerWeek: intake.days,
       minutesPerSession: intake.minutes,
+      stage: TargetStage.fromWire(intake.lifeStage.wireName).orStricter(
+        TargetStage.fromWire(coaching.activeAsClient?.intake?.lifeStage),
+      ),
+      eatingHistory: coaching.hidesCalorieTargets,
     );
   }
 

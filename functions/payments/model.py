@@ -62,7 +62,7 @@ LIMITS = {
 # Waiting states in which one party must act. After this long the payment is
 # staff work (staff.queue lists it, timers.escalate moves it). A state missing
 # here never escalates by itself.
-ESCALATE_STATES = ("proof_submitted", "different_amount", "refund_requested")
+ESCALATE_STATES = ("proof_submitted", "coach_not_received", "different_amount", "refund_requested")
 
 
 def escalate_at(to: str, now: dt.datetime) -> Optional[dt.datetime]:

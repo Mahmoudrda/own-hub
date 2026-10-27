@@ -39,3 +39,4 @@ enable adminAccessLog           expireAt   # console reads, one year after the r
 enable opsErrors                expireAt   # daily error-code counts, 90 days
 enable scanCache                expiresAt  # meal-photo answers, 30 days
 enable verificationBookings     expireAt   # booked review slots, once the time has passed
+enable paymentIdempotency       expireAt   # InstaPay replay answers, 30 days

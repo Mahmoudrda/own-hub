@@ -566,6 +566,52 @@ def test_goal_is_held_for_an_eating_history_flag():
     assert out2["revision"] == 1
 
 
+def _goal_body(kcal, protein):
+    body = meal()
+    body["goal"] = {"kcalPerDay": kcal, "proteinGPerDay": protein}
+    return body
+
+
+def test_a_goal_never_asks_for_more_than_35_percent_of_calories_as_protein():
+    db = make_db()
+    # 1,200 kcal: 105 g is exactly 35%.
+    publish(db, req(kind="meal", body=_goal_body(1200, 105)))
+    refused(db, req(kind="meal", body=_goal_body(1200, 106)), errors.PLAN_INVALID)
+    refused(db, req(kind="meal", body=_goal_body(1600, 141)), errors.PLAN_INVALID)
+    publish(db, req(kind="meal", body=_goal_body(1600, 140)))
+
+
+@pytest.mark.parametrize("stage", ["pregnant", "postpartum"])
+def test_a_goal_for_a_pregnant_or_postpartum_client_waits_for_her_health_review(stage):
+    db = make_db()
+    db.collection("subscriptions").document("sub1").update(
+        {"intake": _stored_intake(lifeStage=stage, doctorAck=True)}
+    )
+    refused(db, req(kind="meal", body=_goal_body(2000, 110)), errors.HEALTH_NOT_REVIEWED)
+    # A plan without a goal is not held.
+    out, _ = publish(db, req(kind="meal", body=meal()))
+    assert out["revision"] == 1
+
+
+@pytest.mark.parametrize("stage", ["pregnant", "postpartum"])
+def test_a_reviewed_pregnant_or_postpartum_client_gets_no_deficit_sized_goal(stage):
+    db = make_db()
+    db.collection("subscriptions").document("sub1").update(
+        {"intake": _stored_intake(lifeStage=stage, doctorAck=True), "healthReviewedAt": NOW}
+    )
+    refused(db, req(kind="meal", body=_goal_body(1799, 100)), errors.PLAN_INVALID)
+    refused(db, req(kind="meal", body=_goal_body(1200, 100)), errors.PLAN_INVALID)
+    out, _ = publish(db, req(kind="meal", body=_goal_body(1800, 100)))
+    assert out["revision"] == 1
+
+
+def test_an_ordinary_client_keeps_the_1200_floor_and_needs_no_review_for_a_goal():
+    db = make_db()
+    db.collection("subscriptions").document("sub1").update({"intake": _stored_intake()})
+    publish(db, req(kind="meal", body=_goal_body(1200, 100)))
+    refused(db, req(kind="meal", body=_goal_body(1199, 100)), errors.PLAN_INVALID)
+
+
 def test_a_multi_week_plan_without_a_date_starts_today_in_cairo():
     db = make_db()
     body = workout(days=14)

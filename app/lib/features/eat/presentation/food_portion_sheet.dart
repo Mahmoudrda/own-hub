@@ -301,6 +301,7 @@ class _FoodPortionPanelState extends State<FoodPortionPanel> {
         ],
         if (item != null &&
             widget.targets != null &&
+            !widget.targets!.withheld &&
             !widget.targets!.usesDefaults) ...[
           const SizedBox(height: 14),
           _ImpactOnToday(item: item, targets: widget.targets!),

@@ -516,6 +516,43 @@ class FirebaseBackend:
             receipt = db.collection("receipts").document(sub.id)
             if receipt.get().exists:
                 receipt.update({"coachName": ""})
+        self._pseudonymise_instapay_payments(uid, token)
+
+    def _pseudonymise_instapay_payments(self, uid, token):
+        """InstaPay payments (functions/payments, spec 4.15): the record stays,
+        for the period the law asks (a named constant, retention.py), with her
+        id replaced; her pictures and the free text she or the coach wrote go
+        now. Her standing, address and idempotency rows go. The registries of
+        transaction numbers and picture hashes carry no id of hers."""
+        db = self.db
+        for field in ("clientUid", "coachUid"):
+            for snapshot in db.collection("payments").where(field, "==", uid).stream():
+                row = snapshot.to_dict() or {}
+                # Whole maps, not dotted paths: coachDecision is null until the coach acts.
+                changes = {field: token, "proof": {**(row.get("proof") or {}), "screenshotPaths": []}}
+                if row.get("coachDecision"):
+                    changes["coachDecision"] = {**row["coachDecision"], "statementPaths": []}
+                if field == "coachUid":
+                    changes["addressSnapshot"] = {"address": "", "accountName": ""}
+                snapshot.reference.update(changes)
+                self.delete_storage_prefix(PERSONAL_BUCKET, f"payment-proofs/{snapshot.id}/")
+                for name in ("dispute", "evidence", "statement"):
+                    snapshot.reference.collection("staff").document(name).delete()
+        for collection in ("paymentStrikes",):
+            for snapshot in db.collection(collection).where("uid", "==", uid).stream():
+                snapshot.reference.update({"uid": token})
+        for snapshot in db.collection("feeStatements").where("coachUid", "==", uid).stream():
+            # The document id carries her uid ({uid}__{year}-{month}), so the statement moves to an id with the token.
+            moved = snapshot.id.replace(uid, token, 1)
+            db.collection("feeStatements").document(moved).set({**(snapshot.to_dict() or {}), "coachUid": token})
+            for number in db.collection("paymentTxnNumbers").where("statementId", "==", snapshot.id).stream():
+                number.reference.update({"statementId": moved})
+            snapshot.reference.delete()
+        db.collection("paymentAlerts").document(f"suspend__{uid}").delete()
+        for snapshot in db.collection("paymentIdempotency").where("uid", "==", uid).stream():
+            snapshot.reference.delete()
+        db.collection("coachPaymentProfiles").document(uid).delete()
+        db.collection("paymentStanding").document(uid).delete()
 
     def _purge_found(self, phase, snapshot, uid):
         if phase == "following":

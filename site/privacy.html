@@ -59,7 +59,7 @@
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> 23 October 2026<br>
-          <b>Last updated:</b> 23 October 2026<br>
+          <b>Last updated:</b> 27 October 2026<br>
           <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
           and Android, package <code>com.ownhub.app</code>, and this website.
         </p>
@@ -120,6 +120,11 @@
             are stored on our server in Frankfurt, readable by the two of you.
             Own Hub&rsquo;s team reads a chat only after one of you reports it
             (sections 3.16 and 3.17).</li>
+            <li><b>If you pay a coach, you pay her directly by InstaPay.</b>
+            Own Hub never holds or moves the money. We keep a record of each
+            payment, the transaction number you give and the screenshots you
+            send, so your coach can confirm it and our team can decide a
+            dispute (section 3.18).</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -442,10 +447,12 @@
         <ul>
           <li><b>We never use your data to train AI models, ours or
           anyone&rsquo;s.</b></li>
-          <li>Google Cloud Vision reads the text on your ID card only to run the
-          check. It reads the card in memory and does not keep the image. Under
-          Google Cloud&rsquo;s terms, Google may not use that data to train its
-          own models.</li>
+          <li>Google Cloud Vision reads the text on your ID card to run the check,
+          and the text on a payment screenshot you send as proof (section
+          3.18). It reads the card in memory and does not keep the card image;
+          a payment screenshot is kept as section 3.18 says. Under Google
+          Cloud&rsquo;s terms, Google may not use that data to train its own
+          models.</li>
           <li>The face comparison uses open-source models that run on our own
           server. Their authors trained them before Own Hub existed. They are
           not trained or adjusted with your face.</li>
@@ -521,7 +528,8 @@
           Messaging to a phone registered for them: news about your coach
           application or your portfolio photos, a new coaching request, an
           answer to a request, a coaching that starts, ends soon or has ended,
-          a new message, a shared plan and a proposed live session. The text on
+          a new message, a shared plan, a proposed live session and news about a payment
+          (section 3.18). The text on
           your lock screen is one fixed, general line, such as &ldquo;You have a
           new message.&rdquo;, and never contains a message, a name, a plan or an
           amount. They are sent when the event happens, at any time of
@@ -632,9 +640,9 @@
         <b>Become a coach</b>, and only if you are a verified member. If you
         never apply, none of it happens. Coaches are checked before members can
         see them. In this version an approved coach has a public portfolio that
-        members can read, and members can join a coach for free
-        (section 3.16). Payments are not offered yet, so no payment data
-        exists.</p>
+        members can read, and members can join a coach
+        (section 3.16). A member may pay her coach directly, as section 3.18
+        describes.</p>
         <p><b>What an application holds:</b></p>
         <ul>
           <li>your full name, used only for the review;</li>
@@ -689,8 +697,8 @@
           feedback screenshots, before and after photos and photos of you or
           your work that the reviewer approved; and your packages, with what
           each includes and its price.
-          Members can ask to join a coach for free (section 3.16); nobody can
-          pay yet.</li>
+          Members can ask to join a coach (section 3.16) and, if she charges
+          for her package, pay her directly (section 3.18).</li>
           <li>A member can report a portfolio. The team reads the report and may
           hide or suspend the portfolio (Coach Terms, section 7).</li>
         </ul>
@@ -712,9 +720,9 @@
         </ul>
 
       <h3 id="c-coaching">3.16 Joining a coach, and chatting with her<a class="anchor" href="#c-coaching" aria-label="Link to this section">#</a></h3>
-        <p>This applies only if you ask to join a coach, from her portfolio. It
-        is free: Own Hub offers no payments yet, so no payment details are asked
-        for or kept.</p>
+        <p>This applies only if you ask to join a coach, from her portfolio. Asking
+        to join is free. If your coach accepts you and charges for her package,
+        you pay her directly (section 3.18).</p>
         <ul>
           <li><b>What you share with her.</b> When you ask to join, you fill in
           a short form: your goal, your level, how many days a week, where you
@@ -756,7 +764,7 @@
           <li><b>Report and block.</b> Every coaching chat has Report and Block,
           and a coach&rsquo;s portfolio has Report (section 3.17).</li>
           <li><b>Basis:</b> your consent, given on the form when you ask to
-          join, and performing the free coaching you asked for.</li>
+          join, and performing the coaching you asked for.</li>
         </ul>
 
       <h3 id="c-chat-media">Voice notes, photos and videos in coaching chat<a class="anchor" href="#c-chat-media" aria-label="Link to this section">#</a></h3>
@@ -795,6 +803,75 @@
           which the law allows (Law 151/2020, Article 6, point 4).</li>
         </ul>
 
+      <h3 id="c-pay">3.18 Paying a coach by InstaPay<a class="anchor" href="#c-pay" aria-label="Link to this section">#</a></h3>
+        <p>This applies only if you pay a coach, or you are a coach and a
+        member pays you. <b>Own Hub never holds, receives or moves the money.</b>
+        The member sends it by InstaPay, from her bank app, to the coach&rsquo;s
+        own InstaPay address. Own Hub shows who to pay and how much, records
+        the payment, asks the coach to confirm that it arrived, and decides a
+        dispute if there is one.</p>
+        <ul>
+          <li><b>What we keep about a payment.</b> The member and the coach, by
+          account identifier; the package; the amount, which has a few extra
+          piasters so that it matches only this payment; a reference code; the
+          status and the time of each step; the coach&rsquo;s InstaPay address
+          and account name as they were when you paid; the InstaPay address you
+          give as your own, so that your receipts can be matched; the
+          transaction number you give; and the notes and reasons either of you writes in a
+          dispute.</li>
+          <li><b>Screenshots.</b> If you send screenshots of your bank&rsquo;s
+          receipt, the app reads the text on your phone to fill in the form.
+          You can hide lines (card numbers, balances) and crop before anything
+          is sent: only that copy leaves your phone, never the original. Our
+          server stores the copy privately, reads it again with Google Cloud
+          Vision in the European Union, keeps the text fields it found, and
+          keeps a fingerprint of the picture so that the same picture cannot be
+          used twice.</li>
+          <li><b>Checks.</b> To limit fraud, the app on your phone and then our
+          server compare what your proof shows with the payment: the amount,
+          who was paid, whether the bank says it succeeded, the time, whether
+          the transaction number or the picture was used before, and signs that
+          the picture was edited. The result only decides whether short access
+          to the coaching starts while the coach checks her bank. It does not
+          prove a payment. When something does not match, a person at Own Hub
+          decides, with a written reason. When a coach says a payment did not
+          arrive, the bank list she attaches is checked the same way.</li>
+          <li><b>Who sees it.</b> The member and her coach. Own Hub&rsquo;s team
+          opens a payment when it is in dispute or flagged, and looks at a
+          coach&rsquo;s first few payments, her address changes and her fee
+          statements to keep payments safe. A woman reviews any case that holds
+          a woman&rsquo;s private data. Another coach
+          never sees it. A coach does not see your phone number. Your own
+          InstaPay address, if you use one, is shown on the receipt your bank
+          makes, so we suggest an address with an @ rather than your phone
+          number.</li>
+          <li><b>Why.</b> So the coach can confirm a payment, our team can
+          decide a dispute, we can prevent fraud, and we meet our legal
+          duties. <b>No check can prove a payment</b>: only the coach&rsquo;s
+          bank knows. We reduce fraud; we cannot remove it. We may report fraud
+          to the authorities and keep the evidence for that.</li>
+          <li><b>Basis:</b> carrying out the coaching you asked for, and keeping
+          members safe and the service working, which the law allows (Law
+          151/2020, Article 6, point 4).</li>
+          <li><b>Refunds and disputes.</b> A member can ask for a refund once
+          in the first 14 days. The request, the coach&rsquo;s answer, and the
+          notes and decision in any dispute are kept with the payment.</li>
+          <li><b>If you are a coach.</b> Your InstaPay address and account name,
+          your payments and your monthly fee statement (what you owe Own Hub,
+          and when you say you paid it) are kept. A new address takes effect
+          after 24 hours, and the members with a payment waiting are told.</li>
+          <li><b>Not in statistics.</b> No amount, reference, transaction number
+          or screenshot is ever sent to usage statistics or crash reports.</li>
+          <li><b>Strikes.</b> A payment proof that staff find false is recorded
+          as a strike on the account, and so is a false claim by a coach that
+          she was not paid. Two strikes in 90 days remove the ability to pay or
+          to take payments by this method. A decision is made by a person, with a
+          written reason.</li>
+          <li><b>InstaPay and your bank</b> handle the transfer under their own
+          terms. Own Hub cannot undo a transfer. If you sent money to the wrong
+          account, contact your bank at once.</li>
+        </ul>
+
       <h2 id="where">4. Who handles your data, and where<a class="anchor" href="#where" aria-label="Link to this section">#</a></h2>
         <p>We do not sell your data, and we do not share it with advertisers,
         data brokers or marketing companies. The service providers below
@@ -829,7 +906,7 @@
         <li>
           <h3>Google Cloud Vision</h3>
           <dl>
-            <div><dt>Handles</dt><dd>The text on your ID card, during the check only</dd></div>
+            <div><dt>Handles</dt><dd>The text on your ID card, during the check only; the text on a payment screenshot you send as proof, when you send it (section 3.18)</dd></div>
             <div><dt>Where</dt><dd>European Union</dd></div>
           </dl>
         </li>
@@ -968,6 +1045,9 @@
         <div><dt>Usage statistics sent to PostHog, if you allow them</dt><dd>Kept by PostHog under its retention settings, which on its free plan are one year for milestones and 14 days for the technical line. Not linked to your account, so turning statistics off or deleting your account does not remove what PostHog already received.</dd></div>
         <div><dt>Messages you send us</dt><dd>1 year</dd></div>
         <div><dt>Waitlist contact</dt><dd>180 days at most. The proof that you agreed is kept for 3 years after the last message we send you (section 3.10).</dd></div>
+        <div><dt>Payment records (amount, reference, transaction number, status, steps, notes, and a coach's fee statements)</dt><dd>For the period the law requires. When you delete your account the record is kept without your name for that period, then deleted (section 3.18).</dd></div>
+        <div><dt>Payment screenshots and the text read from them</dt><dd>Deleted 90 days after the payment is settled or its dispute is closed. A screenshot is deleted with your account at once.</dd></div>
+        <div><dt>Strikes</dt><dd>For 90 days from the decision for the two-strike rule; the decision itself stays with the payment record.</dd></div>
         <div><dt>Backups held by Google</dt><dd>Removed within about 6 months (180 days) of deletion</dd></div>
       </dl>
 
@@ -1098,6 +1178,9 @@
           phone. The exception is a picture you choose for a coach
           application: it is uploaded when you send the application (section
           3.15).</li>
+          <li>For a payment proof, the same phone picker hands Own Hub only the
+          pictures you choose. They are copied after you hide what you want to
+          hide; the originals stay on your phone (section 3.18).</li>
           <li>Nothing that guesses your sex, age or anything else about you from
           your face.</li>
         </ul>
@@ -1118,6 +1201,12 @@
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>27 October 2026, paying a coach:</b> section 3.18 is new and
+          describes paying a coach by InstaPay: what is kept about a payment,
+          the bank screenshots you may send as proof and how our server reads
+          them, who sees it, strikes and refunds. Sections 3.8, 3.11, 3.15,
+          3.16, 4, 6 and 10 and the deletion page now point to it. Own Hub never
+          holds or moves the money.</li>
           <li><b>23 October 2026, clarifications:</b> to describe what the app
           already does. Section 3.1 now describes using parts of the app before
           you sign up. Sections 3.3 and 3.6 now say that Own Hub is applying for

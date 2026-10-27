@@ -75,6 +75,8 @@ def test_ttl_policies_are_declared_for_the_expiring_collections():
         ("verificationBookings", "expireAt"),
         # Meal-photo repeat answers: 30 days.
         ("scanCache", "expiresAt"),
+        # InstaPay: the replay answer of a double tap, 30 days (it carries a coach's address).
+        ("paymentIdempotency", "expireAt"),
     }
 
 
@@ -104,3 +106,11 @@ def test_every_entry_says_why_and_every_override_exempts():
         if override["indexes"]:
             assert override["collectionGroup"] == "ledger"
             assert {"queryScope": "COLLECTION_GROUP", "order": "ASCENDING"} in override["indexes"]
+
+
+def test_the_instapay_composite_indexes_the_new_jobs_need_exist():
+    assert _composite("feeStatements", ["coachUid", "status"])          # fees.confirm_payment: is another statement of hers late
+    assert _composite("payments", ["status", "expiresAt"])              # timers.hourly: the 12 hour reminder, expiry
+    assert _composite("payments", ["status", "statusAt"])               # retention.sweep_screenshots
+    assert _composite("payments", ["coachUid", "feeOwedAt"])
+    assert _composite("paymentStrikes", ["uid", "role", "at"])          # strikes.live_strikes

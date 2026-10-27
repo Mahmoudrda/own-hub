@@ -192,6 +192,25 @@ class _LifeStageViewState extends State<LifeStageView> {
               ),
             ],
           ),
+        // Her goal may be to lose weight; food targets never are, in these two
+        // stages. Said here, where she has just told us, not discovered later.
+        if ((_lifeStage == LifeStage.pregnant ||
+                _lifeStage == LifeStage.postpartum) &&
+            widget.repository.read().goal == TrainingGoal.loseSteadily)
+          AppCard(
+            key: const ValueKey('life-stage-no-deficit'),
+            variant: AppCardVariant.sage,
+            borderRadius: AppRadius.md,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            children: [
+              Text(
+                l10n.weDoNotSetWeightLossTargets_14owx,
+                style: AppText.bodyM.copyWith(
+                  color: AppColors.onTertiaryContainer,
+                ),
+              ),
+            ],
+          ),
         AboutYouBlock(
           key: _aboutYou,
           store: widget.bodyData ?? BodyDataStore.instance,

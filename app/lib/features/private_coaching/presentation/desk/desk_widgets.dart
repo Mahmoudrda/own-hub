@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../domain/nutrition/target_safety.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_card.dart';
@@ -366,39 +367,41 @@ class IntakeAnswersCard extends StatelessWidget {
             DeskFact('Body Fat', '${scan.bodyFatPercent}%'),
           if (scan.bmrKcal != null)
             DeskFact('BMR (Basal Rate)', '${scan.bmrKcal} kcal'),
-          Builder(
-            builder: (context) {
-              final targets = InBodyTargetEstimator.estimate(
-                scan: scan,
-                goal: ClientFitnessGoal.fromString(intake.goal),
-                daysPerWeek: intake.daysPerWeek > 0 ? intake.daysPerWeek : 4,
-              );
-              return Container(
-                margin: const EdgeInsets.only(top: 4),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainer,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Suggested Daily Targets: ${targets.dailyCaloriesKcal} kcal · ${targets.dailyProteinGrams}g protein',
-                      style: AppText.label.copyWith(color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      targets.rationale,
-                      style: AppText.nav.copyWith(
-                        color: AppColors.onSurfaceVariant,
+          if (!intake.eatingHistoryFlag &&
+              !TargetStage.fromWire(intake.lifeStage).isProtected)
+            Builder(
+              builder: (context) {
+                final targets = InBodyTargetEstimator.estimate(
+                  scan: scan,
+                  goal: ClientFitnessGoal.fromString(intake.goal),
+                  daysPerWeek: intake.daysPerWeek > 0 ? intake.daysPerWeek : 4,
+                );
+                return Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Suggested Daily Targets: ${targets.dailyCaloriesKcal} kcal · ${targets.dailyProteinGrams}g protein',
+                        style: AppText.label.copyWith(color: AppColors.primary),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                      const SizedBox(height: 2),
+                      Text(
+                        targets.rationale,
+                        style: AppText.nav.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
         ],
         if (yesNo.isNotEmpty || intake.anyFlag) ...[
           const SizedBox(height: 4),

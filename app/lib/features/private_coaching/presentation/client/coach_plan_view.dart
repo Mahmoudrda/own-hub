@@ -12,6 +12,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../app_state/private_coaching_state.dart';
 import '../../../../domain/format/number_label.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
@@ -420,7 +421,8 @@ class CoachPlanView extends StatelessWidget {
       );
     }
     return [
-      if (meal.goal != null)
+      if (meal.goal != null &&
+          !PrivateCoachingState.instance.hidesCalorieTargets)
         Text(
           l10n.yourCoachsTargetKcalCaloriesAndProtein(
             '${meal.goal!.kcalPerDay}',

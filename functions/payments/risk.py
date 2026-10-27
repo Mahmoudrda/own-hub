@@ -66,9 +66,13 @@ def decide(checks: dict, uniq: dict, flags: list[str], *, retry_used: bool, othe
     AMBER: nothing the checks cannot be sure of is ever GREEN. A picture that is
     only SIMILAR to an earlier one (a 64-bit hash cannot read text, so another
     woman's receipt from the same bank app is just as close as an edited copy)
-    raises the staff score and nothing more. A card or
-    balance message is AMBER with reason wrongMessage and never uses up the
-    retry. Tamper flags change the score only."""
+    raises the staff score and nothing more. A card or balance message is AMBER
+    with reason wrongMessage and never uses up the retry. The tamper flags
+    (editor tag, camera EXIF, odd size) change the score only. One tamper-like
+    signal does change the colour: a file that cannot be a phone screenshot
+    (`checks["screenshot"]` False, from `receipt_checks.screen_like`: camera
+    EXIF, an editor tag, a size no screen has) turns an otherwise perfect
+    receipt AMBER with reason notAScreenshot, never RED."""
     all_flags = list(flags)
     if uniq.get("sameImageOf"):
         all_flags.append("sameImageOther")

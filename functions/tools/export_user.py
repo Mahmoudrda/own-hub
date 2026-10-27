@@ -364,6 +364,9 @@ def build_export(uid: str, reader: Reader, language: str = "en", now: Optional[d
             "checkIns": {k: _clean(v) for k, v in (coaching.get("checkIns") or {}).items()},
             "coachPrivate": {k: _clean(v) for k, v in (coaching.get("private") or {}).items()},
             "receipts": {k: _clean(v) for k, v in (coaching.get("receipts") or {}).items()},
+            "payments": {k: _clean(v) for k, v in (coaching.get("payments") or {}).items()},
+            "paymentProfile": {k: _clean(v) for k, v in (coaching.get("paymentProfile") or {}).items()},
+            "feeStatements": {k: _clean(v) for k, v in (coaching.get("feeStatements") or {}).items()},
             "plansFromCoach": {k: _clean(v) for k, v in reader.plans(uid, "coachPlans").items()},
         }
     )
@@ -513,6 +516,21 @@ class FirestoreReader:
             "receipts": {
                 s.id: s.to_dict() or {}
                 for s in db.collection("receipts").where("clientUid", "==", uid).stream()
+            },
+            # InstaPay payments she made or took: the documents only. The events
+            # and staff/ subcollections (risk scores, staff notes) are never read here.
+            "payments": {
+                s.id: s.to_dict() or {}
+                for field in ("clientUid", "coachUid")
+                for s in db.collection("payments").where(field, "==", uid).stream()
+            },
+            "paymentProfile": {
+                name: (db.collection(name).document(uid).get().to_dict() or {})
+                for name in ("coachPaymentProfiles", "paymentStanding")
+            },
+            "feeStatements": {
+                s.id: s.to_dict() or {}
+                for s in db.collection("feeStatements").where("coachUid", "==", uid).stream()
             },
             "application": application.to_dict() if application.exists else None,
             "coach": coach_page.to_dict() if coach_page.exists else None,

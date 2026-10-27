@@ -54,6 +54,12 @@ SERVINGS = (0.25, 6)
 GRAMS = (1, 2000)
 GOAL_KCAL = (1200, 4000)
 GOAL_PROTEIN_G = (30, 250)
+# Mirrors TargetSafety in app/lib/domain/nutrition/target_safety.dart. The server
+# has no age or body data (D31), so it holds a goal for a pregnant or postpartum
+# client until her coach has read her health answers, and keeps it above a
+# deficit-sized figure.
+MAX_PROTEIN_SHARE = 0.35
+STAGE_GOAL_KCAL_FLOOR = 1800
 MAX_SWAPS = 3
 
 NUTRITION_KEYS = frozenset(
@@ -255,6 +261,7 @@ def _check_meal(body: dict, ids: dict) -> None:
         _keys_within(goal, {"kcalPerDay", "proteinGPerDay"})
         _check(_is_int(goal.get("kcalPerDay")) and GOAL_KCAL[0] <= goal["kcalPerDay"] <= GOAL_KCAL[1])
         _check(_is_int(goal.get("proteinGPerDay")) and GOAL_PROTEIN_G[0] <= goal["proteinGPerDay"] <= GOAL_PROTEIN_G[1])
+        _check(goal["proteinGPerDay"] * 4 <= MAX_PROTEIN_SHARE * goal["kcalPerDay"])
 
 
 def check_body(kind: str, body: Any, ids: dict) -> None:
@@ -313,6 +320,14 @@ def replay_id(uid: str, sub_id: str, key: str, now: dt.datetime) -> str:
 
 # ------------------------------------------------------------------ publish --
 
+def health_hold_mandatory(db) -> bool:
+    """The owner's switch (coachingConfig/plans.healthHoldMandatory, off when
+    missing): once version 1.0.0, which cannot clear the health hold, is gone,
+    turning it on makes the hold apply to every send, whatever the app says."""
+    snap = db.collection("coachingConfig").document("plans").get()
+    return snap.exists and (snap.to_dict() or {}).get("healthHoldMandatory") is True
+
+
 def publish(
     db,
     uid: str,
@@ -348,7 +363,7 @@ def publish(
         request_key = common.text(request_key, min_len=8, max_len=64)
     # Sent only by builds that can clear the health hold (review_client_health).
     # Older builds cannot, so holding their coach here would strand her.
-    reviews_health = data.get("reviewsHealth") is True
+    reviews_health = data.get("reviewsHealth") is True or health_hold_mandatory(db)
 
     sub_ref = db.collection("subscriptions").document(sub_id)
     coach_ref = db.collection("coaches").document(uid)
@@ -377,6 +392,11 @@ def publish(
             )
             if eating:
                 raise common.refuse(errors.PRECONDITION, errors.EATING_HISTORY_HOLD)
+            if intake.get("lifeStage") in subscriptions.FLAGGED_STAGES:
+                if not sub.get("healthReviewedAt"):
+                    raise common.refuse(errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
+                if body["goal"]["kcalPerDay"] < STAGE_GOAL_KCAL_FLOOR:
+                    raise common.bad(errors.PLAN_INVALID)
         plans = db.collection("plans").document(client_uid).collection("coachPlans")
 
         if plan_id is None:

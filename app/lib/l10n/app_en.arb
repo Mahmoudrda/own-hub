@@ -8451,5 +8451,11 @@
         "example": "30"
       }
     }
-  }
+  },
+  "yourCoachSetsYourFoodPlanWith": "Your coach sets your food plan with you. Log what you eat and talk to her about it.",
+  "weNeverSetATargetBelow1": "We never set a target below 1,200 kcal.",
+  "weDoNotSetWeightLossTargets": "We do not set weight-loss targets under 18. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.",
+  "weDoNotSetWeightLossTargets_14owx": "We do not set weight-loss targets while you are pregnant or after a birth. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.",
+  "forAClientWhoIsPregnantOr": "For a client who is pregnant or after a birth, the lowest daily goal is 1,800 kcal.",
+  "proteinCanBeAtMost35Of": "Protein can be at most 35% of the day's calories."
 }

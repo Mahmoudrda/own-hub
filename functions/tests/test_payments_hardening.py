@@ -342,10 +342,10 @@ def test_the_fraud_reasons_live_in_the_staff_document_not_on_the_payment(db, blo
     seed_world(db)
     make_payment(db)
     res = send(db, blobs, notes, Reader(WRONG_AMOUNT_TXT))
-    assert res["outcome"] == "red" and res["reasons"] == ["amountDiffers"]
+    assert res["outcome"] == "red" and res["reasons"] == ["review"]   # neutral: a forger is not told which check failed
     pay = payment_of(db)
     assert "reasons" not in pay and "reasons" not in pay["dispute"]
-    assert pay["outcome"] == "red" and pay["hint"] == "amountDiffers"
+    assert pay["outcome"] == "red" and pay["hint"] == "review" and "amountDiffers" not in str(pay)
     assert db.document(f"payments/{PAY}/staff/review").get().to_dict()["reasons"] == ["amountDiffers"]
 
 

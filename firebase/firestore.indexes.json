@@ -286,7 +286,8 @@
     {"_why":"InstaPay: expire_payments, awaiting_payment where expiresAt <= now.","collectionGroup":"payments","queryScope":"COLLECTION","fields":[{"fieldPath":"status","order":"ASCENDING"},{"fieldPath":"expiresAt","order":"ASCENDING"}]},
     {"_why":"InstaPay: escalate_silent_payments, status where statusAt <= cutoff (proof_submitted, refund_requested, awaiting_payment with coachReport).","collectionGroup":"payments","queryScope":"COLLECTION","fields":[{"fieldPath":"status","order":"ASCENDING"},{"fieldPath":"statusAt","order":"ASCENDING"}]},
     {"_why":"InstaPay: fee statement of one coach for one month.","collectionGroup":"payments","queryScope":"COLLECTION","fields":[{"fieldPath":"coachUid","order":"ASCENDING"},{"fieldPath":"feeOwedAt","order":"ASCENDING"}]},
-    {"_why":"InstaPay: strikes of one woman in one role inside 90 days.","collectionGroup":"paymentStrikes","queryScope":"COLLECTION","fields":[{"fieldPath":"uid","order":"ASCENDING"},{"fieldPath":"role","order":"ASCENDING"},{"fieldPath":"at","order":"DESCENDING"}]}
+    {"_why":"InstaPay: strikes of one woman in one role inside 90 days.","collectionGroup":"paymentStrikes","queryScope":"COLLECTION","fields":[{"fieldPath":"uid","order":"ASCENDING"},{"fieldPath":"role","order":"ASCENDING"},{"fieldPath":"at","order":"DESCENDING"}]},
+    {"_why":"InstaPay: one coach's fee statements that are still open or claimed paid (is another one late when this one is paid).","collectionGroup":"feeStatements","queryScope":"COLLECTION","fields":[{"fieldPath":"coachUid","order":"ASCENDING"},{"fieldPath":"status","order":"ASCENDING"}]}
   ],
   "fieldOverrides": [
     {
@@ -527,6 +528,13 @@
       "_why": "COST. When each party was last notified; written by the server and never queried on.",
       "collectionGroup": "relationships",
       "fieldPath": "lastPushAt",
+      "indexes": []
+    },
+    {
+      "_why": "InstaPay TTL. The replay answer of a double tap lives idempotencyDays (30, functions/payments/model.py) and then goes: it holds a coach's address in its answer. Never queried on, so automatic indexing is off.",
+      "collectionGroup": "paymentIdempotency",
+      "fieldPath": "expireAt",
+      "ttl": true,
       "indexes": []
     },
     {

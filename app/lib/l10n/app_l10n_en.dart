@@ -15300,4 +15300,28 @@ class AppL10nEn extends AppL10n {
   String videosCanBeUpToSecondsSeconds(String seconds) {
     return 'Videos can be up to $seconds seconds. Choose a shorter one.';
   }
+
+  @override
+  String get yourCoachSetsYourFoodPlanWith =>
+      'Your coach sets your food plan with you. Log what you eat and talk to her about it.';
+
+  @override
+  String get weNeverSetATargetBelow1 =>
+      'We never set a target below 1,200 kcal.';
+
+  @override
+  String get weDoNotSetWeightLossTargets =>
+      'We do not set weight-loss targets under 18. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.';
+
+  @override
+  String get weDoNotSetWeightLossTargets_14owx =>
+      'We do not set weight-loss targets while you are pregnant or after a birth. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.';
+
+  @override
+  String get forAClientWhoIsPregnantOr =>
+      'For a client who is pregnant or after a birth, the lowest daily goal is 1,800 kcal.';
+
+  @override
+  String get proteinCanBeAtMost35Of =>
+      'Protein can be at most 35% of the day\'s calories.';
 }

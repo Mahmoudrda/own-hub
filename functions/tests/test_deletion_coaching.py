@@ -276,3 +276,82 @@ def test_portfolio_media_files_are_in_the_purged_storage_prefixes():
     for bucket in (None, deletion.PERSONAL_BUCKET):
         assert (bucket, f"coach-public/{HER}/") in calls
         assert (bucket, f"coach-docs/{HER}/") in calls
+
+
+def seed_payments(fs):
+    d = fs.docs
+    shot = "payment-proofs/pay1/client-abc-1.jpg"
+    d["payments/pay1"] = {"clientUid": HER, "coachUid": COACH, "status": "confirmed", "addressSnapshot": {"address": "c@instapay", "accountName": "Coach"},
+                          "proof": {"screenshotPaths": [shot], "txnNumber": "T9"}, "coachDecision": {"statementPaths": []}}
+    d["payments/pay1/staff/dispute"] = {"clientNote": "private words"}
+    d["payments/pay1/staff/review"] = {"riskScore": 10}
+    d["payments/pay2"] = {"clientUid": CLIENT, "coachUid": HER, "status": "confirmed", "addressSnapshot": {"address": "h@instapay", "accountName": "Her Name"},
+                          "proof": {"txnNumber": "T8", "screenshotPaths": ["payment-proofs/pay2/client-x-1.jpg"]}, "coachDecision": {"statementPaths": ["payment-proofs/pay2/coach-y-1.jpg"]}}
+    d["payments/pay3"] = {"clientUid": THIRD, "coachUid": COACH, "status": "confirmed", "addressSnapshot": {"address": "c@instapay", "accountName": "Coach"},
+                          "proof": {"txnNumber": "T7", "screenshotPaths": ["payment-proofs/pay3/client-z-1.jpg"]}, "coachDecision": {"statementPaths": []}}
+    d[f"coachPaymentProfiles/{HER}"] = {"address": "h@instapay"}
+    d[f"coachPaymentProfiles/{COACH}"] = {"address": "c@instapay"}
+    d[f"paymentStanding/{HER}"] = {"clientStrikes": 1, "senderHandle": "her@instapay"}
+    d[f"paymentStanding/{COACH}"] = {"coachStrikes": 1}
+    d["paymentStrikes/pay1__client"] = {"uid": HER, "role": "client", "paymentId": "pay1"}
+    d["paymentStrikes/pay9__coach"] = {"uid": COACH, "role": "coach", "paymentId": "pay9"}
+    d[f"paymentIdempotency/{HER}__proof__key-0001"] = {"uid": HER, "result": {"x": 1}}
+    d[f"paymentIdempotency/{COACH}__create__key-0002"] = {"uid": COACH, "result": {"x": 1}}
+    d[f"feeStatements/{HER}__2026-10"] = {"coachUid": HER, "totalDuePiasters": 7500, "lines": []}
+    d[f"feeStatements/{COACH}__2026-10"] = {"coachUid": COACH, "totalDuePiasters": 100, "lines": []}
+    d["paymentTxnNumbers/T9"] = {"paymentId": "pay1"}
+    d[f"paymentTxnNumbers/FEE123456"] = {"statementId": f"{HER}__2026-10"}
+    d[f"paymentAlerts/suspend__{HER}"] = {"type": "suspend", "closed": True}
+    d[f"paymentAlerts/suspend__{COACH}"] = {"type": "suspend", "closed": True}
+
+
+def test_payments_keep_a_pseudonymised_record_and_lose_pictures_standing_and_free_text(fs, monkeypatch):
+    seed(fs)
+    seed_payments(fs)
+    removed = []
+    monkeypatch.setattr(deletion.FirebaseBackend, "delete_storage_prefix", lambda self, bucket, prefix: removed.append((bucket, prefix)))
+    deletion.FirebaseBackend().purge_group_hook(HER)
+    docs = fs.docs
+    assert docs["payments/pay1"]["clientUid"].startswith("deleted-") and docs["payments/pay1"]["coachUid"] == COACH
+    assert docs["payments/pay1"]["proof"] == {"screenshotPaths": [], "txnNumber": "T9"}
+    assert docs["payments/pay2"]["coachUid"].startswith("deleted-") and docs["payments/pay2"]["clientUid"] == CLIENT
+    assert docs["payments/pay2"]["addressSnapshot"] == {"address": "", "accountName": ""}
+    assert docs["payments/pay2"]["coachDecision"]["statementPaths"] == [] and docs["payments/pay2"]["proof"]["screenshotPaths"] == []
+    assert docs["payments/pay3"]["proof"]["screenshotPaths"] == ["payment-proofs/pay3/client-z-1.jpg"]   # not hers
+    assert (deletion.PERSONAL_BUCKET, "payment-proofs/pay1/") in removed and (deletion.PERSONAL_BUCKET, "payment-proofs/pay2/") in removed
+    assert not any("pay3" in prefix for _, prefix in removed)
+    assert "payments/pay1/staff/dispute" not in docs and "payments/pay1/staff/review" in docs
+    assert f"coachPaymentProfiles/{HER}" not in docs and f"paymentStanding/{HER}" not in docs
+    assert f"coachPaymentProfiles/{COACH}" in docs and f"paymentStanding/{COACH}" in docs
+    assert docs["paymentStrikes/pay1__client"]["uid"].startswith("deleted-") and docs["paymentStrikes/pay9__coach"]["uid"] == COACH
+    assert f"paymentIdempotency/{HER}__proof__key-0001" not in docs and f"paymentIdempotency/{COACH}__create__key-0002" in docs
+    moved = [k for k in docs if k.startswith("feeStatements/deleted-")]
+    assert len(moved) == 1 and moved[0].endswith("__2026-10") and docs[moved[0]]["coachUid"].startswith("deleted-")
+    assert f"feeStatements/{HER}__2026-10" not in docs and docs[f"feeStatements/{COACH}__2026-10"]["coachUid"] == COACH
+    assert docs["paymentTxnNumbers/FEE123456"]["statementId"] == moved[0].split("/", 1)[1]
+    assert f"paymentAlerts/suspend__{HER}" not in docs and f"paymentAlerts/suspend__{COACH}" in docs
+    assert docs["paymentTxnNumbers/T9"] == {"paymentId": "pay1"}
+    assert HER not in repr({k: v for k, v in docs.items() if k.startswith(("payments", "paymentStrikes", "feeStatements", "paymentTxnNumbers", "paymentAlerts"))})
+
+
+def test_running_the_payments_deletion_twice_changes_nothing(fs, monkeypatch):
+    seed(fs)
+    seed_payments(fs)
+    monkeypatch.setattr(deletion.FirebaseBackend, "delete_storage_prefix", lambda self, bucket, prefix: None)
+    deletion.FirebaseBackend().purge_group_hook(HER)
+    before = dict(fs.docs)
+    deletion.FirebaseBackend().purge_group_hook(HER)
+    assert fs.docs == before
+
+
+def test_a_payment_whose_coach_never_decided_is_pseudonymised_without_a_dotted_write_through_null(fs, monkeypatch):
+    seed(fs)
+    fs.docs["payments/pay-null"] = {"clientUid": HER, "coachUid": COACH, "status": "resolved_unpaid", "coachDecision": None,
+                                    "proof": {"screenshotPaths": ["payment-proofs/pay-null/client-a-1.jpg"], "txnNumber": "T5"}}
+    fs.docs["payments/pay-none"] = {"clientUid": CLIENT, "coachUid": HER, "status": "cancelled"}
+    monkeypatch.setattr(deletion.FirebaseBackend, "delete_storage_prefix", lambda self, bucket, prefix: None)
+    deletion.FirebaseBackend().purge_group_hook(HER)
+    row = fs.docs["payments/pay-null"]
+    assert row["clientUid"].startswith("deleted-") and row["coachDecision"] is None
+    assert row["proof"] == {"screenshotPaths": [], "txnNumber": "T5"}
+    assert fs.docs["payments/pay-none"]["coachUid"].startswith("deleted-") and "coachDecision" not in fs.docs["payments/pay-none"]

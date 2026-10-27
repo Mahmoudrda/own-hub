@@ -1510,9 +1510,12 @@ service cloud.firestore {
       allow list, write: if false;
     }
 
+    // The coach's monthly fee statement, {coachUid}__{YYYY-MM}. She reads her
+    // own (a query must say where coachUid == her uid); only the service writes.
+    // The owner's overview is the list_fee_statements callable, not this path.
     match /feeStatements/{statementId} {
-      allow get: if isVerified() && resource.data.coachUid == request.auth.uid;
-      allow list, write: if false;
+      allow get, list: if isVerified() && resource.data.coachUid == request.auth.uid;
+      allow write: if false;
     }
 
     // The kill switch. Only {enabled: bool, updatedAt} lives here, so reading

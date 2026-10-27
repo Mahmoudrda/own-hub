@@ -191,3 +191,30 @@ def test_three_honest_receipts_of_one_bank_template_are_all_green_not_red(db):
         )
         assert out["outcome"] == "green", (pay, out)
         assert payment_of(db, pay)["status"] == "proof_submitted"
+
+
+PICTURES = os.path.join(os.path.dirname(__file__), "fixtures", "receipts")
+
+
+@pytest.mark.skipif(
+    os.environ.get("OWNHUB_LIVE_OCR") != "1" or not any(f.endswith(".jpg") for f in os.listdir(PICTURES)),
+    reason="live Vision test: set OWNHUB_LIVE_OCR=1 and add real receipts (NAME.jpg and NAME.expected.json) to tests/fixtures/receipts",
+)
+def test_real_receipts_reach_the_expected_colour_and_none_is_red():
+    """Cloud Vision on real receipts (owner supplied, details blacked out). Billed calls, so opt-in."""
+    from payments import ocr
+
+    reader, green, total = ocr.TextReader(), 0, 0
+    for name in sorted(f for f in os.listdir(PICTURES) if f.endswith(".jpg")):
+        want = json.load(open(os.path.join(PICTURES, name[:-4] + ".expected.json"), encoding="utf-8"))
+        text = reader.read(open(os.path.join(PICTURES, name), "rb").read())
+        checks = rc.run_checks(
+            [text or ""], expected_piasters=want["amountPiasters"], address=want["address"],
+            created_at=dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc), now=dt.datetime(2100, 1, 1, tzinfo=dt.timezone.utc),
+            reference=want.get("reference"), screenshot=True,
+        )
+        colour = risk.decide(checks, CLEAN, [], retry_used=False).colour
+        assert colour != risk.RED, name
+        total += 1
+        green += colour == risk.GREEN
+    assert total and green / total >= 0.95

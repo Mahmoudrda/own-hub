@@ -7,10 +7,15 @@
 /// Body data is optional (D31, local only). Whatever is missing falls back to
 /// [defaultWeightKg], [defaultHeightCm] and [defaultAgeYears], and
 /// [usesDefaults] says so, so the screen can offer to personalise.
+///
+/// Whether a figure may exist at all, and how low it may go, is
+/// [TargetSafety]'s: a floor, no weight-loss goal under 18, while pregnant or
+/// after a birth, and no target whatever for an eating-history answer.
 library;
 
 import 'package:meta/meta.dart';
 
+import '../../../domain/nutrition/target_safety.dart';
 import '../../onboarding/domain/body_data.dart';
 import '../../onboarding/domain/intake.dart' show TrainingGoal;
 
@@ -23,7 +28,20 @@ class DailyTargets {
     required this.fatG,
     required this.fiberG,
     required this.usesDefaults,
+    this.note = TargetNote.none,
   });
+
+  /// No target at all: an eating-history answer. Every figure is zero and
+  /// [withheld] is true, so a screen that forgets to ask draws a dash, not a
+  /// number she could aim at.
+  const DailyTargets.withheld()
+    : kcal = 0,
+      proteinG = 0,
+      carbsG = 0,
+      fatG = 0,
+      fiberG = 0,
+      usesDefaults = false,
+      note = TargetNote.withheld;
 
   static const double defaultWeightKg = 60;
   static const int defaultHeightCm = 160;
@@ -34,9 +52,6 @@ class DailyTargets {
   static const double proteinPerKg = 1.6;
   static const double proteinPerKgStronger = 1.8;
   static const double proteinPerKgMuscle = 1.9;
-
-  /// Share of the day's kcal that comes from fat.
-  static const double fatShare = 0.28;
 
   static const int fiberTargetG = 25;
 
@@ -63,7 +78,11 @@ class DailyTargets {
     TrainingGoal goal = TrainingGoal.stronger,
     int daysPerWeek = 3,
     int minutesPerSession = 15,
+    TargetStage stage = TargetStage.none,
+    int? trimester,
+    bool eatingHistory = false,
   }) {
+    if (eatingHistory) return const DailyTargets.withheld();
     final weight = body.weightKg ?? defaultWeightKg;
     final height = (body.heightCm ?? defaultHeightCm).toDouble();
     final age = (body.ageYears ?? defaultAgeYears).toDouble();
@@ -78,7 +97,14 @@ class DailyTargets {
       TrainingGoal.stronger || TrainingGoal.buildMuscle => strongerAdjust,
       TrainingGoal.feelBetter || TrainingGoal.backIntoIt => 1.0,
     };
-    final kcal = (bmr * factor * adjust).round();
+    final energy = TargetSafety.energy(
+      maintenanceKcal: bmr * factor,
+      goalFactor: adjust,
+      ageYears: body.ageYears,
+      stage: stage,
+      trimester: trimester,
+    );
+    final kcal = energy.kcal;
 
     final perKg = switch (goal) {
       TrainingGoal.buildMuscle => proteinPerKgMuscle,
@@ -87,17 +113,21 @@ class DailyTargets {
       TrainingGoal.feelBetter ||
       TrainingGoal.backIntoIt => proteinPerKg,
     };
-    final protein = (weight * perKg).round();
-    final fat = (kcal * fatShare / 9).round();
-    final carbs = ((kcal - protein * 4 - fat * 9) / 4).round();
+    final macros = TargetSafety.macros(
+      kcal: kcal,
+      weightKg: weight,
+      proteinPerKg: perKg,
+      stage: stage,
+    );
 
     return DailyTargets(
       kcal: kcal,
-      proteinG: protein,
-      carbsG: carbs < 0 ? 0 : carbs,
-      fatG: fat,
+      proteinG: macros.proteinG,
+      carbsG: macros.carbsG,
+      fatG: macros.fatG,
       fiberG: fiberTargetG,
       usesDefaults: !body.isComplete,
+      note: energy.note,
     );
   }
 
@@ -111,6 +141,12 @@ class DailyTargets {
   /// on the stated defaults.
   final bool usesDefaults;
 
+  /// Why these figures are not the ones her body data alone would give.
+  final TargetNote note;
+
+  /// True when she has no calorie or macro target. Her coach sets her food.
+  bool get withheld => note == TargetNote.withheld;
+
   @override
   bool operator ==(Object other) =>
       other is DailyTargets &&
@@ -119,9 +155,10 @@ class DailyTargets {
       other.carbsG == carbsG &&
       other.fatG == fatG &&
       other.fiberG == fiberG &&
-      other.usesDefaults == usesDefaults;
+      other.usesDefaults == usesDefaults &&
+      other.note == note;
 
   @override
   int get hashCode =>
-      Object.hash(kcal, proteinG, carbsG, fatG, fiberG, usesDefaults);
+      Object.hash(kcal, proteinG, carbsG, fatG, fiberG, usesDefaults, note);
 }

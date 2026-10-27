@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/private_coaching_state.dart';
 import 'package:own_hub/features/eat/domain/allergy_guard.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart' show LifeStage;
 import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
@@ -18,6 +19,7 @@ import 'package:own_hub/ui/app_button.dart';
 import 'package:own_hub/ui/app_list_item.dart';
 
 import '../../../helpers/exercise_library_fixture.dart';
+import '../support/fake_coaching_repository.dart';
 import '../plans/plans_support.dart';
 
 void _phone(WidgetTester t) {
@@ -579,6 +581,55 @@ void main() {
         );
       },
     );
+
+    testWidgets('a client with an eating history is shown no coach target', (
+      t,
+    ) async {
+      _phone(t);
+      final repo = FakeCoachingRepository(uid: 'client1');
+      PrivateCoachingState.instance.start(repo);
+      addTearDown(PrivateCoachingState.instance.stop);
+      repo.clientSubs.value = [
+        Subscription(
+          id: 'sub1',
+          coachUid: 'coach1',
+          clientUid: 'client1',
+          status: SubscriptionStatus.active,
+          intake: const Intake(eatingHistory: true),
+        ),
+      ];
+      await t.pump();
+      final withGoal = CoachPlan(
+        id: 'm1',
+        kind: PlanKind.meal,
+        coachUid: 'coach1',
+        meal: MealPlanBody(
+          goal: const MealGoal(kcalPerDay: 1600, proteinGPerDay: 110),
+          days: [
+            MealDay(
+              label: 'Day 1',
+              slots: {
+                'lunch': [MealItem.food('f1', 150)],
+              },
+            ),
+          ],
+        ),
+        publishedAt: _start,
+      );
+      await t.pumpWidget(
+        host(
+          Scaffold(
+            body: FromYourCoachSection(
+              plan: withGoal,
+              now: _now,
+              catalog: catalog(),
+            ),
+          ),
+        ),
+      );
+      expect(find.byKey(const ValueKey('coach-goal-line')), findsNothing);
+      expect(find.textContaining('1600'), findsNothing);
+    });
 
     testWidgets('eat card: goal line and planned total', (t) async {
       _phone(t);

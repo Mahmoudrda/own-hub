@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app_state/app_changes.dart';
 import '../../../../app_state/coach_meal_swaps.dart';
+import '../../../../app_state/private_coaching_state.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
@@ -95,7 +96,8 @@ class FromYourCoachSection extends StatelessWidget {
               header: true,
               child: Text(l10n.todaysMealsFromYourCoach, style: AppText.titleM),
             ),
-            if (meal.goal != null) ...[
+            if (meal.goal != null &&
+                !PrivateCoachingState.instance.hidesCalorieTargets) ...[
               Text(
                 l10n.yourCoachsTargetKcalCaloriesAndProtein(
                   '${meal.goal!.kcalPerDay}',

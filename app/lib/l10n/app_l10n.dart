@@ -26313,6 +26313,42 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Videos can be up to {seconds} seconds. Choose a shorter one.'**
   String videosCanBeUpToSecondsSeconds(String seconds);
+
+  /// No description provided for @yourCoachSetsYourFoodPlanWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach sets your food plan with you. Log what you eat and talk to her about it.'**
+  String get yourCoachSetsYourFoodPlanWith;
+
+  /// No description provided for @weNeverSetATargetBelow1.
+  ///
+  /// In en, this message translates to:
+  /// **'We never set a target below 1,200 kcal.'**
+  String get weNeverSetATargetBelow1;
+
+  /// No description provided for @weDoNotSetWeightLossTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not set weight-loss targets under 18. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.'**
+  String get weDoNotSetWeightLossTargets;
+
+  /// No description provided for @weDoNotSetWeightLossTargets_14owx.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not set weight-loss targets while you are pregnant or after a birth. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.'**
+  String get weDoNotSetWeightLossTargets_14owx;
+
+  /// No description provided for @forAClientWhoIsPregnantOr.
+  ///
+  /// In en, this message translates to:
+  /// **'For a client who is pregnant or after a birth, the lowest daily goal is 1,800 kcal.'**
+  String get forAClientWhoIsPregnantOr;
+
+  /// No description provided for @proteinCanBeAtMost35Of.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein can be at most 35% of the day\'s calories.'**
+  String get proteinCanBeAtMost35Of;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

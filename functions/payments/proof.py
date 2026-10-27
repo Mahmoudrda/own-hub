@@ -12,12 +12,29 @@ from google.cloud import firestore
 
 from coaching import common, dhash
 
-from . import activation, coach, engine, errors, fees, model, profile, receipt_checks, risk, states
+from . import activation, coach, engine, errors, model, profile, receipt_checks, risk, states
 
 LIMITS = model.LIMITS
 _HANDLE = re.compile(r"^[a-z0-9._-]{3,40}@[a-z]{3,20}$")
 _NOT_ALNUM = re.compile(r"[^A-Z0-9]")
 MAX_IMAGES_PER_CALL = 3
+
+
+# What a payer is told (13.4, 13.12): a code only when she can fix it herself. Which check a
+# RED proof failed, and which hidden fact an AMBER one lacks, is for staff: a forger who
+# is told what failed tries again until nothing does.
+REVIEW = "review"
+UNCLEAR = "unclear"
+FIXABLE = ("needDetails", "amountUnreadable", "wrongMessage", "someoneElsePaid", "referenceMissing")
+
+
+def party_reasons(colour: str, reasons: list) -> list:
+    if colour == risk.GREEN:
+        return []
+    if colour == risk.RED:
+        return [REVIEW]
+    seen = [r if r in FIXABLE else UNCLEAR for r in reasons]
+    return list(dict.fromkeys(seen)) or [UNCLEAR]
 
 
 def txn_key(txn: str) -> str:
@@ -135,7 +152,7 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
                 "proof.screenshotCount": firestore.Increment(len(images)),
                 "proof.amberAttempts": firestore.Increment(0 if wrong_only else 1),
             })
-            result = {"paymentId": payment_id, "status": cur["status"], "outcome": "amber", "reasons": out.reasons, "retry": True}
+            result = {"paymentId": payment_id, "status": cur["status"], "outcome": "amber", "reasons": party_reasons(risk.AMBER, out.reasons), "retry": True}
             engine.remember(transaction, db, uid, "proof", key, result, now)
             return result
 
@@ -175,11 +192,11 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
                                 {"paymentId": payment_id, "dHash": shape, "createdAt": now})
         if reg_ref is not None and not (reg.exists and (reg.to_dict() or {}).get("paymentId") != payment_id):
             transaction.set(reg_ref, {"paymentId": payment_id, "createdAt": now})
-        visible = [f for f, hit in (("sameImage", uniq["sameImageOf"]), ("nearImage", uniq["nearImageOf"]), ("txnReused", "txnReused" in reasons)) if hit]
+        visible = [f for f, hit in (("sameImage", uniq["sameImageOf"]), ("nearImage", uniq["nearImageOf"]), ("txnReused", "txnReused" in reasons)) if hit]  # spec 4.2: the coach sees a repeated picture or number
         transaction.set(
             ref.collection("staff").document("review"),
             {"riskScore": out.score, "flags": flags, "reasons": reasons, "checks": checks, "hashes": shas,
-             "dHashes": dhashes, "phoneReading": phone, "updatedAt": now},
+             "dHashes": dhashes, "uniq": uniq, "phoneReading": phone, "updatedAt": now},
             merge=True,
         )
         proof = {
@@ -189,8 +206,9 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
             "imageFlags": visible,
             "amberAttempts": (cur.get("proof") or {}).get("amberAttempts", 0) + (1 if outcome == risk.AMBER else 0),
         }
-        # The detailed reasons stay in staff/review; the payment keeps the colour and one hint for her next step.
-        base = {"proof": proof, "outcome": outcome, "hint": reasons[0] if reasons else None, "proofSubmittedAt": now}
+        # The detailed reasons stay in staff/review; the payment keeps the colour and one neutral hint for her next step.
+        told = party_reasons(outcome, reasons)
+        base = {"proof": proof, "outcome": outcome, "hint": told[0] if told else None, "proofSubmittedAt": now}
         pay = engine.move(transaction, db, ref, cur, "proof_submitted", states.CLIENT, uid, now, changes=base, code=f"proof_{outcome}")
         held["payment"], held["moves"] = pay, [(cur["status"], "proof_submitted")]
 
@@ -206,14 +224,7 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
                                                states.SYSTEM, None, None)
                 held["moves"].append(("proof_submitted", "confirmed"))
             else:
-                days = min(LIMITS["provisionalMaxDays"], (seen["sub"].get("package") or {}).get("durationDays", 7))
-                until = now + model.days(days)
-                changes = {"access": {"state": "provisional", "until": until}}
-                rel_source = (seen["rel"].to_dict() or {}).get("source") if seen["rel"].exists else None
-                changes.update(fees.at_activation(pay, cfg, rel_source, now))
-                transaction.update(ref, changes)
-                if coach.can_grant(seen):
-                    activation.grant(transaction, db, seen, now, provisional_until=until)
+                coach.grant_provisional(transaction, db, ref, pay, seen, cfg, now)
         else:
             transaction.update(ref, {"amberUntil": now + model.hours(LIMITS["amberHours"])})
         if allow_other and checks.get("sender") == "different" and outcome == risk.GREEN:
@@ -222,7 +233,7 @@ def submit(db, uid: str, data: dict, images: list, *, now: dt.datetime, blobs, r
             transaction.set(profile.standing_ref(db, uid), {"senderHandle": sender}, merge=True)
         held["wrote"] = True
         result = {"paymentId": payment_id, "status": "in_review" if outcome == risk.RED else ("confirmed" if held["moves"][-1][1] == "confirmed" else "proof_submitted"),
-                  "outcome": outcome, "reasons": reasons, "retry": False}
+                  "outcome": outcome, "reasons": told, "retry": False}
         engine.remember(transaction, db, uid, "proof", key, result, now)
         return result
 

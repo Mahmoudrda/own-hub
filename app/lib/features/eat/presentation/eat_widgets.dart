@@ -22,6 +22,7 @@ import '../../../ui/app_progress.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/meal_image.dart';
 import '../../../ui/hand/hand.dart';
+import '../../../domain/nutrition/target_safety.dart' show TargetNote;
 import '../domain/daily_targets.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
@@ -723,6 +724,14 @@ class EatHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    if (targets.withheld) {
+      return AppCard(
+        key: const ValueKey('eat-hero-withheld'),
+        children: [
+          Text(l10n.yourCoachSetsYourFoodPlanWith, style: AppText.bodyM),
+        ],
+      );
+    }
     final carbs = totals.carbsSoFar;
     final fat = totals.fatSoFar;
 
@@ -782,6 +791,12 @@ class EatHero extends StatelessWidget {
             macro(l10n.fat, fat, targets.fatG, AppColors.outline),
           ],
         ),
+        if (targetNoteText(l10n, targets.note) case final note?)
+          Text(
+            note,
+            key: const ValueKey('eat-target-note'),
+            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
         if (!compact && totals.fiberSoFar != null) FibreLine(totals: totals),
         if (!compact && onPersonalise != null)
           PersonaliseLink(targets: targets, onPressed: onPersonalise),
@@ -789,6 +804,15 @@ class EatHero extends StatelessWidget {
     );
   }
 }
+
+/// Why a target is not the one her body data alone would give, or null when
+/// there is nothing to say.
+String? targetNoteText(AppL10n l10n, TargetNote note) => switch (note) {
+  TargetNote.floor => l10n.weNeverSetATargetBelow1,
+  TargetNote.noDeficitMinor => l10n.weDoNotSetWeightLossTargets,
+  TargetNote.noDeficitStage => l10n.weDoNotSetWeightLossTargets_14owx,
+  TargetNote.none || TargetNote.withheld => null,
+};
 
 /// "Personalise", shown while the targets rest on the stated defaults.
 class PersonaliseLink extends StatelessWidget {

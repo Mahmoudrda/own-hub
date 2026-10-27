@@ -300,3 +300,12 @@ def test_each_party_reads_her_own_payments_picture_through_the_server_only(db):
     for who, path in ((CLIENT2, SHOT), (CLIENT, "payment-proofs/other/x.jpg"), (CLIENT, f"payment-proofs/{PAY}/client-gone.jpg")):
         assert refusal(lambda: staff.party_image(db, who, {"paymentId": PAY, "path": path}, blobs=blobs)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
     assert refusal(lambda: staff.party_image(db, CLIENT, {"paymentId": "nope", "path": SHOT}, blobs=blobs)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
+
+
+def test_what_either_woman_added_after_the_dispute_reaches_staff_with_her_note(db):
+    in_review(db)
+    db.document(f"payments/{PAY}/staff/evidence").set({"client_ab12": {"amountFound": True, "txnFound": False, "readable": True, "note": "my bank line", "at": NOW}})
+    ev = staff.get_evidence(db, REVIEWER, {"paymentId": PAY}, now=NOW)
+    assert ev["addedEvidence"]["client_ab12"]["note"] == "my bank line"
+    db.document(f"payments/{PAY}/staff/evidence").delete()
+    assert staff.get_evidence(db, REVIEWER, {"paymentId": PAY}, now=NOW)["addedEvidence"] is None

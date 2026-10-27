@@ -85,6 +85,7 @@ def get_evidence(db, actor: str, data: dict, *, now: dt.datetime, blobs=None) ->
     review = staff.document("review").get()
     stmt = staff.document("statement").get()
     note = staff.document("dispute").get()
+    added = staff.document("evidence").get()
     events = sorted((e.to_dict() for e in snap.reference.collection("events").stream()), key=lambda e: common.as_utc(e["at"]))
     prof = db.collection("coachPaymentProfiles").document(p["coachUid"]).get().to_dict() or {}
     cs = db.collection("paymentStanding").document(p["clientUid"]).get().to_dict() or {}
@@ -100,6 +101,7 @@ def get_evidence(db, actor: str, data: dict, *, now: dt.datetime, blobs=None) ->
         "6_history": {"coach": {"paymentsConfirmed": prof.get("paymentsConfirmed", 0), "disputesLost": prof.get("disputesLost", 0),
                                 "strikes": ks.get("coachStrikes", 0)}, "client": {"strikes": cs.get("clientStrikes", 0)}},
         "7_statementRequest": (p.get("dispute") or {}).get("statementRequests"),
+        "addedEvidence": added.to_dict() if added.exists else None,  # what either woman sent after the dispute began, with her note
         "dispute": common.plain({**(p.get("dispute") or {}), "clientNote": (note.to_dict() or {}).get("clientNote") if note.exists else None}),
         "status": p["status"],
         "clientProof": {"outcome": p.get("outcome"), "reasons": r.get("reasons")},
@@ -138,12 +140,20 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
         decided = common.decided_stamp(actor, now)
         dispute = {**(cur.get("dispute") or {}), "staffDecision": outcome, "decidedAt": now, "reasonCode": outcome}
         held["payment"], held["from"] = cur, cur["status"]
-        moves = []
-        if outcome != "reopen" and timers.overdue(cur, now):  # a silent party ran out of time: the system hands it over first
+        moves, notices = [], []
+        if outcome != "reopen" and cur["status"] == "coach_not_received":  # the coach's claim, not yet in review: staff take it over first
+            cur = engine.move(transaction, db, ref, cur, "in_review", states.STAFF, actor, now, code="staff_took_over",
+                              changes={"dispute": {"kind": "not_received", "openedBy": "coach", "openedAt": now, **(cur.get("dispute") or {})}})
+            moves.append((held["from"], "in_review"))
+            dispute = {**(cur.get("dispute") or {}), "staffDecision": outcome, "decidedAt": now, "reasonCode": outcome}
+        elif outcome != "reopen" and timers.overdue(cur, now):  # a silent party ran out of time: the system hands it over first
             cur = timers.escalate_move(transaction, db, ref, cur, now)
             moves.append((held["from"], "in_review"))
             dispute = {**(cur.get("dispute") or {}), "staffDecision": outcome, "decidedAt": now, "reasonCode": outcome}
         pay = cur
+        about_refund = (cur.get("dispute") or {}).get("kind") == "refund_not_received"
+        if about_refund and outcome in ("resolved_paid", "resolved_unpaid"):
+            raise common.refuse(errors.PRECONDITION, errors.ILLEGAL_TRANSITION)  # the money was refunded: the only answers are "it came" or "it is still owed"
 
         if outcome == "reopen":
             if last_by and last_by[0].get("by") == decided["decidedBy"]:
@@ -157,11 +167,18 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
             transaction.update(ref, {"dispute": {**dispute, "refundOwedPiasters": refund, "refundDueAt": now + model.days(7)}})
             transaction.set(ref.collection("events").document(), {"at": now, "from": "in_review", "to": "in_review", "role": states.STAFF,
                                                                   "actor": common.staff_ref(actor), "code": "refund_owed"})
+        elif outcome == "no_refund" and about_refund:
+            # She did get the refund: the payment goes back to refunded. No access, no fee on money she returned.
+            changes = {"dispute": dispute, "access": {"state": "none", "until": None},
+                       "feeState": "owed" if cur.get("feePiasters", 0) > 0 else "waived"}
+            engine.move(transaction, db, ref, cur, "refunded", states.STAFF, actor, now, changes=changes, code=f"staff_{outcome}")
+            notices += [(states.CLIENT, "instapayReviewDecided"), (states.COACH, "instapayCoachReviewDecided")]
         else:
             target = {"resolved_paid": "resolved_paid", "resolved_unpaid": "resolved_unpaid", "no_refund": "confirmed"}[outcome]
             changes = {"dispute": dispute}
             if target == "resolved_paid" or target == "confirmed":
-                changes["access"] = {"state": "full", "until": None}
+                # full only when the coaching runs (or restarts); the money can be settled while the place is gone
+                changes["access"] = {"state": "full" if target == "confirmed" or activation_ok(seen_start) else "none", "until": None}
                 changes["feeState"] = "owed"
             else:
                 changes["access"] = {"state": "none", "until": None}
@@ -176,20 +193,26 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
             if target == "resolved_unpaid":
                 activation.end(transaction, db, cur["subId"], seen_end, "dispute", now)
             moves.append(("in_review", target))
-        held["moves"] = moves
+        held["moves"], held["notices"] = moves, notices
         transaction.set(log, {"by": decided["decidedBy"], "at": now, "outcome": outcome, "reasonText": reason, "proofFalse": proof_false})
         held["kind"] = (cur.get("dispute") or {}).get("kind")
-        return {"status": moves[-1][1] if moves else "in_review", "outcome": outcome}
+        final = "refunded" if notices else (moves[-1][1] if moves else "in_review")
+        return {"status": final, "outcome": outcome}
 
     result = common.run(db, body)
     engine.notify_moves(notify, held["payment"], held["moves"])
+    for who, kind in held["notices"]:
+        try:
+            notify(held["payment"]["clientUid" if who == states.CLIENT else "coachUid"], kind)
+        except Exception:  # noqa: BLE001
+            pass
     if on_decision is not None:
         on_decision(db, payment_id, outcome=outcome, kind=held["kind"], proof_false=proof_false, now=now, notify=notify)
     return result
 
 
 def activation_ok(seen: dict) -> bool:
-    return activation.grantable(seen["sub"])
+    return activation.grantable(seen)
 
 
 def party_image(db, uid: str, data: dict, *, blobs) -> dict:

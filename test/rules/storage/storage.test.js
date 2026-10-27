@@ -269,6 +269,29 @@ test('payment proofs are read by an admin or finance and written by nobody', asy
   await assertFails(deleteObject(ref(admin(), `payment-proofs/${HER}/p1.jpg`)));
 });
 
+test('an InstaPay payment folder is read by nobody from a phone, not even finance or the admin', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'payments', 'pay-1'), { clientUid: HER, coachUid: OTHER, status: 'in_review' });
+  });
+  await seed('payment-proofs/pay-1/client-abc-1.jpg');
+  await seed('payment-proofs/pay-1/coach-xyz-1.jpg');
+  for (const file of ['client-abc-1.jpg', 'coach-xyz-1.jpg']) {
+    const path = `payment-proofs/pay-1/${file}`;
+    await assertFails(getBytes(ref(her(), path)));      // the client
+    await assertFails(getBytes(ref(other(), path)));    // the coach of the payment
+    await assertFails(getBytes(ref(admin(), path)));
+    await assertFails(getBytes(ref(finance(), path)));
+    await assertFails(getBytes(ref(reviewer(), path)));
+    await assertFails(getBytes(ref(anon(), path)));
+  }
+  await assertFails(put(her(), 'payment-proofs/pay-1/client-new-1.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(admin(), 'payment-proofs/pay-1/client-new-1.jpg', 1024, 'image/jpeg'));
+  await assertFails(deleteObject(ref(her(), 'payment-proofs/pay-1/client-abc-1.jpg')));
+  // The older ledger folder (named for a woman, no payment of that id) is unchanged.
+  await seed(`payment-proofs/${HER}/p1.jpg`);
+  await assertSucceeds(getBytes(ref(finance(), `payment-proofs/${HER}/p1.jpg`)));
+});
+
 // ---------------------------------------------------------- user-exports
 
 test('her export is read by her only and written by nobody', async () => {

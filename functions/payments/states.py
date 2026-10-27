@@ -14,6 +14,9 @@ CLIENT, COACH, STAFF, SYSTEM = "client", "coach", "staff", "system"
 #  - resolved_* / confirmed -> in_review by staff: a second reviewer reopens (13.9)
 #  - refunded -> in_review: the coach's refund record is her word only, so the client
 #    (she did not receive it) or staff can open a dispute; no other way back (4.8)
+#  - in_review -> refunded by staff: the dispute about a refund the client says never came
+#    ends with "it did come", and the payment goes back to what it was
+#  - coach_not_received -> in_review by staff: a row staff decide before the clock moves it
 #  - expired -> cancelled: a request that nobody paid has an exit
 TRANSITIONS: dict[tuple[str, str], frozenset] = {
     ("awaiting_payment", "proof_submitted"): frozenset({CLIENT}),
@@ -29,14 +32,14 @@ TRANSITIONS: dict[tuple[str, str], frozenset] = {
     ("proof_submitted", "coach_not_received"): frozenset({COACH}),
     ("proof_submitted", "different_amount"): frozenset({COACH}),
     ("proof_submitted", "in_review"): frozenset({SYSTEM}),
-    ("coach_not_received", "in_review"): frozenset({SYSTEM}),
+    ("coach_not_received", "in_review"): frozenset({SYSTEM, STAFF}),
     ("different_amount", "confirmed"): frozenset({CLIENT}),
     ("different_amount", "cancelled"): frozenset({CLIENT}),
     ("different_amount", "in_review"): frozenset({CLIENT, SYSTEM}),
     ("in_review", "resolved_paid"): frozenset({STAFF}),
     ("in_review", "resolved_unpaid"): frozenset({STAFF}),
     ("in_review", "confirmed"): frozenset({STAFF}),
-    ("in_review", "refunded"): frozenset({COACH}),
+    ("in_review", "refunded"): frozenset({COACH, STAFF}),
     ("confirmed", "refund_requested"): frozenset({CLIENT}),
     ("confirmed", "service_dispute"): frozenset({CLIENT}),
     ("confirmed", "in_review"): frozenset({STAFF, COACH}),

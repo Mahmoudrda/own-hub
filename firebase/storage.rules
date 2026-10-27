@@ -270,8 +270,14 @@ service firebase.storage {
     // woman reviewer through a callable that logs the access.
     // A member's screenshot of her transfer. The service writes it and deletes
     // it after the decision; staff with the finance claim, or the admin, read it.
+    //
+    // The older ledger path above is payment-proofs/{uid}/{file}. A folder named
+    // for an InstaPay payment (payments/{id} exists) is never read from a phone
+    // or by the admin or finance claims: a woman's transfer screenshots go to a
+    // woman reviewer through staff_get_payment_evidence, which logs the read.
     match /payment-proofs/{uid}/{file} {
-      allow read: if coachPaymentsLive() && (isAdmin() || isFinance());
+      allow read: if coachPaymentsLive() && (isAdmin() || isFinance())
+                  && !firestore.exists(/databases/(default)/documents/payments/$(uid));
       allow write: if false;
     }
 

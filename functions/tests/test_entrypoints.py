@@ -108,6 +108,14 @@ CALLABLES = {
     "staff_resolve_payment",
     "set_coach_instapay_address",
     "set_coach_payment_options",
+    "coach_mark_not_received",
+    "add_payment_evidence",
+    "record_fee_payment",
+    "list_fee_statements",
+    "confirm_fee_payment",
+    "staff_set_coach_payment_status",
+    "staff_list_payment_flags",
+    "set_payments_enabled",
     "cancel_coaching_request",
     "submit_payment_proof",
     "list_payment_proofs",
@@ -701,3 +709,32 @@ def test_the_payment_staff_callables_refuse_a_member_and_a_plain_admin(name, stu
     raises(lambda: fn(request({})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
     raises(lambda: fn(request({}, token={"admin": True})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
 
+
+
+@pytest.mark.parametrize("name", ["staff_set_coach_payment_status", "staff_list_payment_flags"])
+def test_the_payment_flag_callables_refuse_a_member_but_open_to_a_reviewer_or_an_admin(name, stubbed):
+    fn = inner(name)
+    raises(lambda: fn(request({})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+    raises(lambda: fn(request({}, token={"finance": True})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+    for claim in ({"womanReviewer": True}, {"admin": True}):
+        assert main._require_woman_reviewer(request({}, token=claim), allow_admin=True) == "uid-1"
+
+
+@pytest.mark.parametrize("name", ["list_fee_statements", "confirm_fee_payment"])
+def test_the_fee_callables_for_the_owner_refuse_a_member_and_a_reviewer(name, stubbed):
+    fn = inner(name)
+    raises(lambda: fn(request({})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+    raises(lambda: fn(request({}, token={"womanReviewer": True})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+
+
+def test_only_an_admin_can_move_the_payments_switch(stubbed):
+    fn = inner("set_payments_enabled")
+    payload = {"enabled": False, "reason": "testing"}
+    raises(lambda: fn(request(payload)), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+    raises(lambda: fn(request(payload, token={"womanReviewer": True})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+    raises(lambda: fn(request(payload, token={"finance": True})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
+
+
+@pytest.mark.parametrize("name", ["coach_mark_not_received", "add_payment_evidence"])
+def test_the_evidence_callables_refuse_a_woman_who_is_not_verified(name, stubbed):
+    raises(lambda: inner(name)(request({"paymentId": "p", "images": []})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)
