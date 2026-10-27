@@ -42,7 +42,11 @@ void main() {
       'ios/Runner/en.lproj/InfoPlist.strings',
       'ios/Runner/ar.lproj/InfoPlist.strings',
     ]) {
-      expect(read(path), contains('NSMicrophoneUsageDescription'), reason: path);
+      expect(
+        read(path),
+        contains('NSMicrophoneUsageDescription'),
+        reason: path,
+      );
     }
   });
 

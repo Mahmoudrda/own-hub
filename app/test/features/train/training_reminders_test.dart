@@ -14,10 +14,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/ui/app_toggle.dart';
 import 'package:own_hub/app_state/app_snapshot.dart';
+import 'package:own_hub/app_state/notification_sync.dart';
 import 'package:own_hub/app_state/reminder_scheduler.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/today/domain/today_repository.dart';
 import 'package:own_hub/features/train/domain/notification_plan.dart';
+import 'package:own_hub/features/train/domain/notification_voice.dart';
 import 'package:own_hub/features/train/domain/training_reminders.dart';
 import 'package:own_hub/features/train/presentation/reminder_sheet.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -114,6 +116,9 @@ void main() {
   late _Fake fake;
 
   setUp(() {
+    // The real bank loads on the first schedule and sets the plan again
+    // with the real clock; these tests count the first plan only.
+    NotificationSync.bank = NotificationVoice.empty;
     AppRouter.featureFlags = FeatureFlags.everything;
     ReminderState.instance.reset();
     // Home offers reminders after a session she finished: one is logged.

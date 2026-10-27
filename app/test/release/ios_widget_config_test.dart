@@ -2,8 +2,9 @@
 //
 // None of this is visible to a Dart test any other way, and each line is a
 // rejection or a dead widget if it drifts: the App Group on both targets, the
-// URL scheme the widgets open the app with, Flutter's own deep linking off so
-// it does not swallow that URL, the UserDefaults reason (1C8F.1) in both
+// URL scheme the widgets open the app with, Flutter's own deep linking on (so
+// coach links reach the router) with the widget URL answered by home_widget
+// first, the UserDefaults reason (1C8F.1) in both
 // privacy manifests, and the extension target in the Xcode project at the
 // same iOS floor as the app.
 
@@ -52,9 +53,9 @@ void main() {
     );
   });
 
-  test("Flutter's own deep linking is off", () {
+  test("Flutter's own deep linking is on, so coach links reach the app", () {
     expect(
-      RegExp(r'<key>FlutterDeepLinkingEnabled</key>\s*<false/>')
+      RegExp(r'<key>FlutterDeepLinkingEnabled</key>\s*<true/>')
           .hasMatch(_read('ios/Runner/Info.plist')),
       isTrue,
     );

@@ -102,7 +102,11 @@ class CoachMealRow extends StatelessWidget {
     final lang = Localizations.localeOf(context).languageCode;
     final amount = itemAmount(l10n, item);
     final canOpen = item.kind == MealItemKind.recipe && onOpenRecipe != null;
-    final canLog = onLog != null && item.kind != MealItemKind.free;
+    final canLog =
+        onLog != null &&
+        item.kind != MealItemKind.free &&
+        (item.kind != MealItemKind.recipe ||
+            recipeCanBeLogged(catalog.recipe(item.recipeId ?? '')));
     if (compact) {
       final title = catalog.title(item, lang);
       final flagText = flag == null

@@ -123,6 +123,19 @@ check "team id filled in"                  "! grep -q 'YOUR_TEAM_ID' ios/ExportO
 check "iPhone-only (iPad not declared)"    "! grep -q 'TARGETED_DEVICE_FAMILY = \"1,2\"' ios/Runner.xcodeproj/project.pbxproj"
 
 echo
+echo "-- coach links (https://own-hub.app/c/... and /p/...) --"
+team=$(grep -m1 -oE 'DEVELOPMENT_TEAM = [A-Z0-9]+' ios/Runner.xcodeproj/project.pbxproj | grep -oE '[A-Z0-9]+$')
+check "iOS: Flutter hands links to the app (deep linking on)" "grep -A1 FlutterDeepLinkingEnabled ios/Runner/Info.plist | grep -q '<true/>'"
+check "iOS: Associated Domains names own-hub.app" "grep -q 'applinks:own-hub.app' ios/Runner/Runner.entitlements"
+check "iOS: apple-app-site-association is JSON naming $team.com.ownhub.fitness" "python3 -m json.tool ../site/.well-known/apple-app-site-association >/dev/null && grep -q \"\\\"$team.com.ownhub.fitness\\\"\" ../site/.well-known/apple-app-site-association"
+check "Android: the link filter and package match assetlinks.json" "grep -q 'android:pathPrefix=\"/c/\"' android/app/src/main/AndroidManifest.xml && python3 -m json.tool ../site/.well-known/assetlinks.json >/dev/null && grep -q '\"package_name\": \"com.ownhub.app\"' ../site/.well-known/assetlinks.json"
+if grep -qE '"sha256_cert_fingerprints": *\[ *\]' ../site/.well-known/assetlinks.json; then
+  na "Android verifies the links" "OWNER STEP: site/.well-known/assetlinks.json has no SHA-256 fingerprints; add the Play App Signing and upload keys (docs/owner/OWNER-TODO.md), redeploy the site. Until then Android opens these links in the browser, not the app"
+else
+  check "Android: assetlinks.json fingerprints look like SHA-256" "grep -qE '\"([0-9A-F]{2}:){31}[0-9A-F]{2}\"' ../site/.well-known/assetlinks.json"
+fi
+
+echo
 echo "-- secrets hygiene --"
 check "key.properties is ignored"          "git check-ignore -q android/key.properties"
 check "keystores are ignored"              "grep -q '\*\.jks' ../.gitignore"

@@ -415,10 +415,7 @@ void main() {
         [for (final d in two.days.sublist(3)) d.session.titleEn],
         [for (final d in plan.days) d.session.titleEn],
       );
-      expect(
-        {for (final d in two.days) d.session.sessionId}.length,
-        6,
-      );
+      expect({for (final d in two.days) d.session.sessionId}.length, 6);
       final three = two.withRepeatedLastWeek();
       final four = three.withRepeatedLastWeek();
       expect(four.days.length, 12);
@@ -430,9 +427,10 @@ void main() {
       }
       expect(fullW2.daysOfWeek(2).length, kMaxPlanDays);
       final back = MyPlan.tryParse(four.toJson())!;
-      expect([for (final d in back.days) d.week], [
-        for (final d in four.days) d.week,
-      ]);
+      expect(
+        [for (final d in back.days) d.week],
+        [for (final d in four.days) d.week],
+      );
     });
   });
 }

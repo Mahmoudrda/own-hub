@@ -359,6 +359,9 @@ def test_hold_before_hides_media_with_reason_held(monkeypatch):
     row = _add(db, "m1", senderUid="client1", type="image", mediaPath=path)
     result = chat.on_message(db, REL, "m1", row, now=NOW, notify=Notes(), blobs=blobs)
     assert result["reason"] == "held"
+    # Held is not refused: the file and the pointer stay for the release.
+    assert blobs.deleted == [] and path in blobs.objects
+    assert db.document(f"relationships/{REL}/messages/m1").get().to_dict()["mediaPath"] == path
 
 
 def test_the_21st_message_in_a_minute_is_hidden_as_rate():
@@ -387,6 +390,23 @@ def test_the_31st_media_line_in_an_hour_is_hidden():
     row31 = _add(db, "m31", senderUid="client1", type="image", mediaPath=path31, createdAt=NOW)
     res31 = chat.on_message(db, REL, "m31", row31, now=NOW, notify=Notes(), blobs=blobs)
     assert res31["reason"] == "rate"
+    # A flood must not fill the bucket with files no line points to.
+    assert path31 in blobs.deleted
+    assert path31 not in blobs.objects
+    assert db.document(f"relationships/{REL}/messages/m31").get().to_dict()["mediaPath"] is None
+
+
+def test_a_media_line_after_a_text_flood_loses_its_file():
+    db = _db()
+    blobs = fake_blobs.FakeBlobs()
+    for i in range(1, 21):
+        _run(db, f"t{i}", _add(db, f"t{i}", senderUid="client1", type="text", text="ok", createdAt=NOW))
+    path = f"chat-media/{REL}/client1/late.m4a"
+    blobs.put(path, b"x", "audio/mp4")
+    row = _add(db, "a1", senderUid="client1", type="audio", mediaPath=path, durationMs=5000, createdAt=NOW)
+    result = chat.on_message(db, REL, "a1", row, now=NOW, notify=Notes(), blobs=blobs)
+    assert result["reason"] == "rate"
+    assert blobs.deleted == [path]
 
 
 def test_first_name_mode_names_only_the_coach(monkeypatch):

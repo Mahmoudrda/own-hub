@@ -65,12 +65,8 @@ class CoachHomeCard extends StatelessWidget {
         ),
         Text(
           day == null
-              ? (workout?.startsOn != null &&
-                        plan != null &&
-                        plan.weekCount > 1
-                    ? l10n.yourPlanStartsDate(
-                        dateText(l10n, workout!.startsOn),
-                      )
+              ? (workout?.startsOn != null && plan != null && plan.weekCount > 1
+                    ? l10n.yourPlanStartsDate(dateText(l10n, workout!.startsOn))
                     : l10n.yourCoachHasNotSetAPlan)
               : l10n.todaysWorkoutName(plan!.days[day].session.title(lang)),
           key: const ValueKey('coach-home-workout'),

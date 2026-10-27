@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import datetime as dt
 import functools
+import hashlib
 import json
 import math
 import os
@@ -290,6 +291,26 @@ def start_date(value: Any, now: dt.datetime) -> Optional[str]:
     return value
 
 
+def cairo_today(now: dt.datetime) -> str:
+    return now.astimezone(CAIRO).date().isoformat()
+
+
+def plan_weeks(kind: str, body: dict) -> int:
+    """Weeks a checked body spans: a workout's highest `week`, else 1."""
+    if kind != "workout":
+        return 1
+    return max(day.get("week", 1) for day in body["days"])
+
+
+def replay_id(uid: str, sub_id: str, key: str, now: dt.datetime) -> str:
+    """The plan document a `requestKey` always lands on, for one Cairo day: the
+    same coach sending the same plan to the same client again (a retry after a
+    timeout, or Back and send once more) finds the plan it already made rather
+    than making a second one with a second chat card and push."""
+    raw = f"{uid}|{sub_id}|{key}|{cairo_today(now)}".encode("utf-8")
+    return "k" + hashlib.sha256(raw).hexdigest()[:30]
+
+
 # ------------------------------------------------------------------ publish --
 
 def publish(
@@ -319,6 +340,15 @@ def publish(
     body = data.get("body")
     check_body(kind, body, content_ids if content_ids is not None else load_content_ids())
     starts_on = start_date(data.get("startsOn"), now)
+    # A plan of several weeks needs a day one, or week two never arrives.
+    if starts_on is None and plan_id is None and plan_weeks(kind, body) > 1:
+        starts_on = cairo_today(now)
+    request_key = data.get("requestKey")
+    if request_key is not None:
+        request_key = common.text(request_key, min_len=8, max_len=64)
+    # Sent only by builds that can clear the health hold (review_client_health).
+    # Older builds cannot, so holding their coach here would strand her.
+    reviews_health = data.get("reviewsHealth") is True
 
     sub_ref = db.collection("subscriptions").document(sub_id)
     coach_ref = db.collection("coaches").document(uid)
@@ -330,7 +360,11 @@ def publish(
         if sub.get("status") != "active":
             raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
         intake = sub.get("intake") or {}
-        if subscriptions.intake_flagged(intake) and not sub.get("healthReviewedAt"):
+        if (
+            reviews_health
+            and subscriptions.intake_flagged(intake)
+            and not sub.get("healthReviewedAt")
+        ):
             raise common.refuse(errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
         client_uid = sub.get("clientUid")
         if subscriptions.blocked_either(transaction, db, uid, client_uid):
@@ -346,7 +380,16 @@ def publish(
         plans = db.collection("plans").document(client_uid).collection("coachPlans")
 
         if plan_id is None:
-            plan_ref, revision, new = plans.document(), 1, True
+            if request_key is None:
+                plan_ref = plans.document()
+            else:
+                plan_ref = plans.document(replay_id(uid, sub_id, request_key, now))
+                made = common.read(plan_ref, transaction)
+                if made is not None:
+                    if made.get("coachUid") != uid or made.get("subId") != sub_id:
+                        raise common.bad(errors.PLAN_INVALID)
+                    return plan_ref.id, int(made.get("revision") or 1), client_uid, True
+            revision, new, starts = 1, True, starts_on
         else:
             plan_ref = plans.document(plan_id)
             current = common.read(plan_ref, transaction)
@@ -359,6 +402,8 @@ def publish(
             if current.get("kind") != kind:
                 raise common.bad(errors.PLAN_INVALID)
             revision, new = int(current.get("revision") or 0) + 1, False
+            # Sending again without a date keeps the one the plan started on.
+            starts = starts_on or current.get("startsOn")
 
         coach = common.read(coach_ref, transaction)
         coach_name = coach.get("displayName") if coach is not None else ""
@@ -374,7 +419,7 @@ def publish(
                 "revision": revision,
                 "body": body,
                 "publishedAt": now,
-                **({"startsOn": starts_on} if starts_on else {}),
+                **({"startsOn": starts} if starts else {}),
             },
         )
         transaction.set(
@@ -390,8 +435,9 @@ def publish(
         )
         if new and coach is not None:
             transaction.update(coach_ref, {"stats.plansShared": firestore.Increment(1)})
-        return plan_ref.id, revision, client_uid
+        return plan_ref.id, revision, client_uid, False
 
-    plan_id_out, revision_out, client_uid = common.run(db, txn)
-    notify(client_uid, "planShared")
+    plan_id_out, revision_out, client_uid, replayed = common.run(db, txn)
+    if not replayed:
+        notify(client_uid, "planShared")
     return {"planId": plan_id_out, "revision": revision_out}

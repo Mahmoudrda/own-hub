@@ -82,11 +82,7 @@ void main() {
 
   group('InBodyTargetEstimator', () {
     test('calculates weight loss / deficit targets with high protein', () {
-      const scan = InBodyScan(
-        weightKg: 70.0,
-        heightCm: 165.0,
-        bmrKcal: 1400,
-      );
+      const scan = InBodyScan(weightKg: 70.0, heightCm: 165.0, bmrKcal: 1400);
 
       final targets = InBodyTargetEstimator.estimate(
         scan: scan,
@@ -103,11 +99,7 @@ void main() {
     });
 
     test('calculates muscle gain / bulk targets with surplus', () {
-      const scan = InBodyScan(
-        weightKg: 60.0,
-        heightCm: 160.0,
-        bmrKcal: 1300,
-      );
+      const scan = InBodyScan(weightKg: 60.0, heightCm: 160.0, bmrKcal: 1300);
 
       final targets = InBodyTargetEstimator.estimate(
         scan: scan,

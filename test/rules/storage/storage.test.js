@@ -1,10 +1,11 @@
 // C5: Cloud Storage rules (firebase/storage.rules), against a Storage
 // emulator started from test/rules/storage/firebase.json (port 9399, never
-// 8088 or 9098):
+// 8088 or 9098), beside a Firestore emulator on 8089 that the chat-media rules
+// read the relationship document from:
 //
 //   cd test/rules && npm run test:storage
 //
-// which runs `firebase emulators:exec --only storage` on that config. Kept out
+// which runs `firebase emulators:exec --only storage,firestore` on that config. Kept out
 // of `npm test` (./*.test.js) so the Firestore suite runs without it.
 
 import { readFileSync } from 'node:fs';
@@ -22,6 +23,7 @@ import {
   getBytes,
   deleteObject,
 } from 'firebase/storage';
+import { doc, setDoc } from 'firebase/firestore';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const RULES = readFileSync(resolve(here, '../../../firebase/storage.rules'), 'utf8');
@@ -47,6 +49,17 @@ function switchedOn(source) {
   return out;
 }
 const PORT = Number(process.env.OWNHUB_RULES_STORAGE_PORT || 9399);
+// The chat-media rules read the relationship document, so the storage emulator
+// runs beside a Firestore emulator (test/rules/storage/firebase.json). Its own
+// rules deny every client; only the service-side read of the storage rules and
+// the seeding below touch it.
+const FS_PORT = Number(process.env.OWNHUB_RULES_STORAGE_FIRESTORE_PORT || 8089);
+const FIRESTORE_RULES = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if false; }
+  }
+}`;
 const BUCKET = 'demo-own-hub.appspot.com';
 
 const HER = 'uid-her';
@@ -59,6 +72,7 @@ async function load(rules) {
   if (env) await env.cleanup();
   env = await initializeTestEnvironment({
     projectId: 'demo-own-hub',
+    firestore: { rules: FIRESTORE_RULES, host: '127.0.0.1', port: FS_PORT },
     storage: { rules, host: '127.0.0.1', port: PORT },
   });
 }
@@ -73,6 +87,7 @@ after(async () => {
 
 beforeEach(async () => {
   await env.clearStorage();
+  await env.clearFirestore();
 });
 
 function store(ctx) {
@@ -417,8 +432,26 @@ test('coach-public media: verified members read, nobody writes', async () => {
   await assertFails(put(admin(), `coach-public/${HER}/media/new.jpg`, 1024, 'image/jpeg'));
 });
 
-test('chat media: the owner in the thread writes within the limits', async () => {
-  const a = () => store(env.authenticatedContext('a', { verified: true }));
+// The thread `{coachUid}__{clientUid}` as the service writes it: the rules
+// read this document, so the caller has to be one of its two people and it has
+// to be open.
+async function thread(relId, over = {}) {
+  const [coachUid, clientUid] = relId.split('__');
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'relationships', relId), {
+      coachUid,
+      clientUid,
+      status: 'active',
+      chatOpen: true,
+      ...over,
+    });
+  });
+}
+const verifiedAs = (uid) => store(env.authenticatedContext(uid, { verified: true }));
+
+test('chat media: the owner in an open thread writes within the limits', async () => {
+  await thread('a__b');
+  const a = () => verifiedAs('a');
   await assertSucceeds(put(a(), 'chat-media/a__b/a/x.jpg', 3 * MB, 'image/jpeg'));
   await assertFails(put(a(), 'chat-media/a__b/a/x2.jpg', 3 * MB + 1, 'image/jpeg'));
   await assertSucceeds(put(a(), 'chat-media/a__b/a/v.mp4', 25 * MB, 'video/mp4'));
@@ -428,25 +461,57 @@ test('chat media: the owner in the thread writes within the limits', async () =>
   await assertFails(put(a(), 'chat-media/a__b/a/p.png', 1024, 'image/png'));
 });
 
-test('chat media: only the two people read, only the owner deletes', async () => {
-  const a = () => store(env.authenticatedContext('a', { verified: true }));
-  const b = () => store(env.authenticatedContext('b', { verified: true }));
-  const c = () => store(env.authenticatedContext('c', { verified: true }));
-  await assertSucceeds(put(a(), 'chat-media/a__b/a/r1.jpg', 1024, 'image/jpeg'));
-  await assertFails(put(a(), 'chat-media/a__b/a/r1.jpg', 1024, 'image/jpeg'));
-  await assertSucceeds(getBytes(ref(a(), 'chat-media/a__b/a/r1.jpg')));
-  await assertSucceeds(getBytes(ref(b(), 'chat-media/a__b/a/r1.jpg')));
-  await assertFails(getBytes(ref(c(), 'chat-media/a__b/a/r1.jpg')));
-  await assertFails(deleteObject(ref(b(), 'chat-media/a__b/a/r1.jpg')));
-  await assertSucceeds(deleteObject(ref(a(), 'chat-media/a__b/a/r1.jpg')));
+test('chat media: both people of the thread can write into their own folder', async () => {
+  await thread('e__f');
+  await assertSucceeds(put(verifiedAs('e'), 'chat-media/e__f/e/x.jpg', 1024, 'image/jpeg'));
+  await assertSucceeds(put(verifiedAs('f'), 'chat-media/e__f/f/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(verifiedAs('f'), 'chat-media/e__f/e/y.jpg', 1024, 'image/jpeg'));
+});
+
+test('chat media: only the two people read, and nobody deletes from a phone', async () => {
+  await thread('g__h');
+  const a = () => verifiedAs('g');
+  const b = () => verifiedAs('h');
+  const c = () => verifiedAs('k');
+  await assertSucceeds(put(a(), 'chat-media/g__h/g/r1.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(a(), 'chat-media/g__h/g/r1.jpg', 1024, 'image/jpeg'));
+  await assertSucceeds(getBytes(ref(a(), 'chat-media/g__h/g/r1.jpg')));
+  await assertSucceeds(getBytes(ref(b(), 'chat-media/g__h/g/r1.jpg')));
+  await assertFails(getBytes(ref(c(), 'chat-media/g__h/g/r1.jpg')));
+  // A reported file has to stay for the reviewer: not even the sender erases it.
+  await assertFails(deleteObject(ref(b(), 'chat-media/g__h/g/r1.jpg')));
+  await assertFails(deleteObject(ref(a(), 'chat-media/g__h/g/r1.jpg')));
+  await assertSucceeds(getBytes(ref(a(), 'chat-media/g__h/g/r1.jpg')));
 });
 
 test('chat media: a stranger or an unverified caller cannot write', async () => {
-  const c = () => store(env.authenticatedContext('c', { verified: true }));
-  const aUnv = () => store(env.authenticatedContext('a', {}));
-  await assertFails(put(c(), 'chat-media/a__b/c/x.jpg', 1024, 'image/jpeg'));
-  await assertFails(put(aUnv(), 'chat-media/a__b/a/x.jpg', 1024, 'image/jpeg'));
-  await assertFails(put(anon(), 'chat-media/a__b/a/x.jpg', 1024, 'image/jpeg'));
+  await thread('i__j');
+  const aUnv = () => store(env.authenticatedContext('i', {}));
+  await assertFails(put(verifiedAs('k'), 'chat-media/i__j/k/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(aUnv(), 'chat-media/i__j/i/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(anon(), 'chat-media/i__j/i/x.jpg', 1024, 'image/jpeg'));
+});
+
+test('chat media: a made-up relationship id stores nothing', async () => {
+  // Her uid is in the path, but no relationship document exists.
+  await assertFails(put(verifiedAs('a'), 'chat-media/a__zzz/a/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(verifiedAs('a'), 'chat-media/zzz__a/a/x.jpg', 1024, 'image/jpeg'));
+  await assertFails(put(verifiedAs('a'), 'chat-media/a__a/a/x.jpg', 1024, 'image/jpeg'));
+});
+
+test('chat media: the document has to name her, be active and have chat on', async () => {
+  // The path says a__b, the document of that id says someone else.
+  await thread('a__b', { coachUid: 'x', clientUid: 'y' });
+  await assertFails(put(verifiedAs('a'), 'chat-media/a__b/a/x.jpg', 1024, 'image/jpeg'));
+
+  await thread('c__d', { status: 'ended', chatOpen: false });
+  await assertFails(put(verifiedAs('c'), 'chat-media/c__d/c/x.jpg', 1024, 'image/jpeg'));
+
+  await thread('e__f', { chatOpen: false });
+  await assertFails(put(verifiedAs('e'), 'chat-media/e__f/e/x.jpg', 1024, 'image/jpeg'));
+
+  await thread('g__h', { status: 'requested' });
+  await assertFails(put(verifiedAs('g'), 'chat-media/g__h/g/x.jpg', 1024, 'image/jpeg'));
 });
 
 test('admin content uploads take jpeg, png, webp, gif and video, never SVG', async () => {

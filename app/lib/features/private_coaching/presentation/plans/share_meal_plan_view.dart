@@ -100,9 +100,32 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
   String _error = '';
   Set<String> _also = <String>{};
   DateTime? _startsOn;
-  final Set<String> _sentSubs = <String>{};
-  Map<String, CoachingFailure> _failed = <String, CoachingFailure>{};
-  int _sentCount = 0;
+  final AssignProgress _progress = AssignProgress();
+  ({String id, int revision})? _first;
+
+  /// Clients the server held a calorie goal back from: they get the plan
+  /// without one.
+  final Set<String> _goalFree = <String>{};
+
+  Future<void> _pickStart() async {
+    final picked = await pickStartDate(context, _startsOn ?? cairoToday());
+    if (picked != null && mounted) setState(() => _startsOn = picked);
+  }
+
+  /// A failure a second try can fix: a network one, or a held goal (resent
+  /// without it).
+  bool _canRetry(CoachingFailure f) =>
+      canRetryAssign(f) || f.refusal == CoachingRefusal.eatingHistoryHold;
+
+  bool _goalHeldFor(String subId) {
+    if (_goalFree.contains(subId)) return true;
+    if (subId == widget.subscription.id) return _flagged;
+    return widget.others.any((c) => c.subId == subId && c.eatingHistory);
+  }
+
+  /// The plan for [subId]: her goal for a client who may have one.
+  MealPlanBody _bodyFor(String subId) =>
+      _goalHeldFor(subId) ? mealPlanWithGoal(_body, null) : _bodyToSend;
 
   @override
   void initState() {
@@ -146,7 +169,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
           ),
           others: widget.others,
           initial: _also,
-          startsOn: _startsOn ?? DateTime.now(),
+          startsOn: _startsOn ?? cairoToday(),
         ),
       ],
     );
@@ -229,9 +252,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
       ],
     );
     if (picked == null || !mounted) return;
-    setState(
-      () => _body = mealPlanWithSwaps(_body, day, slot, index, picked),
-    );
+    setState(() => _body = mealPlanWithSwaps(_body, day, slot, index, picked));
   }
 
   List<PlanProblem> _problems() => mealProblems(_body, _name.text);
@@ -256,7 +277,6 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
     setState(() {
       _busy = true;
       _error = '';
-      _failed = <String, CoachingFailure>{};
     });
     try {
       final start = _startsOn == null ? null : dayKey(_startsOn!);
@@ -269,7 +289,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
           startsOn: start,
         );
         if (!mounted) return;
-        _sentSubs.add(widget.subscription.id);
+        _progress.sent.add(widget.subscription.id);
         setState(() {
           _busy = false;
           _published = true;
@@ -277,43 +297,36 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
         widget.onPublished?.call(sent.planId, sent.revision);
         return;
       }
-      final ids = <String>[
-        if (!_sentSubs.contains(widget.subscription.id)) widget.subscription.id,
-        for (final id in _also)
-          if (!_sentSubs.contains(id)) id,
-      ];
-      String? firstPlanId;
-      var firstRevision = 1;
       final outcome = await publishToMany(
-        subIds: ids,
+        subIds: _progress.toSend([widget.subscription.id, ..._also], _canRetry),
         send: (subId) async {
           final sent = await widget.repository.publishCoachPlan(
             subId: subId,
             name: _name.text.trim(),
-            meal: _bodyToSend,
+            meal: _bodyFor(subId),
             planId: subId == widget.subscription.id
                 ? widget.existing?.id
                 : null,
             startsOn: start,
           );
           if (subId == widget.subscription.id) {
-            firstPlanId = sent.planId;
-            firstRevision = sent.revision;
+            _first = (id: sent.planId, revision: sent.revision);
           }
         },
       );
       if (!mounted) return;
-      _sentSubs.addAll(outcome.sent);
+      _goalFree.addAll([
+        for (final e in outcome.failed.entries)
+          if (e.value.refusal == CoachingRefusal.eatingHistoryHold) e.key,
+      ]);
+      _progress.record(outcome, _canRetry);
       setState(() {
         _busy = false;
-        _failed = outcome.failed;
-        _sentCount = _sentSubs.length;
-        _published = outcome.allSent;
+        _published = _progress.allSent;
       });
-      if (outcome.allSent) {
-        if (firstPlanId != null) {
-          widget.onPublished?.call(firstPlanId!, firstRevision);
-        }
+      if (_progress.allSent) {
+        final first = _first;
+        if (first != null) widget.onPublished?.call(first.id, first.revision);
       } else {
         showHonestNotice(context, l10n.someClientsDidNotGetThePlan);
       }
@@ -406,7 +419,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
       listenable: AppChanges.instance,
       builder: (context, _) => AppScaffold(
         appBar: AppTopBar(title: l10n.shareAMealPlan, onBack: _back),
-        footer: _published
+        footer: _published || _progress.failed.isNotEmpty
             ? const []
             : [
                 AppButton(
@@ -425,24 +438,33 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
               l10n.planForName(first),
               style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
             ),
-          if (_failed.isNotEmpty)
+          if (_progress.failed.isNotEmpty)
             AppCard(
               variant: AppCardVariant.amber,
               key: const ValueKey('assign-partial'),
               children: [
-                Text(
-                  l10n.sentToNClients(countLabel(_sentCount)),
-                  style: AppText.titleS,
-                ),
-                for (final e in _failed.entries)
+                if (_progress.sent.isNotEmpty)
+                  Text(
+                    l10n.sentToNClients(countLabel(_progress.sent.length)),
+                    style: AppText.titleS,
+                  ),
+                for (final e in _progress.failed.entries)
                   Text(
                     '${_nameOf(e.key)}: ${coachFailureText(l10n, e.value)}',
                     style: AppText.bodyM,
                   ),
+                if (_progress.retryable(_canRetry).isNotEmpty)
+                  AppButton(
+                    l10n.tryAgainForN(
+                      countLabel(_progress.retryable(_canRetry).length),
+                    ),
+                    key: const ValueKey('assign-retry'),
+                    onPressed: _busy ? null : _publish,
+                  ),
                 AppButton(
-                  l10n.tryAgainForN(countLabel(_failed.length)),
-                  key: const ValueKey('assign-retry'),
-                  onPressed: _busy ? null : _publish,
+                  l10n.back,
+                  variant: AppButtonVariant.outlined,
+                  onPressed: _back,
                 ),
               ],
             ),
@@ -453,8 +475,8 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                 Semantics(
                   liveRegion: true,
                   child: Text(
-                    _sentSubs.length > 1
-                        ? l10n.sentToNClients(countLabel(_sentSubs.length))
+                    _progress.sent.length > 1
+                        ? l10n.sentToNClients(countLabel(_progress.sent.length))
                         : l10n.publishedNameCanSeeItNow(first),
                     key: const ValueKey('meal-published'),
                     style: AppText.titleS,
@@ -467,6 +489,10 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                 ),
               ],
             )
+          else if (_progress.failed.isNotEmpty)
+            // The plan is what some clients already have: no more edits, only
+            // a Retry of the same plan, or Back.
+            ...const <Widget>[]
           else ...[
             AppField(
               key: const ValueKey('meal-name'),
@@ -477,6 +503,13 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
               ],
               onChanged: (_) => setState(() => _error = ''),
             ),
+            if (widget.existing == null)
+              AppListItem(
+                key: const ValueKey('start-date'),
+                title: l10n.startDate,
+                subtitle: dateText(l10n, _startsOn ?? cairoToday()),
+                onTap: _busy ? null : _pickStart,
+              ),
             if (widget.existing == null && widget.others.isNotEmpty)
               AppButton(
                 l10n.sendToMoreClients,
@@ -609,7 +642,8 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                       color: AppColors.onSurfaceVariant,
                     ),
                   ),
-                  if (widget.subscription.intake?.inbodyScan case final scan?) ...[
+                  if (widget.subscription.intake?.inbodyScan
+                      case final scan?) ...[
                     Builder(
                       builder: (context) {
                         final targets = InBodyTargetEstimator.estimate(
@@ -619,8 +653,8 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                           ),
                           daysPerWeek:
                               (widget.subscription.intake?.daysPerWeek ?? 0) > 0
-                                  ? widget.subscription.intake!.daysPerWeek
-                                  : 4,
+                              ? widget.subscription.intake!.daysPerWeek
+                              : 4,
                         );
                         return GestureDetector(
                           key: const ValueKey('meal-apply-inbody-targets'),
@@ -688,7 +722,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                     label: l10n.proteinGrams,
                     current: total.proteinG,
                     target: _goal!.proteinGPerDay,
-                    unit: lang == 'ar' ? 'جم' : 'g',
+                    unit: l10n.g,
                   ),
                   const SizedBox(height: 8),
                   GamifiedTargetBar(
@@ -696,7 +730,7 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                     label: l10n.calories,
                     current: total.kcal,
                     target: _goal!.kcalPerDay,
-                    unit: lang == 'ar' ? 'سعر' : 'kcal',
+                    unit: l10n.kcal,
                   ),
                 ],
                 if (!_flagged && !total.isEmpty)

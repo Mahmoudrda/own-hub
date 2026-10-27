@@ -22,7 +22,17 @@ class SavedReplyStore {
   Future<SharedPreferences> get _p async =>
       _prefs ??= await SharedPreferences.getInstance();
 
-  static String _key(String coachUid) => 'savedReplies.v1.$coachUid';
+  static const String _prefix = 'savedReplies.v1.';
+  static String _key(String coachUid) => '$_prefix$coachUid';
+
+  /// Every coach's list on this phone, for the wipe after an account is
+  /// deleted: the lists are hers and nobody else's, so none may stay behind.
+  static Future<void> eraseAll() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final key in prefs.getKeys().toList()) {
+      if (key.startsWith(_prefix)) await prefs.remove(key);
+    }
+  }
 
   /// Her list; the first time ever, [seed] is copied in and stored.
   Future<List<SavedReply>> load(String coachUid, List<String> seed) async {

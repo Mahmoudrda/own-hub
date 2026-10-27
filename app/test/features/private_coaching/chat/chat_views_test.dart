@@ -236,9 +236,7 @@ void main() {
         lines: [line('h', 'me', 'call 01012345678', hidden: true)],
       );
       expect(
-        find.text(
-          'This message was hidden because it had contact or payment details',
-        ),
+        find.text('This message was hidden and was not delivered'),
         findsOneWidget,
       );
       expect(find.text('call 01012345678'), findsNothing);

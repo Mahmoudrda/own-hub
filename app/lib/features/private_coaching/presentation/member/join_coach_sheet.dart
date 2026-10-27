@@ -145,7 +145,10 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
   bool get _anyYes => _health.values.any((yes) => yes);
 
   bool get _flagged =>
-      _anyYes || _stage == 'pregnant' || _stage == 'postpartum' || _eating == true;
+      _anyYes ||
+      _stage == 'pregnant' ||
+      _stage == 'postpartum' ||
+      _eating == true;
 
   bool get _ready =>
       _intake().isValid &&

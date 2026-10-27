@@ -800,6 +800,7 @@
         "place",
         "allergies",
         "lifeStage",
+        "eatingHistory",
         "health",
         "doctorAck",
         "note"
@@ -936,7 +937,8 @@
         "name",
         "revision",
         "body",
-        "publishedAt"
+        "publishedAt",
+        "startsOn"
       ]
     },
     "report": {
@@ -1378,7 +1380,10 @@
         "kind",
         "name",
         "body",
-        "planId"
+        "planId",
+        "startsOn",
+        "requestKey",
+        "reviewsHealth"
       ],
       "responseKeys": [
         "planId",
@@ -1573,7 +1578,7 @@
       "responseKeys": [
         "ok"
       ],
-      "note": "Records healthReviewedAt and healthReviewedBy once. A flagged subscription (any health yes, lifeStage pregnant or postpartum, or eatingHistory true) cannot receive a plan until then: publish_coach_plan refuses health_not_reviewed."
+      "note": "Records healthReviewedAt and healthReviewedBy once. A flagged subscription (any health yes, lifeStage pregnant or postpartum, or eatingHistory true) cannot receive a plan until then: publish_coach_plan refuses health_not_reviewed when the request carries reviewsHealth: true (builds that can call this); older builds are not held."
     },
     "coach_needs_attention": {
       "who": "coach (active)",

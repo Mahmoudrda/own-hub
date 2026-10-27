@@ -43,7 +43,9 @@ class _OwnHubLinkViewState extends State<OwnHubLinkView> {
         onBack: () => Navigator.of(context).maybePop(),
       ),
       children: [
-        Text(ok ? l10n.savedOnceYouAreInWeWill : l10n.thisLinkDoesNotWorkAskYour),
+        Text(
+          ok ? l10n.savedOnceYouAreInWeWill : l10n.thisLinkDoesNotWorkAskYour,
+        ),
         AppButton(
           l10n.continueLabel,
           onPressed: () => Navigator.of(context).maybePop(),

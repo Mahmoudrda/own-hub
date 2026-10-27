@@ -247,9 +247,13 @@ def on_message(
                 blobs.write(data["mediaPath"], reencode(blobs.read(data["mediaPath"]), long_side=LIMITS["chatImageLongSidePx"]), "image/jpeg")
             except Exception:
                 reason = "media"
-        if reason is not None and blobs is not None and isinstance(data.get("mediaPath"), str) \
-                and data["mediaPath"].startswith(f"chat-media/{rel_id}/{sender}/"):
-            blobs.delete(data["mediaPath"])
+    # Whatever hid a media line, its file goes too (a rate-hidden flood included),
+    # unless it is only held for a release that does not exist yet.
+    path = data.get("mediaPath")
+    if reason not in (None, "held") and kind in MEDIA_TYPES and blobs is not None \
+            and isinstance(path, str) \
+            and path.startswith(f"chat-media/{rel_id}/{sender}/"):
+        blobs.delete(path)
     hidden = reason is not None or data.get("hidden") is True
     window = dt.timedelta(minutes=LIMITS["pushThrottleMinutes"])
 
@@ -272,9 +276,10 @@ def on_message(
                 changes[f"lastPushAt.{other}"] = now
         transaction.update(rel_ref, changes)
         if reason is not None:
-            transaction.update(
-                message_ref, {"hidden": True, "hiddenReason": reason, "text": "", "mediaPath": None}
-            )
+            hide = {"hidden": True, "hiddenReason": reason, "text": ""}
+            if reason != "held":
+                hide["mediaPath"] = None
+            transaction.update(message_ref, hide)
             transaction.set(
                 rel_ref.collection("messages").document(f"hidden_{message_id}"),
                 {

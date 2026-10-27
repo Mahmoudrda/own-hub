@@ -2,9 +2,11 @@
 
 She shares a short code (by WhatsApp, from the app). The woman she sends it to
 types it on C01, keeps it on her phone through sign-up, and redeems it once she
-has passed the women-only check. Redeeming opens an enquiry on the coach's desk,
-exactly as asking from the coach's page would: the coach still accepts it on
-K09, so an invite skips nothing but the search.
+has passed the women-only check. Redeeming only tells the app which coach the
+code is for; the app then opens that coach's page and she asks to join there,
+through the same sheet as anyone else (health questions, doctor tick, consent).
+Nothing is written, so an invite skips nothing but the search, and no row
+exists that a coach's desk could mistake for a request.
 
 `coachInvites/{code}` is server-only (firestore.rules) and holds the coach's uid
 and two dates, nothing about the woman invited. Deletion row 49 removes a
@@ -107,7 +109,8 @@ def accept(
     now: dt.datetime,
     timestamp,
 ) -> dict:
-    """Opens `relationships/{coachUid}__{uid}` as an enquiry from her."""
+    """The coach a code is for: `{ok, relId, coachUid}`. Writes nothing
+    (`timestamp` stays in the signature for the callable and is not used)."""
     if not live:
         raise errors.CoachingError(errors.PRECONDITION, errors.COACH_APP_CLOSED)
     if not verified:
@@ -139,20 +142,7 @@ def accept(
     ):
         raise errors.CoachingError(errors.NOT_FOUND, errors.INVITE_INVALID)
 
-    rel_id = f"{coach_uid}__{uid}"
-    ref = db.collection("relationships").document(rel_id)
-    if ref.get().exists:
-        return {"ok": True, "relId": rel_id, "coachUid": coach_uid}
-    ref.set(
-        {
-            "coachUid": coach_uid,
-            "clientUid": uid,
-            "status": "enquiry",
-            "source": "invite",
-            "createdAt": timestamp,
-        }
-    )
-    return {"ok": True, "relId": rel_id, "coachUid": coach_uid}
+    return {"ok": True, "relId": f"{coach_uid}__{uid}", "coachUid": coach_uid}
 
 
 def _ms(value: dt.datetime) -> int:

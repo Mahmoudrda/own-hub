@@ -30,6 +30,40 @@ void main() {
     CheckIns.answeredThisSession.clear();
   });
 
+  test(
+    'the coach\'s list row carries the latest answers the server returned',
+    () {
+      final row = attentionRowFromWire(<Object?, Object?>{
+        'subId': 's1',
+        'relId': 'c__u',
+        'clientName': 'Aya',
+        'reasons': <Object?>['healthFlag'],
+        'checkIn': <Object?, Object?>{
+          'weekKey': '2026-W44',
+          'answers': <Object?, Object?>{
+            'training': 'some',
+            'energy': 2,
+            'food': 3,
+            'pain': true,
+            'note': '  my knee hurts when I squat ',
+          },
+        },
+      });
+      expect(row.pain, isTrue);
+      expect(row.note, 'my knee hurts when I squat');
+      expect(row.reasons, <String>['healthFlag']);
+
+      final bare = attentionRowFromWire(<Object?, Object?>{
+        'subId': 's2',
+        'relId': 'c__v',
+        'reasons': <Object?>['unread'],
+      });
+      expect(bare.pain, isFalse);
+      expect(bare.note, isEmpty);
+      expect(bare.clientName, isEmpty);
+    },
+  );
+
   testWidgets('Send stays off until the four questions are answered', (
     tester,
   ) async {
@@ -39,10 +73,7 @@ void main() {
       app(CheckInView(relId: 'r', weekKey: '2026-W44', store: store)),
     );
 
-    expect(
-      tester.widget<AppButton>(find.byType(AppButton)).onPressed,
-      isNull,
-    );
+    expect(tester.widget<AppButton>(find.byType(AppButton)).onPressed, isNull);
 
     await tester.tap(find.text('All'));
     await tester.pump();
@@ -51,10 +82,7 @@ void main() {
     await tester.tap(find.text('3').last);
     await tester.pump();
 
-    expect(
-      tester.widget<AppButton>(find.byType(AppButton)).onPressed,
-      isNull,
-    );
+    expect(tester.widget<AppButton>(find.byType(AppButton)).onPressed, isNull);
 
     await tester.tap(find.text('No'));
     await tester.pump();
@@ -138,42 +166,43 @@ void main() {
     expect(find.text(doctorLine), findsNothing);
   });
 
-  testWidgets('a refused or repeated send is said in words and keeps the answers', (
-    tester,
-  ) async {
-    _phone(tester);
-    final store = InMemoryCheckInStore()..result = CheckInResult.failed;
-    await tester.pumpWidget(
-      app(CheckInView(relId: 'r', weekKey: '2026-W44', store: store)),
-    );
+  testWidgets(
+    'a refused or repeated send is said in words and keeps the answers',
+    (tester) async {
+      _phone(tester);
+      final store = InMemoryCheckInStore()..result = CheckInResult.failed;
+      await tester.pumpWidget(
+        app(CheckInView(relId: 'r', weekKey: '2026-W44', store: store)),
+      );
 
-    await tester.tap(find.text('All'));
-    await tester.pump();
-    await tester.tap(find.text('4').first);
-    await tester.pump();
-    await tester.tap(find.text('3').last);
-    await tester.pump();
-    await tester.tap(find.text('No'));
-    await tester.pump();
+      await tester.tap(find.text('All'));
+      await tester.pump();
+      await tester.tap(find.text('4').first);
+      await tester.pump();
+      await tester.tap(find.text('3').last);
+      await tester.pump();
+      await tester.tap(find.text('No'));
+      await tester.pump();
 
-    await tester.tap(find.text('Send to my coach'));
-    await tester.pump();
+      await tester.tap(find.text('Send to my coach'));
+      await tester.pump();
 
-    expect(
-      find.text('We could not send it. Try again in a moment.'),
-      findsOneWidget,
-    );
-    expect(
-      tester.widget<AppButton>(find.byType(AppButton)).onPressed,
-      isNotNull,
-    );
+      expect(
+        find.text('We could not send it. Try again in a moment.'),
+        findsOneWidget,
+      );
+      expect(
+        tester.widget<AppButton>(find.byType(AppButton)).onPressed,
+        isNotNull,
+      );
 
-    store.result = CheckInResult.alreadySent;
-    await tester.tap(find.text('Send to my coach'));
-    await tester.pump();
+      store.result = CheckInResult.alreadySent;
+      await tester.tap(find.text('Send to my coach'));
+      await tester.pump();
 
-    expect(find.text('You already sent this one.'), findsOneWidget);
-  });
+      expect(find.text('You already sent this one.'), findsOneWidget);
+    },
+  );
 
   testWidgets('Arabic and 2.0 text scale fit', (tester) async {
     _phone(tester);
@@ -194,58 +223,61 @@ void main() {
     expect(find.text('ابعتي لمدرّبتك'), findsOneWidget);
   });
 
-  testWidgets('the thread draws the card for the client and a pill for the coach', (
-    tester,
-  ) async {
-    _phone(tester);
-    final checkInMsg = ChatMessage(
-      id: 'm1',
-      senderUid: 'system',
-      type: MessageType.system,
-      systemKind: SystemMessageKind.checkIn,
-      weekKey: '2026-W44',
-      createdAt: kClock,
-    );
+  testWidgets(
+    'the thread draws the card for the client and a pill for the coach',
+    (tester) async {
+      _phone(tester);
+      final checkInMsg = ChatMessage(
+        id: 'm1',
+        senderUid: 'system',
+        type: MessageType.system,
+        systemKind: SystemMessageKind.checkIn,
+        weekKey: '2026-W44',
+        createdAt: kClock,
+      );
 
-    final clientRepo = FakeChatRepository()..current = <ChatMessage>[checkInMsg];
-    await tester.pumpWidget(
-      app(
-        ChatThreadView(
-          repository: clientRepo,
-          relId: 'c1__me',
-          myUid: 'me',
-          person: _coach,
-          otherIsCoach: true,
-          subId: 'sub1',
-          now: () => kClock,
+      final clientRepo = FakeChatRepository()
+        ..current = <ChatMessage>[checkInMsg];
+      await tester.pumpWidget(
+        app(
+          ChatThreadView(
+            repository: clientRepo,
+            relId: 'c1__me',
+            myUid: 'me',
+            person: _coach,
+            otherIsCoach: true,
+            subId: 'sub1',
+            now: () => kClock,
+          ),
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
+      );
+      await tester.pump();
+      await tester.pump();
 
-    expect(find.text('Answer'), findsOneWidget);
+      expect(find.text('Answer'), findsOneWidget);
 
-    final coachRepo = FakeChatRepository()..current = <ChatMessage>[checkInMsg];
-    await tester.pumpWidget(
-      app(
-        ChatThreadView(
-          repository: coachRepo,
-          relId: 'c1__me',
-          myUid: 'c1',
-          person: _coach,
-          otherIsCoach: false,
-          subId: 'sub1',
-          now: () => kClock,
+      final coachRepo = FakeChatRepository()
+        ..current = <ChatMessage>[checkInMsg];
+      await tester.pumpWidget(
+        app(
+          ChatThreadView(
+            repository: coachRepo,
+            relId: 'c1__me',
+            myUid: 'c1',
+            person: _coach,
+            otherIsCoach: false,
+            subId: 'sub1',
+            now: () => kClock,
+          ),
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
+      );
+      await tester.pump();
+      await tester.pump();
 
-    expect(find.text('Weekly check-in sent'), findsOneWidget);
-    expect(find.text('Answer'), findsNothing);
-  });
+      expect(find.text('Weekly check-in sent'), findsOneWidget);
+      expect(find.text('Answer'), findsNothing);
+    },
+  );
 
   testWidgets('form budget', (tester) async {
     _phone(tester);

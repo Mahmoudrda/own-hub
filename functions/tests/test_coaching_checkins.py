@@ -232,14 +232,14 @@ def test_needs_attention_lists_reasons(db, pushes):
     }
 
 
-def test_switch_off_refuses_and_schedulers_do_nothing(db):
-    assert coaching.CHECK_INS_LIVE is False
+def test_the_switch_is_on_and_off_refuses_both_callables(db):
+    assert coaching.CHECK_INS_LIVE is True
     assert refusal(
         lambda: checkins.submit(
             db,
             "c1",
             {
-                "relId": "r1",
+                "relId": "coach-uid-1__c1",
                 "weekKey": "2026-W44",
                 "answers": {"training": "all", "energy": 5, "food": 5, "pain": False, "note": ""},
             },
@@ -247,3 +247,115 @@ def test_switch_off_refuses_and_schedulers_do_nothing(db):
             now=FRIDAY,
         )
     ) == (errors.PRECONDITION, errors.COACH_APP_CLOSED)
+    assert refusal(
+        lambda: checkins.needs_attention(db, COACH, live=False, coach_v="active", now=FRIDAY)
+    ) == (errors.PRECONDITION, errors.COACH_APP_CLOSED)
+
+
+GOOD = {"training": "most", "energy": 4, "food": 3, "pain": True, "note": "knee a bit sore"}
+
+
+def _submit(db, uid, rel_id, week, answers=GOOD):
+    return checkins.submit(
+        db, uid, {"relId": rel_id, "weekKey": week, "answers": answers}, live=True, now=FRIDAY + dt.timedelta(hours=1)
+    )
+
+
+def test_a_malformed_rel_id_or_week_key_is_a_bad_request_not_a_path_error(db, pushes):
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    for rel, week in (
+        ("a/b", "2026-W44"),
+        ("../x", "2026-W44"),
+        ("nodoubleunderscore", "2026-W44"),
+        (rel_id + "/messages/x", "2026-W44"),
+        (rel_id + "\n", "2026-W44"),
+        (7, "2026-W44"),
+        (rel_id, "2026-W44/x"),
+        (rel_id, "W44"),
+        (rel_id, "2026-W4"),
+        (rel_id, None),
+    ):
+        assert refusal(lambda r=rel, w=week: _submit(db, "c1", r, w)) == (errors.INVALID, errors.BAD_REQUEST), (rel, week)
+    assert _submit(db, "c1", rel_id, "2026-W44") == {"ok": True}
+
+
+def test_answers_are_refused_once_the_coaching_has_ended(db, pushes):
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    db.document(f"relationships/{rel_id}").update({"status": "ended"})
+    assert refusal(lambda: _submit(db, "c1", rel_id, "2026-W44")) == (errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+    assert db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()["state"] == "open"
+
+
+def test_one_failing_client_does_not_stop_the_friday_batch(db, pushes, monkeypatch):
+    r_ok1 = _sub(db, "s1", "c1", per_week=1)
+    r_bad = _sub(db, "s2", "c2", per_week=1)
+    r_ok2 = _sub(db, "s3", "c3", per_week=1)
+    real = checkins._open_card
+
+    def flaky(database, row, key, now):
+        if row["clientUid"] == "c2":
+            raise RuntimeError("transaction aborted")
+        return real(database, row, key, now)
+
+    monkeypatch.setattr(checkins, "_open_card", flaky)
+    assert checkins.send_cards(db, FRIDAY, pushes) == 2
+    assert sorted(pushes) == [("c1", "checkInDue"), ("c3", "checkInDue")]
+    assert db.document(f"relationships/{r_ok1}/checkIns/2026-W44").get().exists
+    assert db.document(f"relationships/{r_ok2}/checkIns/2026-W44").get().exists
+    assert not db.document(f"relationships/{r_bad}/checkIns/2026-W44").get().exists
+
+
+def test_a_failing_push_does_not_stop_the_batch(db):
+    _sub(db, "s1", "c1", per_week=1)
+    _sub(db, "s2", "c2", per_week=1)
+    sent = []
+
+    def notify(uid, kind):
+        if uid == "c1":
+            raise RuntimeError("push service down")
+        sent.append((uid, kind))
+
+    assert checkins.send_cards(db, FRIDAY, notify) == 2
+    assert sent == [("c2", "checkInDue")]
+
+
+def test_one_failing_client_does_not_stop_the_monday_follow_up(db, pushes, monkeypatch):
+    _sub(db, "s1", "c1", per_week=1)
+    _sub(db, "s2", "c2", per_week=1)
+    _sub(db, "s3", "c3", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    pushes.clear()
+
+    def notify(uid, kind):
+        if uid == "c1":
+            raise RuntimeError("push service down")
+        pushes.append((uid, kind))
+
+    assert checkins.follow_up(db, MONDAY, notify) == 3
+    assert sorted(pushes) == [("c2", "checkInFollowUp"), ("c3", "checkInFollowUp")]
+
+
+def test_the_coach_gets_the_latest_answers_and_a_note_alone_is_listed(db, pushes):
+    seed(db)
+    r_pain = _sub(db, "s_pain", "c_pain", client_name="Aya")
+    r_note = _sub(db, "s_note", "c_note", client_name="Basma")
+    _sub(db, "s_quiet", "c_quiet", client_name="Dina")
+    checkins.send_cards(db, FRIDAY, pushes)
+    _submit(db, "c_pain", r_pain, "2026-W44", {**GOOD, "note": "my knee hurts when I squat"})
+    _submit(
+        db, "c_note", r_note, "2026-W44",
+        {"training": "all", "energy": 5, "food": 5, "pain": False, "note": "loved the new plan"},
+    )
+
+    clients = checkins.needs_attention(db, COACH, live=True, coach_v="active", now=FRIDAY + dt.timedelta(days=1))["clients"]
+
+    assert [c["subId"] for c in clients] == ["s_pain", "s_note"]
+    pain, note = clients
+    assert "healthFlag" in pain["reasons"]
+    assert pain["checkIn"]["weekKey"] == "2026-W44"
+    assert pain["checkIn"]["answers"]["note"] == "my knee hurts when I squat"
+    assert pain["checkIn"]["answers"]["pain"] is True
+    assert note["reasons"] == []
+    assert note["checkIn"]["answers"]["note"] == "loved the new plan"

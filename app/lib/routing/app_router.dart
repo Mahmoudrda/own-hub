@@ -7312,31 +7312,56 @@ class AppRouter {
     showHonestNoticeOn(messenger, saved);
   }
 
-  /// Once she has passed the check, the code she kept is redeemed once (see
-  /// [CoachInviteState.redeem]) and she is told how it went.
+  /// Once she has passed the check, the code she kept names her coach (see
+  /// [CoachInviteState.redeem]) and that coach's page opens, where she asks to
+  /// join through the same sheet as anyone else. Nothing is sent by the link.
+  /// A code that does not work is said once; the code is kept until the page
+  /// has opened, so a navigator that is not up yet loses nothing.
   static Future<void> redeemPendingInvite() async {
-    final outcome = await CoachInviteState.instance.redeem(
+    final invite = CoachInviteState.instance;
+    final result = await invite.redeem(
       coachInviteStore,
       allowed:
           featureFlags.isOn(Feature.coachApp) &&
           isVerified &&
           signedInUid != null,
     );
-    if (outcome == null || outcome == InviteRedemption.unreachable) return;
+    if (openInvitedCoach()) return;
     final context = navigatorKey?.currentState?.overlay?.context;
-    if (context == null || !context.mounted) return;
-    final l10n = AppL10n.of(context);
-    showHonestNotice(
-      context,
-      outcome == InviteRedemption.linked
-          ? l10n.yourCoachHasYourRequest
-          : l10n.yourCoachsCodeDidNotWorkAsk,
-    );
+    if (result?.outcome == InviteRedemption.refused &&
+        context != null &&
+        context.mounted) {
+      showHonestNotice(
+        context,
+        AppL10n.of(context).yourCoachsCodeDidNotWorkAsk,
+      );
+    }
   }
 
-  /// A link the platform opened. An invite is kept and sent when she may send
-  /// it ([redeemPendingInvite] checks); a profile opens that coach's page, and
-  /// the verification gate in [onGenerateRoute] decides if she may see it.
+  /// Opens the page of the coach a redeemed code named, once the navigator is
+  /// up, and only then lets go of the code. False when there is nothing to
+  /// open yet.
+  @visibleForTesting
+  static bool openInvitedCoach() {
+    final invite = CoachInviteState.instance;
+    final coach = invite.pendingCoach;
+    final navigator = navigatorKey?.currentState;
+    if (coach == null || navigator == null) return false;
+    invite.clearPending();
+    unawaited(
+      navigator.pushNamed(
+        appRoutes['H02']!.name,
+        arguments: CoachPortfolioArgs(coach),
+      ),
+    );
+    return true;
+  }
+
+  /// A link the platform opened. An invite is kept and redeemed when she may
+  /// ([redeemPendingInvite] checks), which opens her coach's page; a profile
+  /// opens that coach's page at once, and the verification gate in
+  /// [onGenerateRoute] decides if she may see it. Neither sends a request:
+  /// she asks to join from the page.
   static void followLink(OwnHubLink link) {
     switch (link.kind) {
       case OwnHubLinkKind.invite:
@@ -7380,9 +7405,8 @@ class AppRouter {
     BuildContext context,
     String coachUid,
   ) async {
-    final text = AppL10n.of(
-      context,
-    ).trainWithMeOnOwnHubLink(profileLinkFor(coachUid));
+    final text = AppL10n.of(context)
+        .trainWithMeOnOwnHubLink(profileLinkFor(coachUid));
     await SharePlus.instance.share(ShareParams(text: text));
   }
 
@@ -8785,6 +8809,15 @@ class AppRouter {
       session,
       now: AppClock.now(),
     );
+    if (isCoachPlanProgramme(her.content)) {
+      // Her coach's target weights, not her own plan's.
+      return withTargetWeights(
+        l10n,
+        language,
+        day,
+        targetsForShown(activeCoachWorkoutPlan()?.workout, session),
+      );
+    }
     if (!isMyPlanProgramme(her.content)) return day;
     return withoutBlockedMoves(
       l10n,
@@ -8894,40 +8927,52 @@ class AppRouter {
         showAppSheet<void>(
           context: context,
           children: [
-            Builder(builder: (sheet) {
-              final l10n = AppL10n.of(sheet);
-              final lang = Localizations.localeOf(sheet).languageCode;
-              final catalog = coachMealCatalog(l10n);
-              String title(String id) {
-                final r = catalog.recipe(id);
-                if (r == null) return id;
-                final ar = r.titleAr;
-                return lang == 'ar' && ar != null && ar.isNotEmpty ? ar : r.titleEn;
-              }
-              void pick(String? id) {
-                CoachMealSwaps.instance.choose(shown.id, day, slot, index, id);
-                Navigator.of(sheet).pop();
-              }
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(l10n.changeTo, style: AppText.titleL),
-                  AppListItem(
-                    key: const ValueKey('swap-keep'),
-                    title: title(item.recipeId!),
-                    subtitle: l10n.thePlannedDish,
-                    onTap: () => pick(null),
-                  ),
-                  for (final id in item.swaps)
+            Builder(
+              builder: (sheet) {
+                final l10n = AppL10n.of(sheet);
+                final lang = Localizations.localeOf(sheet).languageCode;
+                final catalog = coachMealCatalog(l10n);
+                String title(String id) {
+                  final r = catalog.recipe(id);
+                  if (r == null) return id;
+                  final ar = r.titleAr;
+                  return lang == 'ar' && ar != null && ar.isNotEmpty
+                      ? ar
+                      : r.titleEn;
+                }
+
+                void pick(String? id) {
+                  CoachMealSwaps.instance.choose(
+                    shown.id,
+                    day,
+                    slot,
+                    index,
+                    id,
+                  );
+                  Navigator.of(sheet).pop();
+                }
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(l10n.changeTo, style: AppText.titleL),
                     AppListItem(
-                      key: ValueKey('swap-choice-$id'),
-                      title: title(id),
-                      onTap: () => pick(id),
+                      key: const ValueKey('swap-keep'),
+                      title: title(item.recipeId!),
+                      subtitle: l10n.thePlannedDish,
+                      onTap: () => pick(null),
                     ),
-                ],
-              );
-            }),
+                    for (final id in item.swaps)
+                      AppListItem(
+                        key: ValueKey('swap-choice-$id'),
+                        title: title(id),
+                        onTap: () => pick(id),
+                      ),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),

@@ -129,7 +129,9 @@ class _VoiceBubbleState extends State<VoiceBubble> {
     return Semantics(
       container: true,
       excludeSemantics: true,
+      button: true,
       label: spoken,
+      onTap: _toggle,
       onLongPress: widget.onLongPress,
       child: GestureDetector(
         onLongPress: widget.onLongPress,

@@ -858,10 +858,7 @@ void main() {
             },
           },
         ],
-        'goal': <String, Object?>{
-          'kcalPerDay': 1600,
-          'proteinGPerDay': 110,
-        },
+        'goal': <String, Object?>{'kcalPerDay': 1600, 'proteinGPerDay': 110},
       };
       final body = MealPlanBody.tryParse(input)!;
       expect(body.goal, isNotNull);
@@ -872,10 +869,7 @@ void main() {
 
       final badGoal = MealPlanBody.tryParse(<String, Object?>{
         'days': input['days'],
-        'goal': <String, Object?>{
-          'kcalPerDay': 100,
-          'proteinGPerDay': 110,
-        },
+        'goal': <String, Object?>{'kcalPerDay': 100, 'proteinGPerDay': 110},
       })!;
       expect(badGoal.goal, isNull);
     });
@@ -919,10 +913,11 @@ void main() {
         ['r2', 'r3', 'r1', 'r4'],
       );
       expect(withSwaps.goal, goal);
-      expect(
-        withSwaps.days.first.itemsIn('breakfast').first.swaps,
-        ['r2', 'r3', 'r4'],
-      );
+      expect(withSwaps.days.first.itemsIn('breakfast').first.swaps, [
+        'r2',
+        'r3',
+        'r4',
+      ]);
     });
 
     test('a coach plan reads by kind and skips a body of the wrong shape', () {

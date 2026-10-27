@@ -19,7 +19,7 @@ import '../features/eat/domain/meal_repository.dart' show MealSlot;
 import '../features/eat/domain/meal_sentence_parser.dart' show ParsedItem;
 import '../features/eat/data/egyptian_food_pack.dart';
 import '../features/eat/data/seeded_recipe_library.dart';
-import '../features/eat/domain/food_library.dart' show FoodLibrary;
+import '../features/eat/domain/food_library.dart' show Food, FoodLibrary;
 import '../features/eat/presentation/eat_sample_library.dart';
 import '../features/onboarding/domain/intake.dart' show LifeStage;
 import '../features/private_coaching/presentation/client/coach_plan_view.dart';
@@ -274,8 +274,7 @@ MealCatalog coachMealCatalog(AppL10n l10n) {
   return MealCatalog(
     recipes: [
       for (final r in eat.recipeBook.recipes)
-        if ((seeded == null || seeded.contains(r.recipeId)) &&
-            r.allergensKnown)
+        if ((seeded == null || seeded.contains(r.recipeId)) && r.allergensKnown)
           r,
     ],
     foods: FoodLibrary(EgyptianFoodPack.allFoods(l10n)),
@@ -358,7 +357,11 @@ class ShareMealScreen extends StatelessWidget {
         others: [
           for (final s in PrivateCoachingState.instance.coachSubscriptions)
             if (s.status == SubscriptionStatus.active && s.id != sub.id)
-              AssignClient(subId: s.id, name: clientName(l10n, s)),
+              AssignClient(
+                subId: s.id,
+                name: clientName(l10n, s),
+                eatingHistory: s.intake?.eatingHistoryFlag ?? false,
+              ),
         ],
         templates: <CoachDraft>[
           for (final d in drafts.data ?? const <CoachDraft>[])
@@ -483,9 +486,10 @@ bool startCoachWorkout(CoachPlan plan, int dayIndex, LifeStage? stage) {
   return true;
 }
 
-/// Logs one item of a coach's meal plan. A food goes through the allergy guard
-/// and the shared undo window; a recipe has no log of its own, so it opens
-/// ([openRecipe]) where she can read it first.
+/// Logs one item of a coach's meal plan. A food or a recipe goes through the
+/// allergy guard and the shared undo window; a recipe is logged as one portion
+/// of the servings the plan names. A recipe the book states no figures for
+/// cannot be logged honestly, so it opens ([openRecipe]) to be read instead.
 void logCoachMeal(
   BuildContext context, {
   required CoachPlan plan,
@@ -493,20 +497,36 @@ void logCoachMeal(
   required String slot,
   required void Function(String recipeId) openRecipe,
 }) {
-  if (item.kind == MealItemKind.recipe) {
-    openRecipe(item.recipeId ?? '');
-    return;
-  }
-  if (item.kind != MealItemKind.food) return;
+  if (item.kind == MealItemKind.free) return;
   final l10n = AppL10n.of(context);
-  final library = eatSampleLibrary(l10n);
-  final food = library.byId(item.foodId ?? '');
-  if (food == null) return;
-  final grams = item.grams;
-  final size =
-      (grams == null ? null : food.sizeForGrams(grams)) ?? food.defaultSize;
   final mealSlot = MealSlot.values.asNameMap()[slot];
   if (mealSlot == null) return;
+  Food? food;
+  Food? recipeFood;
+  if (item.kind == MealItemKind.recipe) {
+    final language = Localizations.localeOf(context).languageCode;
+    final catalog = coachMealCatalog(l10n);
+    final recipe = catalog.recipe(item.recipeId ?? '');
+    recipeFood = recipe == null
+        ? null
+        : recipeAsFood(
+            recipe,
+            item.servings ?? 1,
+            catalog.title(item, language),
+          );
+    if (recipeFood == null) {
+      openRecipe(item.recipeId ?? '');
+      return;
+    }
+    food = recipeFood;
+  } else {
+    food = eatSampleLibrary(l10n).byId(item.foodId ?? '');
+  }
+  if (food == null) return;
+  final grams = item.grams;
+  final size = recipeFood != null
+      ? recipeFood.sizes.single
+      : (grams == null ? null : food.sizeForGrams(grams)) ?? food.defaultSize;
   final today = todaysMealDay(plan, AppClock.now());
   final items = today == null
       ? const <MealItem>[]
@@ -515,7 +535,8 @@ void logCoachMeal(
   final handle = eat.logPlanned(
     context,
     slot: mealSlot,
-    index: items.indexOf(item).clamp(0, 99),
+    index: plannedIndexOf(items, item),
+    recipeFood: recipeFood,
     entry: ParsedItem(
       food: food,
       size: size,

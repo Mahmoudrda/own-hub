@@ -264,9 +264,6 @@ void main() {
     expect(m?.durationMs, 4000);
     expect(m?.bytes, 900);
     expect(m?.mediaPath, 'chat-media/a__b/u/x.m4a');
-    expect(
-      ChatMessage.fromMap('m', {'senderUid': 'u', 'type': 'gif'}),
-      isNull,
-    );
+    expect(ChatMessage.fromMap('m', {'senderUid': 'u', 'type': 'gif'}), isNull);
   });
 }

@@ -328,7 +328,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('قائمة المشتريات'), findsOneWidget);
+      expect(find.text('قايمة المشتريات'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

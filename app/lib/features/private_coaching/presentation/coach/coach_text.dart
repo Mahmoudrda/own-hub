@@ -24,36 +24,35 @@ String westernDigits(String text) {
 }
 
 /// A calm sentence for a refusal. Never the raw code.
-String coachFailureText(AppL10n l10n, CoachingFailure failure) =>
-    switch (failure.refusal) {
-      CoachingRefusal.unreachable => l10n.weCouldNotReachOwnHubCheck,
-      CoachingRefusal.signedOut => l10n.pleaseSignInAgain_3jocz,
-      CoachingRefusal.coachAppClosed => l10n.coachingIsNotOpenRightNowPlease,
-      CoachingRefusal.notVerified => l10n.yourAccountNeedsToBeVerifiedFirst,
-      CoachingRefusal.notACoach => l10n.thisAccountIsNotAnApprovedCoach,
-      CoachingRefusal.coachSuspended => l10n.yourCoachSpaceIsPaused,
-      CoachingRefusal.badRequest => l10n.somethingInThisFormNeedsAnotherLook,
-      CoachingRefusal.priceOutOfRange => l10n.pickAPriceBetweenEgpLowAnd(
-        countLabel(CoachingLimits.coachPriceMinEgp),
-        countLabel(CoachingLimits.coachPriceMaxEgp),
-      ),
-      CoachingRefusal.tooManyPackages =>
-        l10n.youAlreadyHaveCountPackagesEditOne(
-          countLabel(CoachingLimits.maxPackages),
-        ),
-      CoachingRefusal.packageNotFound => l10n.weCouldNotFindThatPackageGo,
-      CoachingRefusal.fileNotUploaded ||
-      CoachingRefusal.imageInvalid => l10n.thatPictureCouldNotBeUsedTry,
-      CoachingRefusal.mediaNotFound => l10n.thatItemIsNoLongerTherePull,
-      CoachingRefusal.tooManyMedia => l10n.youHaveCountItemsRemoveOneTo(
-        countLabel(CoachingLimits.mediaMaxItems),
-      ),
-      CoachingRefusal.healthNotReviewed =>
-        l10n.readHerHealthAnswersFirstOpenHer,
-      CoachingRefusal.eatingHistoryHold =>
-        l10n.thisClientsAnswersOnEatingMeanYou,
-      _ => l10n.somethingWentWrongPleaseTryAgain,
-    };
+String coachFailureText(
+  AppL10n l10n,
+  CoachingFailure failure,
+) => switch (failure.refusal) {
+  CoachingRefusal.unreachable => l10n.weCouldNotReachOwnHubCheck,
+  CoachingRefusal.signedOut => l10n.pleaseSignInAgain_3jocz,
+  CoachingRefusal.coachAppClosed => l10n.coachingIsNotOpenRightNowPlease,
+  CoachingRefusal.notVerified => l10n.yourAccountNeedsToBeVerifiedFirst,
+  CoachingRefusal.notACoach => l10n.thisAccountIsNotAnApprovedCoach,
+  CoachingRefusal.coachSuspended => l10n.yourCoachSpaceIsPaused,
+  CoachingRefusal.badRequest => l10n.somethingInThisFormNeedsAnotherLook,
+  CoachingRefusal.priceOutOfRange => l10n.pickAPriceBetweenEgpLowAnd(
+    countLabel(CoachingLimits.coachPriceMinEgp),
+    countLabel(CoachingLimits.coachPriceMaxEgp),
+  ),
+  CoachingRefusal.tooManyPackages => l10n.youAlreadyHaveCountPackagesEditOne(
+    countLabel(CoachingLimits.maxPackages),
+  ),
+  CoachingRefusal.packageNotFound => l10n.weCouldNotFindThatPackageGo,
+  CoachingRefusal.fileNotUploaded ||
+  CoachingRefusal.imageInvalid => l10n.thatPictureCouldNotBeUsedTry,
+  CoachingRefusal.mediaNotFound => l10n.thatItemIsNoLongerTherePull,
+  CoachingRefusal.tooManyMedia => l10n.youHaveCountItemsRemoveOneTo(
+    countLabel(CoachingLimits.mediaMaxItems),
+  ),
+  CoachingRefusal.healthNotReviewed => l10n.readHerHealthAnswersFirstOpenHer,
+  CoachingRefusal.eatingHistoryHold => l10n.thisClientsAnswersOnEatingMeanYou,
+  _ => l10n.somethingWentWrongPleaseTryAgain,
+};
 
 /// The English-keyed specialty codes the application holds.
 String specialtyLabel(AppL10n l10n, String code) => switch (code) {

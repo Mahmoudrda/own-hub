@@ -166,6 +166,7 @@ class MealLogService {
       carbsG: entry.carbsG,
       fatG: entry.fatG,
       fiberG: entry.fiberG,
+      name: entry.food.custom ? entry.food.names.first : null,
       planRef: planRef,
       allergenOverride: acknowledged.toList(),
     );

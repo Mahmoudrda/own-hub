@@ -319,27 +319,24 @@ def test_only_a_live_verified_coach_may_invite(kwargs, reason):
     assert db.docs == {}
 
 
-def test_redeeming_opens_an_enquiry_with_her_coach():
+def test_redeeming_names_the_coach_and_writes_nothing():
     db = fake_firestore.FakeFirestore()
     _coach_page(db)
     code = _create(db, make_code=_codes(["ABCD2345"]))["code"]
+    before = {path: dict(row) for path, row in db.docs.items()}
     answer = _accept(db, code.lower())
     assert answer == {"ok": True, "relId": "coach1__client1", "coachUid": "coach1"}
-    rel = db.docs["relationships/coach1__client1"]
-    assert rel["status"] == "enquiry" and rel["source"] == "invite"
-    assert rel["coachUid"] == "coach1" and rel["clientUid"] == "client1"
-    # Nothing about her is written onto the code.
-    assert set(db.docs["coachInvites/ABCD2345"]) == set(invites.FIELDS)
+    # No relationship, no request: she asks to join on the coach's page, where
+    # the health questions, the doctor tick and the consent are put to her.
+    assert db.docs == before
+    assert not any(path.startswith("relationships/") for path in db.docs)
 
 
-def test_redeeming_twice_changes_nothing():
+def test_redeeming_twice_gives_the_same_answer():
     db = fake_firestore.FakeFirestore()
     _coach_page(db)
     code = _create(db, make_code=_codes(["ABCD2345"]))["code"]
-    _accept(db, code)
-    db.docs["relationships/coach1__client1"]["status"] = "active"
-    _accept(db, code)
-    assert db.docs["relationships/coach1__client1"]["status"] == "active"
+    assert _accept(db, code) == _accept(db, code)
 
 
 def test_a_block_either_way_reads_as_no_such_code():

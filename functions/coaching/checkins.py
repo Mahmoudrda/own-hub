@@ -1,7 +1,7 @@
 """C3: the weekly check-in.
 
 `relationships/{relId}/checkIns/{weekKey}` is written only here (firestore.rules
-closes it to clients). Each week an ACTIVE coaching gets an `open` card, a system
+lets the two parties read it, never write). Each week an ACTIVE coaching gets an `open` card, a system
 message in the thread and one push; the client answers once; the coach's
 "Needs attention" list reads the answers. The server never sees workout logs,
 so "missed sessions" is the client's own answer.
@@ -10,6 +10,8 @@ so "missed sessions" is the client's own answer.
 from __future__ import annotations
 
 import datetime as dt
+import logging
+import re
 from typing import Callable
 
 from . import common, errors, subscriptions
@@ -20,6 +22,10 @@ NOTE_MAX = 300
 LATE_AFTER_DAYS = 3
 MAX_LIST = 50
 _ANSWER_KEYS = {"training", "energy", "food", "pain", "note"}
+# A relId is `{coachUid}__{clientUid}` and a weekKey is `2026-W44`. Both become
+# Firestore path segments, so a `/` in either must be refused, not looked up.
+_REL_ID = re.compile(r"[A-Za-z0-9_-]{1,128}__[A-Za-z0-9_-]{1,128}")
+_WEEK_KEY = re.compile(r"\d{4}-W\d{2}")
 
 
 def week_key(now: dt.datetime) -> str:
@@ -29,6 +35,12 @@ def week_key(now: dt.datetime) -> str:
 
 def _ref(db, rel_id: str, key: str):
     return db.collection("relationships").document(rel_id).collection(COLLECTION).document(key)
+
+
+def _shaped(value, pattern: re.Pattern) -> str:
+    if not isinstance(value, str) or not pattern.fullmatch(value):
+        raise common.bad()
+    return value
 
 
 def _answers(raw) -> dict:
@@ -86,9 +98,12 @@ def send_cards(db, now: dt.datetime, notify: Callable[[str, str], None]) -> int:
         per_week = (row.get("package") or {}).get("checkInsPerWeek")
         if not isinstance(per_week, int) or isinstance(per_week, bool) or per_week < 1:
             continue
-        if _open_card(db, row, key, now):
-            notify(row["clientUid"], "checkInDue")
-            opened += 1
+        try:
+            if _open_card(db, row, key, now):
+                opened += 1
+                notify(row["clientUid"], "checkInDue")
+        except Exception:  # noqa: BLE001 - one client's failure must not stop the others
+            logging.getLogger(__name__).error("check_in_card_failed")
     return opened
 
 
@@ -106,23 +121,29 @@ def follow_up(db, now: dt.datetime, notify: Callable[[str, str], None]) -> int:
             transaction.update(ref, {"followUpAt": now})
             return True
 
-        if common.run(db, body):
-            notify(row["clientUid"], "checkInFollowUp")
-            sent += 1
+        try:
+            if common.run(db, body):
+                sent += 1
+                notify(row["clientUid"], "checkInFollowUp")
+        except Exception:  # noqa: BLE001 - one client's failure must not stop the others
+            logging.getLogger(__name__).error("check_in_follow_up_failed")
     return sent
 
 
 def submit(db, uid: str, data: dict, *, live: bool, now: dt.datetime) -> dict:
     """The client answers her open card once."""
     common.require_clients_live(live)
-    rel_id = common.text(data.get("relId"), max_len=128)
-    key = common.text(data.get("weekKey"), max_len=16)
+    rel_id = _shaped(data.get("relId"), _REL_ID)
+    key = _shaped(data.get("weekKey"), _WEEK_KEY)
     answers = _answers(data.get("answers"))
     ref = _ref(db, rel_id, key)
+    rel_ref = db.collection("relationships").document(rel_id)
 
     def body(transaction):
         card = common.read(ref, transaction)
-        if card is None or card.get("clientUid") != uid:
+        rel = common.read(rel_ref, transaction)
+        # Answers are health data for her coach: only while the coaching runs.
+        if card is None or card.get("clientUid") != uid or (rel or {}).get("status") != "active":
             raise common.refuse(errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
         if card.get("state") != "open":
             raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
@@ -165,10 +186,13 @@ def needs_attention(db, coach_uid: str, *, live: bool, coach_v, now: dt.datetime
         unread = ((rel.get().to_dict() or {}).get("unreadFor") or {}).get(coach_uid, 0)
         if isinstance(unread, int) and unread > 0:
             reasons.append("unread")
-        if reasons:
-            out.append(
-                {"subId": snap.id, "relId": row["relId"], "clientName": row.get("clientName", ""), "reasons": reasons}
-            )
+        answers = (latest or {}).get("answers") or {}
+        # A note she wrote is for her coach to read, even in a good week.
+        if reasons or answers.get("note"):
+            entry = {"subId": snap.id, "relId": row["relId"], "clientName": row.get("clientName", ""), "reasons": reasons}
+            if latest:
+                entry["checkIn"] = {"weekKey": latest.get("weekKey"), "answers": answers}
+            out.append(entry)
     out.sort(key=lambda c: (-len(c["reasons"]), c["clientName"]))
     return {"clients": out[:MAX_LIST]}
 

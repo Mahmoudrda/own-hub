@@ -108,14 +108,18 @@ class FromYourCoachSection extends StatelessWidget {
                 Text(
                   dayNutritionLine(l10n, dayNutrition(shownDay, catalog)),
                   key: const ValueKey('coach-planned-line'),
-                  style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
             ],
             for (final slot in CoachingEnums.mealSlots)
               if (day.itemsIn(slot).isNotEmpty) ...[
                 Text(
                   slotLabel(l10n, slot),
-                  style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
+                  style: AppText.titleS.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
                 for (var i = 0; i < day.itemsIn(slot).length; i++)
                   CoachMealRow(

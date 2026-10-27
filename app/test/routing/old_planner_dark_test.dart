@@ -75,10 +75,8 @@ void main() {
           localizationsDelegates: AppL10n.localizationsDelegates,
           supportedLocales: AppL10n.supportedLocales,
           home: Builder(
-            builder:
-                (context) => (route! as MaterialPageRoute<dynamic>).builder(
-                  context,
-                ),
+            builder: (context) =>
+                (route! as MaterialPageRoute<dynamic>).builder(context),
           ),
         ),
       );

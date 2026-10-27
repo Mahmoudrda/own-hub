@@ -53,6 +53,7 @@ def seed(fs):
     }
     d[f"relationships/{HER}__{CLIENT}/messages/m1"] = {"senderUid": CLIENT, "text": "hi"}
     d[f"relationships/{HER}__{CLIENT}/reads/{CLIENT}"] = {"at": 1}
+    d[f"relationships/{HER}__{CLIENT}/checkIns/2026-W44"] = {"clientUid": CLIENT, "state": "answered", "answers": {"note": "x"}}
     d["subscriptions/sub-mine"] = {
         "coachUid": HER, "clientUid": CLIENT, "relId": f"{HER}__{CLIENT}", "status": "active",
         "intake": {"goal": "strength", "health": {"q1": True}},
@@ -66,6 +67,7 @@ def seed(fs):
     }
     d[f"relationships/{COACH}__{HER}/messages/m1"] = {"senderUid": HER, "text": "hello"}
     d[f"relationships/{COACH}__{HER}/reads/{HER}"] = {"at": 1}
+    d[f"relationships/{COACH}__{HER}/checkIns/2026-W44"] = {"clientUid": HER, "state": "answered", "answers": {"note": "my knee"}}
     d["subscriptions/sub-hers"] = {
         "coachUid": COACH, "clientUid": HER, "relId": f"{COACH}__{HER}", "status": "active",
         "intake": {"goal": "weight", "health": {"q1": False}},
@@ -82,6 +84,7 @@ def seed(fs):
         "coachUid": COACH, "clientUid": THIRD, "status": "active", "chatOpen": True,
     }
     d[f"relationships/{COACH}__{THIRD}/messages/m1"] = {"senderUid": THIRD, "text": "x"}
+    d[f"relationships/{COACH}__{THIRD}/checkIns/2026-W44"] = {"clientUid": THIRD, "state": "open"}
     d["subscriptions/sub-third"] = {
         "coachUid": COACH, "clientUid": THIRD, "relId": f"{COACH}__{THIRD}", "status": "active",
         "intake": {"goal": "x"},
@@ -151,6 +154,7 @@ def test_nothing_of_anyone_elses_is_touched(fs):
     assert docs[f"relationships/{COACH}__{THIRD}"]["status"] == "active"
     assert docs[f"relationships/{COACH}__{THIRD}"]["chatOpen"] is True
     assert f"relationships/{COACH}__{THIRD}/messages/m1" in docs
+    assert docs[f"relationships/{COACH}__{THIRD}/checkIns/2026-W44"]["state"] == "open"
     assert docs["subscriptions/sub-third"]["status"] == "active"
     assert docs["subscriptions/sub-third"]["intake"] == {"goal": "x"}
     assert f"subscriptions/sub-third/private/terms" in docs
@@ -222,6 +226,34 @@ def test_the_late_sweep_covers_a_coaching_a_stale_token_wrote(fs):
     fs.docs["subscriptions/sub-late"] = {"coachUid": COACH, "clientUid": HER, "relId": "x", "status": "requested"}
     deletion.FirebaseBackend().purge_group_hook(HER)
     assert not under(fs.docs, f"coachApplications/{HER}", f"coachPrivate/{HER}", "subscriptions/sub-late")
+
+
+def test_chat_media_of_every_thread_of_hers_is_purged_before_the_thread(fs, monkeypatch):
+    # Both people's photos, clips and voice notes of a thread (row 48): the
+    # whole chat-media/{relId}/ prefix, in both buckets, files before the
+    # messages that point at them, and no other thread's folder.
+    seed(fs)
+    calls = []
+
+    def spy(self, bucket, prefix):
+        calls.append((bucket, prefix, f"relationships/{prefix.split('/')[1]}" in fs.docs))
+
+    monkeypatch.setattr(deletion.FirebaseBackend, "delete_storage_prefix", spy)
+    deletion.FirebaseBackend().purge_group_hook(HER)
+    mine = (f"{HER}__{CLIENT}", f"{COACH}__{HER}")
+    for rel in mine:
+        for bucket in (None, deletion.PERSONAL_BUCKET):
+            assert (bucket, f"chat-media/{rel}/", True) in calls
+    assert not any(THIRD in prefix for _, prefix, _ in calls)
+    assert len(calls) == 4
+
+
+def test_the_manifest_names_the_chat_media_folder_in_row_48():
+    from account import manifest
+
+    row = {r.number: r for r in manifest.load()}[48]
+    assert "chat-media/{relId}/**" in row.path
+    assert manifest.ACTIONS[48] == manifest.GROUP_HOOK
 
 
 def test_portfolio_media_docs_go_with_the_coach_page(fs):

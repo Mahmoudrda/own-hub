@@ -253,5 +253,5 @@ String systemLine(AppL10n l10n, SystemMessageKind? kind) => switch (kind) {
   SystemMessageKind.sessionConfirmed => l10n.liveSessionConfirmed,
   SystemMessageKind.sessionDone => l10n.liveSessionFinished,
   SystemMessageKind.checkIn => l10n.weeklyCheckInSent,
-  SystemMessageKind.hidden || null => l10n.thisMessageWasHiddenBecauseItHad,
+  SystemMessageKind.hidden || null => l10n.thisMessageWasHiddenAndWasNot,
 };

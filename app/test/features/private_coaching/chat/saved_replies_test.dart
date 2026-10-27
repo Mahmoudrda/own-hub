@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/account_data.dart';
 import 'package:own_hub/features/private_coaching/data/saved_reply_store.dart';
 import 'package:own_hub/features/private_coaching/domain/chat_screen.dart';
 import 'package:own_hub/features/private_coaching/presentation/chat/chat_logic.dart';
@@ -47,6 +48,8 @@ Future<(FakeChatRepository, SavedReplyStore)> _coachThread(
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('the first load copies the starters and stores them', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final s = SavedReplyStore();
@@ -159,21 +162,31 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(AppL10nEn().phoneNumbersCantBeSentInThe),
-      findsOneWidget,
-    );
+    expect(find.text(AppL10nEn().phoneNumbersCantBeSentInThe), findsOneWidget);
     expect(await store.load('me', const <String>[]), isEmpty);
   });
 
   testWidgets('a client has no saved replies', (tester) async {
-    await _coachThread(
-      tester,
-      otherIsCoach: true,
-      starters: ['Hello there'],
-    );
+    await _coachThread(tester, otherIsCoach: true, starters: ['Hello there']);
     await tester.tap(find.byTooltip('Share something'));
     await tester.pumpAndSettle();
     expect(find.text('Saved replies'), findsNothing);
   });
+
+  test(
+    'deleting everything on the phone clears every coach\'s saved replies',
+    () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'savedReplies.v1.coachA': '[{"id":"s0","text":"Well done"}]',
+        'savedReplies.v1.coachB': '[]',
+        'unrelated': 'kept',
+      });
+      await const ThisPhoneWipe().clearPersistence();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('savedReplies.v1.coachA'), isNull);
+      expect(prefs.getString('savedReplies.v1.coachB'), isNull);
+      expect(prefs.getString('unrelated'), 'kept');
+    },
+  );
 }

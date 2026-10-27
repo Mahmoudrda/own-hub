@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/follow_up_state.dart';
+import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/features/followup/domain/follow_up_plan.dart';
 import 'package:own_hub/features/followup/presentation/follow_up_card.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
@@ -92,10 +93,12 @@ FollowUpCard _card(
 
 void main() {
   setUp(() {
+    AppClock.debugNow = () => _friday;
     FollowUpState.instance.reset();
     FollowUpCard.lastThanks = null;
   });
   tearDown(() {
+    AppClock.debugNow = null;
     FollowUpState.instance.reset();
     FollowUpCard.lastThanks = null;
   });

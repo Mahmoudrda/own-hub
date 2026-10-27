@@ -359,8 +359,7 @@ class IntakeAnswersCard extends StatelessWidget {
         if (intake.inbodyScan case final scan?) ...[
           const SizedBox(height: 4),
           _title('InBody Scan & Target Estimates'),
-          if (scan.weightKg != null)
-            DeskFact('Weight', '${scan.weightKg} kg'),
+          if (scan.weightKg != null) DeskFact('Weight', '${scan.weightKg} kg'),
           if (scan.skeletalMuscleMassKg != null)
             DeskFact('Muscle (SMM)', '${scan.skeletalMuscleMassKg} kg'),
           if (scan.bodyFatPercent != null)
@@ -391,7 +390,9 @@ class IntakeAnswersCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       targets.rationale,
-                      style: AppText.nav.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppText.nav.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),

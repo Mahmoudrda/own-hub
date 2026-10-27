@@ -714,22 +714,63 @@ void main() {
   });
 
   group('Needs attention', () {
+    testWidgets('K07 lists clients that need attention, with reasons, first', (
+      tester,
+    ) async {
+      deskPhone(tester);
+      CheckIns.override = InMemoryCheckInStore(
+        rows: const <AttentionRow>[
+          AttentionRow(
+            subId: 's1',
+            relId: 'r1',
+            clientName: 'Mona',
+            reasons: <String>['noCheckIn', 'unread'],
+          ),
+        ],
+      );
+      final repo = DeskRepo()
+        ..setSubscriptions([deskSub('a', name: 'Nour', startsAt: ago(10))])
+        ..setRelationships([deskRel('ua', lastAt: ago(10), sender: 'me')]);
+      final state = await startedState(tester, repo);
+      await tester.pumpWidget(
+        deskHost(CoachDeskView(state: state, now: () => kDeskNow)),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Needs attention'), findsOneWidget);
+      expect(find.text('Mona'), findsOneWidget);
+      expect(find.text('No check-in yet · Unread message'), findsOneWidget);
+
+      final attentionTop = tester.getTopLeft(find.text('Needs attention')).dy;
+      final followUpTop = tester.getTopLeft(find.text('Follow up')).dy;
+      expect(attentionTop, lessThan(followUpTop));
+    });
+
     testWidgets(
-      'K07 lists clients that need attention, with reasons, first',
+      'a row shows her pain answer and her own note, and a blank name reads as the rest of the desk does',
       (tester) async {
         deskPhone(tester);
         CheckIns.override = InMemoryCheckInStore(
           rows: const <AttentionRow>[
             AttentionRow(
-              subId: 's1',
+              subId: 'a',
               relId: 'r1',
+              clientName: '',
+              reasons: <String>['healthFlag'],
+              pain: true,
+              note: 'my knee hurts when I squat',
+            ),
+            AttentionRow(
+              subId: 'b',
+              relId: 'r2',
               clientName: 'Mona',
-              reasons: <String>['noCheckIn', 'unread'],
+              reasons: <String>[],
+              note: 'loved the new plan',
             ),
           ],
         );
         final repo = DeskRepo()
-          ..setSubscriptions([deskSub('a', name: 'Nour', startsAt: ago(10))])
+          ..setSubscriptions([deskSub('a', startsAt: ago(10))])
           ..setRelationships([deskRel('ua', lastAt: ago(10), sender: 'me')]);
         final state = await startedState(tester, repo);
         await tester.pumpWidget(
@@ -737,13 +778,14 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Needs attention'), findsOneWidget);
-        expect(find.text('Mona'), findsOneWidget);
-        expect(find.text('No check-in yet · Unread message'), findsOneWidget);
-
-        final attentionTop = tester.getTopLeft(find.text('Needs attention')).dy;
-        final followUpTop = tester.getTopLeft(find.text('Follow up')).dy;
-        expect(attentionTop, lessThan(followUpTop));
+        expect(
+          find.text(
+            'Health answer to read · Pain or injury this week\nmy knee hurts when I squat',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('loved the new plan'), findsOneWidget);
+        expect(find.textContaining('Client #'), findsWidgets);
       },
     );
 

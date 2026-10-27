@@ -98,10 +98,22 @@ void main() {
       expect(clamped.days[0].targetKg[0], 200);
       final cleared = changeMoveDetails(clamped, 0, 0, clearKg: true);
       expect(cleared.days[0].targetKg[0], isNull);
-      expect(identical(changeMoveDetails(plan, -1, 0, restSeconds: 30), plan), isTrue);
-      expect(identical(changeMoveDetails(plan, 9, 0, restSeconds: 30), plan), isTrue);
-      expect(identical(changeMoveDetails(plan, 0, -1, restSeconds: 30), plan), isTrue);
-      expect(identical(changeMoveDetails(plan, 0, 9, restSeconds: 30), plan), isTrue);
+      expect(
+        identical(changeMoveDetails(plan, -1, 0, restSeconds: 30), plan),
+        isTrue,
+      );
+      expect(
+        identical(changeMoveDetails(plan, 9, 0, restSeconds: 30), plan),
+        isTrue,
+      );
+      expect(
+        identical(changeMoveDetails(plan, 0, -1, restSeconds: 30), plan),
+        isTrue,
+      );
+      expect(
+        identical(changeMoveDetails(plan, 0, 9, restSeconds: 30), plan),
+        isTrue,
+      );
     });
 
     test('changeMove keeps the superset flag', () {

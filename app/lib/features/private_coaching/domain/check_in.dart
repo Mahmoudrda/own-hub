@@ -55,6 +55,8 @@ class AttentionRow {
     required this.relId,
     required this.clientName,
     required this.reasons,
+    this.pain = false,
+    this.note = '',
   });
 
   final String subId;
@@ -63,6 +65,10 @@ class AttentionRow {
 
   /// Wire names: noCheckIn, missedSessions, healthFlag, unread.
   final List<String> reasons;
+
+  /// What she said in her latest check-in: any pain or injury, and her note.
+  final bool pain;
+  final String note;
 }
 
 class CheckIns {
@@ -113,32 +119,36 @@ class CallableCheckInStore implements CheckInStore {
   @override
   Future<List<AttentionRow>> needsAttention() async {
     try {
-      final result = await _callable(
-        kCoachNeedsAttentionCallable,
-      ).call<Object?>(<String, Object>{});
+      final result = await _callable(kCoachNeedsAttentionCallable)
+          .call<Object?>(<String, Object>{});
       final data = result.data;
       final list = data is Map ? data['clients'] : null;
       if (list is! List) return const <AttentionRow>[];
       return <AttentionRow>[
         for (final raw in list)
-          if (raw is Map)
-            AttentionRow(
-              subId: '${raw['subId']}',
-              relId: '${raw['relId']}',
-              clientName: '${raw['clientName'] ?? ''}',
-              reasons: <String>[
-                for (final r
-                    in (raw['reasons'] is List
-                        ? raw['reasons'] as List
-                        : const []))
-                  '$r',
-              ],
-            ),
+          if (raw is Map) attentionRowFromWire(raw),
       ];
     } catch (_) {
       return const <AttentionRow>[];
     }
   }
+}
+
+AttentionRow attentionRowFromWire(Map<Object?, Object?> raw) {
+  final checkIn = raw['checkIn'];
+  final answers = checkIn is Map ? checkIn['answers'] : null;
+  return AttentionRow(
+    subId: '${raw['subId']}',
+    relId: '${raw['relId']}',
+    clientName: '${raw['clientName'] ?? ''}',
+    reasons: <String>[
+      for (final r
+          in (raw['reasons'] is List ? raw['reasons'] as List : const []))
+        '$r',
+    ],
+    pain: answers is Map && answers['pain'] == true,
+    note: answers is Map ? '${answers['note'] ?? ''}'.trim() : '',
+  );
 }
 
 class InMemoryCheckInStore implements CheckInStore {

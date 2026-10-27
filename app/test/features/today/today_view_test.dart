@@ -8,7 +8,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/private_coaching_state.dart';
 import 'package:own_hub/features/eat/domain/meal_repository.dart';
+import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart'
+    show SubscriptionStatus;
+import 'package:own_hub/features/private_coaching/domain/subscription.dart'
+    as coaching;
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/today/domain/today_day.dart';
 import 'package:own_hub/features/train/presentation/tier_tabs.dart';
@@ -17,6 +22,7 @@ import 'package:own_hub/features/today/presentation/today_cards.dart';
 import 'package:own_hub/features/today/presentation/today_view.dart';
 
 import '../../helpers/primary_actions.dart';
+import '../private_coaching/support/fake_coaching_repository.dart';
 
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/theme/app_tokens.dart';
@@ -594,6 +600,43 @@ void main() {
       await tester.pumpWidget(_host(_today(sessionMinutes: 25)));
       await tester.pumpAndSettle();
       expect(find.text('Week 3 of 8 · 25 min'), findsOneWidget);
+    });
+
+    testWidgets('a client with an eating history is shown no calorie target', (
+      tester,
+    ) async {
+      _phone(tester);
+      final repo = FakeCoachingRepository(uid: 'me');
+      PrivateCoachingState.instance.start(repo);
+      addTearDown(PrivateCoachingState.instance.stop);
+      final line = find.byKey(const ValueKey('today-eat-line'));
+      Finder target() =>
+          find.descendant(of: line, matching: find.textContaining(' of '));
+
+      await tester.pumpWidget(_host(_today()));
+      await tester.pumpAndSettle();
+      expect(target(), findsOneWidget, reason: 'the usual line has a target');
+
+      repo.clientSubs.value = [
+        coaching.Subscription(
+          id: 's1',
+          coachUid: 'c1',
+          clientUid: 'me',
+          status: SubscriptionStatus.active,
+          intake: const coaching.Intake(eatingHistory: true),
+        ),
+      ];
+      await tester.pump();
+      // Home is rebuilt by the page around it when the answers arrive.
+      await tester.pumpWidget(_host(_today()));
+      await tester.pumpAndSettle();
+      expect(PrivateCoachingState.instance.hidesCalorieTargets, isTrue);
+      expect(target(), findsNothing);
+      expect(
+        find.descendant(of: line, matching: find.textContaining(' kcal')),
+        findsOneWidget,
+        reason: 'what she has eaten is still there',
+      );
     });
 
     testWidgets('the Eat line shows the day so far and opens Eat', (

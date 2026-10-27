@@ -3,9 +3,9 @@
 /// `K07`'s "Invite a client" asks the server for her code
 /// (`create_coach_invite`) and opens WhatsApp with a message holding it. The
 /// woman she sends it to types it on `C01`; it waits on her phone through
-/// sign-up, and once she has passed the check `accept_coach_invite` opens an
-/// enquiry on the coach's desk, which the coach accepts on `K09` as she would
-/// any other.
+/// sign-up, and once she has passed the check `accept_coach_invite` names the
+/// coach. Her page (`H02`) then opens and she asks to join there, through the
+/// same sheet as anyone else (health questions, doctor tick, consent).
 ///
 /// A code rather than a link: this build registers no app links, so a link
 /// would open a website rather than the app. A code survives being forwarded,
@@ -73,7 +73,8 @@ Uri whatsAppToUri(String number, String text) => Uri.parse(
 
 /// Why redeeming did not link her.
 enum InviteRedemption {
-  /// Linked: the coach has her enquiry.
+  /// The code names a coach. Nothing is sent: her page opens, and she asks to
+  /// join there like anyone else.
   linked,
 
   /// No such code, lapsed, her own, or refused. She asks her coach again.
@@ -81,6 +82,14 @@ enum InviteRedemption {
 
   /// Not reached. The code stays on her phone and is tried again later.
   unreachable,
+}
+
+/// How redeeming a code went, and the coach it names when it linked.
+class InviteResult {
+  const InviteResult(this.outcome, [this.coachUid]);
+
+  final InviteRedemption outcome;
+  final String? coachUid;
 }
 
 /// The host the links live on. Same string as `site/config.json` "baseUrl".

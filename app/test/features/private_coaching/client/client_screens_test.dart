@@ -386,14 +386,8 @@ void main() {
         ],
       );
       final monday = DateTime(2026, 10, 26, 12);
-      expect(
-        todaysWorkoutDay(plan, 0, null, startsOn: monday, now: monday),
-        0,
-      );
-      expect(
-        todaysWorkoutDay(plan, 1, null, startsOn: monday, now: monday),
-        1,
-      );
+      expect(todaysWorkoutDay(plan, 0, null, startsOn: monday, now: monday), 0);
+      expect(todaysWorkoutDay(plan, 1, null, startsOn: monday, now: monday), 1);
       expect(
         todaysWorkoutDay(
           plan,
@@ -486,10 +480,7 @@ void main() {
       await t.pumpWidget(
         host(
           Scaffold(
-            body: CoachHomeCard(
-              workout: plan,
-              onStartWorkout: (_, _) {},
-            ),
+            body: CoachHomeCard(workout: plan, onStartWorkout: (_, _) {}),
           ),
         ),
       );
@@ -538,6 +529,56 @@ void main() {
       expect(loggedItem?.foodId, 'f1');
       expect(loggedItem?.grams, 150);
     });
+
+    testWidgets(
+      'eat card: a recipe can be logged only when the book has its figures',
+      (t) async {
+        _phone(t);
+        final plan = CoachPlan(
+          id: 'm1',
+          kind: PlanKind.meal,
+          coachUid: 'coach1',
+          meal: MealPlanBody(
+            days: [
+              MealDay(
+                label: 'Day 1',
+                slots: {
+                  'lunch': [MealItem.recipe('r1', 1), MealItem.recipe('nm', 1)],
+                },
+              ),
+            ],
+          ),
+          publishedAt: _start,
+        );
+        await t.pumpWidget(
+          host(
+            Scaffold(
+              body: FromYourCoachSection(
+                plan: plan,
+                now: _now,
+                catalog: catalog(
+                  recipes: [recipe('r1'), recipe('nm', kcal: null)],
+                ),
+                onLog: (_, _) {},
+                onOpenRecipe: (_) {},
+              ),
+            ),
+          ),
+        );
+        expect(
+          find.byKey(const ValueKey('coach-meal-lunch-0-log')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('coach-meal-lunch-1-log')),
+          findsNothing,
+        );
+        expect(
+          find.byKey(const ValueKey('coach-meal-lunch-1')),
+          findsOneWidget,
+        );
+      },
+    );
 
     testWidgets('eat card: goal line and planned total', (t) async {
       _phone(t);
@@ -623,7 +664,9 @@ void main() {
             MealDay(
               label: 'Day 1',
               slots: {
-                'lunch': [const MealItem.recipe('r1', 2, swaps: ['r2'])],
+                'lunch': [
+                  const MealItem.recipe('r1', 2, swaps: ['r2']),
+                ],
               },
             ),
           ],
@@ -778,7 +821,9 @@ void main() {
             MealDay(
               label: 'اليوم الأول',
               slots: {
-                'lunch': [const MealItem.recipe('r1', 1, swaps: ['r2'])],
+                'lunch': [
+                  const MealItem.recipe('r1', 1, swaps: ['r2']),
+                ],
               },
             ),
           ],

@@ -120,8 +120,8 @@ class _OfflineInviteStore implements CoachInviteStore {
   Future<String> create() async => throw const InviteUnavailable();
 
   @override
-  Future<InviteRedemption> accept(String code) async =>
-      InviteRedemption.unreachable;
+  Future<InviteResult> accept(String code) async =>
+      const InviteResult(InviteRedemption.unreachable);
 }
 
 AppButton _button(WidgetTester tester, String label) =>
@@ -647,28 +647,33 @@ void main() {
       expect(await invite.redeem(store, allowed: false), isNull);
       expect(invite.pendingCode, 'ABCD2345', reason: 'kept until she is in');
 
-      expect(
-        await invite.redeem(store, allowed: true),
-        InviteRedemption.linked,
-      );
+      final result = await invite.redeem(store, allowed: true);
+      expect(result?.outcome, InviteRedemption.linked);
+      expect(result?.coachUid, 'coach1');
       expect(store.accepted, ['ABCD2345']);
+      // The coach's page has to open before the code is let go.
+      expect(invite.pendingCoach, 'coach1');
+      expect(invite.pendingCode, 'ABCD2345');
+      invite.clearPending();
       expect(invite.pendingCode, isNull);
+      expect(invite.pendingCoach, isNull);
       expect(await invite.redeem(store, allowed: true), isNull);
     });
 
     test('no network keeps the code; a dead code is dropped', () async {
       final invite = CoachInviteState.instance..pendingCode = 'ABCD2345';
       expect(
-        await invite.redeem(_OfflineInviteStore(), allowed: true),
+        (await invite.redeem(_OfflineInviteStore(), allowed: true))?.outcome,
         InviteRedemption.unreachable,
       );
       expect(invite.pendingCode, 'ABCD2345');
+      expect(invite.pendingCoach, isNull);
 
       expect(
-        await invite.redeem(
+        (await invite.redeem(
           InMemoryCoachInviteStore(code: 'ZZZZ2222'),
           allowed: true,
-        ),
+        ))?.outcome,
         InviteRedemption.refused,
       );
       expect(invite.pendingCode, isNull);

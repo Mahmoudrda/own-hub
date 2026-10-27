@@ -1909,12 +1909,6 @@ abstract class AppL10n {
   /// **'3 × 10 · 12 kg suggested'**
   String get n31012KgSuggested;
 
-  /// No description provided for @n31212Kg.
-  ///
-  /// In en, this message translates to:
-  /// **'3 × 12 · 12 kg'**
-  String get n31212Kg;
-
   /// No description provided for @n3159SeptemberWas312.
   ///
   /// In en, this message translates to:
@@ -23933,12 +23927,6 @@ abstract class AppL10n {
   /// **'Live session finished'**
   String get liveSessionFinished;
 
-  /// No description provided for @thisMessageWasHiddenBecauseItHad.
-  ///
-  /// In en, this message translates to:
-  /// **'This message was hidden because it had contact or payment details'**
-  String get thisMessageWasHiddenBecauseItHad;
-
   /// No description provided for @weCouldNotLoadThisChatCheck.
   ///
   /// In en, this message translates to:
@@ -25582,12 +25570,6 @@ abstract class AppL10n {
   /// **'Choose a video'**
   String get chooseAVideo;
 
-  /// No description provided for @thatFileIsTooBigAPhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'That file is too big. A photo is up to 10 MB and a video is up to 25 MB.'**
-  String get thatFileIsTooBigAPhoto;
-
   /// No description provided for @weCouldNotSendThatTryAgain.
   ///
   /// In en, this message translates to:
@@ -26193,6 +26175,144 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Nothing to buy yet.'**
   String get nothingToBuyYet;
+
+  /// No description provided for @thatFileIsTooBigAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is too big. A photo is up to 3 MB and a video is up to 25 MB.'**
+  String get thatFileIsTooBigAPhoto;
+
+  /// No description provided for @thisMessageWasHiddenAndWasNot.
+  ///
+  /// In en, this message translates to:
+  /// **'This message was hidden and was not delivered'**
+  String get thisMessageWasHiddenAndWasNot;
+
+  /// No description provided for @videosCanBeUpTo30Seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos can be up to 30 seconds. Choose a shorter one.'**
+  String get videosCanBeUpTo30Seconds;
+
+  /// No description provided for @weCouldNotPlayThatVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not play that video.'**
+  String get weCouldNotPlayThatVideo;
+
+  /// No description provided for @weCouldNotOpenThatPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not open that photo.'**
+  String get weCouldNotOpenThatPhoto;
+
+  /// No description provided for @painOrInjuryThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain or injury this week'**
+  String get painOrInjuryThisWeek;
+
+  /// No description provided for @inbodyScanData.
+  ///
+  /// In en, this message translates to:
+  /// **'InBody Scan Data'**
+  String get inbodyScanData;
+
+  /// No description provided for @pasteScanTextOcr.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste scan text / OCR'**
+  String get pasteScanTextOcr;
+
+  /// No description provided for @theseNumbersHelpYourCoachCustomizeYour.
+  ///
+  /// In en, this message translates to:
+  /// **'These numbers help your coach customize your nutrition and training plan.'**
+  String get theseNumbersHelpYourCoachCustomizeYour;
+
+  /// No description provided for @pasteInbodyScanTextOcr.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste InBody Scan Text (OCR)'**
+  String get pasteInbodyScanTextOcr;
+
+  /// No description provided for @pasteOcrTextHereToAutoExtract.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste OCR text here to auto-extract...'**
+  String get pasteOcrTextHereToAutoExtract;
+
+  /// No description provided for @extractMetrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Extract Metrics'**
+  String get extractMetrics;
+
+  /// No description provided for @muscleSmmKg.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle SMM (kg)'**
+  String get muscleSmmKg;
+
+  /// No description provided for @bodyFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Fat %'**
+  String get bodyFat;
+
+  /// No description provided for @bmrKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'BMR (kcal)'**
+  String get bmrKcal;
+
+  /// No description provided for @saveScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Scan'**
+  String get saveScan;
+
+  /// Under a progress bar: how much of the day's target is left, for example 80 g remaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {unit} remaining'**
+  String amountUnitRemaining(String amount, String unit);
+
+  /// No description provided for @targetReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Target reached'**
+  String get targetReached;
+
+  /// Screen reader text for a progress bar: name, amount against target, then the status line.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {current} of {target} {unit}. {status}.'**
+  String labelCurrentOfTargetUnitStatus(
+    String label,
+    String current,
+    String target,
+    String unit,
+    String status,
+  );
+
+  /// Chat attach sheet: the longest video she can send, from the coaching limits.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a video (up to {seconds} seconds)'**
+  String recordAVideoUpToSecondsSeconds(String seconds);
+
+  /// Chat: the two size limits, from the coaching limits.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is too big. A photo is up to {photoMb} MB and a video is up to {videoMb} MB.'**
+  String thatFileIsTooBigAPhoto_1rnt5(String photoMb, String videoMb);
+
+  /// Chat: the longest video she can send, from the coaching limits.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos can be up to {seconds} seconds. Choose a shorter one.'**
+  String videosCanBeUpToSecondsSeconds(String seconds);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

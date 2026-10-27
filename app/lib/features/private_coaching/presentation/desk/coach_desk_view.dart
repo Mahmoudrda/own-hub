@@ -197,6 +197,15 @@ class _CoachDeskViewState extends State<CoachDeskView> {
     }
   }
 
+  /// Her name as the rest of the desk shows it ("Client #a1b2" when she gave
+  /// none); the server's raw name only when the coaching is not loaded yet.
+  String _attentionName(AppL10n l10n, DeskModel model, AttentionRow row) {
+    for (final client in model.clients) {
+      if (client.id == row.subId) return clientName(l10n, client.subscription);
+    }
+    return row.clientName;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -258,11 +267,8 @@ class _CoachDeskViewState extends State<CoachDeskView> {
         for (final row in _attention.take(kDeskSectionRows))
           AppListItem(
             variant: AppCardVariant.filled,
-            title: row.clientName,
-            subtitle: row.reasons
-                .map((r) => attentionReasonText(l10n, r))
-                .where((t) => t.isNotEmpty)
-                .join(' · '),
+            title: _attentionName(l10n, model, row),
+            subtitle: attentionSubtitle(l10n, row),
             onTap: () => widget.onOpenClient?.call(row.subId),
           ),
       ],
@@ -310,9 +316,7 @@ class _CoachDeskViewState extends State<CoachDeskView> {
                 title: l10n.youAreAllCaughtUp,
                 body: l10n.nothingToAnswerOrFollowUpRight,
               ),
-      if (nothingToDo &&
-          model.clients.isEmpty &&
-          widget.onInviteClient != null)
+      if (nothingToDo && model.clients.isEmpty && widget.onInviteClient != null)
         AppButton(l10n.inviteAClient, onPressed: widget.onInviteClient),
       if (model.clients.isNotEmpty)
         AppButton(

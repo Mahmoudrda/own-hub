@@ -93,6 +93,12 @@ def _snapshot(db, kind: str, ids: list, reporter: Any = None) -> dict:
             out["text"] = row["text"]
         if isinstance(row.get("recipeId"), str):
             out["recipeId"] = row["recipeId"]
+        if isinstance(row.get("mediaPath"), str):
+            # The file stays where it is (the sender cannot delete it, storage
+            # rules); only its name is copied, never the folder that names both.
+            out["mediaFile"] = row["mediaPath"].rsplit("/", 1)[-1]
+            if isinstance(row.get("durationMs"), int) and not isinstance(row.get("durationMs"), bool):
+                out["durationMs"] = row["durationMs"]
         return out
     if kind == "coachProfile":
         row = db.document(f"coaches/{ids[0]}").get().to_dict()
@@ -152,6 +158,17 @@ def capture_evidence(db, report_id: str, report: dict, *, now: dt.datetime) -> b
         content["plan"] = _without_ids(_subject_row(db, kind, ids))
     ref.set(content)
     return True
+
+
+def on_report(db, report_id: str, report: dict, *, now: dt.datetime, per_day: int) -> bool:
+    """A report was made: copy what it points at. A reporter past her daily
+    limit is marked `throttled`, and her evidence is still copied: a real
+    report is never dropped to a flood."""
+    since = now - dt.timedelta(hours=24)
+    mine = db.collection("reports").where("reporterUid", "==", report.get("reporterUid")).where("createdAt", ">=", since)
+    if sum(1 for _ in mine.stream()) > per_day:
+        db.document(f"reports/{report_id}").update({"throttled": True})
+    return capture_evidence(db, report_id, report, now=now)
 
 
 def _frozen(db, report_id: str) -> Optional[dict]:

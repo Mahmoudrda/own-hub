@@ -369,7 +369,15 @@ List<PlanProblem> coachWorkoutProblems(
     out.add(PlanProblem.noName);
   }
   if (plan.days.isEmpty) out.add(PlanProblem.noDays);
-  if (plan.days.length > CoachingLimits.planMaxDays) {
+  // The server's rule: weeks 1..n with no gap, a week's worth of days in each.
+  final inWeek = [
+    for (var w = 1; w <= plan.weekCount; w++) plan.daysOfWeek(w).length,
+  ];
+  if (inWeek.any((n) => n == 0) && !out.contains(PlanProblem.noDays)) {
+    out.add(PlanProblem.noDays);
+  }
+  if (plan.weekCount > CoachingLimits.planMaxWeeks ||
+      inWeek.any((n) => n > CoachingLimits.planMaxDays)) {
     out.add(PlanProblem.tooManyDays);
   }
   if (bodyBytes(plan.toJson()) > CoachingLimits.planBodyMaxBytes) {
@@ -421,6 +429,53 @@ class MealCatalog {
         return item.text ?? '';
     }
   }
+}
+
+/// [servings] of the book recipe [r] as one portion of a food that can be
+/// logged, or null when the book states no figures for it: nothing is invented
+/// for a recipe whose macros are withheld. Its allergens count only when a
+/// person or Own Hub's check stands behind them; otherwise they are unknown and
+/// the allergy guard holds the log for a woman who named any.
+Food? recipeAsFood(Recipe r, double servings, String title) {
+  final kcal = r.kcal;
+  final protein = r.proteinG;
+  if (r.macroBasis != MacroBasis.computed || kcal == null || protein == null) {
+    return null;
+  }
+  int? scaled(int? v) => v == null ? null : (v * servings).round();
+  return Food(
+    foodId: 'recipe_${r.recipeId}',
+    names: [title],
+    sizes: [
+      FoodSize(
+        id: 'serving',
+        label: title,
+        kcal: scaled(kcal)!,
+        proteinG: scaled(protein)!,
+        carbsG: scaled(r.carbsG),
+        fatG: scaled(r.fatG),
+      ),
+    ],
+    allergens: r.allergensKnown ? r.allergensFinal : null,
+    dietTags: r.dietTags,
+    custom: true,
+  );
+}
+
+/// Whether "Log this" can put [r] in her day.
+bool recipeCanBeLogged(Recipe? r) =>
+    r != null && recipeAsFood(r, 1, '') != null;
+
+/// The index of [item] among [planned], the plan's own items of one slot. A
+/// swapped dish is the planned one it replaces; anything not found gets an
+/// index past the end, so logging it never overwrites another row.
+int plannedIndexOf(List<MealItem> planned, MealItem item) {
+  final exact = planned.indexOf(item);
+  if (exact >= 0) return exact;
+  final swapped = planned.indexWhere(
+    (p) => p.kind == MealItemKind.recipe && p.swaps.contains(item.recipeId),
+  );
+  return swapped >= 0 ? swapped : planned.length;
 }
 
 /// [body] with its days cut or grown to [count] (1 to 7). Days kept are not

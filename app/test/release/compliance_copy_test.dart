@@ -202,10 +202,11 @@ void main() {
     });
   });
 
-  group('M7: no microphone while the app never uses one', () {
-    // The privacy policy and the site say the app never uses the microphone,
-    // and the release manifest strips RECORD_AUDIO. Saying a meal (E03) is
-    // behind Feature.voiceLogging, off in the shipped build.
+  group('M7: the microphone is for chat voice notes only', () {
+    // The privacy policy says the microphone is used only while she holds the
+    // mic button in a coaching chat, and the release manifest declares
+    // RECORD_AUDIO for that. Saying a meal (E03) is behind
+    // Feature.voiceLogging, off in the shipped build.
     final saved = AppRouter.featureFlags;
     setUp(() => AppRouter.featureFlags = FeatureFlags.shipped);
     tearDown(() => AppRouter.featureFlags = saved);
@@ -227,13 +228,15 @@ void main() {
         ),
       );
       expect(
-        RegExp(r'android\.permission\.READ_EXTERNAL_STORAGE"\s+tools:node="remove"')
-            .hasMatch(manifest),
+        RegExp(
+          r'android\.permission\.READ_EXTERNAL_STORAGE"\s+tools:node="remove"',
+        ).hasMatch(manifest),
         isTrue,
       );
       expect(
-        RegExp(r'android\.permission\.WRITE_EXTERNAL_STORAGE"\s+tools:node="remove"')
-            .hasMatch(manifest),
+        RegExp(
+          r'android\.permission\.WRITE_EXTERNAL_STORAGE"\s+tools:node="remove"',
+        ).hasMatch(manifest),
         isTrue,
       );
     });

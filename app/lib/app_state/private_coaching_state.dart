@@ -166,6 +166,12 @@ class PrivateCoachingState {
   /// Everything she bought or asked for, newest first.
   List<Subscription> get clientSubscriptions => _clientSubs;
 
+  /// Her answers to her coach on eating mean Home shows her no calorie target.
+  /// The answer stays with the subscription, so it holds after the coaching
+  /// ends.
+  bool get hidesCalorieTargets =>
+      _clientSubs.any((s) => s.intake?.eatingHistoryFlag ?? false);
+
   /// Her subscription that is running now, if any.
   Subscription? get activeAsClient =>
       _firstWhere(_clientSubs, (s) => s.status == SubscriptionStatus.active);

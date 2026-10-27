@@ -519,7 +519,7 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
   ),
   DeletionRow(
     number: 48,
-    path: 'relationships where coachUid or clientUid == uid, with messages and reviews',
+    path: 'relationships where coachUid or clientUid == uid, with messages and reviews, and Storage chat-media/{relId}/** (the photos, clips and voice notes of both people in each thread)',
     owner: 'G12, called by G7',
     method: DeletionMethod.groupHook,
     note: 'every coaching she was part of, as client or coach',
@@ -638,6 +638,14 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
         'a coach\'s evidence that a client agreed in writing to her photos '
         'being shown (the picture of the release), deleted with her coach '
         'space; the release file is row 24',
+  ),
+  DeletionRow(
+    number: 62,
+    path: 'relationships/{relId}/checkIns/{weekKey} where the relationship names her as coachUid or clientUid',
+    owner: 'G12, called by G7',
+    method: DeletionMethod.groupHook,
+    note:
+        'her weekly check-in answers, deleted with the coaching they belong to',
   ),
 ];
 

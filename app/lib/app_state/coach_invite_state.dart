@@ -21,30 +21,38 @@ class CoachInviteState {
   /// The code she typed on `C01`, waiting for her check to finish.
   String? pendingCode;
 
+  /// The coach a redeemed code named, until her page has been opened. The
+  /// code is kept until then, so a page that could not open yet is not lost.
+  String? pendingCoach;
+
   void keepPending(String code) {
     pendingCode = code;
     AppChanges.bump();
   }
 
   void clearPending() {
-    if (pendingCode == null) return;
+    if (pendingCode == null && pendingCoach == null) return;
     pendingCode = null;
+    pendingCoach = null;
     AppChanges.bump();
   }
 
   /// Account deletion and sign-out.
   void reset() {
     pendingCode = null;
+    pendingCoach = null;
     _redeeming = false;
   }
 
   bool _redeeming = false;
 
-  /// Redeems the code she kept, once, when [allowed] (she has passed the
-  /// check, with an account, while the coach app is on). Null when there was
-  /// nothing to do. A failure to reach the server keeps the code for the next
-  /// try; a code that will never work is dropped, so she is told once.
-  Future<InviteRedemption?> redeem(
+  /// Redeems the code she kept, when [allowed] (she has passed the check, with
+  /// an account, while the coach app is on). Null when there was nothing to
+  /// do. A failure to reach the server keeps the code for the next try; a code
+  /// that will never work is dropped, so she is told once. A code that named
+  /// a coach is kept, with [pendingCoach], until her page is open
+  /// ([clearPending]); naming her again is harmless.
+  Future<InviteResult?> redeem(
     CoachInviteStore store, {
     required bool allowed,
   }) async {
@@ -52,9 +60,16 @@ class CoachInviteState {
     if (code == null || !allowed || _redeeming) return null;
     _redeeming = true;
     try {
-      final outcome = await store.accept(code);
-      if (outcome != InviteRedemption.unreachable) clearPending();
-      return outcome;
+      final result = await store.accept(code);
+      switch (result.outcome) {
+        case InviteRedemption.refused:
+          clearPending();
+        case InviteRedemption.linked:
+          pendingCoach = result.coachUid;
+        case InviteRedemption.unreachable:
+          break;
+      }
+      return result;
     } finally {
       _redeeming = false;
     }
@@ -70,7 +85,7 @@ abstract class CoachInviteStore {
   /// Her code, new or the one still live. Throws [InviteUnavailable].
   Future<String> create();
 
-  Future<InviteRedemption> accept(String code);
+  Future<InviteResult> accept(String code);
 }
 
 /// The reasons that mean the code itself will never work for her. Anything
@@ -108,17 +123,24 @@ class CallableCoachInviteStore implements CoachInviteStore {
   }
 
   @override
-  Future<InviteRedemption> accept(String code) async {
+  Future<InviteResult> accept(String code) async {
     try {
-      await _callable(kAcceptCoachInviteCallable)
+      final result = await _callable(kAcceptCoachInviteCallable)
           .call<Object?>(<String, Object>{'code': code});
-      return InviteRedemption.linked;
+      final data = result.data;
+      final coach = data is Map ? data['coachUid'] : null;
+      // No coach in the answer is not a link: the code stays to be tried again.
+      return coach is String && coach.isNotEmpty
+          ? InviteResult(InviteRedemption.linked, coach)
+          : const InviteResult(InviteRedemption.unreachable);
     } on FirebaseFunctionsException catch (error) {
-      return _codeIsDead.contains(error.message)
-          ? InviteRedemption.refused
-          : InviteRedemption.unreachable;
+      return InviteResult(
+        _codeIsDead.contains(error.message)
+            ? InviteRedemption.refused
+            : InviteRedemption.unreachable,
+      );
     } catch (_) {
-      return InviteRedemption.unreachable;
+      return const InviteResult(InviteRedemption.unreachable);
     }
   }
 }
@@ -126,18 +148,21 @@ class CallableCoachInviteStore implements CoachInviteStore {
 /// A build with no back end, and tests. Codes live in memory; a code it never
 /// made is refused, as the server would refuse it.
 class InMemoryCoachInviteStore implements CoachInviteStore {
-  InMemoryCoachInviteStore({this.code = 'TEST2345'});
+  InMemoryCoachInviteStore({this.code = 'TEST2345', this.coachUid = 'coach1'});
 
   final String code;
+  final String coachUid;
   final List<String> accepted = <String>[];
 
   @override
   Future<String> create() async => code;
 
   @override
-  Future<InviteRedemption> accept(String code) async {
-    if (code != this.code) return InviteRedemption.refused;
+  Future<InviteResult> accept(String code) async {
+    if (code != this.code) {
+      return const InviteResult(InviteRedemption.refused);
+    }
     accepted.add(code);
-    return InviteRedemption.linked;
+    return InviteResult(InviteRedemption.linked, coachUid);
   }
 }

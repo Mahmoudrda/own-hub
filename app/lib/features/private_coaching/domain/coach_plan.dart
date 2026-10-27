@@ -4,6 +4,10 @@
 /// food pack and the recipe library, so a figure can never disagree with them.
 library;
 
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+
 import '../../train/domain/my_plan.dart';
 import 'coaching_contract.dart';
 import 'parse.dart';
@@ -310,6 +314,12 @@ class CoachPlan {
 }
 
 /// The body of `publish_coach_plan`.
+///
+/// A new plan carries a `requestKey` worked out from what is sent, so sending
+/// the very same plan to the same client again (a retry after a timeout, or
+/// Back and send once more) finds the plan the server already made instead of
+/// making a second one. `reviewsHealth` says this build can clear the health
+/// hold, so the server may hold a flagged client's plan for it.
 Json publishPlanRequest({
   required String subId,
   required String name,
@@ -319,13 +329,23 @@ Json publishPlanRequest({
   String? startsOn,
 }) {
   assert((workout == null) != (meal == null), 'exactly one body');
+  final kind = workout != null ? PlanKind.workout.wire : PlanKind.meal.wire;
+  final body = workout != null ? workout.toJson() : meal!.toJson();
   return <String, Object?>{
     'subId': subId,
-    'kind': workout != null ? PlanKind.workout.wire : PlanKind.meal.wire,
+    'kind': kind,
     'name': name.trim(),
-    'body': workout != null ? workout.toJson() : meal!.toJson(),
+    'body': body,
     'planId': ?planId,
     'startsOn': ?startsOn,
+    if (planId == null)
+      'requestKey': sha256
+          .convert(
+            utf8.encode(jsonEncode([subId, kind, name.trim(), startsOn, body])),
+          )
+          .toString()
+          .substring(0, 32),
+    'reviewsHealth': true,
   };
 }
 

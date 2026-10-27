@@ -261,24 +261,57 @@ void main() {
 
     test('publish_coach_plan', () {
       final keys = keysOf('publish_coach_plan').cast<String>();
+      // A new plan carries every key: its start date, the key that makes a
+      // second send of it one plan, and the mark of a build that reviews health.
+      expect(
+        publishPlanRequest(
+          subId: 's',
+          name: 'n',
+          workout: const MyPlan.blank(),
+          startsOn: '2026-11-07',
+        ).keys,
+        _sameKeys(keys.where((k) => k != 'planId')),
+      );
+      // A new version of a plan names the plan instead of keying the send.
       expect(
         publishPlanRequest(
           subId: 's',
           name: 'n',
           meal: const MealPlanBody(),
           planId: 'p',
+          startsOn: '2026-11-07',
         ).keys,
-        _sameKeys(keys),
+        _sameKeys(keys.where((k) => k != 'requestKey')),
       );
+      // Without a date the key is simply left out.
       expect(
         publishPlanRequest(
           subId: 's',
           name: 'n',
           workout: const MyPlan.blank(),
         ).keys,
-        _sameKeys(keys.where((k) => k != 'planId')),
+        _sameKeys(keys.where((k) => k != 'planId' && k != 'startsOn')),
       );
     });
+
+    test(
+      'a plan sent twice has one request key; a different one has another',
+      () {
+        Object? key({String sub = 's', String name = 'n', String? start}) =>
+            publishPlanRequest(
+              subId: sub,
+              name: name,
+              meal: const MealPlanBody(),
+              startsOn: start,
+            )['requestKey'];
+        expect(key(), key());
+        expect(key(name: ' n '), key(), reason: 'the name is trimmed first');
+        expect(key(sub: 't'), isNot(key()));
+        expect(key(name: 'm'), isNot(key()));
+        expect(key(start: '2026-11-07'), isNot(key()));
+        expect((key() as String).length, inInclusiveRange(8, 64));
+      },
+    );
 
     test('live session calls', () {
       expect(

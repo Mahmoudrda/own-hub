@@ -1818,8 +1818,8 @@ def create_coach_invite(request: https_fn.CallableRequest) -> dict:
 
 @https_fn.on_call()
 def accept_coach_invite(request: https_fn.CallableRequest) -> dict:
-    """After her check: `{code}` opens an enquiry with the coach who sent it.
-    `{relId, coachUid}` out."""
+    """After her check: `{code}` names the coach who sent it, and writes nothing:
+    the app opens her page and she asks to join there. `{relId, coachUid}` out."""
     uid = _require_auth(request)
     data = _body(request)
     import datetime as dt
@@ -2758,17 +2758,9 @@ def on_coaching_report(event) -> None:
     from coaching import moderation
 
     try:
-        from datetime import timedelta
-
-        db = store.db()
-        data = event.data.to_dict() or {}
-        since = _coaching_now() - timedelta(hours=24)
-        mine = db.collection("reports").where("reporterUid", "==", data.get("reporterUid")).where("createdAt", ">=", since)
-        if sum(1 for _ in mine.stream()) > common_limits()["reportsPerDay"]:
-            db.collection("reports").document(event.params["reportId"]).update({"throttled": True})
-            return
-        moderation.capture_evidence(
-            db, event.params["reportId"], data, now=_coaching_now()
+        moderation.on_report(
+            store.db(), event.params["reportId"], event.data.to_dict() or {},
+            now=_coaching_now(), per_day=common_limits()["reportsPerDay"],
         )
     except Exception:
         logs.error("coaching_report_trigger_failed")

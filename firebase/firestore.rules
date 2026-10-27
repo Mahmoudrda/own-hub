@@ -1241,8 +1241,16 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // The weekly check-in: written only by the coaching service. The client
+      // reads her own answers (also after the coaching ended). Her coach reads
+      // them only while the coaching is active: a pain note is health data and
+      // stops being the coach's when the coaching stops. Nobody else reads.
       match /checkIns/{weekKey} {
-        allow read, write: if false;
+        allow read: if coachClientsLive()
+                    && isPartyOfParent()
+                    && (request.auth.uid == parent().clientUid
+                        || parent().status == 'active');
+        allow create, update, delete: if false;
       }
     }
 

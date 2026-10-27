@@ -13,16 +13,28 @@ import 'package:own_hub/features/private_coaching/presentation/plans/schedule_se
 import 'package:own_hub/features/private_coaching/presentation/plans/share_meal_plan_view.dart';
 import 'package:own_hub/features/private_coaching/presentation/plans/share_workout_view.dart';
 import 'package:own_hub/features/onboarding/domain/starting_program.dart';
+import 'package:own_hub/features/onboarding/domain/intake.dart' show LifeStage;
 import 'package:own_hub/features/train/domain/my_plan.dart';
+import 'package:own_hub/features/train/domain/workout_library.dart';
 import 'package:own_hub/features/train/presentation/plan_editor_view.dart';
 import 'package:own_hub/routing/coaching_wiring.dart';
 
+import 'package:own_hub/domain/format/day_key.dart';
 import 'package:own_hub/ui/app_button.dart';
+
+import '../../../helpers/primary_actions.dart';
 
 import 'plans_support.dart';
 
 void _phone(WidgetTester t) {
   t.view.physicalSize = const Size(1170, 3200);
+  t.view.devicePixelRatio = 3;
+  addTearDown(t.view.reset);
+}
+
+/// Wide enough for the test font to fit the target bars' two-ended rows.
+void _wide(WidgetTester t) {
+  t.view.physicalSize = const Size(1800, 3200);
   t.view.devicePixelRatio = 3;
   addTearDown(t.view.reset);
 }
@@ -540,7 +552,7 @@ void main() {
           if (subId == 'nour') {
             nourCalls++;
             if (nourCalls == 1) {
-              return const CoachingFailure(CoachingRefusal.badRequest);
+              return const CoachingFailure(CoachingRefusal.unreachable);
             }
           }
           return null;
@@ -661,31 +673,329 @@ void main() {
     expect(publishedText.data, 'Sent to 2 clients');
   });
 
-  testWidgets('assign sheet renders in Arabic with 6 clients without overflow', (
+  testWidgets(
+    'assign sheet renders in Arabic with 6 clients without overflow',
+    (t) async {
+      _phone(t);
+      await t.pumpWidget(
+        host(
+          Scaffold(
+            body: AssignClientsSheet(
+              mine: const AssignClient(subId: 'c1', name: 'مريم'),
+              others: const [
+                AssignClient(subId: 'c2', name: 'نور'),
+                AssignClient(subId: 'c3', name: 'سلمى'),
+                AssignClient(subId: 'c4', name: 'سارة'),
+                AssignClient(subId: 'c5', name: 'هبة'),
+                AssignClient(subId: 'c6', name: 'ياسمين'),
+              ],
+              initial: const {'c2'},
+              startsOn: DateTime(2026, 11, 1),
+            ),
+          ),
+          locale: const Locale('ar'),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.byKey(const ValueKey('assign-done')), findsOneWidget);
+    },
+  );
+
+  /// Four days, then the same four again as week two: eight days in all.
+  MyPlan eightDays() => MyPlan.fork(
+    AuthoredProgramme(
+      programId: 'split4',
+      titleEn: 'Four days',
+      titleAr: 'أربع أيام',
+      status: ProgrammeStatus.published,
+      sessions: [
+        for (final d in ['a', 'b', 'c', 'd'])
+          AuthoredSession(
+            sessionId: d,
+            titleEn: 'Day $d',
+            titleAr: 'يوم $d',
+            minutes: 40,
+            lifeStages: const {LifeStage.none},
+            moves: [move('${d}1'), move('${d}2')],
+          ),
+      ],
+    ),
+  ).withRepeatedLastWeek();
+
+  testWidgets('a 4-day split with Repeat last week can be sent: 8 days', (
     t,
   ) async {
     _phone(t);
+    final plan = eightDays();
+    expect(plan.days.length, 8);
+    expect(plan.weekCount, 2);
+    final repo = RecordingRepo(uid: 'coach1');
     await t.pumpWidget(
       host(
-        Scaffold(
-          body: AssignClientsSheet(
-            mine: const AssignClient(subId: 'c1', name: 'مريم'),
-            others: const [
-              AssignClient(subId: 'c2', name: 'نور'),
-              AssignClient(subId: 'c3', name: 'سلمى'),
-              AssignClient(subId: 'c4', name: 'سارة'),
-              AssignClient(subId: 'c5', name: 'هبة'),
-              AssignClient(subId: 'c6', name: 'ياسمين'),
-            ],
-            initial: const {'c2'},
-            startsOn: DateTime(2026, 11, 1),
-          ),
+        ShareWorkoutView(
+          repository: repo,
+          subscription: sub(),
+          clientName: 'Mai',
+          templates: [
+            CoachDraft(
+              id: 't1',
+              kind: PlanKind.workout,
+              name: 'Four days, two weeks',
+              body: plan.toJson(),
+            ),
+          ],
         ),
-        locale: const Locale('ar'),
       ),
     );
+    await t.tap(find.byKey(const ValueKey('workout-template-0')));
     await t.pumpAndSettle();
-    expect(find.byKey(const ValueKey('assign-done')), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('workout-publish')));
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('workout-error')), findsNothing);
+    final sent = repo.calls.single.$2;
+    expect((sent['body'] as Map)['days'], hasLength(8));
+    expect(find.byKey(const ValueKey('workout-published')), findsOneWidget);
+  });
+
+  test('what the server refuses is found before the call', () {
+    final eight = eightDays();
+    expect(coachWorkoutProblems(eight, 'Plan'), isEmpty);
+    // Eight days all in week one is a week too many.
+    final crowded = MyPlan(
+      days: [for (final d in eight.days) MyPlanDay(session: d.session)],
+    );
+    expect(coachWorkoutProblems(crowded, 'Plan'), [PlanProblem.tooManyDays]);
+    // Week 3 with no week 2 is a gap the server refuses.
+    final gapped = MyPlan(
+      days: [
+        MyPlanDay(session: eight.days.first.session),
+        MyPlanDay(session: eight.days.last.session, week: 3),
+      ],
+    );
+    expect(coachWorkoutProblems(gapped, 'Plan'), [PlanProblem.noDays]);
+  });
+
+  testWidgets('a coach with one client sets the start date', (t) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    await t.pumpWidget(
+      host(
+        ShareWorkoutView(
+          repository: repo,
+          subscription: sub(),
+          clientName: 'Mai',
+          splits: [split()],
+        ),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('workout-split-0')));
+    await t.pumpAndSettle();
+    expect(find.byKey(const ValueKey('assign-more')), findsNothing);
+    await t.tap(find.byKey(const ValueKey('start-date')));
+    await t.pumpAndSettle();
+    await t.tap(find.text('OK'));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('workout-publish')));
+    await t.pumpAndSettle();
+    expect(repo.calls.single.$2['startsOn'], dayKey(cairoToday()));
+  });
+
+  testWidgets('the same plan to the same client carries the same request key', (
+    t,
+  ) async {
+    _phone(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    Future<void> openAndSend() async {
+      await t.pumpWidget(
+        host(
+          ShareWorkoutView(
+            key: UniqueKey(),
+            repository: repo,
+            subscription: sub(),
+            clientName: 'Mai',
+            others: const [AssignClient(subId: 'nour', name: 'Nour')],
+            splits: [split()],
+          ),
+        ),
+      );
+      await t.tap(find.byKey(const ValueKey('workout-split-0')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('assign-more')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('assign-client-nour')));
+      await t.pump();
+      await t.tap(find.byKey(const ValueKey('assign-done')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('workout-publish')));
+      await t.pumpAndSettle();
+    }
+
+    await openAndSend();
+    // Back, open it again, build the same plan, send once more.
+    await openAndSend();
+    final keys = [
+      for (final c in repo.calls)
+        if (c.$1 == 'publish') '${c.$2['subId']}:${c.$2['requestKey']}',
+    ];
+    expect(keys, hasLength(4));
+    expect(keys[0], keys[2], reason: 'Mai: the server finds the plan she has');
+    expect(keys[1], keys[3], reason: 'Nour: likewise');
+    expect(keys[0].split(':').last, isNot(keys[1].split(':').last));
+    expect(repo.calls.first.$2['reviewsHealth'], isTrue);
+  });
+
+  testWidgets(
+    'a partial send has one filled button, and a held client gets no Retry',
+    (t) async {
+      _phone(t);
+      var salmaCalls = 0;
+      final repo = RecordingRepo(uid: 'coach1')
+        ..failPublishFor = (subId) {
+          if (subId == 'nour') {
+            return const CoachingFailure(CoachingRefusal.healthNotReviewed);
+          }
+          if (subId == 'salma' && ++salmaCalls == 1) {
+            return const CoachingFailure(CoachingRefusal.unreachable);
+          }
+          return null;
+        };
+      await t.pumpWidget(
+        host(
+          ShareWorkoutView(
+            repository: repo,
+            subscription: sub(),
+            clientName: 'Mai',
+            others: const [
+              AssignClient(subId: 'nour', name: 'Nour'),
+              AssignClient(subId: 'salma', name: 'Salma'),
+            ],
+            splits: [split()],
+          ),
+        ),
+      );
+      await t.tap(find.byKey(const ValueKey('workout-split-0')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('assign-more')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('assign-client-nour')));
+      await t.tap(find.byKey(const ValueKey('assign-client-salma')));
+      await t.pump();
+      await t.tap(find.byKey(const ValueKey('assign-done')));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const ValueKey('workout-publish')));
+      await t.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('assign-partial')), findsOneWidget);
+      expect(find.byKey(const ValueKey('workout-publish')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('workout-edit')),
+        findsNothing,
+        reason: 'the plan some clients have is not edited under a Retry',
+      );
+      expect(filledPrimaryActions(t), 1, reason: 'Retry is the only button');
+      expect(find.text('Try again for 1'), findsOneWidget);
+
+      await t.tap(find.byKey(const ValueKey('assign-retry')));
+      await t.pumpAndSettle();
+      final subIds = [
+        for (final c in repo.calls)
+          if (c.$1 == 'publish') c.$2['subId'],
+      ];
+      expect(subIds, ['sub1', 'nour', 'salma', 'salma']);
+      // Nour waits for her coach to read her answers: nothing to retry.
+      expect(find.byKey(const ValueKey('assign-partial')), findsOneWidget);
+      expect(find.byKey(const ValueKey('assign-retry')), findsNothing);
+      expect(filledPrimaryActions(t), 0);
+    },
+  );
+
+  Future<void> buildMealForTwo(
+    WidgetTester t,
+    RecordingRepo repo, {
+    required AssignClient other,
+  }) async {
+    await t.pumpWidget(
+      host(
+        ShareMealPlanView(
+          repository: repo,
+          subscription: sub(),
+          catalog: catalog(),
+          clientName: 'Mai',
+          others: [other],
+        ),
+      ),
+    );
+    await t.tap(find.byKey(const ValueKey('meal-add-breakfast')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(const ValueKey('add-recipe-r1')));
+    await t.pumpAndSettle();
+    await t.enterText(find.byKey(const ValueKey('meal-name')), 'Week');
+    await t.tap(find.byKey(const ValueKey('assign-more')));
+    await t.pumpAndSettle();
+    await t.tap(find.byKey(Key('assign-client-${other.subId}')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('assign-done')));
+    await t.pumpAndSettle();
+    // Typed last, as in the goal tests above: the target bars are drawn at
+    // the next frame, and the publish tap settles on the sent card instead.
+    await t.enterText(find.byKey(const ValueKey('meal-goal-kcal')), '1600');
+    await t.enterText(find.byKey(const ValueKey('meal-goal-protein')), '110');
+    await t.tap(find.byKey(const ValueKey('meal-publish')));
+    await t.pumpAndSettle();
+  }
+
+  Map<String, Object?> bodyOf(RecordingRepo repo, String subId) =>
+      repo.calls.firstWhere((c) => c.$2['subId'] == subId).$2['body']!
+          as Map<String, Object?>;
+
+  testWidgets('meal: a client with an eating history is sent no goal', (
+    t,
+  ) async {
+    _wide(t);
+    final repo = RecordingRepo(uid: 'coach1');
+    await buildMealForTwo(
+      t,
+      repo,
+      other: const AssignClient(
+        subId: 'nour',
+        name: 'Nour',
+        eatingHistory: true,
+      ),
+    );
+    expect(bodyOf(repo, 'sub1')['goal'], isNotNull);
+    expect(bodyOf(repo, 'nour').containsKey('goal'), isFalse);
+    expect(find.byKey(const ValueKey('assign-partial')), findsNothing);
+    expect(find.byKey(const ValueKey('meal-published')), findsOneWidget);
+  });
+
+  testWidgets('meal: a goal the server holds back is resent without it', (
+    t,
+  ) async {
+    _wide(t);
+    // The call being answered is already in repo.calls.
+    late final RecordingRepo repo;
+    repo = RecordingRepo(uid: 'coach1')
+      ..failPublishFor = (subId) =>
+          subId == 'nour' &&
+              (repo.calls.last.$2['body'] as Map).containsKey('goal')
+          ? const CoachingFailure(CoachingRefusal.eatingHistoryHold)
+          : null;
+    await buildMealForTwo(
+      t,
+      repo,
+      other: const AssignClient(subId: 'nour', name: 'Nour'),
+    );
+    expect(find.byKey(const ValueKey('assign-retry')), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('assign-retry')));
+    await t.pumpAndSettle();
+    final nour = [
+      for (final c in repo.calls)
+        if (c.$2['subId'] == 'nour') c.$2['body'] as Map,
+    ];
+    expect(nour, hasLength(2));
+    expect(nour.first.containsKey('goal'), isTrue);
+    expect(nour.last.containsKey('goal'), isFalse);
+    expect(find.byKey(const ValueKey('meal-published')), findsOneWidget);
   });
 
   testWidgets('meal: target needs both numbers', (t) async {
@@ -725,6 +1035,51 @@ void main() {
     final goal = body['goal'] as Map;
     expect(goal['kcalPerDay'], 1600);
     expect(goal['proteinGPerDay'], 110);
+  });
+
+  testWidgets('meal: the target bars fit a 326 px phone at 1x and 2x text', (
+    t,
+  ) async {
+    t.view.physicalSize = const Size(326 * 3, 3200);
+    t.view.devicePixelRatio = 3;
+    addTearDown(t.view.reset);
+    for (final locale in [const Locale('en'), const Locale('ar')]) {
+      for (final scale in [1.0, 2.0]) {
+        await t.pumpWidget(
+          host(
+            ShareMealPlanView(
+              repository: RecordingRepo(uid: 'coach1'),
+              subscription: sub(),
+              catalog: catalog(),
+              clientName: 'Mai',
+              existing: CoachPlan(
+                id: 'm1',
+                kind: PlanKind.meal,
+                name: 'Week',
+                meal: mealBody(),
+              ),
+            ),
+            locale: locale,
+            scale: scale,
+          ),
+        );
+        await t.enterText(find.byKey(const ValueKey('meal-goal-kcal')), '1600');
+        await t.enterText(
+          find.byKey(const ValueKey('meal-goal-protein')),
+          '110',
+        );
+        await t.pumpAndSettle();
+        expect(
+          find.byKey(const ValueKey('meal-target-kcal-bar')),
+          findsOneWidget,
+        );
+        expect(
+          t.takeException(),
+          isNull,
+          reason: '${locale.languageCode} at $scale',
+        );
+      }
+    }
   });
 
   testWidgets(

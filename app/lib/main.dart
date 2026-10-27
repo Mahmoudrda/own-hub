@@ -48,6 +48,7 @@ import 'features/signup/domain/auth_repository.dart';
 import 'features/train/domain/exercise_traits.dart' show ExerciseTraits;
 import 'routing/app_router.dart';
 import 'routing/app_routes.dart';
+import 'routing/platform_links.dart';
 import 'theme/app_tokens.dart';
 import 'theme/hand_theme.dart';
 
@@ -462,6 +463,15 @@ class _OwnHubAppState extends State<OwnHubApp> with WidgetsBindingObserver {
   /// catches a new time zone or a day that moved on.
   void _noteOpened() =>
       unawaited(AppRouter.noteAppOpened(lookupAppL10n(_locale.value)));
+
+  /// A URL the platform pushes onto the running app. This State is registered
+  /// before the navigator's own observer, so it is asked first: a coach link
+  /// or a screen goes on to the router, anything else (a widget tap, a sign-in
+  /// callback) is dropped here instead of opening the unknown-route page.
+  @override
+  Future<bool> didPushRouteInformation(
+    RouteInformation routeInformation,
+  ) async => !appFollowsPushedRoute(routeInformation.uri);
 
   /// Back in the foreground: a refresh the network refused at launch is
   /// tried again (R1). Does nothing when nothing is owed.

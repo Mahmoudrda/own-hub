@@ -69,6 +69,13 @@ const Map<String, String> _arabicAllowed = {
       'as the food matcher, so a message that moves payment off the platform '
       'is caught in either interface language. Matching data for input, '
       'never shown to anybody.',
+  'lib/features/private_coaching/domain/inbody_scan.dart':
+      'The InBody printout reader. Holds the Arabic labels a printout or a '
+      'typed goal can carry ("الوزن", "كتلة العضل", "نسبة الدهون", "الطول"), '
+      'and the Arabic-Indic digits and decimal separator it folds to Western '
+      'ones, so a scan in either language is read whatever the interface '
+      'language is. Matching data for input, never shown to anybody; the '
+      'sheet that shows the numbers takes every word from AppL10n.',
   'lib/features/train/domain/notification_voice.dart':
       'The notification picker\'s lock-screen guard. Holds Arabic words that '
       'must never reach a lock screen (weight, pregnancy, guilt words), '
@@ -120,16 +127,17 @@ void main() {
   test('the Arabic allowlist stays small', () {
     // If this needs raising, the reason belongs in the map above, in writing.
     //
-    // Five, in two categories. One screen: the language chooser, which must
-    // show both languages before she has picked either. Four domain files:
-    // the Eat parser, its normaliser, the coaching chat's safety screen and
-    // the notification picker's lock-screen guard, which hold Arabic as
-    // *matching data* rather than as copy and render nothing at all.
+    // Six, in two categories. One screen: the language chooser, which must
+    // show both languages before she has picked either. Five domain files:
+    // the Eat parser, its normaliser, the coaching chat's safety screen, the
+    // InBody printout reader and the notification picker's lock-screen guard,
+    // which hold Arabic as *matching data* rather than as copy and render
+    // nothing at all.
     //
     // A fourth entry should be argued for, not assumed — and an entry for
     // anything under `presentation/` should be refused, because that is where
     // copy lives.
-    expect(_arabicAllowed.length, lessThanOrEqualTo(5));
+    expect(_arabicAllowed.length, lessThanOrEqualTo(6));
 
     for (final path in _arabicAllowed.keys) {
       expect(

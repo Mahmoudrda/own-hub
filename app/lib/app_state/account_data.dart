@@ -89,6 +89,7 @@ import 'snapshot_owner.dart';
 import 'getting_started.dart';
 import 'guest_session.dart';
 import '../features/onboarding/domain/body_data.dart';
+import '../features/private_coaching/data/saved_reply_store.dart';
 import 'onboarding_state.dart';
 import 'tip_anchors.dart';
 import 'workout_session_state.dart';
@@ -286,6 +287,8 @@ class ThisPhoneWipe implements LocalWipe {
     CoachApplicationDraft.instance.reset();
     // The private notes a coach keeps about her clients, on this phone only.
     CoachClientNotes.instance.reset();
+    // Her saved chat replies, a list for each coach login on this phone.
+    unawaited(SavedReplyStore.eraseAll().catchError((Object _) {}));
     BarPreference.instance.reset();
     // The exercise library: its cached catalogue, the clips kept on the phone
     // and the move she last opened. None of it is hers, and all of it goes.

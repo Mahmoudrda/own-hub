@@ -28,7 +28,10 @@ void main() {
       final text = f.readAsStringSync();
       if (text.contains('package:video_player/') &&
           !f.path.endsWith('exercise_clip_player.dart') &&
-          !f.path.endsWith('founder_video_player.dart')) {
+          !f.path.endsWith('founder_video_player.dart') &&
+          !f.path.endsWith('chat_media_bubbles.dart') &&
+          !f.path.endsWith('chat_thread_view.dart') &&
+          !f.path.endsWith('voice_bubble.dart')) {
         offenders.add(f.path);
       }
       if (text.contains('VideoProgressIndicator') ||

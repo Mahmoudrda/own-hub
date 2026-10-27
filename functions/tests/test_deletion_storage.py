@@ -117,6 +117,18 @@ def test_every_uid_keyed_storage_rule_path_is_purged():
     assert keyed <= purged, sorted(keyed - purged)
 
 
+def test_every_relationship_keyed_storage_rule_path_is_purged_with_the_thread():
+    """chat-media/{relId}/... is not keyed on a uid, so the check above cannot
+    see it. The relationship hook purges `x/{relId}/` for each thread of hers;
+    a new `match /x/{relId}/...` must be added there or this fails."""
+    source = open(_RULES, encoding="utf-8").read()
+    keyed = set(re.findall(r"match\s+/([A-Za-z0-9_-]+)/\{relId\}", source))
+    hook = open(deletion.__file__, encoding="utf-8").read()
+    purged = set(re.findall(r'f"([A-Za-z0-9_-]+)/\{snapshot\.id\}/"', hook))
+    assert "chat-media" in keyed
+    assert keyed <= purged, sorted(keyed - purged)
+
+
 # Firestore collections that the app also names as 'x/$uid/...'. Anything else
 # with that shape is a Storage path and must be purged.
 _FIRESTORE = {"users", "coaches", "plans", "relationships", "followGraph", "posts"}

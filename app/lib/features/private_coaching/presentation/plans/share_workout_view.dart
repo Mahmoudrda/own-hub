@@ -110,9 +110,13 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
   String _error = '';
   Set<String> _also = <String>{};
   DateTime? _startsOn;
-  final Set<String> _sentSubs = <String>{};
-  Map<String, CoachingFailure> _failed = <String, CoachingFailure>{};
-  int _sentCount = 0;
+  final AssignProgress _progress = AssignProgress();
+  ({String id, int revision})? _first;
+
+  Future<void> _pickStart() async {
+    final picked = await pickStartDate(context, _startsOn ?? cairoToday());
+    if (picked != null && mounted) setState(() => _startsOn = picked);
+  }
 
   Future<void> _assign() async {
     final choice = await showAppSheet<AssignChoice>(
@@ -125,7 +129,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
           ),
           others: widget.others,
           initial: _also,
-          startsOn: _startsOn ?? DateTime.now(),
+          startsOn: _startsOn ?? cairoToday(),
         ),
       ],
     );
@@ -248,7 +252,6 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
     setState(() {
       _busy = true;
       _error = '';
-      _failed = <String, CoachingFailure>{};
     });
     try {
       final stamped = stampSafetyTags(plan, _byId);
@@ -262,7 +265,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
           startsOn: start,
         );
         if (!mounted) return;
-        _sentSubs.add(widget.subscription.id);
+        _progress.sent.add(widget.subscription.id);
         setState(() {
           _busy = false;
           _published = true;
@@ -270,15 +273,11 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
         widget.onPublished?.call(sent.planId, sent.revision);
         return;
       }
-      final ids = <String>[
-        if (!_sentSubs.contains(widget.subscription.id)) widget.subscription.id,
-        for (final id in _also)
-          if (!_sentSubs.contains(id)) id,
-      ];
-      String? firstPlanId;
-      var firstRevision = 1;
       final outcome = await publishToMany(
-        subIds: ids,
+        subIds: _progress.toSend([
+          widget.subscription.id,
+          ..._also,
+        ], canRetryAssign),
         send: (subId) async {
           final sent = await widget.repository.publishCoachPlan(
             subId: subId,
@@ -290,23 +289,19 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
             startsOn: start,
           );
           if (subId == widget.subscription.id) {
-            firstPlanId = sent.planId;
-            firstRevision = sent.revision;
+            _first = (id: sent.planId, revision: sent.revision);
           }
         },
       );
       if (!mounted) return;
-      _sentSubs.addAll(outcome.sent);
+      _progress.record(outcome, canRetryAssign);
       setState(() {
         _busy = false;
-        _failed = outcome.failed;
-        _sentCount = _sentSubs.length;
-        _published = outcome.allSent;
+        _published = _progress.allSent;
       });
-      if (outcome.allSent) {
-        if (firstPlanId != null) {
-          widget.onPublished?.call(firstPlanId!, firstRevision);
-        }
+      if (_progress.allSent) {
+        final first = _first;
+        if (first != null) widget.onPublished?.call(first.id, first.revision);
       } else {
         showHonestNotice(context, l10n.someClientsDidNotGetThePlan);
       }
@@ -397,7 +392,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
         final plan = _edit.current;
         return AppScaffold(
           appBar: AppTopBar(title: l10n.shareAWorkoutPlan, onBack: _back),
-          footer: plan == null || _published
+          footer: plan == null || _published || _progress.failed.isNotEmpty
               ? const []
               : [
                   AppButton(
@@ -418,24 +413,33 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                   color: AppColors.onSurfaceVariant,
                 ),
               ),
-            if (_failed.isNotEmpty)
+            if (_progress.failed.isNotEmpty)
               AppCard(
                 variant: AppCardVariant.amber,
                 key: const ValueKey('assign-partial'),
                 children: [
-                  Text(
-                    l10n.sentToNClients(countLabel(_sentCount)),
-                    style: AppText.titleS,
-                  ),
-                  for (final e in _failed.entries)
+                  if (_progress.sent.isNotEmpty)
+                    Text(
+                      l10n.sentToNClients(countLabel(_progress.sent.length)),
+                      style: AppText.titleS,
+                    ),
+                  for (final e in _progress.failed.entries)
                     Text(
                       '${_nameOf(e.key)}: ${coachFailureText(l10n, e.value)}',
                       style: AppText.bodyM,
                     ),
+                  if (_progress.retryable(canRetryAssign).isNotEmpty)
+                    AppButton(
+                      l10n.tryAgainForN(
+                        countLabel(_progress.retryable(canRetryAssign).length),
+                      ),
+                      key: const ValueKey('assign-retry'),
+                      onPressed: _busy ? null : _publish,
+                    ),
                   AppButton(
-                    l10n.tryAgainForN(countLabel(_failed.length)),
-                    key: const ValueKey('assign-retry'),
-                    onPressed: _busy ? null : _publish,
+                    l10n.back,
+                    variant: AppButtonVariant.outlined,
+                    onPressed: _back,
                   ),
                 ],
               ),
@@ -446,8 +450,10 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      _sentSubs.length > 1
-                          ? l10n.sentToNClients(countLabel(_sentSubs.length))
+                      _progress.sent.length > 1
+                          ? l10n.sentToNClients(
+                              countLabel(_progress.sent.length),
+                            )
                           : l10n.publishedNameCanSeeItNow(first),
                       key: const ValueKey('workout-published'),
                       style: AppText.titleS,
@@ -460,6 +466,10 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                   ),
                 ],
               )
+            else if (_progress.failed.isNotEmpty)
+              // The plan is what some clients already have: no more edits, only
+              // a Retry of the same plan, or Back.
+              ...const <Widget>[]
             else if (plan == null)
               ..._starts(l10n, lang)
             else ...[
@@ -472,6 +482,13 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                 ],
                 onChanged: (_) => setState(() => _error = ''),
               ),
+              if (widget.existing == null)
+                AppListItem(
+                  key: const ValueKey('start-date'),
+                  title: l10n.startDate,
+                  subtitle: dateText(l10n, _startsOn ?? cairoToday()),
+                  onTap: _busy ? null : _pickStart,
+                ),
               if (widget.existing == null && widget.others.isNotEmpty)
                 AppButton(
                   l10n.sendToMoreClients,

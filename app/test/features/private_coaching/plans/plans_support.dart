@@ -255,11 +255,13 @@ Food food(String id, {Set<String>? allergens}) => Food(
 );
 
 MealCatalog catalog({List<Recipe>? recipes}) => MealCatalog(
-  recipes: recipes ?? [
-    recipe('r1'),
-    recipe('r2', allergens: {'sesame'}),
-    recipe('r3', known: false),
-  ],
+  recipes:
+      recipes ??
+      [
+        recipe('r1'),
+        recipe('r2', allergens: {'sesame'}),
+        recipe('r3', known: false),
+      ],
   foods: FoodLibrary([food('f1', allergens: {}), food('f2')]),
 );
 

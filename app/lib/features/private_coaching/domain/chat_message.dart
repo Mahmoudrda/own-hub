@@ -20,8 +20,7 @@ enum MessageType with WireEnum {
   @override
   final String wire;
 
-  bool get writtenByApp =>
-      this == text || this == recipe || isMedia;
+  bool get writtenByApp => this == text || this == recipe || isMedia;
 
   bool get isMedia => this == image || this == video || this == audio;
 

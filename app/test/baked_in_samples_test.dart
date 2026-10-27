@@ -56,7 +56,14 @@ import 'package:flutter_test/flutter_test.dart';
 /// numbered thing ("Step 2 of 4", the three pledge items), or a sentence
 /// already guarded by `statedLine`/`statesHerFigure` so that it reaches only
 /// the woman it is true of.
-const int _ceiling = 117;
+///
+/// 118 now. Four coaching strings state a figure that is true for every woman
+/// and has no constant to parameterise from: the "last 12 months" window in
+/// the two pregnancy and baby questions (the screening definition itself) and
+/// the two ends of the 1 to 5 check-in scale ("1 is low, 5 is high" and
+/// "1 is hard, 5 is easy"). The chat media limits that arrived with them take
+/// their figures from `CoachingLimits`.
+const int _ceiling = 118;
 
 /// True for a string that states a figure it cannot know is hers.
 ///

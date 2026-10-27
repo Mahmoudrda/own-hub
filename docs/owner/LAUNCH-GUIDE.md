@@ -25,7 +25,7 @@ New in this build: private coaching (free for now) and the gym improvements. Coa
 - **Coaching is live and free.** Packages show their price as "when payments open" with a "Free for now" badge. Turning payments on later needs your legal steps (lawyer on the payment model, the data protection licence, tax) and one switch on the server and in the app.
 - **Rahma joins like every coach:** she applies in the app (Profile, Become a coach), and a woman reviewer approves her in the dashboard's Coaches tab. Then she builds her portfolio and packages, and her photos show after the reviewer checks them.
 - **Before-and-after photos** are shown to members only after a coach confirms her client agreed in writing and Own Hub's woman reviewer approves each one. The original is deleted; only a copy without location data stays.
-- **Chat is text only**, between a member and the coach she joined. Phone numbers, payment details and links are blocked. Staff read a chat only after one of them reports it.
+- **Chat carries text, photos, short videos (up to 30 seconds) and voice notes**, between a member and the coach she joined. Phone numbers, payment details and links are blocked in text. The first voice note or video with sound asks for the microphone (iPhone) or the record-audio permission (Android). Staff read a chat only after one of them reports it.
 - **The screen-awake code** compiled on iPhone and Android, but only a real iPhone proves the screen stays on during a workout: check it in step 7.
 - **Security round done.** One serious hole was found and closed: anyone signed in by phone could get verified by naming a reviewer who had "auto-pass people I know" on. Now that only puts her request in that reviewer's queue. The full list of what was checked is in Security sign-off. Step 3 has the console settings only you can switch on.
 - **Notifications are written for her.** AI wrote 240 casual lines in English and Egyptian Arabic. Her phone picks one by what she did (the day after a training day she skipped gets a warm fresh-start note, never guilt), fills in her next workout, a food she logs or the move of her new best, and learns which tone she opens. Nothing about it leaves her phone and it costs nothing to run.
@@ -331,7 +331,7 @@ cd ~/ownhub/app && export PATH="$HOME/development/flutter/bin:$PATH" && bash too
 | Health apps | Activity and fitness, Nutrition and weight management, Period tracking. Not a medical device. Both descriptions must keep the line that the app is not a medical device and does not diagnose or treat anything. |
 | Advertising ID | No |
 | Account deletion | In the app: Profile, Your data, Delete everything. Web: `https://own-hub.app/delete-account` |
-| Permissions | No photo and video declaration (the app uses the system photo picker). The rest-timer alarm uses `SCHEDULE_EXACT_ALARM`, which needs no form; answer only the declarations Play lists after the upload. |
+| Permissions | No photo and video declaration (the app uses the system photo picker). `RECORD_AUDIO` is declared for voice notes in the coaching chat (asked at the first hold, never at launch) and goes in Data safety. The rest-timer alarm uses `SCHEDULE_EXACT_ALARM`, which needs no form; answer only the declarations Play lists after the upload. |
 
 ### [ ] Store listing in English and Arabic
 
@@ -422,7 +422,7 @@ Every field, in the order App Store Connect asks for it. Values in a grey box co
 | Simulated gambling, gambling, contests, loot boxes | None / No |  |
 | Unrestricted web access | No | The app only opens its own privacy, terms and support pages. |
 | User-generated content shared with others | Yes, limited | Approved coaches' public portfolios (each photo checked by Own Hub's woman reviewer first, reportable by members), and the opt-in dish. No community. Only an opt-in dish she chooses to share (off by default, no name) which the Own Hub team reviews before other members see it, and event seat bookings (not shown to others). The sheet gives no plain yes or no; Yes is the cautious reading and costs nothing because the rating is set to 18+. |
-| Messaging or chat | Yes | Text only, between a member and the coach she joined. Phone numbers, payment details and links are blocked; report and block are in every chat; staff read a chat only after a report. |
+| Messaging or chat | Yes | Text, photos, short videos and voice notes, between a member and the coach she joined. Phone numbers, payment details and links are blocked in text; report and block are in every chat; staff read a chat only after a report. |
 | Advertising | No |  |
 | Parental controls | No |  |
 | Age assurance (if asked) | Yes | Age is read from the national ID number at sign-up, and under 18 is refused. |
@@ -470,7 +470,8 @@ Tick exactly these types. Every one is **not used for tracking**. Never tick Pro
 | Health & Fitness | **Fitness** | Yes | No | App Functionality | Workouts, sessions and meals saved to her account. Her answers to the post-session and Friday questions stay on the phone: nothing added. |
 | Sensitive Info | **Sensitive Info** | Yes | No | App Functionality | Pregnancy or postpartum stage (with health backup only) and the face match during the ID check; no face measurement is stored. |
 | User Content | **Emails or Text Messages** | Yes | No | App Functionality | The chat between a member and the coach she joined, stored in Frankfurt, readable by the two of them. |
-| User Content | **Photos or Videos** | Yes | No | App Functionality | Coach applicants' pictures (profile, documents, feedback screenshots, before-and-after photos with the client's written consent), stored and checked by the woman reviewer; approved items are shown to members as re-encoded copies without location data. Also the ID card photos and selfie, and the meal photo when she chooses to analyse a meal. Her profile photo is not part of this row: it stays on the phone and is never collected. Read once by our server or Google Cloud Vertex AI in Frankfurt and never stored. Not storing them does not exempt them from being declared. |
+| User Content | **Photos or Videos** | Yes | No | App Functionality | Coach applicants' pictures (profile, documents, feedback screenshots, before-and-after photos with the client's written consent), stored and checked by the woman reviewer; approved items are shown to members as re-encoded copies without location data. Also the ID card photos and selfie, and the meal photo when she chooses to analyse a meal. Her profile photo is not part of this row: it stays on the phone and is never collected. Read once by our server or Google Cloud Vertex AI in Frankfurt and never stored. Not storing them does not exempt them from being declared. Also the photos and short videos a member or her coach sends in their chat, stored in Frankfurt, readable by the two of them, kept until the account is deleted. |
+| User Content | **Audio Data** | Yes | No | App Functionality | Voice notes (and the sound of a video) a member or her coach sends in their chat, stored in Frankfurt, readable by the two of them, kept until the account is deleted. |
 | Identifiers | **User ID** | Yes | No | App Functionality | The account id her data is kept under. |
 | Identifiers | **Device ID** | Yes | No | App Functionality and Analytics | Firebase installation id and App Attest; with her consent to usage statistics, the Google Analytics instance id and PostHog's anonymous id. |
 | Usage Data | **Product Interaction** | No | No | Analytics | Only if she turns on "Help improve Own Hub": Google Analytics and PostHog (hosted in the United States). Screen ids and steps; never health, cycle or anything she typed. |
@@ -479,7 +480,7 @@ Tick exactly these types. Every one is **not used for tracking**. Never tick Pro
 | Diagnostics | **Performance Data** | No | No | App Functionality | Google ML Kit while it guides the selfie camera. |
 | Other Data | **Other Data Types** | Yes | No | App Functionality | Her national ID number as a one-way keyed code; her event seat (id, time, status; removed on cancel or account deletion); the opt-in shared dish (names, items with grams, figures, with a keyed marker made from her account that Own Hub can match back to her until she deletes her account) and the 30-day repeat-photo cache (a fingerprint plus foods and grams; no photo); the coach application text, the public coach portfolio, and the intake a member sends a coach (its health answers are under Health). Declare these here, not under "Other User Content": the app's privacy manifest declares Other Data Types, and the repo's release test keeps `OtherUserContent` out of the manifest, so App Store Connect and the manifest stay the same. |
 
-Leave every other box empty: email address, physical address, precise location, contacts, audio, browsing and search history, purchases, financial info, advertising data, other usage data, other diagnostic data.
+Leave every other box empty: email address, physical address, precise location, contacts, browsing and search history, purchases, financial info, advertising data, other usage data, other diagnostic data.
 
 > **Coaching adds two types:** Name (coach applicants only) and Emails or Text Messages (the chat). No payment info, purchases or financial info are collected: payments are off.
 
@@ -713,7 +714,7 @@ Widgets ("Your week", "Today") show session counts only, never health data.
 DELETING DATA
 In the app: the avatar on Home > Your data > Delete everything. It deletes the account and its data on our servers and clears the phone. On the web: https://own-hub.app/delete-account
 
-Permissions: the camera (ID check; meal, profile and coach-application photos when she chooses), notifications (only after she sets reminders; all scheduled on the phone), and motion (to tilt a few illustrations). No tracking, no ads, no advertising ID. Usage statistics and crash reports are off until she turns them on.
+Permissions: the camera (ID check; meal, profile and coach-application photos when she chooses), the microphone (only when she holds the mic button in a coaching chat to record a voice note, or records a video with sound for her coach), notifications (only after she sets reminders; all scheduled on the phone), and motion (to tilt a few illustrations). No tracking, no ads, no advertising ID. Usage statistics and crash reports are off until she turns them on.
 ```
 
 ### 5. Export compliance

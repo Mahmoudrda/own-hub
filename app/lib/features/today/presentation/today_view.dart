@@ -26,6 +26,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app_state/custom_workout_state.dart';
 import '../../../app_state/eat_state.dart';
+import '../../../app_state/private_coaching_state.dart';
 import '../../../data/pending_answers.dart';
 import '../../../domain/format/day_key.dart';
 import '../../../domain/format/number_label.dart';
@@ -448,7 +449,9 @@ class _TodayViewState extends State<TodayView> {
       ),
       HomeEatLine(
         totals: eat.totalsWithPending(_stored, against: targets),
-        targets: targets,
+        targets: PrivateCoachingState.instance.hidesCalorieTargets
+            ? null
+            : targets,
         onTap: () => openScreen(context, 'E01', widget.onOpenMeal),
       ),
       ?_contextual(context, l10n),

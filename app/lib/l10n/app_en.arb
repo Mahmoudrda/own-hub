@@ -302,7 +302,6 @@
   "n3NoSellingNoRecruiting": "3 · No selling, no recruiting",
   "n31012Kg": "3 × 10 · 12 kg",
   "n31012KgSuggested": "3 × 10 · 12 kg suggested",
-  "n31212Kg": "3 × 12 · 12 kg",
   "n3159SeptemberWas312": "3 × 15 · 9 September · was 3 × 12",
   "n330Seconds": "3 × 30 seconds",
   "n38EachSide": "3 × 8 each side",
@@ -7211,7 +7210,6 @@
   "aPlanWasUpdated": "A plan was updated",
   "liveSessionConfirmed": "Live session confirmed",
   "liveSessionFinished": "Live session finished",
-  "thisMessageWasHiddenBecauseItHad": "This message was hidden because it had contact or payment details",
   "weCouldNotLoadThisChatCheck": "We could not load this chat. Check your connection.",
   "noMessagesYetSayHello": "No messages yet. Say hello.",
   "loadingOlderMessages": "Loading older messages",
@@ -8187,7 +8185,6 @@
   "gentler": "Gentler",
   "recordAVideoUpTo30Seconds": "Record a video (up to 30 seconds)",
   "chooseAVideo": "Choose a video",
-  "thatFileIsTooBigAPhoto": "That file is too big. A photo is up to 10 MB and a video is up to 25 MB.",
   "weCouldNotSendThatTryAgain": "We could not send that. Try again.",
   "holdTheMicAndSpeak": "Hold the mic and speak",
   "slideAwayToCancel": "Slide away to cancel",
@@ -8363,5 +8360,96 @@
   "changeTo": "Change to",
   "thePlannedDish": "The planned dish",
   "forTheWholePlanAsTheDishes": "For the whole plan, as the dishes are written",
-  "nothingToBuyYet": "Nothing to buy yet."
+  "nothingToBuyYet": "Nothing to buy yet.",
+  "thatFileIsTooBigAPhoto": "That file is too big. A photo is up to 3 MB and a video is up to 25 MB.",
+  "thisMessageWasHiddenAndWasNot": "This message was hidden and was not delivered",
+  "videosCanBeUpTo30Seconds": "Videos can be up to 30 seconds. Choose a shorter one.",
+  "weCouldNotPlayThatVideo": "We could not play that video.",
+  "weCouldNotOpenThatPhoto": "We could not open that photo.",
+  "painOrInjuryThisWeek": "Pain or injury this week",
+  "inbodyScanData": "InBody Scan Data",
+  "pasteScanTextOcr": "Paste scan text / OCR",
+  "theseNumbersHelpYourCoachCustomizeYour": "These numbers help your coach customize your nutrition and training plan.",
+  "pasteInbodyScanTextOcr": "Paste InBody Scan Text (OCR)",
+  "pasteOcrTextHereToAutoExtract": "Paste OCR text here to auto-extract...",
+  "extractMetrics": "Extract Metrics",
+  "muscleSmmKg": "Muscle SMM (kg)",
+  "bodyFat": "Body Fat %",
+  "bmrKcal": "BMR (kcal)",
+  "saveScan": "Save Scan",
+  "amountUnitRemaining": "{amount} {unit} remaining",
+  "@amountUnitRemaining": {
+    "description": "Under a progress bar: how much of the day's target is left, for example 80 g remaining.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "80"
+      },
+      "unit": {
+        "type": "String",
+        "example": "g"
+      }
+    }
+  },
+  "targetReached": "Target reached",
+  "labelCurrentOfTargetUnitStatus": "{label}: {current} of {target} {unit}. {status}.",
+  "@labelCurrentOfTargetUnitStatus": {
+    "description": "Screen reader text for a progress bar: name, amount against target, then the status line.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Protein"
+      },
+      "current": {
+        "type": "String",
+        "example": "30"
+      },
+      "target": {
+        "type": "String",
+        "example": "120"
+      },
+      "unit": {
+        "type": "String",
+        "example": "g"
+      },
+      "status": {
+        "type": "String",
+        "example": "90 g remaining"
+      }
+    }
+  },
+  "recordAVideoUpToSecondsSeconds": "Record a video (up to {seconds} seconds)",
+  "@recordAVideoUpToSecondsSeconds": {
+    "description": "Chat attach sheet: the longest video she can send, from the coaching limits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "thatFileIsTooBigAPhoto_1rnt5": "That file is too big. A photo is up to {photoMb} MB and a video is up to {videoMb} MB.",
+  "@thatFileIsTooBigAPhoto_1rnt5": {
+    "description": "Chat: the two size limits, from the coaching limits.",
+    "placeholders": {
+      "photoMb": {
+        "type": "String",
+        "example": "3"
+      },
+      "videoMb": {
+        "type": "String",
+        "example": "25"
+      }
+    }
+  },
+  "videosCanBeUpToSecondsSeconds": "Videos can be up to {seconds} seconds. Choose a shorter one.",
+  "@videosCanBeUpToSecondsSeconds": {
+    "description": "Chat: the longest video she can send, from the coaching limits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  }
 }

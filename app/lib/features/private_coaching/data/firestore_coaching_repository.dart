@@ -424,7 +424,9 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
       MessageType.audio => CoachingLimits.chatAudioMaxBytes,
       _ => 0,
     };
-    final clean = contentType == 'image/jpeg' ? stripJpegMetadata(bytes) : bytes;
+    final clean = contentType == 'image/jpeg'
+        ? stripJpegMetadata(bytes)
+        : bytes;
     if (ext == null || clean.isEmpty || clean.length > limit) {
       throw const CoachingFailure(CoachingRefusal.imageInvalid);
     }
@@ -438,7 +440,13 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
     }
     await _addLine(
       relId,
-      ChatMessage.mediaFields(me, type, path, clean.length, durationMs: durationMs),
+      ChatMessage.mediaFields(
+        me,
+        type,
+        path,
+        clean.length,
+        durationMs: durationMs,
+      ),
     );
   }
 

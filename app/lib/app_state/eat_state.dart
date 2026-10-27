@@ -619,6 +619,7 @@ class EatAppState {
     required int index,
     required ParsedItem entry,
     DateTime? at,
+    Food? recipeFood,
   }) {
     if (!GuestSession.require(
       context,
@@ -629,13 +630,23 @@ class EatAppState {
     final l10n = AppL10n.of(context);
     final now = at ?? AppClock.now();
     final day = dayIdOf(now);
+    // A recipe of her coach's plan is not in the food pack: it is added here so
+    // the log can name it, and put to the allergy guard like any food.
+    final pack = eatSampleLibrary(l10n);
+    final library = recipeFood == null
+        ? pack
+        : FoodLibrary([...pack.foods, recipeFood]);
+    // The day as it stands, meals still in their undo window included: a row
+    // logged before is found and corrected, never added a second time.
+    final stored =
+        AppRouter.mealRepository.store.days[day] ?? MealDay(dayId: day);
     final outcome =
         MealLogService(
           repository: AppRouter.mealRepository,
-          library: eatSampleLibrary(l10n),
+          library: library,
           guard: AllergyGuard(AppRouter.eatConstraints),
         ).correctPlannedLog(
-          day: MealDay(dayId: day),
+          day: session.project(stored),
           planRef: PlanRef(assignmentId: day, slot: slot, idx: index),
           entry: entry,
           at: now,
@@ -650,7 +661,7 @@ class EatAppState {
       slot: slot,
       describe: mealAddedLabel(
         l10n,
-        mealFoodNames(eatSampleLibrary(l10n), prepared.items),
+        mealFoodNames(library, prepared.items),
         slot,
       ),
     );

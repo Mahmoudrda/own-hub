@@ -66,14 +66,16 @@ void main() {
     final raw = jsonDecode(
       File('assets/content/rahma_recipes.json').readAsStringSync(),
     ) as Map<String, Object?>;
-    final recipes = ((raw['recipes'] as List).cast<Map<String, Object?>>()).map((r) {
-      if (r['recipeId'] == 'rahma_lazy_cake') {
-        final copy = Map<String, Object?>.from(r);
-        copy.remove('allergenReviewedBy');
-        return copy;
-      }
-      return r;
-    }).toList();
+    final recipes = ((raw['recipes'] as List).cast<Map<String, Object?>>()).map(
+      (r) {
+        if (r['recipeId'] == 'rahma_lazy_cake') {
+          final copy = Map<String, Object?>.from(r);
+          copy.remove('allergenReviewedBy');
+          return copy;
+        }
+        return r;
+      },
+    ).toList();
     final modifiedJson = Map<String, Object?>.from(raw)..['recipes'] = recipes;
     final book = RecipeBook.fromJson(modifiedJson);
     EatAppState.instance.recipeBook = book;

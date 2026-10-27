@@ -1316,11 +1316,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           your health information.</li>
           <li>No sale of your data.</li>
           <li>No training of AI on your data.</li>
-          <li>No access to your contacts, location, microphone, text messages,
-          or Apple Health or Health Connect. The app itself never uses your
-          microphone and has no video calls: there is no video review, and a
-          live coaching session opens in the coach&rsquo;s video service,
-          outside the app (section 3.16).</li>
+          <li>No access to your contacts, location, text messages, or Apple
+          Health or Health Connect. The app uses your microphone only while
+          you press and hold the mic button in a coaching chat to record a
+          voice note for your coach, which is sent when you let go (see
+          <a href="#c-chat-media">Voice notes, photos and videos in coaching
+          chat</a>); it never listens in the background. The app has no video
+          calls: there is no video review, and a live coaching session opens
+          in the coach&rsquo;s video service, outside the app (section
+          3.16).</li>
           <li>No access to your photo library. If you pick your profile photo
           from your photos, your phone&rsquo;s own picker hands Own Hub only
           the one picture you choose, and that picture stays on your
@@ -2071,8 +2075,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="prose">
         <h1>Open this in Own Hub</h1>
         <p class="lede">Own Hub is a training app for women only. If your coach
-        sent you this link, install the app. When you sign up, tap <b>I have a
-        code from my coach</b> and type the code from her message.</p>
+        sent you this link, install the app and sign up.</p>
+        <p>If her message has a code, tap <b>I have a code from my coach</b> and
+        type it in. If it is a link to her page, open the link again once the
+        app is installed. Her page opens in the app, and you can ask to join
+        her from there.</p>
         <p><a href="/ar/join">العربية</a></p>
       </div>
     </div>

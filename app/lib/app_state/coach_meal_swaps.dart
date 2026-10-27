@@ -19,7 +19,13 @@ class CoachMealSwaps {
       _chosen[_key(planId, day, slot, index)];
 
   /// Null puts the planned dish back.
-  void choose(String planId, int day, String slot, int index, String? recipeId) {
+  void choose(
+    String planId,
+    int day,
+    String slot,
+    int index,
+    String? recipeId,
+  ) {
     final k = _key(planId, day, slot, index);
     if (recipeId == null) {
       if (_chosen.remove(k) == null) return;

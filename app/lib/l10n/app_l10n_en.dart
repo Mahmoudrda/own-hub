@@ -940,9 +940,6 @@ class AppL10nEn extends AppL10n {
   String get n31012KgSuggested => '3 × 10 · 12 kg suggested';
 
   @override
-  String get n31212Kg => '3 × 12 · 12 kg';
-
-  @override
   String get n3159SeptemberWas312 => '3 × 15 · 9 September · was 3 × 12';
 
   @override
@@ -13787,10 +13784,6 @@ class AppL10nEn extends AppL10n {
   String get liveSessionFinished => 'Live session finished';
 
   @override
-  String get thisMessageWasHiddenBecauseItHad =>
-      'This message was hidden because it had contact or payment details';
-
-  @override
   String get weCouldNotLoadThisChatCheck =>
       'We could not load this chat. Check your connection.';
 
@@ -14862,10 +14855,6 @@ class AppL10nEn extends AppL10n {
   String get chooseAVideo => 'Choose a video';
 
   @override
-  String get thatFileIsTooBigAPhoto =>
-      'That file is too big. A photo is up to 10 MB and a video is up to 25 MB.';
-
-  @override
   String get weCouldNotSendThatTryAgain => 'We could not send that. Try again.';
 
   @override
@@ -15224,4 +15213,91 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get nothingToBuyYet => 'Nothing to buy yet.';
+
+  @override
+  String get thatFileIsTooBigAPhoto =>
+      'That file is too big. A photo is up to 3 MB and a video is up to 25 MB.';
+
+  @override
+  String get thisMessageWasHiddenAndWasNot =>
+      'This message was hidden and was not delivered';
+
+  @override
+  String get videosCanBeUpTo30Seconds =>
+      'Videos can be up to 30 seconds. Choose a shorter one.';
+
+  @override
+  String get weCouldNotPlayThatVideo => 'We could not play that video.';
+
+  @override
+  String get weCouldNotOpenThatPhoto => 'We could not open that photo.';
+
+  @override
+  String get painOrInjuryThisWeek => 'Pain or injury this week';
+
+  @override
+  String get inbodyScanData => 'InBody Scan Data';
+
+  @override
+  String get pasteScanTextOcr => 'Paste scan text / OCR';
+
+  @override
+  String get theseNumbersHelpYourCoachCustomizeYour =>
+      'These numbers help your coach customize your nutrition and training plan.';
+
+  @override
+  String get pasteInbodyScanTextOcr => 'Paste InBody Scan Text (OCR)';
+
+  @override
+  String get pasteOcrTextHereToAutoExtract =>
+      'Paste OCR text here to auto-extract...';
+
+  @override
+  String get extractMetrics => 'Extract Metrics';
+
+  @override
+  String get muscleSmmKg => 'Muscle SMM (kg)';
+
+  @override
+  String get bodyFat => 'Body Fat %';
+
+  @override
+  String get bmrKcal => 'BMR (kcal)';
+
+  @override
+  String get saveScan => 'Save Scan';
+
+  @override
+  String amountUnitRemaining(String amount, String unit) {
+    return '$amount $unit remaining';
+  }
+
+  @override
+  String get targetReached => 'Target reached';
+
+  @override
+  String labelCurrentOfTargetUnitStatus(
+    String label,
+    String current,
+    String target,
+    String unit,
+    String status,
+  ) {
+    return '$label: $current of $target $unit. $status.';
+  }
+
+  @override
+  String recordAVideoUpToSecondsSeconds(String seconds) {
+    return 'Record a video (up to $seconds seconds)';
+  }
+
+  @override
+  String thatFileIsTooBigAPhoto_1rnt5(String photoMb, String videoMb) {
+    return 'That file is too big. A photo is up to $photoMb MB and a video is up to $videoMb MB.';
+  }
+
+  @override
+  String videosCanBeUpToSecondsSeconds(String seconds) {
+    return 'Videos can be up to $seconds seconds. Choose a shorter one.';
+  }
 }

@@ -827,6 +827,11 @@ if (fs.existsSync(dictPath)) {
     "Your plan starts {date}": {"description": "When her multi-week plan starts", "placeholders": {"date": {"type": "String", "example": "1 Nov"}}},
     "Swaps ({n})": {"description": "Number of approved swaps for a meal item", "placeholders": {"n": {"type": "String", "example": "2"}}},
     "Your coach's target: {kcal} calories and {protein} g protein": {"description": "Daily target set by coach for client", "placeholders": {"kcal": {"type": "String", "example": "1600"}, "protein": {"type": "String", "example": "110"}}},
+    "{amount} {unit} remaining": {"description": "Under a progress bar: how much of the day's target is left, for example 80 g remaining.", "placeholders": {"amount": {"type": "String", "example": "80"}, "unit": {"type": "String", "example": "g"}}},
+    "{label}: {current} of {target} {unit}. {status}.": {"description": "Screen reader text for a progress bar: name, amount against target, then the status line.", "placeholders": {"label": {"type": "String", "example": "Protein"}, "current": {"type": "String", "example": "30"}, "target": {"type": "String", "example": "120"}, "unit": {"type": "String", "example": "g"}, "status": {"type": "String", "example": "90 g remaining"}}},
+    "Record a video (up to {seconds} seconds)": {"description": "Chat attach sheet: the longest video she can send, from the coaching limits.", "placeholders": {"seconds": {"type": "String", "example": "30"}}},
+    "That file is too big. A photo is up to {photoMb} MB and a video is up to {videoMb} MB.": {"description": "Chat: the two size limits, from the coaching limits.", "placeholders": {"photoMb": {"type": "String", "example": "3"}, "videoMb": {"type": "String", "example": "25"}}},
+    "Videos can be up to {seconds} seconds. Choose a shorter one.": {"description": "Chat: the longest video she can send, from the coaching limits.", "placeholders": {"seconds": {"type": "String", "example": "30"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

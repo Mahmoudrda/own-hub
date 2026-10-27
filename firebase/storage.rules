@@ -278,11 +278,28 @@ service firebase.storage {
     // -------------------------------------------------- coaching chat media
     //
     // chat-media/{relId}/{uid}/{file}. relId is {coachUid}__{clientUid}. The
-    // two people of the thread read; only the folder's owner (one of the two)
-    // writes, verified, within the limits. The service re-checks every file
-    // when the message arrives and deletes what does not pass.
+    // two people of the thread read. A file is written only into an OPEN
+    // thread: the relationship document must exist, be active with chat on, and
+    // name the caller as its coach or its client (read from Firestore, so a
+    // made-up relId writes nothing). Only the folder's owner writes, verified,
+    // within the limits. The service re-checks every file when the message
+    // arrives and deletes what does not pass.
+    //
+    // Nobody deletes from a phone. A reported photo, clip or voice note has to
+    // stay for the reviewer, so the sender cannot erase it first; the service
+    // removes a file it refuses, and the account deletion removes the whole
+    // thread's folder.
     function inThread(relId) {
       return signedIn() && request.auth.uid in relId.split('__');
+    }
+
+    // A missing document makes the read fail, and a failed read denies. One
+    // read of the document serves all three checks.
+    function openThread(relId) {
+      let rel = firestore.get(/databases/(default)/documents/relationships/$(relId)).data;
+      return rel.status == 'active'
+          && rel.chatOpen == true
+          && request.auth.uid in [rel.coachUid, rel.clientUid];
     }
 
     function isChatVideo() {
@@ -300,14 +317,15 @@ service firebase.storage {
           && request.auth.token.get('verified', false) == true
           && ((request.resource.contentType == 'image/jpeg' && request.resource.size <= 3 * 1024 * 1024)
               || (isChatVideo() && request.resource.size <= 25 * 1024 * 1024)
-              || (isChatAudio() && request.resource.size <= 2 * 1024 * 1024));
+              || (isChatAudio() && request.resource.size <= 2 * 1024 * 1024))
+          && openThread(relId);
     }
 
     match /chat-media/{relId}/{uid}/{file} {
       allow read: if coachClientsLiveStorage() && inThread(relId);
       allow create: if chatMediaWrite(relId, uid) && resource == null;
       allow update: if false;
-      allow delete: if isOwner(uid);
+      allow delete: if false;
     }
 
     // ------------------------------------------------------------- default

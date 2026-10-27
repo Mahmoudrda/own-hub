@@ -234,7 +234,8 @@ class CoachPlanView extends StatelessWidget {
           allWeeks
               ? [
                   for (final d in visible)
-                    if (workout.days[d].week == workout.days[visible[i]].week) d,
+                    if (workout.days[d].week == workout.days[visible[i]].week)
+                      d,
                 ].indexOf(visible[i])
               : i,
           isToday: visible[i] == today,

@@ -110,8 +110,7 @@ double? _cleanKg(Object? v) {
   return v.clamp(kMinWeightKg, kMaxWeightKg).toDouble();
 }
 
-int _cleanWeek(Object? v) =>
-    v is int ? v.clamp(1, kMaxCoachPlanWeeks) : 1;
+int _cleanWeek(Object? v) => v is int ? v.clamp(1, kMaxCoachPlanWeeks) : 1;
 
 MyPlanDay _sameWeek(MyPlanDay d, int week) => MyPlanDay(
   session: d.session,
@@ -216,8 +215,7 @@ class MyPlan {
   bool get isFull => daysOfWeek(weekCount).length >= kMaxPlanDays;
 
   /// The highest week any day is in (1 for a plan of one week).
-  int get weekCount =>
-      days.fold<int>(1, (m, d) => d.week > m ? d.week : m);
+  int get weekCount => days.fold<int>(1, (m, d) => d.week > m ? d.week : m);
 
   List<int> daysOfWeek(int week) => [
     for (var i = 0; i < days.length; i++)
@@ -610,6 +608,32 @@ List<double?> targetsFor(MyPlan? plan, String sessionId) {
   if (plan == null) return const <double?>[];
   for (final d in plan.days) {
     if (d.session.sessionId == sessionId) return d.targetKg;
+  }
+  return const <double?>[];
+}
+
+/// The target weights for [shown], a day of [plan] that may have been cut
+/// shorter to fit her minutes. Each move keeps the weight of the same exercise
+/// in the full day (matched in order), so a cut never moves a weight onto
+/// another move.
+List<double?> targetsForShown(MyPlan? plan, AuthoredSession shown) {
+  if (plan == null) return const <double?>[];
+  for (final d in plan.days) {
+    if (d.session.sessionId != shown.sessionId) continue;
+    final full = d.session.moves;
+    final used = <int>{};
+    final out = <double?>[];
+    for (final move in shown.moves) {
+      double? kg;
+      for (var i = 0; i < full.length; i++) {
+        if (used.contains(i) || full[i].exerciseId != move.exerciseId) continue;
+        used.add(i);
+        kg = i < d.targetKg.length ? d.targetKg[i] : null;
+        break;
+      }
+      out.add(kg);
+    }
+    return out;
   }
   return const <double?>[];
 }

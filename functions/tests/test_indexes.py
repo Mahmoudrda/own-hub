@@ -38,6 +38,18 @@ def test_the_reviewer_queue_has_its_composite_index():
     assert _composite("verification_flags", ["state", "createdAt"])
 
 
+def test_the_chat_rate_limit_has_its_composite_index():
+    # chat.too_fast: senderUid == x and createdAt >= t. Without the index every
+    # client message in the thread fails before it is counted, hidden or pushed.
+    assert _composite("messages", ["senderUid", "createdAt"])
+
+
+def test_the_report_throttle_has_its_composite_index():
+    # main.on_coaching_report: reporterUid == x and createdAt >= t. Without it
+    # no evidence is captured for any report.
+    assert _composite("reports", ["reporterUid", "createdAt"])
+
+
 def test_ttl_policies_are_declared_for_the_expiring_collections():
     ttl = {
         (o["collectionGroup"], o["fieldPath"])

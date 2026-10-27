@@ -91,6 +91,7 @@ ACTIONS: dict[int, str] = {
     59: GROUP_HOOK,  # receipts, paymentProofs: pseudonymised inside purge_group_hook
     60: REPORTS,     # the copy of what was reported: deleted when the reporter deletes hers; kept pseudonymised when the reported side does, until the reporter deletes hers or the retention period set with counsel
     61: GROUP_HOOK,  # coachPrivate/{uid}/** is recursively deleted inside purge_group_hook
+    62: GROUP_HOOK,  # relationships/{relId}/checkIns goes with the relationship in purge_group_hook
 }
 
 

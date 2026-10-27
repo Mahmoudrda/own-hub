@@ -122,11 +122,14 @@ class Intake {
       lifeStage: readStringOrNull(map['lifeStage']),
       health: health,
       doctorAck: readBool(map['doctorAck']),
-      eatingHistory: readBool(map['eatingHistory']) ||
+      eatingHistory:
+          readBool(map['eatingHistory']) ||
           (rawHealth is Map ? readBool(rawHealth['eatingHistory']) : false),
       note: readString(map['note']),
       inbodyScan: map['inbody'] is Map
-          ? InBodyScan.fromJson(asMap(map['inbody']) ?? const <String, Object?>{})
+          ? InBodyScan.fromJson(
+              asMap(map['inbody']) ?? const <String, Object?>{},
+            )
           : null,
     );
   }

@@ -7,12 +7,38 @@ import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_list_item.dart';
+import '../../../events/domain/cairo_time.dart';
 import '../desk/desk_text.dart';
 
 class AssignClient {
-  const AssignClient({required this.subId, required this.name});
+  const AssignClient({
+    required this.subId,
+    required this.name,
+    this.eatingHistory = false,
+  });
   final String subId;
   final String name;
+
+  /// Her answers on eating mean no calorie goal goes to her.
+  final bool eatingHistory;
+}
+
+/// Today's date in Cairo, which is the day the server counts a start date
+/// from, whatever the coach's phone says.
+DateTime cairoToday() {
+  final day = DateTime.parse(cairoDay(DateTime.now()));
+  return DateTime(day.year, day.month, day.day);
+}
+
+/// The start date picker: today (Cairo) to 60 days ahead.
+Future<DateTime?> pickStartDate(BuildContext context, DateTime initial) {
+  final first = cairoToday();
+  return showDatePicker(
+    context: context,
+    initialDate: initial.isBefore(first) ? first : initial,
+    firstDate: first,
+    lastDate: first.add(const Duration(days: 60)),
+  );
 }
 
 class AssignChoice {
@@ -45,14 +71,7 @@ class _AssignClientsSheetState extends State<AssignClientsSheet> {
   late DateTime _date = widget.startsOn;
 
   Future<void> _pickDate() async {
-    final today = DateTime.now();
-    final first = DateTime(today.year, today.month, today.day);
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _date,
-      firstDate: first,
-      lastDate: first.add(const Duration(days: 60)),
-    );
+    final picked = await pickStartDate(context, _date);
     if (picked != null && mounted) setState(() => _date = picked);
   }
 

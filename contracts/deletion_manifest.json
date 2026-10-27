@@ -237,7 +237,7 @@
     },
     {
       "number": 48,
-      "path": "relationships where coachUid or clientUid == uid, with messages and reviews",
+      "path": "relationships where coachUid or clientUid == uid, with messages and reviews, and Storage chat-media/{relId}/** (the photos, clips and voice notes of both people in each thread)",
       "method": "groupHook"
     },
     {
@@ -303,6 +303,11 @@
     {
       "number": 61,
       "path": "coachPrivate/{uid}/mediaConsents/{id}",
+      "method": "groupHook"
+    },
+    {
+      "number": 62,
+      "path": "relationships/{relId}/checkIns/{weekKey} where the relationship names her as coachUid or clientUid",
       "method": "groupHook"
     }
   ]

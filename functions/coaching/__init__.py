@@ -22,7 +22,8 @@ COACH_CLIENTS_LIVE = True
 COACH_PAYMENTS_LIVE = False
 
 # The weekly check-in card, its push and the coach's "Needs attention" list.
-# Stays False until the app version that renders `systemKind: "checkIn"` is in
-# both stores: older builds show an unknown system line as a hidden message.
-CHECK_INS_LIVE = False
+# On from the release that ships the check-in card. Build 1.0.0 does not know
+# `systemKind: "checkIn"` and shows it as a hidden message, so deploy the
+# functions only when that release is going out, or set this to False again.
+CHECK_INS_LIVE = True
 

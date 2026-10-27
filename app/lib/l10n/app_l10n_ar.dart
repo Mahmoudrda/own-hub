@@ -940,9 +940,6 @@ class AppL10nAr extends AppL10n {
   String get n31012KgSuggested => '3 × 10 · مقترح 12 كجم';
 
   @override
-  String get n31212Kg => '3 × 12 · 12 كجم';
-
-  @override
   String get n3159SeptemberWas312 => '3 × 15 · 9 سبتمبر · كان 3 × 12';
 
   @override
@@ -13771,10 +13768,6 @@ class AppL10nAr extends AppL10n {
   String get liveSessionFinished => 'جلسة اللايف خلصت';
 
   @override
-  String get thisMessageWasHiddenBecauseItHad =>
-      'الرسالة دي اتخفت لأن فيها بيانات تواصل أو دفع';
-
-  @override
   String get weCouldNotLoadThisChatCheck =>
       'معرفناش نفتح الشات. اتأكدي من النت.';
 
@@ -14859,17 +14852,13 @@ class AppL10nAr extends AppL10n {
   String get chooseAVideo => 'اختاري فيديو';
 
   @override
-  String get thatFileIsTooBigAPhoto =>
-      'حجم الملف كبير. الصورة لحد 10 ميجا والفيديو لحد 25 ميجا.';
-
-  @override
   String get weCouldNotSendThatTryAgain => 'ماقدرناش نبعت ده. جرّبي تاني.';
 
   @override
   String get holdTheMicAndSpeak => 'افضلي دايسة على المايك واتكلمي';
 
   @override
-  String get slideAwayToCancel => 'اسحبي لبعيد للإلغاء';
+  String get slideAwayToCancel => 'اسحبي بعيد عشان تلغي';
 
   @override
   String get releaseToCancel => 'سيبي عشان تلغي';
@@ -15098,7 +15087,7 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get anythingYouWantYourCoachToKnow =>
-      'حابة مدرّبتك تعرفي حاجة؟ (لو حابة)';
+      'حابة مدرّبتك تعرف حاجة؟ (لو حابة)';
 
   @override
   String get sendToMyCoach => 'ابعتي لمدرّبتك';
@@ -15217,4 +15206,90 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get nothingToBuyYet => 'مفيش حاجة تتشرى لسه.';
+
+  @override
+  String get thatFileIsTooBigAPhoto =>
+      'حجم الملف كبير. الصورة لحد 3 ميجا والفيديو لحد 25 ميجا.';
+
+  @override
+  String get thisMessageWasHiddenAndWasNot => 'الرسالة دي اتخفت ومتوصلتش';
+
+  @override
+  String get videosCanBeUpTo30Seconds =>
+      'الفيديو لحد 30 ثانية. اختاري واحد أقصر.';
+
+  @override
+  String get weCouldNotPlayThatVideo => 'ماقدرناش نشغّل الفيديو ده.';
+
+  @override
+  String get weCouldNotOpenThatPhoto => 'ماقدرناش نفتح الصورة دي.';
+
+  @override
+  String get painOrInjuryThisWeek => 'ألم أو إصابة الأسبوع ده';
+
+  @override
+  String get inbodyScanData => 'بيانات فحص InBody';
+
+  @override
+  String get pasteScanTextOcr => 'الصقي نص التقرير';
+
+  @override
+  String get theseNumbersHelpYourCoachCustomizeYour =>
+      'الأرقام دي بتساعد مدربتك تظبط خطة أكلك وتمرينك على حسب جسمك.';
+
+  @override
+  String get pasteInbodyScanTextOcr => 'الصقي نص تقرير InBody (OCR)';
+
+  @override
+  String get pasteOcrTextHereToAutoExtract =>
+      'الصقي النص هنا وهنستخرج الأرقام تلقائي...';
+
+  @override
+  String get extractMetrics => 'استخرجي الأرقام';
+
+  @override
+  String get muscleSmmKg => 'كتلة العضل (كجم)';
+
+  @override
+  String get bodyFat => 'نسبة الدهون (%)';
+
+  @override
+  String get bmrKcal => 'معدل الحرق BMR (سعرة)';
+
+  @override
+  String get saveScan => 'احفظي الفحص';
+
+  @override
+  String amountUnitRemaining(String amount, String unit) {
+    return 'باقي $amount $unit';
+  }
+
+  @override
+  String get targetReached => 'الهدف اتحقق';
+
+  @override
+  String labelCurrentOfTargetUnitStatus(
+    String label,
+    String current,
+    String target,
+    String unit,
+    String status,
+  ) {
+    return '$label: $current من $target $unit. $status.';
+  }
+
+  @override
+  String recordAVideoUpToSecondsSeconds(String seconds) {
+    return 'صوّري فيديو (لحد $seconds ثانية)';
+  }
+
+  @override
+  String thatFileIsTooBigAPhoto_1rnt5(String photoMb, String videoMb) {
+    return 'حجم الملف كبير. الصورة لحد $photoMb ميجا والفيديو لحد $videoMb ميجا.';
+  }
+
+  @override
+  String videosCanBeUpToSecondsSeconds(String seconds) {
+    return 'الفيديو لحد $seconds ثانية. اختاري واحد أقصر.';
+  }
 }

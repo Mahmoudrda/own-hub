@@ -9,6 +9,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/gestures.dart' show kLongPressTimeout;
 import 'package:flutter/material.dart';
@@ -119,6 +120,16 @@ class _ChatThreadViewState extends State<ChatThreadView>
   bool _sendFailed = false;
   bool _recording = false;
   bool _cancelArmed = false;
+
+  /// Her finger is on the mic. Set before anything is awaited and cleared on
+  /// release, cancel or leaving the app, so a recording that starts late (the
+  /// rules sheet, the microphone prompt) never runs without a finger on it.
+  bool _pressed = false;
+  bool _startingRecord = false;
+
+  /// Set when the two-minute limit stopped the recording. Nothing is sent
+  /// until she lets go.
+  Future<Uint8List?>? _stopped;
   DateTime? _recordStart;
   int _tickMs = 0;
   Timer? _ticker;
@@ -211,8 +222,10 @@ class _ChatThreadViewState extends State<ChatThreadView>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _controller.foreground = state == AppLifecycleState.resumed;
-    if (state != AppLifecycleState.resumed && _recording) {
-      unawaited(_recordEnd(send: false));
+    if (state != AppLifecycleState.resumed) {
+      // The microphone prompt and a call take the touch from the button.
+      _pressed = false;
+      if (_recording) unawaited(_recordEnd(send: false));
     }
   }
 
@@ -319,16 +332,39 @@ class _ChatThreadViewState extends State<ChatThreadView>
               imageQuality: 80,
             );
       if (file == null || !mounted) return;
-      final bytes = await file.readAsBytes();
       final limit = video
           ? CoachingLimits.chatVideoMaxBytes
           : CoachingLimits.chatImageMaxBytes;
-      if (bytes.length > limit) {
+      // The size and the length are read from the file, not from its bytes in
+      // memory: a long clip from the library must not be loaded first.
+      if (await file.length() > limit) {
         messenger?.showSnackBar(
-          SnackBar(content: Text(l10n.thatFileIsTooBigAPhoto)),
+          SnackBar(
+            content: Text(
+              l10n.thatFileIsTooBigAPhoto_1rnt5(
+                '${CoachingLimits.chatImageMaxBytes ~/ 1000000}',
+                '${CoachingLimits.chatVideoMaxBytes ~/ 1000000}',
+              ),
+            ),
+          ),
         );
         return;
       }
+      final durationMs = video ? await _videoMs(file.path) : null;
+      if (durationMs != null &&
+          durationMs > CoachingLimits.chatVideoMaxSeconds * 1000 + 1000) {
+        messenger?.showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.videosCanBeUpToSecondsSeconds(
+                '${CoachingLimits.chatVideoMaxSeconds}',
+              ),
+            ),
+          ),
+        );
+        return;
+      }
+      final bytes = await file.readAsBytes();
       final ok = await _controller.sendMedia(
         type: video ? MessageType.video : MessageType.image,
         bytes: bytes,
@@ -337,7 +373,7 @@ class _ChatThreadViewState extends State<ChatThreadView>
                   ? 'video/quicktime'
                   : 'video/mp4')
             : 'image/jpeg',
-        durationMs: video ? await _videoMs(file.path) : null,
+        durationMs: durationMs,
       );
       if (!ok) {
         messenger?.showSnackBar(
@@ -357,50 +393,63 @@ class _ChatThreadViewState extends State<ChatThreadView>
     final probe = VideoPlayerController.file(File(path));
     try {
       await probe.initialize();
-      return probe.value.duration.inMilliseconds.clamp(
-        500,
-        CoachingLimits.chatVideoMaxSeconds * 1000,
-      );
+      return max(500, probe.value.duration.inMilliseconds);
     } finally {
       await probe.dispose();
     }
   }
 
   Future<void> _recordStartHold() async {
-    if (_recording || !widget.open) return;
-    if (!await _rulesOk() || !mounted) return;
-    final ok = await _rec.start();
-    if (!mounted) return;
-    if (!ok) {
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(
-            AppL10n.of(context).allowTheMicrophoneInSettingsToSend,
-          ),
-        ),
-      );
-      return;
-    }
-    unawaited(AppHaptics.play(HapticMoment.actionDone));
-    setState(() {
-      _recording = true;
-      _cancelArmed = false;
-      _dragX = 0;
-      _recordStart = DateTime.now();
-      _tickMs = kLongPressTimeout.inMilliseconds;
-    });
-    _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) {
+    if (_recording || _startingRecord || !widget.open) return;
+    _pressed = true;
+    _startingRecord = true;
+    try {
+      if (!await _rulesOk() || !mounted || !_pressed) return;
+      final ok = await _rec.start();
       if (!mounted) return;
-      _tickMs += 250;
-      if (_elapsedMs >= CoachingLimits.chatAudioMaxSeconds * 1000) {
-        unawaited(_recordEnd(send: true));
-      } else {
-        setState(() {});
+      if (!ok) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(
+            content: Text(
+              AppL10n.of(context).allowTheMicrophoneInSettingsToSend,
+            ),
+          ),
+        );
+        return;
       }
-    });
+      if (!_pressed) {
+        // She let go, or the prompt took the touch, while the recorder was
+        // starting: nothing is kept and nothing is sent.
+        await _rec.cancel();
+        return;
+      }
+      unawaited(AppHaptics.play(HapticMoment.actionDone));
+      setState(() {
+        _recording = true;
+        _cancelArmed = false;
+        _dragX = 0;
+        _recordStart = DateTime.now();
+        _tickMs = kLongPressTimeout.inMilliseconds;
+      });
+      _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) {
+        if (!mounted) return;
+        _tickMs += 250;
+        if (_elapsedMs >= CoachingLimits.chatAudioMaxSeconds * 1000) {
+          // The limit ends the recording, never the sending: the note goes
+          // when she lets go, like any other.
+          _ticker?.cancel();
+          _stopped ??= _rec.stop().catchError((Object _) => null);
+        }
+        setState(() {});
+      });
+    } finally {
+      _startingRecord = false;
+    }
   }
 
-  int get _elapsedMs => _recordStart == null
+  int get _elapsedMs => _stopped != null
+      ? CoachingLimits.chatAudioMaxSeconds * 1000
+      : _recordStart == null
       ? 0
       : max(_tickMs, DateTime.now().difference(_recordStart!).inMilliseconds);
 
@@ -414,25 +463,30 @@ class _ChatThreadViewState extends State<ChatThreadView>
   }
 
   Future<void> _recordEnd({required bool send}) async {
+    _pressed = false;
     if (!_recording) return;
     final ms = _elapsedMs;
     final cancel = !send || _cancelArmed;
+    final stopped = _stopped;
+    _stopped = null;
     _ticker?.cancel();
     setState(() => _recording = false);
     final l10n = AppL10n.of(context);
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (cancel) {
-      await _rec.cancel();
+      if (stopped == null) {
+        await _rec.cancel();
+      } else {
+        await stopped;
+      }
       return;
     }
     if (ms < 1000) {
       await _rec.cancel();
-      messenger?.showSnackBar(
-        SnackBar(content: Text(l10n.holdTheMicAndSpeak)),
-      );
+      messenger?.showSnackBar(SnackBar(content: Text(l10n.holdTheMicAndSpeak)));
       return;
     }
-    final bytes = await _rec.stop();
+    final bytes = await (stopped ?? _rec.stop());
     if (bytes == null || bytes.isEmpty || !mounted) return;
     final ok = await _controller.sendMedia(
       type: MessageType.audio,
@@ -669,7 +723,7 @@ class _ChatThreadViewState extends State<ChatThreadView>
       case LineItem(:final message, :final tail, :final mine):
         if (message.hidden) {
           return NoticePill(
-            l10n.thisMessageWasHiddenBecauseItHad,
+            l10n.thisMessageWasHiddenAndWasNot,
             icon: Icons.visibility_off_outlined,
           );
         }

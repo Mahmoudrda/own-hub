@@ -138,7 +138,8 @@ class FakeChatRepository implements ChatThreadRepository {
   });
 
   @override
-  Future<String> chatMediaUrl(String path) async => 'https://example.test/$path';
+  Future<String> chatMediaUrl(String path) async =>
+      'https://example.test/$path';
 
   @override
   Stream<List<LiveSession>> watchSessions(String subId) => sessions

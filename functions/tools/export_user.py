@@ -32,6 +32,7 @@ import datetime as dt
 import html
 import json
 import os
+import re
 from typing import Any, Optional, Protocol
 
 from account import manifest
@@ -82,6 +83,7 @@ SECTIONS: dict[int, str] = {
     58: "coaching",
     59: "coaching",
     61: "coaching",
+    62: "coaching",
 }
 
 # Manifest row -> why it is not in the copy.
@@ -220,6 +222,7 @@ class Reader(Protocol):
     def access_for_flags(self, flag_ids: list) -> list: ...
     def event_seats(self, uid: str) -> dict: ...
     def coaching(self, uid: str) -> dict: ...
+    def file(self, path: str) -> Optional[bytes]: ...
 
 
 def _plain(value: Any) -> Any:
@@ -358,6 +361,7 @@ def build_export(uid: str, reader: Reader, language: str = "en", now: Optional[d
             "asClient": {k: _clean(v) for k, v in (coaching.get("asClient") or {}).items()},
             "asCoach": {k: _clean(v) for k, v in (coaching.get("asCoach") or {}).items()},
             "messages": {k: _clean(v) for k, v in (coaching.get("messages") or {}).items()},
+            "checkIns": {k: _clean(v) for k, v in (coaching.get("checkIns") or {}).items()},
             "coachPrivate": {k: _clean(v) for k, v in (coaching.get("private") or {}).items()},
             "receipts": {k: _clean(v) for k, v in (coaching.get("receipts") or {}).items()},
             "plansFromCoach": {k: _clean(v) for k, v in reader.plans(uid, "coachPlans").items()},
@@ -407,8 +411,20 @@ def summary_html(export: dict) -> str:
 class FirestoreReader:
     """The live reader, over the Admin SDK."""
 
-    def __init__(self, db):
+    def __init__(self, db, bucket=None):
         self.db = db
+        self._bucket = bucket
+
+    def file(self, path):
+        """A file of hers in the personal bucket, or None when it is gone."""
+        if self._bucket is None:
+            from firebase_admin import storage
+
+            from account import deletion
+
+            self._bucket = storage.bucket(deletion.PERSONAL_BUCKET)
+        blob = self._bucket.blob(path)
+        return blob.download_as_bytes() if blob.exists() else None
 
     def auth_record(self, uid):
         from firebase_admin import auth
@@ -455,9 +471,10 @@ class FirestoreReader:
 
     def coaching(self, uid):
         """Her application, coach page, packages, drafts and invite codes; the
-        coachings she joined, with her own intake form; the coachings she gave,
-        without the client's intake, health answers or id (they are the
-        client's, not hers); the messages she wrote; her own private coach record
+        coachings she joined, with her own intake form and the weekly check-ins
+        she answered; the coachings she gave, without the client's intake,
+        health answers, check-ins or id (they are the client's, not hers); the
+        messages she wrote; her own private coach record
         (prices, ledger, payouts); and receipts issued to her."""
 
         def rows(ref):
@@ -467,7 +484,7 @@ class FirestoreReader:
         coach = db.collection("coaches").document(uid)
         application = db.collection("coachApplications").document(uid).get()
         coach_page = coach.get()
-        as_client, as_coach, messages = {}, {}, {}
+        as_client, as_coach, messages, check_ins = {}, {}, {}, {}
         for snap in db.collection("subscriptions").where("clientUid", "==", uid).stream():
             as_client[snap.id] = snap.to_dict() or {}
         for snap in db.collection("subscriptions").where("coachUid", "==", uid).stream():
@@ -481,6 +498,9 @@ class FirestoreReader:
                     row = message.to_dict() or {}
                     if row.get("senderUid") == uid:
                         messages[f"{rel.id}/{message.id}"] = row
+                if field == "clientUid":  # the answers are the client's, as her intake is
+                    for card in rel.reference.collection("checkIns").stream():
+                        check_ins[f"{rel.id}/{card.id}"] = card.to_dict() or {}
         private = db.collection("coachPrivate").document(uid)
         private_rows = {}
         if private.get().exists:
@@ -506,6 +526,7 @@ class FirestoreReader:
             "asClient": as_client,
             "asCoach": as_coach,
             "messages": messages,
+            "checkIns": check_ins,
         }
 
     def access_for_flags(self, flag_ids):
@@ -535,6 +556,31 @@ def write_files(export: dict, folder: str) -> tuple[str, str]:
     return data_path, summary_path
 
 
+_CHAT_MEDIA = re.compile(r"^chat-media/[^/.][^/]*/[^/.][^/]*/[A-Za-z0-9_][A-Za-z0-9_.-]{0,79}$")
+
+
+def write_chat_media(export: dict, reader: Reader, folder: str) -> int:
+    """The photos, clips and voice notes she sent, as files under
+    chat-media/<thread>/ in the same folder. Only hers: what the other woman
+    sent in the thread is hers to ask for. Returns how many were written."""
+    count = 0
+    for line in export["sections"]["coaching"]["data"]["messages"].values():
+        path = (line or {}).get("mediaPath")
+        if not isinstance(path, str) or not _CHAT_MEDIA.match(path):
+            continue
+        data = reader.file(path)
+        if data is None:
+            continue
+        _, thread, _, name = path.split("/")
+        target = os.path.join(folder, "chat-media", thread)
+        os.makedirs(target, mode=0o700, exist_ok=True)
+        descriptor = os.open(os.path.join(target, name), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(data)
+        count += 1
+    return count
+
+
 def main(argv=None, *, reader=None, out=print) -> int:
     parser = argparse.ArgumentParser(prog="export_user")
     parser.add_argument("uid")
@@ -556,8 +602,10 @@ def main(argv=None, *, reader=None, out=print) -> int:
         )
 
     export = build_export(args.uid, reader, args.lang)
-    data_path, summary_path = write_files(export, os.path.expanduser(args.out))
-    out(f"written {data_path} and {summary_path}; delete them once delivered")
+    folder = os.path.expanduser(args.out)
+    data_path, summary_path = write_files(export, folder)
+    files = write_chat_media(export, reader, folder)
+    out(f"written {data_path}, {summary_path} and {files} chat files; delete them once delivered")
     return 0
 
 

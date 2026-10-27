@@ -217,7 +217,9 @@ Future<void> showShareSheet(BuildContext context, ShareChoices choices) {
         if (choices.onRecordVideo != null)
           SheetAction(
             icon: Icons.videocam_outlined,
-            label: l10n.recordAVideoUpTo30Seconds,
+            label: l10n.recordAVideoUpToSecondsSeconds(
+              '${CoachingLimits.chatVideoMaxSeconds}',
+            ),
             onTap: () => run(sheet, choices.onRecordVideo!),
           ),
         if (choices.onChooseVideo != null)

@@ -478,6 +478,41 @@ def test_a_hidden_message_still_shows_what_was_said_at_the_report():
     assert item["atReport"]["text"] == "pay me on instapay"
 
 
+def test_a_reported_voice_note_keeps_the_name_of_its_file_and_no_account_ids():
+    db = make_db()
+    db.document(f"relationships/{REL}/messages/v1").set(
+        {"senderUid": "coach1", "type": "audio", "mediaPath": f"chat-media/{REL}/coach1/note.m4a",
+         "durationMs": 42000, "bytes": 90000}
+    )
+    report(db, "r1", ref=f"relationships/{REL}/messages/v1")
+    assert capture(db, "r1") is True
+    saved = db.document("reports/r1/evidence/content").get().to_dict()
+    assert saved["subject"] == {
+        "type": "audio", "hidden": False, "mediaFile": "note.m4a", "durationMs": 42000,
+    }
+    assert "coach1" not in repr(saved) and "client1" not in repr(saved)
+    assert "chat-media" not in repr(saved)
+
+
+def test_a_reporter_over_her_daily_limit_is_marked_but_her_evidence_is_still_kept():
+    db = make_db()
+    for n in range(3):
+        report(db, f"old{n}", minutes=10 + n)
+    report(db, "r1", minutes=1)
+    data = db.document("reports/r1").get().to_dict()
+    assert moderation.on_report(db, "r1", data, now=NOW, per_day=3) is True
+    assert db.document("reports/r1").get().to_dict()["throttled"] is True
+    assert db.document("reports/r1/evidence/content").get().to_dict()["subject"]["text"] == "pay me on instapay"
+
+
+def test_a_reporter_within_her_daily_limit_is_not_marked():
+    db = make_db()
+    report(db, "r1")
+    data = db.document("reports/r1").get().to_dict()
+    assert moderation.on_report(db, "r1", data, now=NOW, per_day=10) is True
+    assert "throttled" not in db.document("reports/r1").get().to_dict()
+
+
 def test_a_second_capture_keeps_the_first_copy():
     db = make_db()
     report(db, "r1")

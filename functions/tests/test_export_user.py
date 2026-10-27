@@ -65,9 +65,15 @@ class FakeReader:
             "asClient": {"sub-1": {"clientUid": uid, "coachUid": "coach-9", "intake": {"goal": "strength"}}},
             "asCoach": {"sub-2": {"coachUid": uid}},
             "messages": {"rel/m1": {"senderUid": uid, "text": "hello"}},
+            "checkIns": {"coach-9__her-uid/2026-W44": {"state": "answered", "answers": {"pain": True, "note": "knee"}}},
             "private": {"account": {"payoutState": "none"}},
             "receipts": {},
         }
+
+    files = {"chat-media/rel__x/her-uid/a.jpg": b"jpeg-bytes"}
+
+    def file(self, path):
+        return self.files.get(path)
 
     def access_for_flags(self, flag_ids):
         assert flag_ids == ["flag-1"]
@@ -115,6 +121,8 @@ def test_it_holds_her_data_and_names_no_reviewer_and_no_code():
     assert "lifeStage" not in sections["settings"]["data"]["user"]["profile"]
     assert OTHER not in text
     assert sections["events"]["data"]["event-1"]["status"] == "registered"
+    cards = sections["coaching"]["data"]["checkIns"]
+    assert cards["coach-9__her-uid/2026-W44"]["answers"]["note"] == "knee"
 
 
 def test_the_summary_is_readable_and_runs_nothing():
@@ -145,10 +153,35 @@ def test_files_are_written_once_and_private(tmp_path):
         raise AssertionError("an existing folder must not be reused")
 
 
+def test_her_chat_files_are_written_beside_the_copy_and_only_hers(tmp_path):
+    class Reader(FakeReader):
+        def coaching(self, uid):
+            body = super().coaching(uid)
+            body["messages"] = {
+                "rel__x/m1": {"senderUid": uid, "type": "image", "mediaPath": "chat-media/rel__x/her-uid/a.jpg"},
+                "rel__x/m2": {"senderUid": uid, "type": "image", "mediaPath": "chat-media/rel__x/her-uid/gone.jpg"},
+                "rel__x/m3": {"senderUid": uid, "type": "image", "mediaPath": "chat-media/rel__x/her-uid/../../x/a.jpg"},
+                "rel__x/m4": {"senderUid": uid, "type": "image", "mediaPath": "user-media/her-uid/a.jpg"},
+                "rel__x/m5": {"senderUid": uid, "type": "text", "text": "hello"},
+            }
+            return body
+
+    reader = Reader()
+    reader.files["chat-media/rel__x/../../x/a.jpg"] = b"escape"
+    export = export_user.build_export(HER, reader, "en", NOW)
+    folder = tmp_path / "case-2"
+    export_user.write_files(export, str(folder))
+    assert export_user.write_chat_media(export, reader, str(folder)) == 1
+    written = [p.relative_to(folder).as_posix() for p in folder.rglob("*") if p.is_file() and "chat-media" in p.parts]
+    assert written == ["chat-media/rel__x/a.jpg"]
+    assert (folder / "chat-media" / "rel__x" / "a.jpg").read_bytes() == b"jpeg-bytes"
+    assert not (tmp_path / "x").exists()
+
+
 def test_the_coaching_section_holds_her_application_coaching_and_messages():
     export = export_user.build_export(HER, FakeReader(), "en", NOW)
     coaching = export["sections"]["coaching"]
-    assert coaching["source"] == [47, 48, 49, 55, 56, 57, 58, 59, 61]
+    assert coaching["source"] == [47, 48, 49, 55, 56, 57, 58, 59, 61, 62]
     data = coaching["data"]
     assert data["application"]["status"] == "approved"
     assert data["asClient"]["sub-1"]["intake"] == {"goal": "strength"}
@@ -170,6 +203,9 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
             f"relationships/{HER}__{OTHER}": {"coachUid": HER, "clientUid": OTHER},
             f"relationships/{HER}__{OTHER}/messages/m1": {"senderUid": HER, "text": "mine"},
             f"relationships/{HER}__{OTHER}/messages/m2": {"senderUid": OTHER, "text": "hers"},
+            f"relationships/{HER}__{OTHER}/checkIns/2026-W44": {"clientUid": OTHER, "answers": {"note": "not hers"}},
+            f"relationships/coach-9__{HER}": {"coachUid": "coach-9", "clientUid": HER},
+            f"relationships/coach-9__{HER}/checkIns/2026-W44": {"clientUid": HER, "answers": {"note": "my knee"}},
             f"coachPrivate/{HER}": {"payoutState": "none"},
             f"coachPrivate/{HER}/prices/p1": {"coachPriceEgp": 500},
             f"coachApplications/{HER}": {"status": "approved"},
@@ -182,6 +218,7 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
     assert got["asClient"]["s1"]["intake"] == {"goal": "strength"}
     assert got["asCoach"]["s2"] == {"coachUid": HER, "status": "active"}
     assert got["messages"] == {f"{HER}__{OTHER}/m1": {"senderUid": HER, "text": "mine"}}
+    assert got["checkIns"] == {f"coach-9__{HER}/2026-W44": {"clientUid": HER, "answers": {"note": "my knee"}}}
     assert got["private"]["prices/p1"] == {"coachPriceEgp": 500}
     assert got["application"] == {"status": "approved"}
     assert got["packages"] == {"p1": {"title": "T"}}

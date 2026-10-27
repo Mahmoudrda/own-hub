@@ -302,7 +302,6 @@
   "n3NoSellingNoRecruiting": "3 · مفيش بيع ولا استقطاب",
   "n31012Kg": "3 × 10 · 12 كجم",
   "n31012KgSuggested": "3 × 10 · مقترح 12 كجم",
-  "n31212Kg": "3 × 12 · 12 كجم",
   "n3159SeptemberWas312": "3 × 15 · 9 سبتمبر · كان 3 × 12",
   "n330Seconds": "3 × 30 ثانية",
   "n38EachSide": "3 × 8 لكل جنب",
@@ -7211,7 +7210,6 @@
   "aPlanWasUpdated": "الخطة اتحدّثت",
   "liveSessionConfirmed": "جلسة اللايف اتأكدت",
   "liveSessionFinished": "جلسة اللايف خلصت",
-  "thisMessageWasHiddenBecauseItHad": "الرسالة دي اتخفت لأن فيها بيانات تواصل أو دفع",
   "weCouldNotLoadThisChatCheck": "معرفناش نفتح الشات. اتأكدي من النت.",
   "noMessagesYetSayHello": "مفيش رسايل لسه. ابدأي بسلام.",
   "loadingOlderMessages": "بنحمّل رسائل أقدم",
@@ -8187,10 +8185,9 @@
   "gentler": "أخف",
   "recordAVideoUpTo30Seconds": "صوّري فيديو (لحد 30 ثانية)",
   "chooseAVideo": "اختاري فيديو",
-  "thatFileIsTooBigAPhoto": "حجم الملف كبير. الصورة لحد 10 ميجا والفيديو لحد 25 ميجا.",
   "weCouldNotSendThatTryAgain": "ماقدرناش نبعت ده. جرّبي تاني.",
   "holdTheMicAndSpeak": "افضلي دايسة على المايك واتكلمي",
-  "slideAwayToCancel": "اسحبي لبعيد للإلغاء",
+  "slideAwayToCancel": "اسحبي بعيد عشان تلغي",
   "releaseToCancel": "سيبي عشان تلغي",
   "allowTheMicrophoneInSettingsToSend": "اسمحي بالمايك من الإعدادات عشان تبعتي رسايل صوتية.",
   "weCouldNotPlayThatVoiceNote": "ماقدرناش نشغّل الرسالة الصوتية دي.",
@@ -8306,7 +8303,7 @@
   "n1IsHard5IsEasy": "1 صعب، 5 سهل.",
   "anyPainOrInjuryThisWeek": "حسيتي بألم أو إصابة الأسبوع ده؟",
   "tellYourCoachMoreBelowIfYou": "لو حابة احكي لمدرّبتك أكتر تحت. ولو الألم حاد أو بيزيد، اروحي لدكتور.",
-  "anythingYouWantYourCoachToKnow": "حابة مدرّبتك تعرفي حاجة؟ (لو حابة)",
+  "anythingYouWantYourCoachToKnow": "حابة مدرّبتك تعرف حاجة؟ (لو حابة)",
   "sendToMyCoach": "ابعتي لمدرّبتك",
   "sentYourCoachWillSeeIt": "اتبعت. مدرّبتك هتشوفه.",
   "youAlreadySentThisOne": "انتي بعتّي ده قبل كده.",
@@ -8363,5 +8360,96 @@
   "changeTo": "غيّريها لـ",
   "thePlannedDish": "الأكلة المكتوبة في الخطة",
   "forTheWholePlanAsTheDishes": "للخطة كلها، زي ما الأكلات مكتوبة",
-  "nothingToBuyYet": "مفيش حاجة تتشرى لسه."
+  "nothingToBuyYet": "مفيش حاجة تتشرى لسه.",
+  "thatFileIsTooBigAPhoto": "حجم الملف كبير. الصورة لحد 3 ميجا والفيديو لحد 25 ميجا.",
+  "thisMessageWasHiddenAndWasNot": "الرسالة دي اتخفت ومتوصلتش",
+  "videosCanBeUpTo30Seconds": "الفيديو لحد 30 ثانية. اختاري واحد أقصر.",
+  "weCouldNotPlayThatVideo": "ماقدرناش نشغّل الفيديو ده.",
+  "weCouldNotOpenThatPhoto": "ماقدرناش نفتح الصورة دي.",
+  "painOrInjuryThisWeek": "ألم أو إصابة الأسبوع ده",
+  "inbodyScanData": "بيانات فحص InBody",
+  "pasteScanTextOcr": "الصقي نص التقرير",
+  "theseNumbersHelpYourCoachCustomizeYour": "الأرقام دي بتساعد مدربتك تظبط خطة أكلك وتمرينك على حسب جسمك.",
+  "pasteInbodyScanTextOcr": "الصقي نص تقرير InBody (OCR)",
+  "pasteOcrTextHereToAutoExtract": "الصقي النص هنا وهنستخرج الأرقام تلقائي...",
+  "extractMetrics": "استخرجي الأرقام",
+  "muscleSmmKg": "كتلة العضل (كجم)",
+  "bodyFat": "نسبة الدهون (%)",
+  "bmrKcal": "معدل الحرق BMR (سعرة)",
+  "saveScan": "احفظي الفحص",
+  "amountUnitRemaining": "باقي {amount} {unit}",
+  "@amountUnitRemaining": {
+    "description": "Under a progress bar: how much of the day's target is left, for example 80 g remaining.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "80"
+      },
+      "unit": {
+        "type": "String",
+        "example": "g"
+      }
+    }
+  },
+  "targetReached": "الهدف اتحقق",
+  "labelCurrentOfTargetUnitStatus": "{label}: {current} من {target} {unit}. {status}.",
+  "@labelCurrentOfTargetUnitStatus": {
+    "description": "Screen reader text for a progress bar: name, amount against target, then the status line.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Protein"
+      },
+      "current": {
+        "type": "String",
+        "example": "30"
+      },
+      "target": {
+        "type": "String",
+        "example": "120"
+      },
+      "unit": {
+        "type": "String",
+        "example": "g"
+      },
+      "status": {
+        "type": "String",
+        "example": "90 g remaining"
+      }
+    }
+  },
+  "recordAVideoUpToSecondsSeconds": "صوّري فيديو (لحد {seconds} ثانية)",
+  "@recordAVideoUpToSecondsSeconds": {
+    "description": "Chat attach sheet: the longest video she can send, from the coaching limits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "thatFileIsTooBigAPhoto_1rnt5": "حجم الملف كبير. الصورة لحد {photoMb} ميجا والفيديو لحد {videoMb} ميجا.",
+  "@thatFileIsTooBigAPhoto_1rnt5": {
+    "description": "Chat: the two size limits, from the coaching limits.",
+    "placeholders": {
+      "photoMb": {
+        "type": "String",
+        "example": "3"
+      },
+      "videoMb": {
+        "type": "String",
+        "example": "25"
+      }
+    }
+  },
+  "videosCanBeUpToSecondsSeconds": "الفيديو لحد {seconds} ثانية. اختاري واحد أقصر.",
+  "@videosCanBeUpToSecondsSeconds": {
+    "description": "Chat: the longest video she can send, from the coaching limits.",
+    "placeholders": {
+      "seconds": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  }
 }

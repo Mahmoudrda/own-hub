@@ -21,6 +21,7 @@ import 'package:own_hub/features/signup/domain/verification.dart';
 import 'package:own_hub/features/signup/presentation/role_view.dart';
 import 'package:own_hub/features/train/domain/getting_started_tips.dart';
 import 'package:own_hub/features/train/domain/notification_plan.dart';
+import 'package:own_hub/features/train/domain/notification_voice.dart';
 import 'package:own_hub/features/train/domain/train_repository.dart';
 import 'package:own_hub/features/train/domain/training_reminders.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
@@ -96,6 +97,9 @@ void main() {
   final text = AppRouter.reminderText(lookupAppL10n(const Locale('en')));
 
   setUp(() {
+    // The real bank loads on the first schedule and sets the plan again
+    // with the real clock; these tests read the first plan only.
+    NotificationSync.bank = NotificationVoice.empty;
     SharedPreferences.setMockInitialValues({});
     _clean();
   });

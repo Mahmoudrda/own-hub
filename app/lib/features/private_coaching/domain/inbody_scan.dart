@@ -12,7 +12,12 @@ enum ClientFitnessGoal {
   static ClientFitnessGoal fromString(String? raw) {
     if (raw == null) return stayInShape;
     final r = raw.trim().toLowerCase();
-    if (r.contains('lose') || r.contains('fat') || r.contains('weight') || r.contains('cut') || r.contains('تخسيس') || r.contains('وزن')) {
+    if (r.contains('lose') ||
+        r.contains('fat') ||
+        r.contains('weight') ||
+        r.contains('cut') ||
+        r.contains('تخسيس') ||
+        r.contains('وزن')) {
       return loseWeight;
     }
     if (r.contains('bulk') || r.contains('ضخامة') || r.contains('تضخيم')) {
@@ -196,7 +201,13 @@ class InBodyOcrParser {
             lower.contains('معدل الحرق') ||
             lower.contains('الأيض الأساسي') ||
             lower.contains('الايض')) {
-          final val = _extractNumberNear(line, lines, i, min: 800.0, max: 3500.0);
+          final val = _extractNumberNear(
+            line,
+            lines,
+            i,
+            min: 800.0,
+            max: 3500.0,
+          );
           if (val != null) bmr = val.round();
         }
       }
@@ -206,7 +217,13 @@ class InBodyOcrParser {
         if (lower.contains('height') ||
             lower.contains('طول') ||
             lower.contains('الطول')) {
-          final val = _extractNumberNear(line, lines, i, min: 120.0, max: 220.0);
+          final val = _extractNumberNear(
+            line,
+            lines,
+            i,
+            min: 120.0,
+            max: 220.0,
+          );
           if (val != null) height = val;
         }
       }
@@ -231,7 +248,8 @@ class InBodyOcrParser {
     required double max,
   }) {
     // 1. Try numbers on the current line
-    final currentMatches = RegExp(r'\b\d{1,4}(?:\.\d{1,2})?\b').allMatches(currentLine);
+    final currentMatches = RegExp(r'\b\d{1,4}(?:\.\d{1,2})?\b')
+        .allMatches(currentLine);
     for (final m in currentMatches) {
       final val = double.tryParse(m.group(0)!);
       if (val != null && val >= min && val <= max) {
@@ -242,7 +260,8 @@ class InBodyOcrParser {
     // 2. Try the next line (often OCR outputs label then value on next line)
     if (index + 1 < allLines.length) {
       final nextLine = allLines[index + 1].trim();
-      final nextMatches = RegExp(r'\b\d{1,4}(?:\.\d{1,2})?\b').allMatches(nextLine);
+      final nextMatches = RegExp(r'\b\d{1,4}(?:\.\d{1,2})?\b')
+          .allMatches(nextLine);
       for (final m in nextMatches) {
         final val = double.tryParse(m.group(0)!);
         if (val != null && val >= min && val <= max) {
@@ -285,7 +304,9 @@ class InBodyTargetEstimator {
     final weight = scan.weightKg ?? 65.0;
 
     // Estimate BMR if missing (Mifflin-St Jeor estimate for women)
-    final bmr = scan.bmrKcal ?? (10 * weight + 6.25 * (scan.heightCm ?? 163.0) - 5 * 28 - 161).round();
+    final bmr =
+        scan.bmrKcal ??
+        (10 * weight + 6.25 * (scan.heightCm ?? 163.0) - 5 * 28 - 161).round();
 
     // Activity multiplier based on training frequency
     final activityMultiplier = switch (daysPerWeek) {
@@ -305,14 +326,16 @@ class InBodyTargetEstimator {
         // 350-500 kcal deficit, high protein (2.0-2.2g/kg) to preserve lean mass
         targetKcal = (maintenanceKcal - 400).clamp(1200, 3500);
         proteinMultiplier = 2.0;
-        rationale = 'Deficit for fat loss with high protein to protect lean muscle.';
+        rationale =
+            'Deficit for fat loss with high protein to protect lean muscle.';
         break;
 
       case ClientFitnessGoal.bulk:
         // 250-350 kcal surplus, 1.8-2.0g/kg protein
         targetKcal = (maintenanceKcal + 300).clamp(1500, 4000);
         proteinMultiplier = 1.9;
-        rationale = 'Caloric surplus for muscle hypertrophy and strength gains.';
+        rationale =
+            'Caloric surplus for muscle hypertrophy and strength gains.';
         break;
 
       case ClientFitnessGoal.gainMuscle:
@@ -327,7 +350,8 @@ class InBodyTargetEstimator {
         // Maintenance calories, 1.6-1.8g/kg protein
         targetKcal = maintenanceKcal.clamp(1300, 3500);
         proteinMultiplier = 1.7;
-        rationale = 'Maintenance nutrition for balanced energy and body composition.';
+        rationale =
+            'Maintenance nutrition for balanced energy and body composition.';
         break;
     }
 
@@ -340,7 +364,9 @@ class InBodyTargetEstimator {
     // Carbs: remainder of calories (4 kcal/g)
     final proteinKcal = targetProteinG * 4;
     final remainingKcal = targetKcal - proteinKcal - (targetFatG * 9);
-    final targetCarbsG = (remainingKcal > 0 ? remainingKcal / 4 : 80).round().clamp(50, 500);
+    final targetCarbsG = (remainingKcal > 0 ? remainingKcal / 4 : 80)
+        .round()
+        .clamp(50, 500);
 
     return NutritionTargets(
       dailyCaloriesKcal: targetKcal,

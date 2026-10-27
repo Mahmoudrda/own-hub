@@ -47,13 +47,34 @@ def test_a_flagged_request_is_never_auto_accepted(db, pushes):
 def test_publish_refuses_a_flagged_client_until_the_coach_has_read_her_answers(kind):
     store = make_db()
     store.document("subscriptions/sub1").update({"intake": {"lifeStage": "postpartum", "health": {}}})
-    assert refusal(lambda: publish(store, req(kind))) == (errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
+    new_app = req(kind, reviewsHealth=True)
+    assert refusal(lambda: publish(store, new_app)) == (errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
 
     assert subscriptions.review_health(
         store, "coach1", {"subId": "sub1"}, live=True, coach_v="active", now=NOW
     ) == {"ok": True}
+    out, _ = publish(store, new_app)
+    assert out["revision"] == 1
+
+
+@pytest.mark.parametrize("kind", ["workout", "meal"])
+def test_a_build_that_cannot_clear_the_hold_is_not_locked_out_by_it(kind):
+    # Functions go out before the app. A coach still on a build without the
+    # "I have read them" button must be able to send, as she could before.
+    store = make_db()
+    store.document("subscriptions/sub1").update({"intake": {"lifeStage": "postpartum", "health": {}}})
     out, _ = publish(store, req(kind))
     assert out["revision"] == 1
+    again, _ = publish(store, req(kind, reviewsHealth=False, name="Again"))
+    assert again["revision"] == 1
+
+
+def test_the_hold_reads_the_intake_the_server_really_stores():
+    store = make_db()
+    stored = subscriptions.intake_of(intake(eatingHistory=True, doctorAck=True))
+    store.document("subscriptions/sub1").update({"intake": stored})
+    new_app = req("workout", reviewsHealth=True)
+    assert refusal(lambda: publish(store, new_app)) == (errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
 
 
 def test_an_unflagged_client_is_never_held():

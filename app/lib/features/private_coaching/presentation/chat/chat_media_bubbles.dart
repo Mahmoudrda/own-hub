@@ -52,6 +52,24 @@ class _MediaBubbleState extends State<MediaBubble> {
     }
   }
 
+  /// Opens the photo or the clip full screen. Both the tap and the screen
+  /// reader's "activate" go here.
+  Future<void> _open() async {
+    final pending = _url;
+    if (pending == null) return;
+    try {
+      final url = await pending;
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => widget.message.type == MessageType.video
+              ? ChatVideoViewer(url: url)
+              : ChatImageViewer(url: url),
+        ),
+      );
+    } catch (_) {}
+  }
+
   String _kind(AppL10n l10n) => switch (widget.message.type) {
     MessageType.image => l10n.photo,
     MessageType.video => l10n.video,
@@ -84,7 +102,9 @@ class _MediaBubbleState extends State<MediaBubble> {
     return Semantics(
       container: true,
       excludeSemantics: true,
+      button: true,
       label: spoken,
+      onTap: _open,
       onLongPress: widget.onLongPress,
       child: GestureDetector(
         onLongPress: widget.onLongPress,
@@ -179,15 +199,7 @@ class _MediaBubbleState extends State<MediaBubble> {
           );
         }
         return InkWell(
-          onTap: url == null
-              ? null
-              : () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => isVideo
-                        ? ChatVideoViewer(url: url)
-                        : ChatImageViewer(url: url),
-                  ),
-                ),
+          onTap: url == null ? null : _open,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.sm),
             child: face,
@@ -214,7 +226,17 @@ class ChatImageViewer extends StatelessWidget {
         onPressed: () => Navigator.of(context).maybePop(),
       ),
     ),
-    body: Center(child: InteractiveViewer(child: Image.network(url))),
+    body: Center(
+      child: InteractiveViewer(
+        child: Image.network(
+          url,
+          errorBuilder: (context, _, _) => Text(
+            AppL10n.of(context).weCouldNotOpenThatPhoto,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    ),
   );
 }
 
@@ -228,16 +250,21 @@ class ChatVideoViewer extends StatefulWidget {
 
 class _ChatVideoViewerState extends State<ChatVideoViewer> {
   late final VideoPlayerController _video;
+  bool _failed = false;
 
   @override
   void initState() {
     super.initState();
     _video = VideoPlayerController.networkUrl(Uri.parse(widget.url))
-      ..initialize().then((_) {
-        if (!mounted) return;
-        setState(() {});
-        _video.play();
-      });
+      ..initialize()
+          .then((_) {
+            if (!mounted) return;
+            setState(() {});
+            _video.play();
+          })
+          .catchError((Object _) {
+            if (mounted) setState(() => _failed = true);
+          });
   }
 
   @override
@@ -261,7 +288,12 @@ class _ChatVideoViewerState extends State<ChatVideoViewer> {
         ),
       ),
       body: Center(
-        child: _video.value.isInitialized
+        child: _failed
+            ? Text(
+                l10n.weCouldNotPlayThatVideo,
+                style: const TextStyle(color: Colors.white),
+              )
+            : _video.value.isInitialized
             ? AspectRatio(
                 aspectRatio: _video.value.aspectRatio,
                 child: VideoPlayer(_video),

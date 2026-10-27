@@ -46,10 +46,7 @@ void main() {
           ],
         ),
       ],
-      foods: FoodLibrary([
-        food('rice'),
-        food('chicken'),
-      ]),
+      foods: FoodLibrary([food('rice'), food('chicken')]),
     );
 
     final meal = MealPlanBody(

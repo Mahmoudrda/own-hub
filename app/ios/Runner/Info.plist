@@ -33,7 +33,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman, to photograph a meal if you choose so we can estimate what is on your plate, and to take a profile photo or coach photos if you choose. Nothing is uploaded until you tap send, analyse or submit. The ID card, selfie and meal photographs are read in memory and never stored. A profile photo you take stays on this phone. Photos you add as a coach (your photo, certificates, feedback and results) are uploaded for Own Hub to check, and the approved ones may be shown on your coach page. Photos and videos you choose to send in a coaching chat are uploaded to your coach.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Own Hub uses the microphone only when you hold the mic button in a coaching chat to record a voice note, or record a video with sound to send your coach. Nothing is recorded until you press, and nothing is sent until you let go. Voice notes and videos you send are kept for the length of your coaching so you and your coach can listen and watch again.</string>
+	<string>Own Hub uses the microphone only when you hold the mic button in a coaching chat to record a voice note, or record a video with sound to send your coach. Nothing is recorded until you press, and nothing is sent until you let go. Voice notes and videos you send stay in the chat until you or your coach delete your account, so you can listen and watch again.</string>
 	<!-- Read by sensors_plus for the gentle tilt on a few illustrations
 	     (lib/ui/hand/tilt_parallax.dart). Localised in the InfoPlist.strings
 	     files; this copy is the development-region fallback. -->
@@ -88,13 +88,15 @@
 			</array>
 		</dict>
 	</array>
-	<!-- Flutter's own deep linking is off. Left on, it would push every URL
-	     the app is opened with as a route name, so a widget URL would land on
-	     the unknown-route page, and Flutter documents that it breaks plugins
-	     that handle links themselves (home_widget, and the Firebase phone
-	     auth callback above). -->
+	<!-- Flutter's own deep linking is on, so an https://own-hub.app/c/... or
+	     /p/... link (Associated Domains, Runner.entitlements) reaches the
+	     router: at a cold start as the first route, and while the app runs as
+	     a pushed route. The two plugins that read their own URLs, home_widget
+	     (ownhub://widget?homeWidget=1) and Firebase phone auth (the callback
+	     above), answer first and Flutter does not see those URLs; if one ever
+	     slips through, lib/routing/platform_links.dart drops it. -->
 	<key>FlutterDeepLinkingEnabled</key>
-	<false/>
+	<true/>
 	<!-- Firebase phone auth verifies the app with a silent push before it
 	     falls back to reCAPTCHA. A silent push reaches the app only with this
 	     background mode. It shows nothing and asks for no permission. -->

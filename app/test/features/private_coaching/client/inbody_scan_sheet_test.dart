@@ -15,21 +15,32 @@ void main() {
   }
 
   group('InBodyScanSheet', () {
-    testWidgets('allows manual entry of InBody metrics and saves', (tester) async {
+    testWidgets('allows manual entry of InBody metrics and saves', (
+      tester,
+    ) async {
       InBodyScan? saved;
-      await tester.pumpWidget(
-        wrap(
-          InBodyScanSheet(
-            onSaved: (s) => saved = s,
-          ),
-        ),
-      );
+      await tester.pumpWidget(wrap(InBodyScanSheet(onSaved: (s) => saved = s)));
 
-      await tester.enterText(find.byKey(const ValueKey('inbody-weight-field')), '68.5');
-      await tester.enterText(find.byKey(const ValueKey('inbody-height-field')), '165');
-      await tester.enterText(find.byKey(const ValueKey('inbody-smm-field')), '26.2');
-      await tester.enterText(find.byKey(const ValueKey('inbody-fat-field')), '24.5');
-      await tester.enterText(find.byKey(const ValueKey('inbody-bmr-field')), '1420');
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-weight-field')),
+        '68.5',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-height-field')),
+        '165',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-smm-field')),
+        '26.2',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-fat-field')),
+        '24.5',
+      );
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-bmr-field')),
+        '1420',
+      );
 
       await tester.tap(find.byKey(const ValueKey('inbody-save-btn')));
       await tester.pump();
@@ -42,15 +53,11 @@ void main() {
       expect(saved!.bmrKcal, 1420);
     });
 
-    testWidgets('extracts metrics automatically from pasted OCR text', (tester) async {
+    testWidgets('extracts metrics automatically from pasted OCR text', (
+      tester,
+    ) async {
       InBodyScan? saved;
-      await tester.pumpWidget(
-        wrap(
-          InBodyScanSheet(
-            onSaved: (s) => saved = s,
-          ),
-        ),
-      );
+      await tester.pumpWidget(wrap(InBodyScanSheet(onSaved: (s) => saved = s)));
 
       // Open OCR section
       await tester.tap(find.byKey(const ValueKey('inbody-toggle-ocr')));
@@ -64,7 +71,10 @@ void main() {
       Height: 164.0 cm
       ''';
 
-      await tester.enterText(find.byKey(const ValueKey('inbody-raw-text-field')), ocrSample);
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-raw-text-field')),
+        ocrSample,
+      );
       await tester.tap(find.byKey(const ValueKey('inbody-extract-btn')));
       await tester.pumpAndSettle();
 

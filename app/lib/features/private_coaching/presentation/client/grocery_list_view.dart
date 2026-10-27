@@ -9,11 +9,7 @@ import '../../../../ui/app_scaffold.dart';
 import 'grocery_list.dart';
 
 class GroceryListView extends StatefulWidget {
-  const GroceryListView({
-    super.key,
-    required this.lines,
-    this.onBack,
-  });
+  const GroceryListView({super.key, required this.lines, this.onBack});
 
   final List<GroceryLine> lines;
   final VoidCallback? onBack;

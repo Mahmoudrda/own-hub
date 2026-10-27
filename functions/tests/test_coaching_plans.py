@@ -6,9 +6,10 @@ import json
 
 import pytest
 
-from coaching import errors, plans
+from coaching import errors, plans, subscriptions
 from tests import fake_firestore
 from tests.coaching_helpers import Notes, _txn  # noqa: F401
+from tests.test_coaching_subscriptions import intake
 
 NOW = dt.datetime(2026, 11, 1, 12, tzinfo=dt.timezone.utc)
 IDS = {
@@ -537,10 +538,16 @@ def test_swaps_ids_limits():
     refused(db, req(kind="meal", body=b_dup), errors.PLAN_INVALID)
 
 
+def _stored_intake(**over):
+    """The intake the way `request` stores it: eatingHistory is a top-level key
+    (subscriptions.intake_of drops an `eatingHistory` inside `health`)."""
+    return subscriptions.intake_of(intake(**over))
+
+
 def test_goal_is_held_for_an_eating_history_flag():
     db = make_db()
     db.collection("subscriptions").document("sub1").update(
-        {"intake": {"health": {"eatingHistory": True}}, "healthReviewedAt": NOW}
+        {"intake": _stored_intake(eatingHistory=True, doctorAck=True), "healthReviewedAt": NOW}
     )
     body = meal()
     body["goal"] = {"kcalPerDay": 1600, "proteinGPerDay": 110}
@@ -553,10 +560,75 @@ def test_goal_is_held_for_an_eating_history_flag():
 
     # Flag false with goal -> succeeds
     db.collection("subscriptions").document("sub1").update(
-        {"intake": {"health": {"eatingHistory": False}}, "healthReviewedAt": NOW}
+        {"intake": _stored_intake(eatingHistory=False), "healthReviewedAt": NOW}
     )
     out2, _ = publish(db, req(kind="meal", body=body))
     assert out2["revision"] == 1
+
+
+def test_a_multi_week_plan_without_a_date_starts_today_in_cairo():
+    db = make_db()
+    body = workout(days=14)
+    for n, day in enumerate(body["days"]):
+        day["week"] = 1 if n < 7 else 2
+    out, _ = publish(db, req(body=body))
+    assert db.docs[f"plans/client1/coachPlans/{out['planId']}"]["startsOn"] == plans.cairo_today(NOW)
+    one_week, _ = publish(db, req())
+    assert "startsOn" not in db.docs[f"plans/client1/coachPlans/{one_week['planId']}"]
+
+
+def test_sending_a_plan_again_keeps_the_day_it_started_on():
+    db = make_db()
+    day = (NOW.astimezone(plans.CAIRO).date() + dt.timedelta(days=3)).isoformat()
+    first, _ = publish(db, req(startsOn=day))
+    publish(db, req(planId=first["planId"], name="Renamed"))
+    assert db.docs[f"plans/client1/coachPlans/{first['planId']}"]["startsOn"] == day
+    later = (NOW.astimezone(plans.CAIRO).date() + dt.timedelta(days=5)).isoformat()
+    publish(db, req(planId=first["planId"], startsOn=later))
+    assert db.docs[f"plans/client1/coachPlans/{first['planId']}"]["startsOn"] == later
+
+
+KEY = "a1b2c3d4e5f60718"
+
+
+def _cards(db):
+    return [k for k in db.docs if "/messages/" in k]
+
+
+def test_the_same_request_key_makes_one_plan_one_card_one_push():
+    db = make_db()
+    first, notes = publish(db, req(requestKey=KEY))
+    again, notes_again = publish(db, req(requestKey=KEY))
+    assert again == first
+    assert len([k for k in db.docs if k.startswith("plans/client1/coachPlans/")]) == 1
+    assert len(_cards(db)) == 1
+    assert db.docs["coaches/coach1"]["stats"]["plansShared"] == 1
+    assert notes.sent == [("client1", "planShared")] and notes_again.sent == []
+
+
+def test_a_request_key_is_per_client_per_cairo_day_and_without_it_nothing_is_shared():
+    db = make_db()
+    other = {"coachUid": "coach1", "clientUid": "client2", "relId": "coach1__client2", "status": "active"}
+    db.collection("subscriptions").document("sub2").set(other)
+    a, _ = publish(db, req(requestKey=KEY))
+    b, _ = publish(db, req(requestKey=KEY, subId="sub2"))
+    assert a["planId"] != b["planId"]
+    notes = Notes()
+    tomorrow = NOW + dt.timedelta(days=1)
+    c = plans.publish(
+        db, "coach1", req(requestKey=KEY), live=True, coach_v="active",
+        now=tomorrow, notify=notes, content_ids=IDS,
+    )
+    assert c["planId"] not in (a["planId"], b["planId"])
+    d1, _ = publish(db, req())
+    d2, _ = publish(db, req())
+    assert d1["planId"] != d2["planId"]
+
+
+@pytest.mark.parametrize("bad", ["", "short", 5, "x" * 65, ["a"]])
+def test_a_bad_request_key_is_refused(bad):
+    db = make_db()
+    refused(db, req(requestKey=bad), errors.BAD_REQUEST)
 
 
 def test_nutrition_keys_are_still_refused():

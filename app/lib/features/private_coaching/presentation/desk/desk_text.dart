@@ -4,6 +4,7 @@ library;
 
 import '../../../../l10n/app_l10n.dart';
 import '../../domain/chat_message.dart';
+import '../../domain/check_in.dart';
 import '../../domain/coaching_contract.dart';
 import '../../domain/subscription.dart';
 import '../coaching_when.dart';
@@ -138,3 +139,12 @@ String attentionReasonText(AppL10n l10n, String reason) => switch (reason) {
   _ => '',
 };
 
+/// A "Needs attention" row's second line: the reasons and, when she answered
+/// the week's check-in, her pain answer; her own note goes below, as she wrote it.
+String attentionSubtitle(AppL10n l10n, AttentionRow row) {
+  final first = <String>[
+    for (final reason in row.reasons) attentionReasonText(l10n, reason),
+    if (row.pain) l10n.painOrInjuryThisWeek,
+  ].where((text) => text.isNotEmpty).join(' · ');
+  return <String>[first, row.note].where((text) => text.isNotEmpty).join('\n');
+}

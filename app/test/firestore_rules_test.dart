@@ -149,12 +149,16 @@ void main() {
   group('rule 2 — a message cannot carry a plan', () {
     test('plan fields are forbidden on a message document', () {
       expect(
-        rules,
-        contains("['senderUid', 'type', 'text', 'recipeId', 'createdAt']"),
+        rules.replaceAll(RegExp(r'\s+'), ' '),
+        contains(
+          "['senderUid', 'type', 'text', 'recipeId', 'createdAt', "
+          "'mediaPath', 'durationMs', 'bytes']",
+        ),
         reason:
-            'a message is a whitelist of five keys, so it can hold no plan '
-            'field: "the coach changed my plan in chat" is not a shape this '
-            'collection can hold',
+            'a message is a whitelist of eight keys (five, and the three of a '
+            'photo, video or voice note), so it can hold no plan field: "the '
+            'coach changed my plan in chat" is not a shape this collection '
+            'can hold',
       );
     });
 
