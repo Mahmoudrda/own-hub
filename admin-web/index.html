@@ -32,6 +32,8 @@
     <button role="tab" id="tab-refunds" aria-controls="panel-refunds" aria-selected="false" tabindex="-1" type="button" hidden><span>Refunds</span><span class="tab-badge" id="badge-refunds" hidden></span></button>
     <button role="tab" id="tab-payouts" aria-controls="panel-payouts" aria-selected="false" tabindex="-1" type="button" hidden><span>Payouts</span><span class="tab-badge" id="badge-payouts" hidden></span></button>
     <button role="tab" id="tab-reports" aria-controls="panel-reports" aria-selected="false" tabindex="-1" type="button" hidden><span>Reports</span><span class="tab-badge" id="badge-reports" hidden></span></button>
+    <button role="tab" id="tab-disputes" aria-controls="panel-disputes" aria-selected="false" tabindex="-1" type="button" hidden><span>Disputes</span><span class="tab-badge" id="badge-disputes" hidden></span></button>
+    <button role="tab" id="tab-fees" aria-controls="panel-fees" aria-selected="false" tabindex="-1" type="button" hidden><span>Fee statements</span><span class="tab-badge" id="badge-fees" hidden></span></button>
     <button role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1" type="button"><span>Settings</span></button>
   </nav>
   <button class="tabs-more next" id="tabs-next" type="button" aria-label="Show more sections" hidden>&rsaquo;</button>
@@ -226,6 +228,14 @@
 
     <section id="panel-reports" role="tabpanel" aria-labelledby="tab-reports" hidden>
       <div id="reports-root"></div>
+    </section>
+
+    <section id="panel-disputes" role="tabpanel" aria-labelledby="tab-disputes" hidden>
+      <div id="disputes-root"></div>
+    </section>
+
+    <section id="panel-fees" role="tabpanel" aria-labelledby="tab-fees" hidden>
+      <div id="fees-root"></div>
     </section>
 
     <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>

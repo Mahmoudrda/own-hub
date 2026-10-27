@@ -3,9 +3,12 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gst
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getStorage, ref as storageRef, uploadBytesResumable, getBytes } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-functions.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
 import { firebaseConfig, recaptchaSiteKey, functionsRegion } from "./config.js";
 import * as L from "./logic.js";
 import { mountCoaching } from "./coaching.js";
+import { mountPaymentsDesk } from "./disputes.js";
+import * as D from "./disputes-logic.js";
 import { mountArt, unmountArt } from "./art.js";
 
 const $ = (id) => document.getElementById(id);
@@ -38,6 +41,8 @@ let storage = null;
 let personalStorage = null;
 let claims = {};
 let coaching = null;
+let desk = null;
+let firestore = null;
 let undoTimer = null;
 let noticeTimer = null;
 
@@ -128,7 +133,7 @@ function setBusy(list, on) {
   list.setAttribute("aria-busy", String(on));
 }
 
-const TAB_NAMES = { queue: "Verification", calendar: "Calendar", phones: "Pre-approved phones", exercises: "Exercises", events: "Events", foods: "Foods", coaches: "Coaches", payments: "Payments", refunds: "Refunds", payouts: "Payouts", reports: "Reports", settings: "Settings" };
+const TAB_NAMES = { queue: "Verification", calendar: "Calendar", phones: "Pre-approved phones", exercises: "Exercises", events: "Events", foods: "Foods", coaches: "Coaches", payments: "Payments", refunds: "Refunds", payouts: "Payouts", reports: "Reports", disputes: "Disputes", fees: "Fee statements", settings: "Settings" };
 
 function setBadge(tab, n, noun) {
   const el = $(`badge-${tab}`);
@@ -2114,14 +2119,17 @@ async function rejectFood(candidate) {
 
 /* tabs and wiring */
 
-const TABS = ["queue", "calendar", "phones", "exercises", "events", "foods", "coaches", "payments", "refunds", "payouts", "reports", "settings"];
+const TABS = ["queue", "calendar", "phones", "exercises", "events", "foods", "coaches", "payments", "refunds", "payouts", "reports", "disputes", "fees", "settings"];
 
 // The coaching tabs a signed-in account may use; the server refuses the rest anyway.
-const allowedTabs = () => TABS.filter((t) => !L.COACHING_TABS.includes(t) || L.coachingTabsFor(claims).includes(t));
+const allowedTabs = () => TABS.filter((t) =>
+  (!L.COACHING_TABS.includes(t) || L.coachingTabsFor(claims).includes(t)) &&
+  (!D.DISPUTE_TABS.includes(t) || D.disputeTabsFor(claims).includes(t)));
 
 function applyClaims() {
   const allowed = new Set(allowedTabs());
   for (const t of L.COACHING_TABS) $(`tab-${t}`).hidden = !allowed.has(t);
+  for (const t of D.DISPUTE_TABS) $(`tab-${t}`).hidden = !allowed.has(t);
   tabHints();
 }
 
@@ -2160,6 +2168,20 @@ function ensureCoaching() {
   return coaching;
 }
 
+// The config/payments document is readable by any signed-in account; a missing document means off.
+async function readSwitch() {
+  const snap = await getDoc(doc(firestore, "config", "payments"));
+  return snap.exists() ? snap.data().enabled === true : false;
+}
+
+function ensureDesk() {
+  desk ??= mountPaymentsDesk({
+    h, $, call, notice, askDialog, setEmpty, skeletons, setBadge, readSwitch,
+    getState: () => ({ tab: state.tab, claims }),
+  });
+  return desk;
+}
+
 function openTab(name) {
   const tab = $(`tab-${name}`);
   tab.scrollIntoView({ inline: "center", block: "nearest", behavior: calmScroll() });
@@ -2171,6 +2193,7 @@ function primeBadges() {
   if (state.tab !== "events") loadEvents({ quiet: true });
   if (state.tab !== "foods") loadFoods({ quiet: true });
   for (const t of L.coachingTabsFor(claims)) if (state.tab !== t) ensureCoaching().load(t, { quiet: true });
+  for (const t of D.disputeTabsFor(claims)) if (state.tab !== t) ensureDesk().load(t, { quiet: true });
 }
 
 async function requestTab(name) {
@@ -2204,6 +2227,8 @@ function showTab(name) {
   if (name === "foods") loadFoods();
   if (L.COACHING_TABS.includes(name)) ensureCoaching().load(name);
   else coaching?.release();
+  if (D.DISPUTE_TABS.includes(name)) ensureDesk().load(name);
+  else desk?.release();
   if (name === "settings") { loadSettings(); if (L.isAdmin(claims)) ensureCoaching().loadSettings(); }
 }
 
@@ -2309,6 +2334,7 @@ function boot() {
   functions = getFunctions(app, functionsRegion);
   storage = getStorage(app, "gs://own-hub.firebasestorage.app");
   personalStorage = getStorage(app, "gs://own-hub-personal");
+  firestore = getFirestore(app);
   const auth = getAuth(app);
 
   $("login-form").addEventListener("submit", async (ev) => {
@@ -2348,6 +2374,7 @@ function boot() {
     } else {
       claims = {};
       coaching?.release();
+      desk?.release();
       hideToast();
       $("email").focus?.();
     }
