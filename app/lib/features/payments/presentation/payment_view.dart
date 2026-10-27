@@ -16,6 +16,7 @@ import '../data/payments_hub.dart';
 import '../data/payments_local_store.dart';
 import '../data/payments_repository.dart';
 import '../domain/payment_models.dart';
+import '../domain/payments_rules.dart';
 import 'payment_text.dart';
 
 /// Where "Open InstaPay" goes. Not every bank registers the same address, and
@@ -190,7 +191,6 @@ class _PaymentViewState extends State<PaymentView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final arabic = Localizations.localeOf(context).languageCode == 'ar';
     final p = _payment;
     final left = p?.timeLeft(_now) ?? Duration.zero;
     return AppScaffold(
@@ -230,10 +230,10 @@ class _PaymentViewState extends State<PaymentView> {
             children: [
               Text(l10n.payExactly, style: AppText.bodyM),
               Semantics(
-                label: p.amountText(arabic: arabic),
+                label: egpText(l10n, p.amountPiasters),
                 child: ExcludeSemantics(
                   child: Text(
-                    p.amountText(arabic: arabic),
+                    egpText(l10n, p.amountPiasters),
                     key: const ValueKey('pay-amount'),
                     style: AppText.titleL,
                   ),
@@ -282,9 +282,12 @@ class _PaymentViewState extends State<PaymentView> {
               ),
             ],
           ),
-          Text(l10n.n1OpenYourBankAppAndChoose, style: AppText.bodyM),
-          Text(l10n.n2SendTheExactAmountToThe, style: AppText.bodyM),
-          Text(l10n.n3ComeBackHereAndTapI, style: AppText.bodyM),
+          for (final (i, step) in [
+            l10n.openYourBankAppAndChooseInstapay,
+            l10n.sendTheExactAmountToTheAddress,
+            l10n.comeBackHereAndTapIHave,
+          ].indexed)
+            Text('${i + 1}. $step', style: AppText.bodyM),
           AppButton(
             l10n.openInstapay,
             key: const ValueKey('open-instapay'),
@@ -298,7 +301,9 @@ class _PaymentViewState extends State<PaymentView> {
                   style: AppText.bodyM,
                 )
               : Text(
-                  l10n.thisRequestHasExpiredIfYouAlready,
+                  l10n.thisRequestHasExpiredIfYouAlready_1azdp(
+                    kLateProofDays.toString(),
+                  ),
                   key: const ValueKey('pay-expired'),
                   style: AppText.bodyM,
                 ),

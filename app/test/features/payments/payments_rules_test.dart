@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/payments/domain/payments_rules.dart';
 
@@ -34,5 +36,13 @@ void main() {
       expect(validAccountName(bad), isFalse, reason: bad);
     }
     expect(validAccountName('R' * 81), isFalse);
+  });
+
+  test('the two windows the screens state match the server', () {
+    final model = File('../functions/payments/model.py').readAsStringSync();
+    int limit(String key) =>
+        int.parse(RegExp('"$key": (\\d+)').firstMatch(model)!.group(1)!);
+    expect(kAddressDelayHours, limit('addressDelayHours'));
+    expect(kLateProofDays, limit('lateProofDays'));
   });
 }

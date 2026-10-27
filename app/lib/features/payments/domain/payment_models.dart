@@ -196,10 +196,6 @@ class Payment {
   bool get coachAsks =>
       status.unpaid && coachReportTxn.isNotEmpty && !coachReportAnswered;
 
-  /// Whole pounds when there are no piasters, else two decimals.
-  String amountText({bool arabic = false}) =>
-      egpText(amountPiasters, arabic: arabic);
-
   /// Time left to pay; zero once past. [now] is the phone clock, a display only.
   Duration timeLeft(DateTime now) {
     final end = expiresAt;
@@ -294,12 +290,6 @@ class FeeStatement {
       dueAt: readTime(m['dueAt']),
     );
   }
-}
-
-/// "500.37 EGP" / "500.37 جنيه"; whole pounds drop the decimals. Western digits.
-String egpText(int piasters, {bool arabic = false}) {
-  final number = egpPlain(piasters);
-  return arabic ? '$number جنيه' : '$number EGP';
 }
 
 /// "500.37" for the bank's amount box. Western digits, no currency.

@@ -22,7 +22,8 @@ import '../../../ui/app_progress.dart';
 import '../../../ui/app_split_row.dart';
 import '../../../ui/meal_image.dart';
 import '../../../ui/hand/hand.dart';
-import '../../../domain/nutrition/target_safety.dart' show TargetNote;
+import '../../../domain/nutrition/target_safety.dart'
+    show TargetNote, TargetSafety;
 import '../domain/daily_targets.dart';
 import '../domain/day_totals.dart';
 import '../domain/food_library.dart';
@@ -808,8 +809,12 @@ class EatHero extends StatelessWidget {
 /// Why a target is not the one her body data alone would give, or null when
 /// there is nothing to say.
 String? targetNoteText(AppL10n l10n, TargetNote note) => switch (note) {
-  TargetNote.floor => l10n.weNeverSetATargetBelow1,
-  TargetNote.noDeficitMinor => l10n.weDoNotSetWeightLossTargets,
+  TargetNote.floor => l10n.weNeverSetATargetBelowKcal(
+    countLabel(TargetSafety.floorKcal),
+  ),
+  TargetNote.noDeficitMinor => l10n.weDoNotSetWeightLossTargets_1kp41(
+    TargetSafety.adultAgeYears.toString(),
+  ),
   TargetNote.noDeficitStage => l10n.weDoNotSetWeightLossTargets_14owx,
   TargetNote.none || TargetNote.withheld => null,
 };

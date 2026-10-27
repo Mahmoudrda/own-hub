@@ -8669,5 +8669,68 @@
   "yourPaymentIsOnItsWay": "Your payment is on its way",
   "seeYourPayment": "See your payment",
   "addAScreenshotOfYourBanksTransaction": "Add a screenshot of your bank's transaction or receipt. You can hide private details first.",
-  "sentOwnHubWillLookAtIt": "Sent. Own Hub will look at it."
+  "sentOwnHubWillLookAtIt": "Sent. Own Hub will look at it.",
+  "aNewAddressStartsWorkingAfterHours": "A new address starts working after {hours} hours. Clients with a payment waiting keep paying the old one, and we tell them.",
+  "@aNewAddressStartsWorkingAfterHours": {
+    "description": "Coach InstaPay address screen: how long a new address waits before it works. hours is the server's address delay.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "forAClientWhoIsPregnantOr_7nnjm": "For a client who is pregnant or after a birth, the lowest daily goal is {kcal} kcal.",
+  "@forAClientWhoIsPregnantOr_7nnjm": {
+    "description": "Meal plan editor: why a goal is refused for a pregnant or postpartum client. kcal is the stage floor from the calorie safety rules, with thousands separators.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1,800"
+      }
+    }
+  },
+  "openYourBankAppAndChooseInstapay": "Open your bank app and choose InstaPay.",
+  "sendTheExactAmountToTheAddress": "Send the exact amount to the address above.",
+  "comeBackHereAndTapIHave": "Come back here and tap I have paid.",
+  "proteinCanBeAtMostPercentOf": "Protein can be at most {percent}% of the day's calories.",
+  "@proteinCanBeAtMostPercentOf": {
+    "description": "Meal plan editor: why a protein goal is refused. percent is the largest protein share from the calorie safety rules.",
+    "placeholders": {
+      "percent": {
+        "type": "String",
+        "example": "35"
+      }
+    }
+  },
+  "thisRequestHasExpiredIfYouAlready_1azdp": "This request has expired. If you already paid, you can still send your proof for {days} days.",
+  "@thisRequestHasExpiredIfYouAlready_1azdp": {
+    "description": "Payment screen after the 24 hour request ran out. days is how long a late proof is still accepted.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "weDoNotSetWeightLossTargets_1kp41": "We do not set weight-loss targets under {age}. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.",
+  "@weDoNotSetWeightLossTargets_1kp41": {
+    "description": "Eat tab note for a woman under the adult age. age is the adult age from the calorie safety rules.",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "example": "18"
+      }
+    }
+  },
+  "weNeverSetATargetBelowKcal": "We never set a target below {kcal} kcal.",
+  "@weNeverSetATargetBelowKcal": {
+    "description": "Eat tab note when her target was lifted to the floor. kcal is the floor from the calorie safety rules, with thousands separators.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1,200"
+      }
+    }
+  }
 }

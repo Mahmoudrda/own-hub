@@ -27189,6 +27189,60 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Sent. Own Hub will look at it.'**
   String get sentOwnHubWillLookAtIt;
+
+  /// Coach InstaPay address screen: how long a new address waits before it works. hours is the server's address delay.
+  ///
+  /// In en, this message translates to:
+  /// **'A new address starts working after {hours} hours. Clients with a payment waiting keep paying the old one, and we tell them.'**
+  String aNewAddressStartsWorkingAfterHours(String hours);
+
+  /// Meal plan editor: why a goal is refused for a pregnant or postpartum client. kcal is the stage floor from the calorie safety rules, with thousands separators.
+  ///
+  /// In en, this message translates to:
+  /// **'For a client who is pregnant or after a birth, the lowest daily goal is {kcal} kcal.'**
+  String forAClientWhoIsPregnantOr_7nnjm(String kcal);
+
+  /// No description provided for @openYourBankAppAndChooseInstapay.
+  ///
+  /// In en, this message translates to:
+  /// **'Open your bank app and choose InstaPay.'**
+  String get openYourBankAppAndChooseInstapay;
+
+  /// No description provided for @sendTheExactAmountToTheAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the exact amount to the address above.'**
+  String get sendTheExactAmountToTheAddress;
+
+  /// No description provided for @comeBackHereAndTapIHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Come back here and tap I have paid.'**
+  String get comeBackHereAndTapIHave;
+
+  /// Meal plan editor: why a protein goal is refused. percent is the largest protein share from the calorie safety rules.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein can be at most {percent}% of the day\'s calories.'**
+  String proteinCanBeAtMostPercentOf(String percent);
+
+  /// Payment screen after the 24 hour request ran out. days is how long a late proof is still accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'This request has expired. If you already paid, you can still send your proof for {days} days.'**
+  String thisRequestHasExpiredIfYouAlready_1azdp(String days);
+
+  /// Eat tab note for a woman under the adult age. age is the adult age from the calorie safety rules.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not set weight-loss targets under {age}. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.'**
+  String weDoNotSetWeightLossTargets_1kp41(String age);
+
+  /// Eat tab note when her target was lifted to the floor. kcal is the floor from the calorie safety rules, with thousands separators.
+  ///
+  /// In en, this message translates to:
+  /// **'We never set a target below {kcal} kcal.'**
+  String weNeverSetATargetBelowKcal(String kcal);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

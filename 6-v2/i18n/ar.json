@@ -4509,5 +4509,14 @@
  "Your payment is on its way": "دفعك في السكة",
  "See your payment": "شوفي دفعك",
  "Add a screenshot of your bank's transaction or receipt. You can hide private details first.": "ضيفي لقطة من معاملة البنك أو الإيصال. تقدري تخبّي التفاصيل الخاصة الأول.",
- "Sent. Own Hub will look at it.": "اتبعت. Own Hub هتبص عليه."
+ "Sent. Own Hub will look at it.": "اتبعت. Own Hub هتبص عليه.",
+ "A new address starts working after {hours} hours. Clients with a payment waiting keep paying the old one, and we tell them.": "العنوان الجديد بيشتغل بعد {hours} ساعة. العميلات اللي عندهم دفع مستني بيكملوا على العنوان القديم، وهنقولهم.",
+ "For a client who is pregnant or after a birth, the lowest daily goal is {kcal} kcal.": "للعميلة الحامل أو بعد الولادة، أقل هدف يومي هو {kcal} سعرة.",
+ "Open your bank app and choose InstaPay.": "افتحي تطبيق البنك واختاري إنستا باي.",
+ "Send the exact amount to the address above.": "ابعتي المبلغ بالظبط على العنوان اللي فوق.",
+ "Come back here and tap I have paid.": "ارجعي هنا واضغطي دفعت.",
+ "Protein can be at most {percent}% of the day's calories.": "البروتين مينفعش يزيد عن {percent}% من سعرات اليوم.",
+ "This request has expired. If you already paid, you can still send your proof for {days} days.": "الطلب ده انتهى. لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال {days} أيام.",
+ "We do not set weight-loss targets under {age}. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.": "مبنحطش أهداف لإنقاص الوزن تحت {age} سنة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.",
+ "We never set a target below {kcal} kcal.": "مبنحطش أبدًا هدف أقل من {kcal} سعرة."
 }

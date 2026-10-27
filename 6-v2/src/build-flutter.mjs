@@ -840,6 +840,12 @@ if (fs.existsSync(dictPath)) {
     "Your coach accepted {amount} instead. Do you agree?": {"description": "Shown when the coach takes a lower amount in writing.", "placeholders": {"amount": {"type": "String", "example": "450 EGP"}}},
     "You can start now. This stays open until {date} while your coach confirms.": {"description": "Bounded access while the coach confirms.", "placeholders": {"date": {"type": "String", "example": "27/10 14:32"}}},
     "Your coach says you paid {reference}. Is that right?": {"description": "The coach reported a payment for the client to confirm.", "placeholders": {"reference": {"type": "String", "example": "OH-4821"}}},
+    "A new address starts working after {hours} hours. Clients with a payment waiting keep paying the old one, and we tell them.": {"description": "Coach InstaPay address screen: how long a new address waits before it works. hours is the server's address delay.", "placeholders": {"hours": {"type": "String", "example": "24"}}},
+    "For a client who is pregnant or after a birth, the lowest daily goal is {kcal} kcal.": {"description": "Meal plan editor: why a goal is refused for a pregnant or postpartum client. kcal is the stage floor from the calorie safety rules, with thousands separators.", "placeholders": {"kcal": {"type": "String", "example": "1,800"}}},
+    "Protein can be at most {percent}% of the day's calories.": {"description": "Meal plan editor: why a protein goal is refused. percent is the largest protein share from the calorie safety rules.", "placeholders": {"percent": {"type": "String", "example": "35"}}},
+    "This request has expired. If you already paid, you can still send your proof for {days} days.": {"description": "Payment screen after the 24 hour request ran out. days is how long a late proof is still accepted.", "placeholders": {"days": {"type": "String", "example": "7"}}},
+    "We do not set weight-loss targets under {age}. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.": {"description": "Eat tab note for a woman under the adult age. age is the adult age from the calorie safety rules.", "placeholders": {"age": {"type": "String", "example": "18"}}},
+    "We never set a target below {kcal} kcal.": {"description": "Eat tab note when her target was lifted to the floor. kcal is the floor from the calorie safety rules, with thousands separators.", "placeholders": {"kcal": {"type": "String", "example": "1,200"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

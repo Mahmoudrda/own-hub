@@ -312,7 +312,6 @@ class _ProofViewState extends State<ProofView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final arabic = Localizations.localeOf(context).languageCode == 'ar';
     final txn = _txn.text.trim();
     final hint = _serverHint.isNotEmpty
         ? _serverHint
@@ -348,7 +347,7 @@ class _ProofViewState extends State<ProofView> {
           AppCard(
             children: [
               Text(
-                '${l10n.paymentAmount}  ${egpText(widget.payment.amountPiasters, arabic: arabic)}',
+                '${l10n.paymentAmount}  ${egpText(l10n, widget.payment.amountPiasters)}',
                 style: AppText.bodyM,
               ),
               Text(

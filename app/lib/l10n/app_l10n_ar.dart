@@ -15807,4 +15807,45 @@ class AppL10nAr extends AppL10n {
 
   @override
   String get sentOwnHubWillLookAtIt => 'اتبعت. Own Hub هتبص عليه.';
+
+  @override
+  String aNewAddressStartsWorkingAfterHours(String hours) {
+    return 'العنوان الجديد بيشتغل بعد $hours ساعة. العميلات اللي عندهم دفع مستني بيكملوا على العنوان القديم، وهنقولهم.';
+  }
+
+  @override
+  String forAClientWhoIsPregnantOr_7nnjm(String kcal) {
+    return 'للعميلة الحامل أو بعد الولادة، أقل هدف يومي هو $kcal سعرة.';
+  }
+
+  @override
+  String get openYourBankAppAndChooseInstapay =>
+      'افتحي تطبيق البنك واختاري إنستا باي.';
+
+  @override
+  String get sendTheExactAmountToTheAddress =>
+      'ابعتي المبلغ بالظبط على العنوان اللي فوق.';
+
+  @override
+  String get comeBackHereAndTapIHave => 'ارجعي هنا واضغطي دفعت.';
+
+  @override
+  String proteinCanBeAtMostPercentOf(String percent) {
+    return 'البروتين مينفعش يزيد عن $percent% من سعرات اليوم.';
+  }
+
+  @override
+  String thisRequestHasExpiredIfYouAlready_1azdp(String days) {
+    return 'الطلب ده انتهى. لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال $days أيام.';
+  }
+
+  @override
+  String weDoNotSetWeightLossTargets_1kp41(String age) {
+    return 'مبنحطش أهداف لإنقاص الوزن تحت $age سنة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.';
+  }
+
+  @override
+  String weNeverSetATargetBelowKcal(String kcal) {
+    return 'مبنحطش أبدًا هدف أقل من $kcal سعرة.';
+  }
 }

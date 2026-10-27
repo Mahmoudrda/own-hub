@@ -1,12 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/payments/data/payments_local_store.dart';
 import 'package:own_hub/features/payments/domain/payment_models.dart';
+import 'package:own_hub/features/payments/presentation/payment_text.dart';
+import 'package:own_hub/l10n/app_l10n_ar.dart';
+import 'package:own_hub/l10n/app_l10n_en.dart';
 
 void main() {
   test('egpText writes piasters and drops .00', () {
-    expect(egpText(50037), '500.37 EGP');
-    expect(egpText(50000), '500 EGP');
-    expect(egpText(50005, arabic: true), '500.05 جنيه');
+    expect(egpText(AppL10nEn(), 50037), '500.37 EGP');
+    expect(egpText(AppL10nEn(), 50000), '500 EGP');
+    expect(egpText(AppL10nAr(), 50005), '500.05 جنيه');
     expect(egpPlain(50037), '500.37');
   });
 

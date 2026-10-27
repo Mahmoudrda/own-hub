@@ -8669,5 +8669,68 @@
   "yourPaymentIsOnItsWay": "دفعك في السكة",
   "seeYourPayment": "شوفي دفعك",
   "addAScreenshotOfYourBanksTransaction": "ضيفي لقطة من معاملة البنك أو الإيصال. تقدري تخبّي التفاصيل الخاصة الأول.",
-  "sentOwnHubWillLookAtIt": "اتبعت. Own Hub هتبص عليه."
+  "sentOwnHubWillLookAtIt": "اتبعت. Own Hub هتبص عليه.",
+  "aNewAddressStartsWorkingAfterHours": "العنوان الجديد بيشتغل بعد {hours} ساعة. العميلات اللي عندهم دفع مستني بيكملوا على العنوان القديم، وهنقولهم.",
+  "@aNewAddressStartsWorkingAfterHours": {
+    "description": "Coach InstaPay address screen: how long a new address waits before it works. hours is the server's address delay.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "24"
+      }
+    }
+  },
+  "forAClientWhoIsPregnantOr_7nnjm": "للعميلة الحامل أو بعد الولادة، أقل هدف يومي هو {kcal} سعرة.",
+  "@forAClientWhoIsPregnantOr_7nnjm": {
+    "description": "Meal plan editor: why a goal is refused for a pregnant or postpartum client. kcal is the stage floor from the calorie safety rules, with thousands separators.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1,800"
+      }
+    }
+  },
+  "openYourBankAppAndChooseInstapay": "افتحي تطبيق البنك واختاري إنستا باي.",
+  "sendTheExactAmountToTheAddress": "ابعتي المبلغ بالظبط على العنوان اللي فوق.",
+  "comeBackHereAndTapIHave": "ارجعي هنا واضغطي دفعت.",
+  "proteinCanBeAtMostPercentOf": "البروتين مينفعش يزيد عن {percent}% من سعرات اليوم.",
+  "@proteinCanBeAtMostPercentOf": {
+    "description": "Meal plan editor: why a protein goal is refused. percent is the largest protein share from the calorie safety rules.",
+    "placeholders": {
+      "percent": {
+        "type": "String",
+        "example": "35"
+      }
+    }
+  },
+  "thisRequestHasExpiredIfYouAlready_1azdp": "الطلب ده انتهى. لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال {days} أيام.",
+  "@thisRequestHasExpiredIfYouAlready_1azdp": {
+    "description": "Payment screen after the 24 hour request ran out. days is how long a late proof is still accepted.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "weDoNotSetWeightLossTargets_1kp41": "مبنحطش أهداف لإنقاص الوزن تحت {age} سنة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.",
+  "@weDoNotSetWeightLossTargets_1kp41": {
+    "description": "Eat tab note for a woman under the adult age. age is the adult age from the calorie safety rules.",
+    "placeholders": {
+      "age": {
+        "type": "String",
+        "example": "18"
+      }
+    }
+  },
+  "weNeverSetATargetBelowKcal": "مبنحطش أبدًا هدف أقل من {kcal} سعرة.",
+  "@weNeverSetATargetBelowKcal": {
+    "description": "Eat tab note when her target was lifted to the floor. kcal is the floor from the calorie safety rules, with thousands separators.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1,200"
+      }
+    }
+  }
 }

@@ -129,7 +129,6 @@ class _PaymentStatusViewState extends State<PaymentStatusView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final arabic = Localizations.localeOf(context).languageCode == 'ar';
     return StreamBuilder<Payment?>(
       stream: _payment,
       builder: (context, snap) {
@@ -180,10 +179,7 @@ class _PaymentStatusViewState extends State<PaymentStatusView> {
             if (p != null) ...[
               AppCard(
                 children: [
-                  Text(
-                    egpText(p.amountPiasters, arabic: arabic),
-                    style: AppText.titleL,
-                  ),
+                  Text(egpText(l10n, p.amountPiasters), style: AppText.titleL),
                   Text(
                     '${l10n.reference}  ${p.reference}',
                     textDirection: TextDirection.ltr,
@@ -197,7 +193,7 @@ class _PaymentStatusViewState extends State<PaymentStatusView> {
                 ],
               ),
               Text(
-                nextLine(l10n, p, arabic: arabic),
+                nextLine(l10n, p),
                 key: const ValueKey('next-line'),
                 style: AppText.bodyM,
               ),

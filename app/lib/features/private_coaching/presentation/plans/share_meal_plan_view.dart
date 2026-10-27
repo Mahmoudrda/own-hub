@@ -155,8 +155,12 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
   }
 
   String? _safetyText(AppL10n l10n) => switch (_safetyProblem) {
-    GoalProblem.belowStageFloor => l10n.forAClientWhoIsPregnantOr,
-    GoalProblem.proteinTooHigh => l10n.proteinCanBeAtMost35Of,
+    GoalProblem.belowStageFloor => l10n.forAClientWhoIsPregnantOr_7nnjm(
+      countLabel(TargetSafety.stageGoalFloorKcal),
+    ),
+    GoalProblem.proteinTooHigh => l10n.proteinCanBeAtMostPercentOf(
+      (TargetSafety.maxProteinShare * 100).round().toString(),
+    ),
     _ => null,
   };
 
@@ -668,7 +672,10 @@ class _ShareMealPlanViewState extends State<ShareMealPlanView> {
                   ),
                   if (_stage.isProtected || _safetyText(l10n) != null)
                     Text(
-                      _safetyText(l10n) ?? l10n.forAClientWhoIsPregnantOr,
+                      _safetyText(l10n) ??
+                          l10n.forAClientWhoIsPregnantOr_7nnjm(
+                            countLabel(TargetSafety.stageGoalFloorKcal),
+                          ),
                       key: const ValueKey('meal-goal-safety'),
                       style: AppText.bodyM.copyWith(
                         color: AppColors.onSurfaceVariant,

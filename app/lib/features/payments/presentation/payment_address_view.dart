@@ -209,7 +209,11 @@ class _PaymentAddressViewState extends State<PaymentAddressView> {
             label: l10n.accountNameExactlyAsYourBankShows,
             onChanged: (_) => setState(() {}),
           ),
-          AppSageNote(l10n.aNewAddressStartsWorkingAfter24),
+          AppSageNote(
+            l10n.aNewAddressStartsWorkingAfterHours(
+              kAddressDelayHours.toString(),
+            ),
+          ),
         ] else ...[
           Text(l10n.weSentACodeToYourPhone, style: AppText.bodyM),
           AppField(

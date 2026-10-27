@@ -2,6 +2,11 @@ library;
 
 import '../../../l10n/app_l10n.dart';
 import '../data/payments_repository.dart';
+import '../domain/payment_models.dart';
+
+/// "500.37 EGP" / "500.37 جنيه"; whole pounds drop the decimals. Western digits.
+String egpText(AppL10n l10n, int piasters) =>
+    l10n.amountEgp(egpPlain(piasters));
 
 /// A calm sentence for a refusal. Never the raw code. Codes are the ones in
 /// `functions/payments/errors.py` and `functions/coaching/errors.py`.

@@ -15823,4 +15823,45 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get sentOwnHubWillLookAtIt => 'Sent. Own Hub will look at it.';
+
+  @override
+  String aNewAddressStartsWorkingAfterHours(String hours) {
+    return 'A new address starts working after $hours hours. Clients with a payment waiting keep paying the old one, and we tell them.';
+  }
+
+  @override
+  String forAClientWhoIsPregnantOr_7nnjm(String kcal) {
+    return 'For a client who is pregnant or after a birth, the lowest daily goal is $kcal kcal.';
+  }
+
+  @override
+  String get openYourBankAppAndChooseInstapay =>
+      'Open your bank app and choose InstaPay.';
+
+  @override
+  String get sendTheExactAmountToTheAddress =>
+      'Send the exact amount to the address above.';
+
+  @override
+  String get comeBackHereAndTapIHave => 'Come back here and tap I have paid.';
+
+  @override
+  String proteinCanBeAtMostPercentOf(String percent) {
+    return 'Protein can be at most $percent% of the day\'s calories.';
+  }
+
+  @override
+  String thisRequestHasExpiredIfYouAlready_1azdp(String days) {
+    return 'This request has expired. If you already paid, you can still send your proof for $days days.';
+  }
+
+  @override
+  String weDoNotSetWeightLossTargets_1kp41(String age) {
+    return 'We do not set weight-loss targets under $age. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.';
+  }
+
+  @override
+  String weNeverSetATargetBelowKcal(String kcal) {
+    return 'We never set a target below $kcal kcal.';
+  }
 }

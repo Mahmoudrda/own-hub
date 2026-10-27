@@ -62,6 +62,19 @@ const Map<String, String> _arabicAllowed = {
       'ta-marbuta variants, so "كُشري", "كشري" and "كشرى" are one dish. Egyptian '
       'women type Arabic with and without diacritics, and a match that depended '
       'on exact orthography would fail on most real input.',
+  'lib/features/payments/domain/receipt_reader.dart':
+      'The bank-receipt reader. Holds the Arabic words a screenshot of an '
+      'InstaPay or bank receipt carries ("فشل", "تمت بنجاح", "رقم العمليه", '
+      '"الرصيد المتاح"), the Arabic month names, the am and pm marks, and the '
+      'same letter folding as the food matcher, so a receipt is read the same '
+      'whatever language the bank app or the interface uses. Matching data '
+      'for input, never shown to anybody.',
+  'lib/features/payments/domain/redaction_model.dart':
+      'The receipt privacy pass. Two patterns decide which OCR lines look '
+      'like a card number, a balance or a limit (hidden by default) and which '
+      'carry the transaction number or the status (never hidden), in English '
+      'and Arabic ("الرصيد", "بطاقة", "رقم المرجع", "بنجاح"). Matching data '
+      'for input, never shown to anybody.',
   'lib/features/private_coaching/domain/chat_screen.dart':
       'The coaching chat\'s safety screen, the twin of functions/coaching/'
       'chat.py. Holds the Arabic names of transfer wallets ("فودافون كاش", '
@@ -127,17 +140,17 @@ void main() {
   test('the Arabic allowlist stays small', () {
     // If this needs raising, the reason belongs in the map above, in writing.
     //
-    // Six, in two categories. One screen: the language chooser, which must
-    // show both languages before she has picked either. Five domain files:
+    // Eight, in two categories. One screen: the language chooser, which must
+    // show both languages before she has picked either. Seven domain files:
     // the Eat parser, its normaliser, the coaching chat's safety screen, the
-    // InBody printout reader and the notification picker's lock-screen guard,
-    // which hold Arabic as *matching data* rather than as copy and render
-    // nothing at all.
+    // InBody printout reader, the notification picker's lock-screen guard, and
+    // the bank-receipt reader with its privacy pass, which hold Arabic as
+    // *matching data* rather than as copy and render nothing at all.
     //
     // A fourth entry should be argued for, not assumed — and an entry for
     // anything under `presentation/` should be refused, because that is where
     // copy lives.
-    expect(_arabicAllowed.length, lessThanOrEqualTo(6));
+    expect(_arabicAllowed.length, lessThanOrEqualTo(8));
 
     for (final path in _arabicAllowed.keys) {
       expect(

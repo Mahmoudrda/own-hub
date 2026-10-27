@@ -1,23 +1,28 @@
 // The store screenshot sets, rendered from the real app.
 //
-// Eight screens in English and eight in Arabic, in three sizes:
+// Nine screens in English and nine in Arabic, in three sizes:
 //
 //   play       1080x1920 (9:16, inside Play's 2:1 rule, promotion-eligible)
 //   apple-6.3  1206x2622 (the 6.3" Dynamic Island size Apple now requires)
 //   apple-6.9  1320x2868 (the 6.9" size)
 //
-// Welcome, Home with a week in progress, a workout mid-set, Eat, a recipe from
-// Rahma's book, her progress card, and two stops of the pre-signup tour (a week of
-// dinners, and My cycle). Every PNG is opaque RGB with no alpha channel, as
-// App Store Connect requires; the encoder is below, so no tool is needed.
+// 01 is a branded frame with coach Rahma Mohsen: a frame of her own video on
+// the app's linen and petrol, laid out here so Flutter shapes the Arabic.
+// 02 to 09 are the real app: Home with its one next step, today's session and
+// the same session finished, Eat with her usual plates, Rahma's recipes, You,
+// a chat with a coach, and the coach's plan on Home. Every PNG is opaque RGB
+// with no alpha channel, as App Store Connect requires; the encoder is below,
+// so no tool is needed.
 //
 // It runs the real `OwnHubApp` with the real fonts, the owner's art and the
 // shipped feature flags, with ONE change for this harness only:
 // `accountRequired` is off, so the product screens open without a verified
 // account. Nothing in lib/ is changed by it. Every piece of data on screen is
 // put there the way a woman would put it there, by tapping, and none of it is
-// a real person's: no name, no phone number. Community and coaching are off,
-// as they are in the shipped flags.
+// a real person's: no phone number, and the only names are Rahma's own on her
+// frame and the made-up coach. The coach, her plan and the chat are a
+// synthetic fixture behind the fake repository the coaching tests use.
+// Payments are off in the shipped build, and nothing here shows one.
 //
 // In the normal suite it renders every set and fails on any exception or
 // overflow, writing nothing. To write the PNGs, give it a folder (docs/ lives
@@ -27,7 +32,9 @@
 //   OWNHUB_SCREENSHOTS_DIR=/path/to/docs/release/launch-pack/screenshots \
 //     flutter test test/store/store_screenshots_test.dart
 //
-// which writes {play,apple-6.3,apple-6.9}/{en,ar}/01-welcome.png and so on.
+// which writes {play,apple-6.3,apple-6.9}/{en,ar}/01-rahma.png and so on. The
+// Rahma frame reads its photo from OWNHUB_RAHMA_PHOTO, or from
+// docs/release/screenshots/rahma/rahma-01.png beside the app folder.
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -39,22 +46,36 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/account_data.dart';
 import 'package:own_hub/app_state/eat_state.dart';
+import 'package:own_hub/app_state/private_coaching_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/clock/app_clock.dart';
 import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
+import 'package:own_hub/features/eat/domain/meal_images.dart';
 import 'package:own_hub/features/eat/presentation/recipe_labels.dart';
-import 'package:own_hub/features/signup/presentation/demo/demo_stops.dart';
+import 'package:own_hub/features/private_coaching/domain/chat_message.dart';
+import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
+import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
+import 'package:own_hub/features/private_coaching/domain/subscription.dart';
+import 'package:own_hub/features/onboarding/domain/starting_program.dart'
+    show StartingProgrammes;
+import 'package:own_hub/features/train/domain/my_plan.dart' show MyPlan;
 import 'package:own_hub/features/today/presentation/today_cards.dart'
     show weekdayLabel;
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/main.dart';
 import 'package:own_hub/routing/app_router.dart';
+import 'package:own_hub/theme/app_tokens.dart';
+import 'package:own_hub/ui/hand/hand_marks.dart';
 import 'package:own_hub/ui/hand/tilt_parallax.dart';
 import 'package:own_hub/routing/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/private_coaching/chat/chat_support.dart' show line, rel;
+import '../features/private_coaching/support/fake_coaching_repository.dart'
+    show FakeCoachingRepository, Feed;
+import '../features/private_coaching/support/fixtures.dart' show coach, sub;
 import '../helpers/pause_menu.dart' show finishEarly;
 import '../qa/round1/font_harness.dart';
 
@@ -120,8 +141,8 @@ Future<void> _settle(WidgetTester tester) async {
   }
 }
 
-Future<void> _open(WidgetTester tester, String id) async {
-  _nav(tester).pushNamed(appRoutes[id]!.name);
+Future<void> _open(WidgetTester tester, String id, {Object? arguments}) async {
+  _nav(tester).pushNamed(appRoutes[id]!.name, arguments: arguments);
   await _settle(tester);
 }
 
@@ -295,6 +316,280 @@ void main() {
     ) async {
       await _render(tester, set, savedFlags);
     });
+
+    testWidgets('store frame with Rahma ${set.folder}, English and Arabic', (
+      tester,
+    ) async {
+      await _renderRahma(tester, set);
+    });
+  }
+}
+
+Future<void> _renderRahma(WidgetTester tester, _DeviceSet set) async {
+  tester.view.physicalSize = set.physical;
+  tester.view.devicePixelRatio = set.dpr;
+  final inset = FakeViewPadding(
+    top: set.top * set.dpr,
+    bottom: set.bottom * set.dpr,
+  );
+  tester.view.padding = inset;
+  tester.view.viewPadding = inset;
+  addTearDown(tester.view.reset);
+
+  // The photo is only needed to write the PNGs; the normal suite lays the
+  // frame out on a plain pink block, which is enough to catch an overflow.
+  Uint8List? photo;
+  if (_outDir != null) {
+    final path =
+        Platform.environment['OWNHUB_RAHMA_PHOTO'] ??
+        '../docs/release/screenshots/rahma/rahma-01.png';
+    final file = File(path);
+    expect(file.existsSync(), isTrue, reason: 'no photo of Rahma at $path');
+    photo = file.readAsBytesSync();
+  }
+
+  for (final lang in const ['en', 'ar']) {
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        locale: Locale(lang),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        theme: buildTheme(Locale(lang)),
+        home: _RahmaFrame(lang: lang, photo: photo),
+      ),
+    );
+    await _settle(tester);
+    await _shoot(tester, set, lang, '01-rahma');
+  }
+}
+
+/// The brand frame: a headline naming her, one true line under it, and a frame
+/// of her own video. Only what the app has is claimed: she is a coach, and the
+/// recipes in Eat are hers.
+class _RahmaFrame extends StatelessWidget {
+  const _RahmaFrame({required this.lang, required this.photo});
+
+  final String lang;
+  final Uint8List? photo;
+
+  @override
+  Widget build(BuildContext context) {
+    final ar = lang == 'ar';
+    final width = MediaQuery.sizeOf(context).width;
+    final headline = TextStyle(
+      fontFamily: 'Rubik',
+      fontSize: width * 0.088,
+      height: 1.22,
+      fontWeight: FontWeight.w700,
+      color: AppColors.ink,
+    );
+    final body = TextStyle(
+      fontFamily: 'Rubik',
+      fontSize: width * 0.042,
+      height: 1.45,
+      fontWeight: FontWeight.w400,
+      color: AppColors.onSurfaceVariant,
+    );
+    final picture = photo == null
+        ? const ColoredBox(color: AppColors.primarySoft)
+        : Image.memory(
+            photo!,
+            fit: BoxFit.cover,
+            alignment: const Alignment(0, -0.3),
+            filterQuality: FilterQuality.high,
+          );
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Own Hub',
+              style: body.copyWith(
+                fontSize: width * 0.05,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+            SizedBox(height: width * 0.07),
+            Text.rich(
+              TextSpan(
+                style: headline,
+                children: [
+                  TextSpan(text: ar ? 'اتعرّفي على المدرّبة ' : 'Meet coach '),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.baseline,
+                    baseline: TextBaseline.alphabetic,
+                    child: HandUnderline(
+                      color: AppColors.primary,
+                      width: 4,
+                      gap: 3,
+                      child: Text(
+                        ar ? 'رحمة محسن' : 'Rahma Mohsen',
+                        style: headline.copyWith(color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: width * 0.03),
+            Text(
+              ar
+                  ? 'مدرّبة وواجهة Own Hub\u200F. وصفاتها في «الأكل».'
+                  : 'Coach, and the face of Own Hub. Her recipes are in Eat.',
+              style: body,
+            ),
+            SizedBox(height: width * 0.06),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: 14,
+                        top: 14,
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        end: 14,
+                        bottom: 14,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: picture,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A coach, a plan and a chat, made up for the store pages: nobody's name,
+/// nobody's number. Coaching is free in this build, so the subscription
+/// carries no price.
+class _Coaching {
+  _Coaching() : repo = FakeCoachingRepository(uid: 'me');
+
+  final FakeCoachingRepository repo;
+
+  static const String relId = 'c1__me';
+
+  DateTime _at(int daysAgo, int hour, int minute) => DateTime(
+    pinnedMorning.year,
+    pinnedMorning.month,
+    pinnedMorning.day - daysAgo,
+    hour,
+    minute,
+  );
+
+  /// The chat as one language shows it. The text is data, so the Arabic shot
+  /// has Arabic lines, not the English ones under an Arabic bar.
+  List<ChatMessage> _chat(bool ar) => <ChatMessage>[
+    line(
+      'm1',
+      'c1',
+      ar
+          ? 'أهلاً بيكي! قريت إجاباتك. دي خطة الأسبوع الأول، تلات تمارين.'
+          : 'Welcome! I read your answers. Here is week one, three sessions.',
+      at: _at(1, 18, 5),
+    ),
+    ChatMessage(
+      id: 'm2',
+      senderUid: 'c1',
+      type: MessageType.workoutPlan,
+      planId: 'w1',
+      planKind: PlanKind.workout,
+      planName: ar ? 'تلات أيام في الأسبوع' : 'Three days a week',
+      createdAt: _at(1, 18, 6),
+    ),
+    line(
+      'm3',
+      'me',
+      ar ? 'شكراً! هتمرّن الصبح.' : 'Thank you! I will train in the mornings.',
+      at: _at(1, 18, 12),
+    ),
+    ChatMessage(
+      id: 'm4',
+      senderUid: 'c1',
+      type: MessageType.audio,
+      mediaPath: 'chat/$relId/voice-note.m4a',
+      durationMs: 24000,
+      createdAt: _at(0, 8, 40),
+    ),
+    line(
+      'm5',
+      'me',
+      ar
+          ? 'خلّصت اليوم الأول! رجليا تعبانة شوية.'
+          : 'Done with day one! My legs are a little tired.',
+      at: _at(0, 9, 5),
+    ),
+    line(
+      'm6',
+      'c1',
+      ar
+          ? 'الرجلين التعبانة معناها إنك اشتغلتي. اشربي مية كتير، ونتقابل '
+                'الأربع.'
+          : 'Tired legs mean it worked. Drink plenty of water, and see you '
+                'on Wednesday.',
+      at: _at(0, 9, 12),
+    ),
+  ];
+
+  /// Starts the state a coached woman has: an active coaching, a published
+  /// plan, and the thread open.
+  void start() {
+    repo.coaches.value = [coach('c1', 'Coach Nour')];
+    repo.clientSubs.value = <Subscription>[
+      sub(
+        's1',
+        SubscriptionStatus.active,
+        coachUid: 'c1',
+        startsAt: _at(2, 12, 0),
+        endsAt: _at(-26, 12, 0),
+        price: 0,
+      ),
+    ];
+    repo.relationships.value = [rel()];
+    repo.plans.value = <CoachPlan>[
+      CoachPlan(
+        id: 'w1',
+        kind: PlanKind.workout,
+        coachUid: 'c1',
+        subId: 's1',
+        name: 'Three days a week',
+        workout: MyPlan.fork(StartingProgrammes.programme('split_3day')!),
+        publishedAt: _at(1, 18, 6),
+      ),
+    ];
+    repo.messages[relId] = Feed<List<ChatMessage>>(_chat(false));
+    PrivateCoachingState.instance.start(repo, now: () => pinnedMorning);
+  }
+
+  /// Puts the chat and the coach's name in [lang].
+  void speak(String lang) {
+    final ar = lang == 'ar';
+    repo.coaches.value = [coach('c1', ar ? 'نور' : 'Coach Nour')];
+    repo.messages[relId]!.value = _chat(ar);
   }
 }
 
@@ -332,6 +627,7 @@ Future<void> _render(
     });
     addTearDown(() => AppRouter.featureFlags = savedFlags);
     addTearDown(() => const ThisPhoneWipe().clearPersistence());
+    addTearDown(PrivateCoachingState.instance.stop);
 
     // Her four setup answers are behind her, and she has answered the
     // allergy question naming nothing, which is what opens Rahma's book.
@@ -341,41 +637,56 @@ Future<void> _render(
       dietary: <DietaryTag>{},
     );
 
+    // What `main()` reads before the first frame: the bundled programmes, the
+    // index of painted meals and the table of what each move is measured on.
+    StartingProgrammes.adopt(
+      File(StartingProgrammes.assetPath).readAsStringSync(),
+    );
+    MealImages.adopt(File(MealImages.indexPath).readAsStringSync());
+    await tester.runAsync(prepareMoveBests);
+    addTearDown(StartingProgrammes.reset);
+    addTearDown(MealImages.clear);
+
     debugDisableShadows = false;
     try {
       await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
       await _settle(tester);
       await _loadRecipeBook(tester);
       final l10n = _l10n(tester);
+      final locale = LocaleScope.of(tester.element(find.byType(MaterialApp)));
 
-      // 1. The front door.
-      await _open(tester, 'C01');
-      await _shootBoth(tester, set, '01-welcome');
-      await _home(tester);
+      // A set logged, as she would: Done, then the rest runs by itself.
+      Future<void> logSets(int sets) async {
+        for (var i = 0; i < sets; i++) {
+          await tester.tap(find.textContaining('Done').hitTestable().first);
+          await _settle(tester);
+          await tester.pump(const Duration(seconds: 75));
+          await _settle(tester);
+        }
+      }
 
-      // 3. A workout, started and one set in.
-      await _open(tester, 'R03');
-      await _tapText(tester, l10n.startEverythingsReady);
-      await _shootBoth(tester, set, '03-workout');
-
-      // ...and finished, so the week has a session in it.
-      Future<void> finishTheWorkout() async {
-        // One set logged, then Pause > End workout > Finish and save: the
-        // week gets a session, and R10 is what is on screen after it.
-        await tester.tap(find.textContaining('Done').hitTestable().first);
-        await _settle(tester);
+      // A session, started from the day's page, the given sets in, then
+      // Pause > End workout > Finish and save: R10 is what is on screen after
+      // it, once its 5-second Undo has gone.
+      Future<void> workout({required int sets, String? finishedShot}) async {
+        await _open(tester, 'R03');
+        await _tapText(tester, l10n.startEverythingsReady);
+        await logSets(sets);
         await finishEarly(tester);
         await _settle(tester);
         expect(WorkoutSessionState.instance.lastFinished, isNotNull);
         expect(
           WorkoutSessionState.instance.lastFinished!.sets,
           isNotEmpty,
-          reason: 'the session the week counts has the set she logged',
+          reason: 'the session the week counts has the sets she logged',
         );
+        if (finishedShot != null) {
+          await tester.pump(const Duration(seconds: 6));
+          await _settle(tester);
+          await _shootBoth(tester, set, finishedShot);
+        }
         await _home(tester);
       }
-
-      await finishTheWorkout();
 
       // Two breakfasts logged by typing them, as she would.
       for (final food in const ['ful', 'boiled eggs']) {
@@ -388,13 +699,34 @@ Future<void> _render(
         await _home(tester);
       }
 
-      // 2. Home, with the week under way: on the pinned Monday, its one Eat
-      // line counting both breakfasts she logged.
+      // 02. Home on the pinned Monday, before she trains: its one next step,
+      // and its one Eat line counting both breakfasts. She has put away the
+      // offer of a reminder, which is the "x" beside it.
       expect(find.text(weekdayLabel(l10n, pinnedMorning)), findsWidgets);
       expect(find.textContaining('kcal'), findsWidgets);
+      final close = find.byIcon(Icons.close).hitTestable();
+      if (close.evaluate().isNotEmpty) {
+        await tester.tap(close.first);
+        await _settle(tester);
+      }
       await _shootBoth(tester, set, '02-home');
 
-      // 4. Eat: the recipes, scrolled to Rahma's book.
+      // 03. Today's session, as its page lists it.
+      await _open(tester, 'R03');
+      await _shootBoth(tester, set, '03-workout');
+      await _home(tester);
+
+      // 04. ...and the same session done, six sets in.
+      await workout(sets: 6, finishedShot: '04-finished');
+
+      // 05. Eat: the four meals, each with its one tap.
+      await _open(tester, 'E01');
+      await _shootBoth(tester, set, '05-eat');
+      await _home(tester);
+
+      // 06. Rahma's book, opened on her second section: the first one's PS
+      // line names the period outright, and store pages are seen before
+      // sign-in.
       await _open(tester, 'E05');
       final heading = find.text(l10n.rahmasRecipes);
       await tester.scrollUntilVisible(
@@ -405,8 +737,6 @@ Future<void> _render(
       await tester.runAsync(
         () => Scrollable.ensureVisible(tester.element(heading.first)),
       );
-      // Store pages are seen before sign-in, so the shot opens on her second
-      // section: the first one's PS line names the period outright.
       final sections = EatAppState.instance.recipeBook.sections;
       // The title is on E05 twice by design: under Rahma's book and again
       // under "From the Own Hub kitchen". The shot wants hers, the first.
@@ -433,44 +763,38 @@ Future<void> _render(
         ),
       );
       await _settle(tester);
-      await _shootBoth(tester, set, '04-eat');
-
-      // 5. One of her recipes: a savoury one everyone knows, not the first
-      // page of her sweet section.
-      final recipes = EatAppState.instance.recipeBook.recipes;
-      EatAppState.instance.openRecipeId = recipes
-          .firstWhere(
-            (r) => r.recipeId == 'rahma_shakshoka',
-            orElse: () => recipes.first,
-          )
-          .recipeId;
-      await _open(tester, 'E06');
-      await _shootBoth(tester, set, '05-recipe');
+      await _shootBoth(tester, set, '06-recipes');
       await _home(tester);
 
-      // 6. Her progress card, after the rest of her week's sessions, so it
-      // shows what she did rather than a page of zeros. Her weight is not on
-      // it: that is off until she turns it on.
-      for (var i = 0; i < 2; i++) {
-        await _open(tester, 'R03');
-        await _tapText(tester, l10n.startEverythingsReady);
-        await finishTheWorkout();
+      // 08 and 09. A coaching, while the week has its one session: an active
+      // sub, a published plan and the thread open. The text of a chat is
+      // data, so each language gets its own lines.
+      final coaching = _Coaching()..start();
+      await _settle(tester);
+      await _open(tester, 'H06', arguments: _Coaching.relId);
+      for (final lang in const ['en', 'ar']) {
+        locale.value = Locale(lang);
+        coaching.speak(lang);
+        await _settle(tester);
+        await _shoot(tester, set, lang, '08-coach-chat');
       }
-      await _open(tester, 'P05');
-      expect(find.text(l10n.shareMyCard), findsOneWidget);
-      await _shootBoth(tester, set, '06-progress');
       await _home(tester);
-
-      // 7 and 8. The tour she can take before she has an account: the real
-      // screens on a sample week, labelled as a sample.
-      await _open(tester, 'C04');
-      for (var i = 0; i < DemoStop.weekPlan.index; i++) {
-        await _tapText(tester, l10n.next);
+      for (final lang in const ['en', 'ar']) {
+        locale.value = Locale(lang);
+        coaching.speak(lang);
+        await _settle(tester);
+        await _shoot(tester, set, lang, '09-coach-plan');
       }
-      await _shootBoth(tester, set, '07-tour-dinners');
-      await _tapText(tester, l10n.next);
-      expect(find.text(l10n.howYouFeelToday), findsOneWidget);
-      await _shootBoth(tester, set, '08-tour-checkin');
+      locale.value = const Locale('en');
+      PrivateCoachingState.instance.stop();
+      await _settle(tester);
+
+      // 07. You, after the rest of her week's sessions, so it shows what she
+      // did rather than a page of zeros.
+      await workout(sets: 4);
+      await workout(sets: 4);
+      await _open(tester, 'P01');
+      await _shootBoth(tester, set, '07-you');
     } finally {
       debugDisableShadows = true;
     }
