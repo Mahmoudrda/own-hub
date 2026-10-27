@@ -68,6 +68,8 @@ import 'custom_workout_state.dart';
 import 'my_plan_state.dart';
 import 'bar_preference.dart';
 import 'coach_application_draft.dart';
+import '../features/payments/data/payments_local_store.dart';
+import '../features/payments/data/pending_proofs.dart';
 import 'coach_client_notes.dart';
 import 'move_notes.dart';
 import 'rest_timer_prefs.dart';
@@ -289,6 +291,10 @@ class ThisPhoneWipe implements LocalWipe {
     CoachClientNotes.instance.reset();
     // Her saved chat replies, a list for each coach login on this phone.
     unawaited(SavedReplyStore.eraseAll().catchError((Object _) {}));
+    unawaited(PendingProofs().clear().catchError((Object _) {}));
+    unawaited(PaymentsLocalStore().erase().catchError((Object _) {}));
+    // Payment proofs waiting for a signal (the pictures too), her own InstaPay
+    // handle and her answer to the receipt-reading question.
     BarPreference.instance.reset();
     // The exercise library: its cached catalogue, the clips kept on the phone
     // and the move she last opened. None of it is hers, and all of it goes.

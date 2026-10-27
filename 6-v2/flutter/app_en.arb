@@ -8457,5 +8457,217 @@
   "weDoNotSetWeightLossTargets": "We do not set weight-loss targets under 18. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.",
   "weDoNotSetWeightLossTargets_14owx": "We do not set weight-loss targets while you are pregnant or after a birth. Your target keeps your weight where it is. Please talk to your doctor before changing how you eat.",
   "forAClientWhoIsPregnantOr": "For a client who is pregnant or after a birth, the lowest daily goal is 1,800 kcal.",
-  "proteinCanBeAtMost35Of": "Protein can be at most 35% of the day's calories."
+  "proteinCanBeAtMost35Of": "Protein can be at most 35% of the day's calories.",
+  "pleaseSignInAgainThenTryOnce": "Please sign in again, then try once more.",
+  "theCodeIsNotRightTryAgain": "The code is not right. Try again.",
+  "theCodeHasExpiredAskForA": "The code has expired. Ask for a new one.",
+  "tooManyTriesPleaseWaitAWhile": "Too many tries. Please wait a while.",
+  "thisPaymentChangedRefreshAndTryAgain": "This payment changed. Refresh and try again.",
+  "weCouldNotDoThatTryAgain": "We could not do that. Try again in a moment.",
+  "thatLooksLikeAPhoneNumberUse": "That looks like a phone number. Use your @ address instead.",
+  "thisTransactionNumberWasAlreadyUsed": "This transaction number was already used.",
+  "youHaveSentTooManyPicturesFor": "You have sent too many pictures for this payment.",
+  "weCouldNotUseThatPicturePick": "We could not use that picture. Pick another.",
+  "theTimeToSendAProofFor": "The time to send a proof for this payment has passed. Message your coach.",
+  "yourCoachCannotTakePaymentsHereRight": "Your coach cannot take payments here right now. Message her.",
+  "paymentsByInstapayAreNotAvailableOn": "Payments by InstaPay are not available on your account right now. Please write to support.",
+  "thisAmountIsAboveWhatInstapayAllows": "This amount is above what InstaPay allows here. Message your coach to agree another way.",
+  "forYourFirstPaymentPleaseChooseYour": "For your first payment, please choose your coach's shortest package. Message her if you want a longer one.",
+  "youAlreadyHaveAPaymentOpenOpen": "You already have a payment open. Open it from your coach page.",
+  "paymentsArePausedForAMomentPlease": "Payments are paused for a moment. Please try again later.",
+  "myInstapayAddress": "My InstaPay address",
+  "whereClientsPayYou": "Where clients pay you",
+  "yourInstapayAddress": "Your InstaPay address",
+  "clientsPayYouDirectlyOwnHubNever": "Clients pay you directly. Own Hub never holds the money.",
+  "yourNewAddressStartsWorkingAtTime": "Your new address starts working at {time}.",
+  "@yourNewAddressStartsWorkingAtTime": {
+    "description": "When the coach's new InstaPay address starts.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:30"
+      }
+    }
+  },
+  "instapayAddress": "InstaPay address",
+  "useYourAddressNotAPhoneNumber": "Use your @ address, not a phone number. A phone number would show on every client's receipt.",
+  "thatDoesNotLookLikeAnInstapay": "That does not look like an InstaPay address. It looks like name@instapay.",
+  "accountNameExactlyAsYourBankShows": "Account name, exactly as your bank shows it",
+  "aNewAddressStartsWorkingAfter24": "A new address starts working after 24 hours. Clients with a payment waiting keep paying the old one, and we tell them.",
+  "code": "Code",
+  "weSentACodeToYourPhone": "We sent a code to your phone. Type it to confirm it is you.",
+  "yourAddressIsSavedAndReady": "Your address is saved and ready.",
+  "yourCoachAcceptedYouPayToStart": "Your coach accepted you. Pay to start.",
+  "payNow": "Pay now",
+  "payYourCoach": "Pay your coach",
+  "payExactly": "Pay exactly",
+  "payTo": "Pay to",
+  "nameNameAsShownByYourBank": "{name} (name as shown by your bank)",
+  "@nameNameAsShownByYourBank": {
+    "description": "The coach's account name to check on the bank screen.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Rahma M."
+      }
+    }
+  },
+  "reference": "Reference",
+  "putTheReferenceInTheTransferNote": "Put the reference in the transfer note if your bank has one.",
+  "n1OpenYourBankAppAndChoose": "1. Open your bank app and choose InstaPay.",
+  "n2SendTheExactAmountToThe": "2. Send the exact amount to the address above.",
+  "n3ComeBackHereAndTapI": "3. Come back here and tap I have paid.",
+  "timeLeftTime": "Time left {time}",
+  "@timeLeftTime": {
+    "description": "Countdown to the end of a payment request.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "23:41"
+      }
+    }
+  },
+  "thisRequestHasExpiredIfYouAlready": "This request has expired. If you already paid, you can still send your proof for 7 days.",
+  "ownHubCannotUndoAnInstapayTransfer": "Own Hub cannot undo an InstaPay transfer. Before you send, check that the name on your bank's confirmation screen matches the name above.",
+  "iHavePaid": "I have paid",
+  "yourCoachHasNotSetUpPayments": "Your coach has not set up payments yet. Message her.",
+  "copyAmount": "Copy amount",
+  "copyAddress": "Copy address",
+  "copyReference": "Copy reference",
+  "openInstapay": "Open InstaPay",
+  "theAmountIsCopiedOpenYourBank": "The amount is copied. Open your bank app and choose InstaPay.",
+  "hidePrivateDetails": "Hide private details",
+  "dragOverAnythingPrivateLikeCardNumbers": "Drag over anything private, like card numbers or balances. The amount, transaction number and name stay visible.",
+  "blackOut": "Black out",
+  "crop": "Crop",
+  "useThisPicture": "Use this picture",
+  "thatPartIsNeededToCheckYour": "That part is needed to check your payment.",
+  "onlyTheHiddenDetailCopyLeavesYour": "Only the hidden-detail copy leaves your phone. The original stays here.",
+  "thisPictureIsTooBigOrCould": "This picture is too big or could not be read. Pick another.",
+  "sendYourProof": "Send your proof",
+  "addYourBankScreenshotsTheReceiptAnd": "Add your bank screenshots: the receipt, and the one with More Details open.",
+  "chooseScreenshots": "Choose screenshots",
+  "youCanHidePrivateDetailsBeforeAnything": "You can hide private details before anything is sent.",
+  "paymentAmount": "Payment amount",
+  "transactionNumber": "Transaction number",
+  "notFoundYet": "Not found yet",
+  "picturesAddedCount": "Pictures added: {count}",
+  "@picturesAddedCount": {
+    "description": "How many screenshots she picked.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "yourOwnInstapayAddress": "Your own InstaPay address",
+  "weUseItToMatchYourReceipt": "We use it to match your receipt. Asked once.",
+  "aPhoneNumberWouldShowOnYour": "A phone number would show on your coach's receipt. Use your @ address if you have one.",
+  "sendToCoach": "Send to coach",
+  "everythingMatchesTapSend": "Everything matches. Tap send.",
+  "weCouldNotReadEverythingAddThe": "We could not read everything. Add the screenshot with More Details open, or type the transaction number.",
+  "thisDoesNotMatchYourPaymentYou": "This does not match your payment. You can still send it and Own Hub will check.",
+  "thisLooksLikeACardMessageNot": "This looks like a card message, not an InstaPay transfer receipt. Please send the transfer receipt.",
+  "weNeedALittleMoreToCheck": "We need a little more to check your payment. Add the screenshot with More Details open, or type the transaction number.",
+  "weCouldNotReadTheAmountPick": "We could not read the amount. Pick a clearer screenshot or type the transaction number.",
+  "thisPaymentCameFromADifferentInstapay": "This payment came from a different InstaPay address than yours. If someone else paid for you, tap the button below.",
+  "yesSomeoneElsePaidForMe": "Yes, someone else paid for me",
+  "weCouldNotSeeYourReferenceOn": "We could not see your reference on the receipt. Add the screenshot that shows the transfer note, or send again.",
+  "weCouldNotReadThisClearlyPick": "We could not read this clearly. Pick a clearer screenshot or type the transaction number.",
+  "savedWeWillSendItWhenYou": "Saved. We will send it when you have signal.",
+  "helpImproveReceiptReading": "Help improve receipt reading?",
+  "weKeepOnlyTheTextFieldsWe": "We keep only the text fields we read, never your picture. You can say no.",
+  "yesHelp": "Yes, help",
+  "noThanks": "No thanks",
+  "yourPayment": "Your payment",
+  "waitingForYourPayment": "Waiting for your payment",
+  "proofSent": "Proof sent",
+  "paymentConfirmed": "Payment confirmed",
+  "confirmedAfterReview": "Confirmed after review",
+  "yourCoachSaysItHasNotArrived": "Your coach says it has not arrived",
+  "reviewDone": "Review done",
+  "differentAmount": "Different amount",
+  "theRequestExpired": "The request expired",
+  "paymentCancelled": "Payment cancelled",
+  "refundAsked": "Refund asked",
+  "refundRecorded": "Refund recorded",
+  "refundNotAgreed": "Refund not agreed",
+  "problemReported": "Problem reported",
+  "payWithYourBankAppThenTap": "Pay with your bank app, then tap I have paid.",
+  "yourCoachWillConfirmIfSheDoes": "Your coach will confirm. If she does not answer in 3 days, Own Hub reviews it.",
+  "allSetYourCoachingIsActive": "All set. Your coaching is active.",
+  "addYourBanksTransactionScreenshotAndOwn": "Add your bank's transaction screenshot and Own Hub will look at it.",
+  "ownHubIsLookingAtBothSides": "Own Hub is looking at both sides. This usually takes up to two working days.",
+  "weCouldNotFindThePaymentIf": "We could not find the payment. If you think this is wrong, write to support.",
+  "yourCoachReceivedAmountPayTheRest": "Your coach received {amount}. Pay the rest to start.",
+  "@yourCoachReceivedAmountPayTheRest": {
+    "description": "Shown when the coach received less than the price.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "300 EGP"
+      }
+    }
+  },
+  "yourCoachAcceptedAmountInsteadDoYou": "Your coach accepted {amount} instead. Do you agree?",
+  "@yourCoachAcceptedAmountInsteadDoYou": {
+    "description": "Shown when the coach takes a lower amount in writing.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "450 EGP"
+      }
+    }
+  },
+  "ifYouAlreadyPaidYouCanSend": "If you already paid, you can send your proof for 7 days.",
+  "nothingWasPaid": "Nothing was paid.",
+  "yourCoachHas3DaysToAnswer": "Your coach has 3 days to answer. Then Own Hub steps in.",
+  "yourCoachRecordedTheRefund": "Your coach recorded the refund.",
+  "ownHubWillLookAtIt": "Own Hub will look at it.",
+  "ownHubIsLookingIntoIt": "Own Hub is looking into it.",
+  "yourCoachIsCheckingHerBankThis": "Your coach is checking her bank. This can take up to a day.",
+  "weCouldNotMatchThisPaymentAdd": "We could not match this payment. Add your bank's transaction history and Own Hub will look at it.",
+  "youCanStartNowThisStaysOpen": "You can start now. This stays open until {date} while your coach confirms.",
+  "@youCanStartNowThisStaysOpen": {
+    "description": "Bounded access while the coach confirms.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "27/10 14:32"
+      }
+    }
+  },
+  "yourCoachSaysYouPaidReferenceIs": "Your coach says you paid {reference}. Is that right?",
+  "@yourCoachSaysYouPaidReferenceIs": {
+    "description": "The coach reported a payment for the client to confirm.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "OH-4821"
+      }
+    }
+  },
+  "yesIPaid": "Yes, I paid",
+  "paymentRequestCreated": "Payment request created",
+  "youSentYourProof": "You sent your proof",
+  "yourCoachConfirmedIt": "Your coach confirmed it",
+  "youConfirmedIt": "You confirmed it",
+  "ownHubStartedAReview": "Own Hub started a review",
+  "reviewDoneYourPaymentCounts": "Review done: your payment counts",
+  "reviewDoneWeCouldNotFindThe": "Review done: we could not find the payment",
+  "yourCoachReceivedADifferentAmount": "Your coach received a different amount",
+  "youAskedForARefund": "You asked for a refund",
+  "youReportedAProblemWithTheService": "You reported a problem with the service",
+  "yourCoachSaysYouPaidPleaseCheck": "Your coach says you paid. Please check.",
+  "sendMyProof": "Send my proof",
+  "payTheRest": "Pay the rest",
+  "addProof": "Add proof",
+  "openMyCoaching": "Open my coaching",
+  "iAgree": "I agree",
+  "iDoNotAgree": "I do not agree",
+  "yourPaymentIsOnItsWay": "Your payment is on its way",
+  "seeYourPayment": "See your payment",
+  "addAScreenshotOfYourBanksTransaction": "Add a screenshot of your bank's transaction or receipt. You can hide private details first.",
+  "sentOwnHubWillLookAtIt": "Sent. Own Hub will look at it."
 }

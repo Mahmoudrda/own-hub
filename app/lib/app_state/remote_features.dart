@@ -29,6 +29,7 @@ import '../domain/flags/feature_flags.dart';
 import '../routing/app_router.dart';
 import 'app_changes.dart';
 import 'firebase_boot.dart';
+import 'payments_switch.dart';
 
 /// Reads and writes `meta/features`.
 abstract class FeatureSwitchStore {
@@ -86,6 +87,7 @@ abstract final class RemoteFeatures {
   /// any failure the compiled-in values stand.
   static Future<void> load() async {
     if (!AppRouter.isVerified) return;
+    unawaited(PaymentsSwitch.load());
     final source = store();
     if (source == null) return;
     try {

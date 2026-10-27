@@ -8457,5 +8457,217 @@
   "weDoNotSetWeightLossTargets": "مبنحطش أهداف لإنقاص الوزن تحت 18 سنة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.",
   "weDoNotSetWeightLossTargets_14owx": "مبنحطش أهداف لإنقاص الوزن وانتي حامل أو بعد الولادة. هدفك بيحافظ على وزنك زي ما هو. من فضلك اتكلمي مع دكتورك قبل ما تغيّري أكلك.",
   "forAClientWhoIsPregnantOr": "للعميلة الحامل أو بعد الولادة، أقل هدف يومي هو 1,800 سعرة.",
-  "proteinCanBeAtMost35Of": "البروتين مينفعش يزيد عن 35% من سعرات اليوم."
+  "proteinCanBeAtMost35Of": "البروتين مينفعش يزيد عن 35% من سعرات اليوم.",
+  "pleaseSignInAgainThenTryOnce": "سجّلي دخول تاني وبعدين جرّبي مرة كمان.",
+  "theCodeIsNotRightTryAgain": "الكود مش مظبوط. جرّبي تاني.",
+  "theCodeHasExpiredAskForA": "الكود انتهى. اطلبي كود جديد.",
+  "tooManyTriesPleaseWaitAWhile": "محاولات كتير. استني شوية.",
+  "thisPaymentChangedRefreshAndTryAgain": "الدفع ده اتغيّر. حدّثي الصفحة وجرّبي تاني.",
+  "weCouldNotDoThatTryAgain": "ماقدرناش نعمل كده. جرّبي تاني كمان شوية.",
+  "thatLooksLikeAPhoneNumberUse": "ده شكله رقم تليفون. استخدمي عنوانك اللي فيه @.",
+  "thisTransactionNumberWasAlreadyUsed": "رقم العملية ده اتستخدم قبل كده.",
+  "youHaveSentTooManyPicturesFor": "بعتي صور كتير أوي للدفع ده.",
+  "weCouldNotUseThatPicturePick": "مقدرناش نستخدم الصورة دي. اختاري صورة تانية.",
+  "theTimeToSendAProofFor": "وقت إرسال إثبات الدفع ده عدّى. ابعتي رسالة لمدرّبتك.",
+  "yourCoachCannotTakePaymentsHereRight": "مدرّبتك مش قادرة تستلم دفع هنا دلوقتي. ابعتيلها رسالة.",
+  "paymentsByInstapayAreNotAvailableOn": "الدفع بإنستا باي مش متاح على حسابك دلوقتي. اكتبي للدعم.",
+  "thisAmountIsAboveWhatInstapayAllows": "المبلغ ده أكبر من المسموح بيه هنا في إنستا باي. ابعتي رسالة لمدرّبتك عشان تتفقوا على طريقة تانية.",
+  "forYourFirstPaymentPleaseChooseYour": "في أول دفع، اختاري أقصر باقة عند مدرّبتك. ابعتيلها رسالة لو عايزة باقة أطول.",
+  "youAlreadyHaveAPaymentOpenOpen": "عندك دفع مفتوح بالفعل. افتحيه من صفحة مدرّبتك.",
+  "paymentsArePausedForAMomentPlease": "الدفع واقف لحظات. جرّبي تاني بعد شوية.",
+  "myInstapayAddress": "عنوان إنستا باي بتاعي",
+  "whereClientsPayYou": "فين العميلات بيدفعولك",
+  "yourInstapayAddress": "عنوان إنستا باي بتاعك",
+  "clientsPayYouDirectlyOwnHubNever": "العميلات بيدفعولك على طول. Own Hub مابتمسكش الفلوس أبدًا.",
+  "yourNewAddressStartsWorkingAtTime": "العنوان الجديد هيشتغل الساعة {time}.",
+  "@yourNewAddressStartsWorkingAtTime": {
+    "description": "When the coach's new InstaPay address starts.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:30"
+      }
+    }
+  },
+  "instapayAddress": "عنوان إنستا باي",
+  "useYourAddressNotAPhoneNumber": "استخدمي عنوان فيه @، مش رقم تليفون. الرقم هيظهر في إيصال كل عميلة.",
+  "thatDoesNotLookLikeAnInstapay": "ده مش شكل عنوان إنستا باي. شكله اسم@instapay.",
+  "accountNameExactlyAsYourBankShows": "اسم الحساب زي ما البنك بيعرضه بالظبط",
+  "aNewAddressStartsWorkingAfter24": "العنوان الجديد بيشتغل بعد 24 ساعة. العميلات اللي عندهم دفع مستني بيكملوا على العنوان القديم، وهنقولهم.",
+  "code": "الكود",
+  "weSentACodeToYourPhone": "بعتنالك كود على تليفونك. اكتبيه عشان نتأكد إنك إنتي.",
+  "yourAddressIsSavedAndReady": "عنوانك اتحفظ وجاهز.",
+  "yourCoachAcceptedYouPayToStart": "مدرّبتك قبلتك. ادفعي عشان تبدأي.",
+  "payNow": "ادفعي دلوقتي",
+  "payYourCoach": "ادفعي لمدرّبتك",
+  "payExactly": "ادفعي بالظبط",
+  "payTo": "ادفعي لـ",
+  "nameNameAsShownByYourBank": "{name} (الاسم زي ما البنك بيعرضه)",
+  "@nameNameAsShownByYourBank": {
+    "description": "The coach's account name to check on the bank screen.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Rahma M."
+      }
+    }
+  },
+  "reference": "الرقم المرجعي",
+  "putTheReferenceInTheTransferNote": "اكتبي الرقم المرجعي في ملاحظة التحويل لو البنك عنده خانة ملاحظة.",
+  "n1OpenYourBankAppAndChoose": "1. افتحي تطبيق البنك واختاري إنستا باي.",
+  "n2SendTheExactAmountToThe": "2. ابعتي المبلغ بالظبط على العنوان اللي فوق.",
+  "n3ComeBackHereAndTapI": "3. ارجعي هنا واضغطي دفعت.",
+  "timeLeftTime": "الوقت المتبقي {time}",
+  "@timeLeftTime": {
+    "description": "Countdown to the end of a payment request.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "23:41"
+      }
+    }
+  },
+  "thisRequestHasExpiredIfYouAlready": "الطلب ده انتهى. لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال 7 أيام.",
+  "ownHubCannotUndoAnInstapayTransfer": "Own Hub مابتقدرش ترجّع تحويل إنستا باي. قبل ما تبعتي، اتأكدي إن الاسم في شاشة تأكيد البنك زي الاسم اللي فوق.",
+  "iHavePaid": "دفعت",
+  "yourCoachHasNotSetUpPayments": "مدرّبتك لسه ماظبطتش الدفع. ابعتيلها رسالة.",
+  "copyAmount": "انسخي المبلغ",
+  "copyAddress": "انسخي العنوان",
+  "copyReference": "انسخي الرقم المرجعي",
+  "openInstapay": "افتحي إنستا باي",
+  "theAmountIsCopiedOpenYourBank": "المبلغ اتنسخ. افتحي تطبيق البنك واختاري إنستا باي.",
+  "hidePrivateDetails": "خبّي التفاصيل الخاصة",
+  "dragOverAnythingPrivateLikeCardNumbers": "اسحبي على أي حاجة خاصة زي أرقام الكارت أو الرصيد. المبلغ ورقم العملية والاسم هيفضلوا ظاهرين.",
+  "blackOut": "غطّي بالأسود",
+  "crop": "قصّي",
+  "useThisPicture": "استخدمي الصورة دي",
+  "thatPartIsNeededToCheckYour": "الجزء ده لازم عشان نتأكد من الدفع.",
+  "onlyTheHiddenDetailCopyLeavesYour": "النسخة اللي اتخبّت منها التفاصيل بس هي اللي بتتبعت. الأصل بيفضل على تليفونك.",
+  "thisPictureIsTooBigOrCould": "الصورة كبيرة أوي أو مقدرناش نقراها. اختاري صورة تانية.",
+  "sendYourProof": "ابعتي إثبات الدفع",
+  "addYourBankScreenshotsTheReceiptAnd": "ضيفي لقطات شاشة البنك: الإيصال، واللي فاتح فيها More Details.",
+  "chooseScreenshots": "اختاري لقطات الشاشة",
+  "youCanHidePrivateDetailsBeforeAnything": "تقدري تخبّي أي تفاصيل خاصة قبل ما أي حاجة تتبعت.",
+  "paymentAmount": "مبلغ الدفع",
+  "transactionNumber": "رقم العملية",
+  "notFoundYet": "لسه ماتلاقاش",
+  "picturesAddedCount": "الصور اللي اتضافت: {count}",
+  "@picturesAddedCount": {
+    "description": "How many screenshots she picked.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "yourOwnInstapayAddress": "عنوان إنستا باي بتاعك",
+  "weUseItToMatchYourReceipt": "بنستخدمه عشان نطابق الإيصال. بنسألك مرة واحدة.",
+  "aPhoneNumberWouldShowOnYour": "الرقم هيظهر في إيصال مدرّبتك. استخدمي عنوانك اللي فيه @ لو عندك.",
+  "sendToCoach": "ابعتي لمدرّبتك",
+  "everythingMatchesTapSend": "كل حاجة مطابقة. اضغطي ابعتي.",
+  "weCouldNotReadEverythingAddThe": "مقدرناش نقرا كل حاجة. ضيفي لقطة فيها More Details مفتوحة، أو اكتبي رقم العملية.",
+  "thisDoesNotMatchYourPaymentYou": "ده مش مطابق لدفعتك. تقدري تبعتيه برضه وOwn Hub هتراجعه.",
+  "thisLooksLikeACardMessageNot": "ده شكله رسالة كارت، مش إيصال تحويل إنستا باي. ابعتي إيصال التحويل.",
+  "weNeedALittleMoreToCheck": "محتاجين حاجة زيادة عشان نتأكد من الدفع. ضيفي لقطة فيها More Details مفتوحة، أو اكتبي رقم العملية.",
+  "weCouldNotReadTheAmountPick": "مقدرناش نقرا المبلغ. اختاري لقطة أوضح أو اكتبي رقم العملية.",
+  "thisPaymentCameFromADifferentInstapay": "الدفع ده جه من عنوان إنستا باي غير عنوانك. لو حد تاني دفع عنك، اضغطي الزرار اللي تحت.",
+  "yesSomeoneElsePaidForMe": "أيوه، حد تاني دفع عني",
+  "weCouldNotSeeYourReferenceOn": "مقدرناش نشوف الرقم المرجعي في الإيصال. ضيفي لقطة فيها ملاحظة التحويل، أو ابعتي تاني.",
+  "weCouldNotReadThisClearlyPick": "مقدرناش نقراه بوضوح. اختاري لقطة أوضح أو اكتبي رقم العملية.",
+  "savedWeWillSendItWhenYou": "اتحفظ. هنبعته أول ما يبقى فيه إشارة.",
+  "helpImproveReceiptReading": "تساعدي نحسّن قراءة الإيصالات؟",
+  "weKeepOnlyTheTextFieldsWe": "هنحتفظ بالحقول المقروءة بس، مش بصورتك. وتقدري تقولي لأ.",
+  "yesHelp": "أيوه، هساعد",
+  "noThanks": "لأ شكرًا",
+  "yourPayment": "دفعك",
+  "waitingForYourPayment": "مستنيين دفعك",
+  "proofSent": "الإثبات اتبعت",
+  "paymentConfirmed": "الدفع اتأكد",
+  "confirmedAfterReview": "اتأكد بعد المراجعة",
+  "yourCoachSaysItHasNotArrived": "مدرّبتك بتقول إن الفلوس ماوصلتش",
+  "reviewDone": "المراجعة خلصت",
+  "differentAmount": "مبلغ مختلف",
+  "theRequestExpired": "الطلب انتهى",
+  "paymentCancelled": "الدفع اتلغى",
+  "refundAsked": "طلبتي استرداد",
+  "refundRecorded": "اتسجّل الاسترداد",
+  "refundNotAgreed": "الاسترداد ماتوافقش عليه",
+  "problemReported": "المشكلة اتبلّغ عنها",
+  "payWithYourBankAppThenTap": "ادفعي من تطبيق البنك وبعدين اضغطي دفعت.",
+  "yourCoachWillConfirmIfSheDoes": "مدرّبتك هتأكد. لو ماردتش خلال 3 أيام، Own Hub بتراجعه.",
+  "allSetYourCoachingIsActive": "تمام. التدريب بتاعك شغال.",
+  "addYourBanksTransactionScreenshotAndOwn": "ضيفي لقطة معاملة من البنك وOwn Hub هتبص عليها.",
+  "ownHubIsLookingAtBothSides": "Own Hub بتبص على الطرفين. ده عادةً بيخد لحد يومين شغل.",
+  "weCouldNotFindThePaymentIf": "ماقدرناش نلاقي الدفع. لو شايفة إن ده غلط، اكتبي للدعم.",
+  "yourCoachReceivedAmountPayTheRest": "مدرّبتك استلمت {amount}. ادفعي الباقي عشان تبدأي.",
+  "@yourCoachReceivedAmountPayTheRest": {
+    "description": "Shown when the coach received less than the price.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "300 EGP"
+      }
+    }
+  },
+  "yourCoachAcceptedAmountInsteadDoYou": "مدرّبتك قبلت {amount} بدل المبلغ كله. موافقة؟",
+  "@yourCoachAcceptedAmountInsteadDoYou": {
+    "description": "Shown when the coach takes a lower amount in writing.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "450 EGP"
+      }
+    }
+  },
+  "ifYouAlreadyPaidYouCanSend": "لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال 7 أيام.",
+  "nothingWasPaid": "ماتدفعش حاجة.",
+  "yourCoachHas3DaysToAnswer": "مدرّبتك عندها 3 أيام تردّ. وبعدها Own Hub بتتدخل.",
+  "yourCoachRecordedTheRefund": "مدرّبتك سجّلت الاسترداد.",
+  "ownHubWillLookAtIt": "Own Hub هتبص عليه.",
+  "ownHubIsLookingIntoIt": "Own Hub بتبص في الموضوع.",
+  "yourCoachIsCheckingHerBankThis": "مدرّبتك بتتشيك على البنك. ممكن ده ياخد لحد يوم.",
+  "weCouldNotMatchThisPaymentAdd": "ماقدرناش نطابق الدفع ده. ضيفي كشف المعاملات من البنك وOwn Hub هتبص عليه.",
+  "youCanStartNowThisStaysOpen": "تقدري تبدأي دلوقتي. ده مفتوح لحد {date} لحد ما مدرّبتك تأكد.",
+  "@youCanStartNowThisStaysOpen": {
+    "description": "Bounded access while the coach confirms.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "27/10 14:32"
+      }
+    }
+  },
+  "yourCoachSaysYouPaidReferenceIs": "مدرّبتك بتقول إنك دفعتي {reference}. ده صح؟",
+  "@yourCoachSaysYouPaidReferenceIs": {
+    "description": "The coach reported a payment for the client to confirm.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "OH-4821"
+      }
+    }
+  },
+  "yesIPaid": "أيوه، دفعت",
+  "paymentRequestCreated": "اتعمل طلب الدفع",
+  "youSentYourProof": "بعتي إثبات الدفع",
+  "yourCoachConfirmedIt": "مدرّبتك أكدت الدفع",
+  "youConfirmedIt": "إنتي أكدتي الدفع",
+  "ownHubStartedAReview": "Own Hub بدأت المراجعة",
+  "reviewDoneYourPaymentCounts": "المراجعة خلصت: دفعك اتحسب",
+  "reviewDoneWeCouldNotFindThe": "المراجعة خلصت: ماقدرناش نلاقي الدفع",
+  "yourCoachReceivedADifferentAmount": "مدرّبتك استلمت مبلغ مختلف",
+  "youAskedForARefund": "طلبتي استرداد",
+  "youReportedAProblemWithTheService": "بلّغتي عن مشكلة في الخدمة",
+  "yourCoachSaysYouPaidPleaseCheck": "مدرّبتك بتقول إنك دفعتي. راجعي من فضلك.",
+  "sendMyProof": "ابعتي إثبات الدفع",
+  "payTheRest": "ادفعي الباقي",
+  "addProof": "ضيفي إثبات",
+  "openMyCoaching": "افتحي التدريب بتاعي",
+  "iAgree": "موافقة",
+  "iDoNotAgree": "مش موافقة",
+  "yourPaymentIsOnItsWay": "دفعك في السكة",
+  "seeYourPayment": "شوفي دفعك",
+  "addAScreenshotOfYourBanksTransaction": "ضيفي لقطة من معاملة البنك أو الإيصال. تقدري تخبّي التفاصيل الخاصة الأول.",
+  "sentOwnHubWillLookAtIt": "اتبعت. Own Hub هتبص عليه."
 }

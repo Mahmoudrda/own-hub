@@ -33,6 +33,13 @@ void main() {
       }
     });
 
+    test('InstaPay payments ship on, under the marketplace, and the server may stop them', () {
+      expect(Feature.instapayPayments.parent, Feature.marketplace);
+      expect(FeatureFlags.shipped.isOn(Feature.instapayPayments), isTrue);
+      expect(Feature.instapayPayments.serverMayTurnOff, isTrue);
+      expect(Feature.instapayPayments.serverMayTurnOn, isFalse);
+    });
+
     test('everything that needs a back end is off', () {
       // Not taste, and not sequencing for its own sake: each of these makes a
       // promise the build cannot keep on its own. An account needs somewhere

@@ -57,6 +57,7 @@ import '../app_state/guest_session.dart';
 import '../app_state/honest_notice.dart';
 import '../app_state/undo_offer.dart';
 import '../app_state/onboarding_state.dart';
+import '../app_state/payments_switch.dart';
 import '../app_state/pledge.dart';
 import '../app_state/my_plan_state.dart';
 import '../app_state/notification_sync.dart';
@@ -418,6 +419,7 @@ import '../features/private_coaching/presentation/apply/apply_widgets.dart'
     show ApplyTools;
 import '../features/private_coaching/presentation/chat/chat_sheets.dart'
     show ShareChoices;
+import '../features/payments/presentation/payments_navigation.dart';
 import '../features/private_coaching/presentation/client/my_coach_view.dart';
 import '../features/private_coaching/presentation/coach/coach_space_view.dart';
 import '../features/private_coaching/presentation/desk/client_detail_view.dart';
@@ -5003,6 +5005,7 @@ class AppRouter {
       context,
       (repository) => CoachSpaceView(
         repository: repository,
+        instapayOn: PaymentsSwitch.live,
         onPreviewPortfolio: (coachUid) => unawaited(
           Navigator.of(context).pushNamed(
             appRoutes['H02']!.name,
@@ -5247,6 +5250,12 @@ class AppRouter {
         subscription: sub,
         plans: coaching.coachPlans,
         hasUnread: coaching.hasUnread(sub.relId),
+        payCard: PaymentsNav.payEntry(
+          context,
+          sub,
+          flags: featureFlags,
+          coachRoute: appRoutes['H05']!.name,
+        ),
         onMessage: sub.relId.isEmpty
             ? null
             : () => unawaited(

@@ -15315,4 +15315,496 @@ class AppL10nAr extends AppL10n {
   @override
   String get proteinCanBeAtMost35Of =>
       'البروتين مينفعش يزيد عن 35% من سعرات اليوم.';
+
+  @override
+  String get pleaseSignInAgainThenTryOnce =>
+      'سجّلي دخول تاني وبعدين جرّبي مرة كمان.';
+
+  @override
+  String get theCodeIsNotRightTryAgain => 'الكود مش مظبوط. جرّبي تاني.';
+
+  @override
+  String get theCodeHasExpiredAskForA => 'الكود انتهى. اطلبي كود جديد.';
+
+  @override
+  String get tooManyTriesPleaseWaitAWhile => 'محاولات كتير. استني شوية.';
+
+  @override
+  String get thisPaymentChangedRefreshAndTryAgain =>
+      'الدفع ده اتغيّر. حدّثي الصفحة وجرّبي تاني.';
+
+  @override
+  String get weCouldNotDoThatTryAgain =>
+      'ماقدرناش نعمل كده. جرّبي تاني كمان شوية.';
+
+  @override
+  String get thatLooksLikeAPhoneNumberUse =>
+      'ده شكله رقم تليفون. استخدمي عنوانك اللي فيه @.';
+
+  @override
+  String get thisTransactionNumberWasAlreadyUsed =>
+      'رقم العملية ده اتستخدم قبل كده.';
+
+  @override
+  String get youHaveSentTooManyPicturesFor => 'بعتي صور كتير أوي للدفع ده.';
+
+  @override
+  String get weCouldNotUseThatPicturePick =>
+      'مقدرناش نستخدم الصورة دي. اختاري صورة تانية.';
+
+  @override
+  String get theTimeToSendAProofFor =>
+      'وقت إرسال إثبات الدفع ده عدّى. ابعتي رسالة لمدرّبتك.';
+
+  @override
+  String get yourCoachCannotTakePaymentsHereRight =>
+      'مدرّبتك مش قادرة تستلم دفع هنا دلوقتي. ابعتيلها رسالة.';
+
+  @override
+  String get paymentsByInstapayAreNotAvailableOn =>
+      'الدفع بإنستا باي مش متاح على حسابك دلوقتي. اكتبي للدعم.';
+
+  @override
+  String get thisAmountIsAboveWhatInstapayAllows =>
+      'المبلغ ده أكبر من المسموح بيه هنا في إنستا باي. ابعتي رسالة لمدرّبتك عشان تتفقوا على طريقة تانية.';
+
+  @override
+  String get forYourFirstPaymentPleaseChooseYour =>
+      'في أول دفع، اختاري أقصر باقة عند مدرّبتك. ابعتيلها رسالة لو عايزة باقة أطول.';
+
+  @override
+  String get youAlreadyHaveAPaymentOpenOpen =>
+      'عندك دفع مفتوح بالفعل. افتحيه من صفحة مدرّبتك.';
+
+  @override
+  String get paymentsArePausedForAMomentPlease =>
+      'الدفع واقف لحظات. جرّبي تاني بعد شوية.';
+
+  @override
+  String get myInstapayAddress => 'عنوان إنستا باي بتاعي';
+
+  @override
+  String get whereClientsPayYou => 'فين العميلات بيدفعولك';
+
+  @override
+  String get yourInstapayAddress => 'عنوان إنستا باي بتاعك';
+
+  @override
+  String get clientsPayYouDirectlyOwnHubNever =>
+      'العميلات بيدفعولك على طول. Own Hub مابتمسكش الفلوس أبدًا.';
+
+  @override
+  String yourNewAddressStartsWorkingAtTime(String time) {
+    return 'العنوان الجديد هيشتغل الساعة $time.';
+  }
+
+  @override
+  String get instapayAddress => 'عنوان إنستا باي';
+
+  @override
+  String get useYourAddressNotAPhoneNumber =>
+      'استخدمي عنوان فيه @، مش رقم تليفون. الرقم هيظهر في إيصال كل عميلة.';
+
+  @override
+  String get thatDoesNotLookLikeAnInstapay =>
+      'ده مش شكل عنوان إنستا باي. شكله اسم@instapay.';
+
+  @override
+  String get accountNameExactlyAsYourBankShows =>
+      'اسم الحساب زي ما البنك بيعرضه بالظبط';
+
+  @override
+  String get aNewAddressStartsWorkingAfter24 =>
+      'العنوان الجديد بيشتغل بعد 24 ساعة. العميلات اللي عندهم دفع مستني بيكملوا على العنوان القديم، وهنقولهم.';
+
+  @override
+  String get code => 'الكود';
+
+  @override
+  String get weSentACodeToYourPhone =>
+      'بعتنالك كود على تليفونك. اكتبيه عشان نتأكد إنك إنتي.';
+
+  @override
+  String get yourAddressIsSavedAndReady => 'عنوانك اتحفظ وجاهز.';
+
+  @override
+  String get yourCoachAcceptedYouPayToStart =>
+      'مدرّبتك قبلتك. ادفعي عشان تبدأي.';
+
+  @override
+  String get payNow => 'ادفعي دلوقتي';
+
+  @override
+  String get payYourCoach => 'ادفعي لمدرّبتك';
+
+  @override
+  String get payExactly => 'ادفعي بالظبط';
+
+  @override
+  String get payTo => 'ادفعي لـ';
+
+  @override
+  String nameNameAsShownByYourBank(String name) {
+    return '$name (الاسم زي ما البنك بيعرضه)';
+  }
+
+  @override
+  String get reference => 'الرقم المرجعي';
+
+  @override
+  String get putTheReferenceInTheTransferNote =>
+      'اكتبي الرقم المرجعي في ملاحظة التحويل لو البنك عنده خانة ملاحظة.';
+
+  @override
+  String get n1OpenYourBankAppAndChoose =>
+      '1. افتحي تطبيق البنك واختاري إنستا باي.';
+
+  @override
+  String get n2SendTheExactAmountToThe =>
+      '2. ابعتي المبلغ بالظبط على العنوان اللي فوق.';
+
+  @override
+  String get n3ComeBackHereAndTapI => '3. ارجعي هنا واضغطي دفعت.';
+
+  @override
+  String timeLeftTime(String time) {
+    return 'الوقت المتبقي $time';
+  }
+
+  @override
+  String get thisRequestHasExpiredIfYouAlready =>
+      'الطلب ده انتهى. لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال 7 أيام.';
+
+  @override
+  String get ownHubCannotUndoAnInstapayTransfer =>
+      'Own Hub مابتقدرش ترجّع تحويل إنستا باي. قبل ما تبعتي، اتأكدي إن الاسم في شاشة تأكيد البنك زي الاسم اللي فوق.';
+
+  @override
+  String get iHavePaid => 'دفعت';
+
+  @override
+  String get yourCoachHasNotSetUpPayments =>
+      'مدرّبتك لسه ماظبطتش الدفع. ابعتيلها رسالة.';
+
+  @override
+  String get copyAmount => 'انسخي المبلغ';
+
+  @override
+  String get copyAddress => 'انسخي العنوان';
+
+  @override
+  String get copyReference => 'انسخي الرقم المرجعي';
+
+  @override
+  String get openInstapay => 'افتحي إنستا باي';
+
+  @override
+  String get theAmountIsCopiedOpenYourBank =>
+      'المبلغ اتنسخ. افتحي تطبيق البنك واختاري إنستا باي.';
+
+  @override
+  String get hidePrivateDetails => 'خبّي التفاصيل الخاصة';
+
+  @override
+  String get dragOverAnythingPrivateLikeCardNumbers =>
+      'اسحبي على أي حاجة خاصة زي أرقام الكارت أو الرصيد. المبلغ ورقم العملية والاسم هيفضلوا ظاهرين.';
+
+  @override
+  String get blackOut => 'غطّي بالأسود';
+
+  @override
+  String get crop => 'قصّي';
+
+  @override
+  String get useThisPicture => 'استخدمي الصورة دي';
+
+  @override
+  String get thatPartIsNeededToCheckYour =>
+      'الجزء ده لازم عشان نتأكد من الدفع.';
+
+  @override
+  String get onlyTheHiddenDetailCopyLeavesYour =>
+      'النسخة اللي اتخبّت منها التفاصيل بس هي اللي بتتبعت. الأصل بيفضل على تليفونك.';
+
+  @override
+  String get thisPictureIsTooBigOrCould =>
+      'الصورة كبيرة أوي أو مقدرناش نقراها. اختاري صورة تانية.';
+
+  @override
+  String get sendYourProof => 'ابعتي إثبات الدفع';
+
+  @override
+  String get addYourBankScreenshotsTheReceiptAnd =>
+      'ضيفي لقطات شاشة البنك: الإيصال، واللي فاتح فيها More Details.';
+
+  @override
+  String get chooseScreenshots => 'اختاري لقطات الشاشة';
+
+  @override
+  String get youCanHidePrivateDetailsBeforeAnything =>
+      'تقدري تخبّي أي تفاصيل خاصة قبل ما أي حاجة تتبعت.';
+
+  @override
+  String get paymentAmount => 'مبلغ الدفع';
+
+  @override
+  String get transactionNumber => 'رقم العملية';
+
+  @override
+  String get notFoundYet => 'لسه ماتلاقاش';
+
+  @override
+  String picturesAddedCount(String count) {
+    return 'الصور اللي اتضافت: $count';
+  }
+
+  @override
+  String get yourOwnInstapayAddress => 'عنوان إنستا باي بتاعك';
+
+  @override
+  String get weUseItToMatchYourReceipt =>
+      'بنستخدمه عشان نطابق الإيصال. بنسألك مرة واحدة.';
+
+  @override
+  String get aPhoneNumberWouldShowOnYour =>
+      'الرقم هيظهر في إيصال مدرّبتك. استخدمي عنوانك اللي فيه @ لو عندك.';
+
+  @override
+  String get sendToCoach => 'ابعتي لمدرّبتك';
+
+  @override
+  String get everythingMatchesTapSend => 'كل حاجة مطابقة. اضغطي ابعتي.';
+
+  @override
+  String get weCouldNotReadEverythingAddThe =>
+      'مقدرناش نقرا كل حاجة. ضيفي لقطة فيها More Details مفتوحة، أو اكتبي رقم العملية.';
+
+  @override
+  String get thisDoesNotMatchYourPaymentYou =>
+      'ده مش مطابق لدفعتك. تقدري تبعتيه برضه وOwn Hub هتراجعه.';
+
+  @override
+  String get thisLooksLikeACardMessageNot =>
+      'ده شكله رسالة كارت، مش إيصال تحويل إنستا باي. ابعتي إيصال التحويل.';
+
+  @override
+  String get weNeedALittleMoreToCheck =>
+      'محتاجين حاجة زيادة عشان نتأكد من الدفع. ضيفي لقطة فيها More Details مفتوحة، أو اكتبي رقم العملية.';
+
+  @override
+  String get weCouldNotReadTheAmountPick =>
+      'مقدرناش نقرا المبلغ. اختاري لقطة أوضح أو اكتبي رقم العملية.';
+
+  @override
+  String get thisPaymentCameFromADifferentInstapay =>
+      'الدفع ده جه من عنوان إنستا باي غير عنوانك. لو حد تاني دفع عنك، اضغطي الزرار اللي تحت.';
+
+  @override
+  String get yesSomeoneElsePaidForMe => 'أيوه، حد تاني دفع عني';
+
+  @override
+  String get weCouldNotSeeYourReferenceOn =>
+      'مقدرناش نشوف الرقم المرجعي في الإيصال. ضيفي لقطة فيها ملاحظة التحويل، أو ابعتي تاني.';
+
+  @override
+  String get weCouldNotReadThisClearlyPick =>
+      'مقدرناش نقراه بوضوح. اختاري لقطة أوضح أو اكتبي رقم العملية.';
+
+  @override
+  String get savedWeWillSendItWhenYou => 'اتحفظ. هنبعته أول ما يبقى فيه إشارة.';
+
+  @override
+  String get helpImproveReceiptReading => 'تساعدي نحسّن قراءة الإيصالات؟';
+
+  @override
+  String get weKeepOnlyTheTextFieldsWe =>
+      'هنحتفظ بالحقول المقروءة بس، مش بصورتك. وتقدري تقولي لأ.';
+
+  @override
+  String get yesHelp => 'أيوه، هساعد';
+
+  @override
+  String get noThanks => 'لأ شكرًا';
+
+  @override
+  String get yourPayment => 'دفعك';
+
+  @override
+  String get waitingForYourPayment => 'مستنيين دفعك';
+
+  @override
+  String get proofSent => 'الإثبات اتبعت';
+
+  @override
+  String get paymentConfirmed => 'الدفع اتأكد';
+
+  @override
+  String get confirmedAfterReview => 'اتأكد بعد المراجعة';
+
+  @override
+  String get yourCoachSaysItHasNotArrived => 'مدرّبتك بتقول إن الفلوس ماوصلتش';
+
+  @override
+  String get reviewDone => 'المراجعة خلصت';
+
+  @override
+  String get differentAmount => 'مبلغ مختلف';
+
+  @override
+  String get theRequestExpired => 'الطلب انتهى';
+
+  @override
+  String get paymentCancelled => 'الدفع اتلغى';
+
+  @override
+  String get refundAsked => 'طلبتي استرداد';
+
+  @override
+  String get refundRecorded => 'اتسجّل الاسترداد';
+
+  @override
+  String get refundNotAgreed => 'الاسترداد ماتوافقش عليه';
+
+  @override
+  String get problemReported => 'المشكلة اتبلّغ عنها';
+
+  @override
+  String get payWithYourBankAppThenTap =>
+      'ادفعي من تطبيق البنك وبعدين اضغطي دفعت.';
+
+  @override
+  String get yourCoachWillConfirmIfSheDoes =>
+      'مدرّبتك هتأكد. لو ماردتش خلال 3 أيام، Own Hub بتراجعه.';
+
+  @override
+  String get allSetYourCoachingIsActive => 'تمام. التدريب بتاعك شغال.';
+
+  @override
+  String get addYourBanksTransactionScreenshotAndOwn =>
+      'ضيفي لقطة معاملة من البنك وOwn Hub هتبص عليها.';
+
+  @override
+  String get ownHubIsLookingAtBothSides =>
+      'Own Hub بتبص على الطرفين. ده عادةً بيخد لحد يومين شغل.';
+
+  @override
+  String get weCouldNotFindThePaymentIf =>
+      'ماقدرناش نلاقي الدفع. لو شايفة إن ده غلط، اكتبي للدعم.';
+
+  @override
+  String yourCoachReceivedAmountPayTheRest(String amount) {
+    return 'مدرّبتك استلمت $amount. ادفعي الباقي عشان تبدأي.';
+  }
+
+  @override
+  String yourCoachAcceptedAmountInsteadDoYou(String amount) {
+    return 'مدرّبتك قبلت $amount بدل المبلغ كله. موافقة؟';
+  }
+
+  @override
+  String get ifYouAlreadyPaidYouCanSend =>
+      'لو دفعتي بالفعل، تقدري تبعتي إثبات الدفع خلال 7 أيام.';
+
+  @override
+  String get nothingWasPaid => 'ماتدفعش حاجة.';
+
+  @override
+  String get yourCoachHas3DaysToAnswer =>
+      'مدرّبتك عندها 3 أيام تردّ. وبعدها Own Hub بتتدخل.';
+
+  @override
+  String get yourCoachRecordedTheRefund => 'مدرّبتك سجّلت الاسترداد.';
+
+  @override
+  String get ownHubWillLookAtIt => 'Own Hub هتبص عليه.';
+
+  @override
+  String get ownHubIsLookingIntoIt => 'Own Hub بتبص في الموضوع.';
+
+  @override
+  String get yourCoachIsCheckingHerBankThis =>
+      'مدرّبتك بتتشيك على البنك. ممكن ده ياخد لحد يوم.';
+
+  @override
+  String get weCouldNotMatchThisPaymentAdd =>
+      'ماقدرناش نطابق الدفع ده. ضيفي كشف المعاملات من البنك وOwn Hub هتبص عليه.';
+
+  @override
+  String youCanStartNowThisStaysOpen(String date) {
+    return 'تقدري تبدأي دلوقتي. ده مفتوح لحد $date لحد ما مدرّبتك تأكد.';
+  }
+
+  @override
+  String yourCoachSaysYouPaidReferenceIs(String reference) {
+    return 'مدرّبتك بتقول إنك دفعتي $reference. ده صح؟';
+  }
+
+  @override
+  String get yesIPaid => 'أيوه، دفعت';
+
+  @override
+  String get paymentRequestCreated => 'اتعمل طلب الدفع';
+
+  @override
+  String get youSentYourProof => 'بعتي إثبات الدفع';
+
+  @override
+  String get yourCoachConfirmedIt => 'مدرّبتك أكدت الدفع';
+
+  @override
+  String get youConfirmedIt => 'إنتي أكدتي الدفع';
+
+  @override
+  String get ownHubStartedAReview => 'Own Hub بدأت المراجعة';
+
+  @override
+  String get reviewDoneYourPaymentCounts => 'المراجعة خلصت: دفعك اتحسب';
+
+  @override
+  String get reviewDoneWeCouldNotFindThe =>
+      'المراجعة خلصت: ماقدرناش نلاقي الدفع';
+
+  @override
+  String get yourCoachReceivedADifferentAmount => 'مدرّبتك استلمت مبلغ مختلف';
+
+  @override
+  String get youAskedForARefund => 'طلبتي استرداد';
+
+  @override
+  String get youReportedAProblemWithTheService => 'بلّغتي عن مشكلة في الخدمة';
+
+  @override
+  String get yourCoachSaysYouPaidPleaseCheck =>
+      'مدرّبتك بتقول إنك دفعتي. راجعي من فضلك.';
+
+  @override
+  String get sendMyProof => 'ابعتي إثبات الدفع';
+
+  @override
+  String get payTheRest => 'ادفعي الباقي';
+
+  @override
+  String get addProof => 'ضيفي إثبات';
+
+  @override
+  String get openMyCoaching => 'افتحي التدريب بتاعي';
+
+  @override
+  String get iAgree => 'موافقة';
+
+  @override
+  String get iDoNotAgree => 'مش موافقة';
+
+  @override
+  String get yourPaymentIsOnItsWay => 'دفعك في السكة';
+
+  @override
+  String get seeYourPayment => 'شوفي دفعك';
+
+  @override
+  String get addAScreenshotOfYourBanksTransaction =>
+      'ضيفي لقطة من معاملة البنك أو الإيصال. تقدري تخبّي التفاصيل الخاصة الأول.';
+
+  @override
+  String get sentOwnHubWillLookAtIt => 'اتبعت. Own Hub هتبص عليه.';
 }

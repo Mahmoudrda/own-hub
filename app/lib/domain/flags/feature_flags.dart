@@ -141,6 +141,13 @@ enum Feature {
   /// profiles can be browsed long before a payment rail is contracted.
   payments,
 
+  /// InstaPay payments between a client and her coach (spec
+  /// `docs/plan/INSTAPAY-PAYMENTS-SPEC.md`). Own Hub never holds the money.
+  /// Its parent is [marketplace], NOT [payments]: [payments] ships off, and a
+  /// child of it could never open. The emergency off button is the server
+  /// document `config/payments` (missing means off), read by `PaymentsSwitch`.
+  instapayPayments,
+
   /// The assistant.
   assistant,
 
@@ -309,6 +316,7 @@ enum Feature {
     communityGroups ||
     communityStories => community,
     payments => marketplace,
+    instapayPayments => marketplace,
     voiceLogging || recipes || mealPhotos => eat,
     // The plan is built from recipes, and the list from the plan.
     weekPlan => recipes,
@@ -380,6 +388,9 @@ enum Feature {
   /// (`lib/routing/screen_features.dart`), and a test holds both lists
   /// together, so a switch that does nothing cannot sit on `Z14`.
   static const Map<Feature, String> gatesNoScreen = {
+    Feature.instapayPayments:
+        'Checked by the payment entry points: the pay card on H05 and the '
+        'InstaPay row on K18. Its screens are pushed, not routed.',
     Feature.accountRequired: 'The whole-app gate: AppRouter.verificationGate.',
     Feature.verification:
         'The check screens belong to signUp and open with '
@@ -493,6 +504,7 @@ class FeatureFlags {
     Feature.coachedLife: false,
     Feature.marketplace: true,
     Feature.payments: false,
+    Feature.instapayPayments: true,
     Feature.assistant: false,
 
     // On for launch; the owner can switch it off from Z14.

@@ -26349,6 +26349,846 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Protein can be at most 35% of the day\'s calories.'**
   String get proteinCanBeAtMost35Of;
+
+  /// No description provided for @pleaseSignInAgainThenTryOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in again, then try once more.'**
+  String get pleaseSignInAgainThenTryOnce;
+
+  /// No description provided for @theCodeIsNotRightTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'The code is not right. Try again.'**
+  String get theCodeIsNotRightTryAgain;
+
+  /// No description provided for @theCodeHasExpiredAskForA.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired. Ask for a new one.'**
+  String get theCodeHasExpiredAskForA;
+
+  /// No description provided for @tooManyTriesPleaseWaitAWhile.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many tries. Please wait a while.'**
+  String get tooManyTriesPleaseWaitAWhile;
+
+  /// No description provided for @thisPaymentChangedRefreshAndTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment changed. Refresh and try again.'**
+  String get thisPaymentChangedRefreshAndTryAgain;
+
+  /// No description provided for @weCouldNotDoThatTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not do that. Try again in a moment.'**
+  String get weCouldNotDoThatTryAgain;
+
+  /// No description provided for @thatLooksLikeAPhoneNumberUse.
+  ///
+  /// In en, this message translates to:
+  /// **'That looks like a phone number. Use your @ address instead.'**
+  String get thatLooksLikeAPhoneNumberUse;
+
+  /// No description provided for @thisTransactionNumberWasAlreadyUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'This transaction number was already used.'**
+  String get thisTransactionNumberWasAlreadyUsed;
+
+  /// No description provided for @youHaveSentTooManyPicturesFor.
+  ///
+  /// In en, this message translates to:
+  /// **'You have sent too many pictures for this payment.'**
+  String get youHaveSentTooManyPicturesFor;
+
+  /// No description provided for @weCouldNotUseThatPicturePick.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not use that picture. Pick another.'**
+  String get weCouldNotUseThatPicturePick;
+
+  /// No description provided for @theTimeToSendAProofFor.
+  ///
+  /// In en, this message translates to:
+  /// **'The time to send a proof for this payment has passed. Message your coach.'**
+  String get theTimeToSendAProofFor;
+
+  /// No description provided for @yourCoachCannotTakePaymentsHereRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach cannot take payments here right now. Message her.'**
+  String get yourCoachCannotTakePaymentsHereRight;
+
+  /// No description provided for @paymentsByInstapayAreNotAvailableOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments by InstaPay are not available on your account right now. Please write to support.'**
+  String get paymentsByInstapayAreNotAvailableOn;
+
+  /// No description provided for @thisAmountIsAboveWhatInstapayAllows.
+  ///
+  /// In en, this message translates to:
+  /// **'This amount is above what InstaPay allows here. Message your coach to agree another way.'**
+  String get thisAmountIsAboveWhatInstapayAllows;
+
+  /// No description provided for @forYourFirstPaymentPleaseChooseYour.
+  ///
+  /// In en, this message translates to:
+  /// **'For your first payment, please choose your coach\'s shortest package. Message her if you want a longer one.'**
+  String get forYourFirstPaymentPleaseChooseYour;
+
+  /// No description provided for @youAlreadyHaveAPaymentOpenOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a payment open. Open it from your coach page.'**
+  String get youAlreadyHaveAPaymentOpenOpen;
+
+  /// No description provided for @paymentsArePausedForAMomentPlease.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments are paused for a moment. Please try again later.'**
+  String get paymentsArePausedForAMomentPlease;
+
+  /// No description provided for @myInstapayAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'My InstaPay address'**
+  String get myInstapayAddress;
+
+  /// No description provided for @whereClientsPayYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Where clients pay you'**
+  String get whereClientsPayYou;
+
+  /// No description provided for @yourInstapayAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your InstaPay address'**
+  String get yourInstapayAddress;
+
+  /// No description provided for @clientsPayYouDirectlyOwnHubNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients pay you directly. Own Hub never holds the money.'**
+  String get clientsPayYouDirectlyOwnHubNever;
+
+  /// When the coach's new InstaPay address starts.
+  ///
+  /// In en, this message translates to:
+  /// **'Your new address starts working at {time}.'**
+  String yourNewAddressStartsWorkingAtTime(String time);
+
+  /// No description provided for @instapayAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'InstaPay address'**
+  String get instapayAddress;
+
+  /// No description provided for @useYourAddressNotAPhoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your @ address, not a phone number. A phone number would show on every client\'s receipt.'**
+  String get useYourAddressNotAPhoneNumber;
+
+  /// No description provided for @thatDoesNotLookLikeAnInstapay.
+  ///
+  /// In en, this message translates to:
+  /// **'That does not look like an InstaPay address. It looks like name@instapay.'**
+  String get thatDoesNotLookLikeAnInstapay;
+
+  /// No description provided for @accountNameExactlyAsYourBankShows.
+  ///
+  /// In en, this message translates to:
+  /// **'Account name, exactly as your bank shows it'**
+  String get accountNameExactlyAsYourBankShows;
+
+  /// No description provided for @aNewAddressStartsWorkingAfter24.
+  ///
+  /// In en, this message translates to:
+  /// **'A new address starts working after 24 hours. Clients with a payment waiting keep paying the old one, and we tell them.'**
+  String get aNewAddressStartsWorkingAfter24;
+
+  /// No description provided for @code.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get code;
+
+  /// No description provided for @weSentACodeToYourPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a code to your phone. Type it to confirm it is you.'**
+  String get weSentACodeToYourPhone;
+
+  /// No description provided for @yourAddressIsSavedAndReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your address is saved and ready.'**
+  String get yourAddressIsSavedAndReady;
+
+  /// No description provided for @yourCoachAcceptedYouPayToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach accepted you. Pay to start.'**
+  String get yourCoachAcceptedYouPayToStart;
+
+  /// No description provided for @payNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay now'**
+  String get payNow;
+
+  /// No description provided for @payYourCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay your coach'**
+  String get payYourCoach;
+
+  /// No description provided for @payExactly.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay exactly'**
+  String get payExactly;
+
+  /// No description provided for @payTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay to'**
+  String get payTo;
+
+  /// The coach's account name to check on the bank screen.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (name as shown by your bank)'**
+  String nameNameAsShownByYourBank(String name);
+
+  /// No description provided for @reference.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get reference;
+
+  /// No description provided for @putTheReferenceInTheTransferNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Put the reference in the transfer note if your bank has one.'**
+  String get putTheReferenceInTheTransferNote;
+
+  /// No description provided for @n1OpenYourBankAppAndChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Open your bank app and choose InstaPay.'**
+  String get n1OpenYourBankAppAndChoose;
+
+  /// No description provided for @n2SendTheExactAmountToThe.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Send the exact amount to the address above.'**
+  String get n2SendTheExactAmountToThe;
+
+  /// No description provided for @n3ComeBackHereAndTapI.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Come back here and tap I have paid.'**
+  String get n3ComeBackHereAndTapI;
+
+  /// Countdown to the end of a payment request.
+  ///
+  /// In en, this message translates to:
+  /// **'Time left {time}'**
+  String timeLeftTime(String time);
+
+  /// No description provided for @thisRequestHasExpiredIfYouAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'This request has expired. If you already paid, you can still send your proof for 7 days.'**
+  String get thisRequestHasExpiredIfYouAlready;
+
+  /// No description provided for @ownHubCannotUndoAnInstapayTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub cannot undo an InstaPay transfer. Before you send, check that the name on your bank\'s confirmation screen matches the name above.'**
+  String get ownHubCannotUndoAnInstapayTransfer;
+
+  /// No description provided for @iHavePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'I have paid'**
+  String get iHavePaid;
+
+  /// No description provided for @yourCoachHasNotSetUpPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach has not set up payments yet. Message her.'**
+  String get yourCoachHasNotSetUpPayments;
+
+  /// No description provided for @copyAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy amount'**
+  String get copyAmount;
+
+  /// No description provided for @copyAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy address'**
+  String get copyAddress;
+
+  /// No description provided for @copyReference.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy reference'**
+  String get copyReference;
+
+  /// No description provided for @openInstapay.
+  ///
+  /// In en, this message translates to:
+  /// **'Open InstaPay'**
+  String get openInstapay;
+
+  /// No description provided for @theAmountIsCopiedOpenYourBank.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount is copied. Open your bank app and choose InstaPay.'**
+  String get theAmountIsCopiedOpenYourBank;
+
+  /// No description provided for @hidePrivateDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide private details'**
+  String get hidePrivateDetails;
+
+  /// No description provided for @dragOverAnythingPrivateLikeCardNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag over anything private, like card numbers or balances. The amount, transaction number and name stay visible.'**
+  String get dragOverAnythingPrivateLikeCardNumbers;
+
+  /// No description provided for @blackOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Black out'**
+  String get blackOut;
+
+  /// No description provided for @crop.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop'**
+  String get crop;
+
+  /// No description provided for @useThisPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this picture'**
+  String get useThisPicture;
+
+  /// No description provided for @thatPartIsNeededToCheckYour.
+  ///
+  /// In en, this message translates to:
+  /// **'That part is needed to check your payment.'**
+  String get thatPartIsNeededToCheckYour;
+
+  /// No description provided for @onlyTheHiddenDetailCopyLeavesYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the hidden-detail copy leaves your phone. The original stays here.'**
+  String get onlyTheHiddenDetailCopyLeavesYour;
+
+  /// No description provided for @thisPictureIsTooBigOrCould.
+  ///
+  /// In en, this message translates to:
+  /// **'This picture is too big or could not be read. Pick another.'**
+  String get thisPictureIsTooBigOrCould;
+
+  /// No description provided for @sendYourProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Send your proof'**
+  String get sendYourProof;
+
+  /// No description provided for @addYourBankScreenshotsTheReceiptAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your bank screenshots: the receipt, and the one with More Details open.'**
+  String get addYourBankScreenshotsTheReceiptAnd;
+
+  /// No description provided for @chooseScreenshots.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose screenshots'**
+  String get chooseScreenshots;
+
+  /// No description provided for @youCanHidePrivateDetailsBeforeAnything.
+  ///
+  /// In en, this message translates to:
+  /// **'You can hide private details before anything is sent.'**
+  String get youCanHidePrivateDetailsBeforeAnything;
+
+  /// No description provided for @paymentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment amount'**
+  String get paymentAmount;
+
+  /// No description provided for @transactionNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction number'**
+  String get transactionNumber;
+
+  /// No description provided for @notFoundYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not found yet'**
+  String get notFoundYet;
+
+  /// How many screenshots she picked.
+  ///
+  /// In en, this message translates to:
+  /// **'Pictures added: {count}'**
+  String picturesAddedCount(String count);
+
+  /// No description provided for @yourOwnInstapayAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own InstaPay address'**
+  String get yourOwnInstapayAddress;
+
+  /// No description provided for @weUseItToMatchYourReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'We use it to match your receipt. Asked once.'**
+  String get weUseItToMatchYourReceipt;
+
+  /// No description provided for @aPhoneNumberWouldShowOnYour.
+  ///
+  /// In en, this message translates to:
+  /// **'A phone number would show on your coach\'s receipt. Use your @ address if you have one.'**
+  String get aPhoneNumberWouldShowOnYour;
+
+  /// No description provided for @sendToCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to coach'**
+  String get sendToCoach;
+
+  /// No description provided for @everythingMatchesTapSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything matches. Tap send.'**
+  String get everythingMatchesTapSend;
+
+  /// No description provided for @weCouldNotReadEverythingAddThe.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read everything. Add the screenshot with More Details open, or type the transaction number.'**
+  String get weCouldNotReadEverythingAddThe;
+
+  /// No description provided for @thisDoesNotMatchYourPaymentYou.
+  ///
+  /// In en, this message translates to:
+  /// **'This does not match your payment. You can still send it and Own Hub will check.'**
+  String get thisDoesNotMatchYourPaymentYou;
+
+  /// No description provided for @thisLooksLikeACardMessageNot.
+  ///
+  /// In en, this message translates to:
+  /// **'This looks like a card message, not an InstaPay transfer receipt. Please send the transfer receipt.'**
+  String get thisLooksLikeACardMessageNot;
+
+  /// No description provided for @weNeedALittleMoreToCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'We need a little more to check your payment. Add the screenshot with More Details open, or type the transaction number.'**
+  String get weNeedALittleMoreToCheck;
+
+  /// No description provided for @weCouldNotReadTheAmountPick.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read the amount. Pick a clearer screenshot or type the transaction number.'**
+  String get weCouldNotReadTheAmountPick;
+
+  /// No description provided for @thisPaymentCameFromADifferentInstapay.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment came from a different InstaPay address than yours. If someone else paid for you, tap the button below.'**
+  String get thisPaymentCameFromADifferentInstapay;
+
+  /// No description provided for @yesSomeoneElsePaidForMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, someone else paid for me'**
+  String get yesSomeoneElsePaidForMe;
+
+  /// No description provided for @weCouldNotSeeYourReferenceOn.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not see your reference on the receipt. Add the screenshot that shows the transfer note, or send again.'**
+  String get weCouldNotSeeYourReferenceOn;
+
+  /// No description provided for @weCouldNotReadThisClearlyPick.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not read this clearly. Pick a clearer screenshot or type the transaction number.'**
+  String get weCouldNotReadThisClearlyPick;
+
+  /// No description provided for @savedWeWillSendItWhenYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. We will send it when you have signal.'**
+  String get savedWeWillSendItWhenYou;
+
+  /// No description provided for @helpImproveReceiptReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Help improve receipt reading?'**
+  String get helpImproveReceiptReading;
+
+  /// No description provided for @weKeepOnlyTheTextFieldsWe.
+  ///
+  /// In en, this message translates to:
+  /// **'We keep only the text fields we read, never your picture. You can say no.'**
+  String get weKeepOnlyTheTextFieldsWe;
+
+  /// No description provided for @yesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, help'**
+  String get yesHelp;
+
+  /// No description provided for @noThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'No thanks'**
+  String get noThanks;
+
+  /// No description provided for @yourPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment'**
+  String get yourPayment;
+
+  /// No description provided for @waitingForYourPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your payment'**
+  String get waitingForYourPayment;
+
+  /// No description provided for @proofSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Proof sent'**
+  String get proofSent;
+
+  /// No description provided for @paymentConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed'**
+  String get paymentConfirmed;
+
+  /// No description provided for @confirmedAfterReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed after review'**
+  String get confirmedAfterReview;
+
+  /// No description provided for @yourCoachSaysItHasNotArrived.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach says it has not arrived'**
+  String get yourCoachSaysItHasNotArrived;
+
+  /// No description provided for @reviewDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Review done'**
+  String get reviewDone;
+
+  /// No description provided for @differentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Different amount'**
+  String get differentAmount;
+
+  /// No description provided for @theRequestExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'The request expired'**
+  String get theRequestExpired;
+
+  /// No description provided for @paymentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cancelled'**
+  String get paymentCancelled;
+
+  /// No description provided for @refundAsked.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund asked'**
+  String get refundAsked;
+
+  /// No description provided for @refundRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund recorded'**
+  String get refundRecorded;
+
+  /// No description provided for @refundNotAgreed.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund not agreed'**
+  String get refundNotAgreed;
+
+  /// No description provided for @problemReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem reported'**
+  String get problemReported;
+
+  /// No description provided for @payWithYourBankAppThenTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay with your bank app, then tap I have paid.'**
+  String get payWithYourBankAppThenTap;
+
+  /// No description provided for @yourCoachWillConfirmIfSheDoes.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach will confirm. If she does not answer in 3 days, Own Hub reviews it.'**
+  String get yourCoachWillConfirmIfSheDoes;
+
+  /// No description provided for @allSetYourCoachingIsActive.
+  ///
+  /// In en, this message translates to:
+  /// **'All set. Your coaching is active.'**
+  String get allSetYourCoachingIsActive;
+
+  /// No description provided for @addYourBanksTransactionScreenshotAndOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your bank\'s transaction screenshot and Own Hub will look at it.'**
+  String get addYourBanksTransactionScreenshotAndOwn;
+
+  /// No description provided for @ownHubIsLookingAtBothSides.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub is looking at both sides. This usually takes up to two working days.'**
+  String get ownHubIsLookingAtBothSides;
+
+  /// No description provided for @weCouldNotFindThePaymentIf.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not find the payment. If you think this is wrong, write to support.'**
+  String get weCouldNotFindThePaymentIf;
+
+  /// Shown when the coach received less than the price.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach received {amount}. Pay the rest to start.'**
+  String yourCoachReceivedAmountPayTheRest(String amount);
+
+  /// Shown when the coach takes a lower amount in writing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach accepted {amount} instead. Do you agree?'**
+  String yourCoachAcceptedAmountInsteadDoYou(String amount);
+
+  /// No description provided for @ifYouAlreadyPaidYouCanSend.
+  ///
+  /// In en, this message translates to:
+  /// **'If you already paid, you can send your proof for 7 days.'**
+  String get ifYouAlreadyPaidYouCanSend;
+
+  /// No description provided for @nothingWasPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing was paid.'**
+  String get nothingWasPaid;
+
+  /// No description provided for @yourCoachHas3DaysToAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach has 3 days to answer. Then Own Hub steps in.'**
+  String get yourCoachHas3DaysToAnswer;
+
+  /// No description provided for @yourCoachRecordedTheRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach recorded the refund.'**
+  String get yourCoachRecordedTheRefund;
+
+  /// No description provided for @ownHubWillLookAtIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub will look at it.'**
+  String get ownHubWillLookAtIt;
+
+  /// No description provided for @ownHubIsLookingIntoIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub is looking into it.'**
+  String get ownHubIsLookingIntoIt;
+
+  /// No description provided for @yourCoachIsCheckingHerBankThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach is checking her bank. This can take up to a day.'**
+  String get yourCoachIsCheckingHerBankThis;
+
+  /// No description provided for @weCouldNotMatchThisPaymentAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not match this payment. Add your bank\'s transaction history and Own Hub will look at it.'**
+  String get weCouldNotMatchThisPaymentAdd;
+
+  /// Bounded access while the coach confirms.
+  ///
+  /// In en, this message translates to:
+  /// **'You can start now. This stays open until {date} while your coach confirms.'**
+  String youCanStartNowThisStaysOpen(String date);
+
+  /// The coach reported a payment for the client to confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach says you paid {reference}. Is that right?'**
+  String yourCoachSaysYouPaidReferenceIs(String reference);
+
+  /// No description provided for @yesIPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, I paid'**
+  String get yesIPaid;
+
+  /// No description provided for @paymentRequestCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment request created'**
+  String get paymentRequestCreated;
+
+  /// No description provided for @youSentYourProof.
+  ///
+  /// In en, this message translates to:
+  /// **'You sent your proof'**
+  String get youSentYourProof;
+
+  /// No description provided for @yourCoachConfirmedIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach confirmed it'**
+  String get yourCoachConfirmedIt;
+
+  /// No description provided for @youConfirmedIt.
+  ///
+  /// In en, this message translates to:
+  /// **'You confirmed it'**
+  String get youConfirmedIt;
+
+  /// No description provided for @ownHubStartedAReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub started a review'**
+  String get ownHubStartedAReview;
+
+  /// No description provided for @reviewDoneYourPaymentCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Review done: your payment counts'**
+  String get reviewDoneYourPaymentCounts;
+
+  /// No description provided for @reviewDoneWeCouldNotFindThe.
+  ///
+  /// In en, this message translates to:
+  /// **'Review done: we could not find the payment'**
+  String get reviewDoneWeCouldNotFindThe;
+
+  /// No description provided for @yourCoachReceivedADifferentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach received a different amount'**
+  String get yourCoachReceivedADifferentAmount;
+
+  /// No description provided for @youAskedForARefund.
+  ///
+  /// In en, this message translates to:
+  /// **'You asked for a refund'**
+  String get youAskedForARefund;
+
+  /// No description provided for @youReportedAProblemWithTheService.
+  ///
+  /// In en, this message translates to:
+  /// **'You reported a problem with the service'**
+  String get youReportedAProblemWithTheService;
+
+  /// No description provided for @yourCoachSaysYouPaidPleaseCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach says you paid. Please check.'**
+  String get yourCoachSaysYouPaidPleaseCheck;
+
+  /// No description provided for @sendMyProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Send my proof'**
+  String get sendMyProof;
+
+  /// No description provided for @payTheRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay the rest'**
+  String get payTheRest;
+
+  /// No description provided for @addProof.
+  ///
+  /// In en, this message translates to:
+  /// **'Add proof'**
+  String get addProof;
+
+  /// No description provided for @openMyCoaching.
+  ///
+  /// In en, this message translates to:
+  /// **'Open my coaching'**
+  String get openMyCoaching;
+
+  /// No description provided for @iAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get iAgree;
+
+  /// No description provided for @iDoNotAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'I do not agree'**
+  String get iDoNotAgree;
+
+  /// No description provided for @yourPaymentIsOnItsWay.
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment is on its way'**
+  String get yourPaymentIsOnItsWay;
+
+  /// No description provided for @seeYourPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'See your payment'**
+  String get seeYourPayment;
+
+  /// No description provided for @addAScreenshotOfYourBanksTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a screenshot of your bank\'s transaction or receipt. You can hide private details first.'**
+  String get addAScreenshotOfYourBanksTransaction;
+
+  /// No description provided for @sentOwnHubWillLookAtIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. Own Hub will look at it.'**
+  String get sentOwnHubWillLookAtIt;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

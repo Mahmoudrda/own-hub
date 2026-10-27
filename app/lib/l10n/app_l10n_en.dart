@@ -15324,4 +15324,503 @@ class AppL10nEn extends AppL10n {
   @override
   String get proteinCanBeAtMost35Of =>
       'Protein can be at most 35% of the day\'s calories.';
+
+  @override
+  String get pleaseSignInAgainThenTryOnce =>
+      'Please sign in again, then try once more.';
+
+  @override
+  String get theCodeIsNotRightTryAgain => 'The code is not right. Try again.';
+
+  @override
+  String get theCodeHasExpiredAskForA =>
+      'The code has expired. Ask for a new one.';
+
+  @override
+  String get tooManyTriesPleaseWaitAWhile =>
+      'Too many tries. Please wait a while.';
+
+  @override
+  String get thisPaymentChangedRefreshAndTryAgain =>
+      'This payment changed. Refresh and try again.';
+
+  @override
+  String get weCouldNotDoThatTryAgain =>
+      'We could not do that. Try again in a moment.';
+
+  @override
+  String get thatLooksLikeAPhoneNumberUse =>
+      'That looks like a phone number. Use your @ address instead.';
+
+  @override
+  String get thisTransactionNumberWasAlreadyUsed =>
+      'This transaction number was already used.';
+
+  @override
+  String get youHaveSentTooManyPicturesFor =>
+      'You have sent too many pictures for this payment.';
+
+  @override
+  String get weCouldNotUseThatPicturePick =>
+      'We could not use that picture. Pick another.';
+
+  @override
+  String get theTimeToSendAProofFor =>
+      'The time to send a proof for this payment has passed. Message your coach.';
+
+  @override
+  String get yourCoachCannotTakePaymentsHereRight =>
+      'Your coach cannot take payments here right now. Message her.';
+
+  @override
+  String get paymentsByInstapayAreNotAvailableOn =>
+      'Payments by InstaPay are not available on your account right now. Please write to support.';
+
+  @override
+  String get thisAmountIsAboveWhatInstapayAllows =>
+      'This amount is above what InstaPay allows here. Message your coach to agree another way.';
+
+  @override
+  String get forYourFirstPaymentPleaseChooseYour =>
+      'For your first payment, please choose your coach\'s shortest package. Message her if you want a longer one.';
+
+  @override
+  String get youAlreadyHaveAPaymentOpenOpen =>
+      'You already have a payment open. Open it from your coach page.';
+
+  @override
+  String get paymentsArePausedForAMomentPlease =>
+      'Payments are paused for a moment. Please try again later.';
+
+  @override
+  String get myInstapayAddress => 'My InstaPay address';
+
+  @override
+  String get whereClientsPayYou => 'Where clients pay you';
+
+  @override
+  String get yourInstapayAddress => 'Your InstaPay address';
+
+  @override
+  String get clientsPayYouDirectlyOwnHubNever =>
+      'Clients pay you directly. Own Hub never holds the money.';
+
+  @override
+  String yourNewAddressStartsWorkingAtTime(String time) {
+    return 'Your new address starts working at $time.';
+  }
+
+  @override
+  String get instapayAddress => 'InstaPay address';
+
+  @override
+  String get useYourAddressNotAPhoneNumber =>
+      'Use your @ address, not a phone number. A phone number would show on every client\'s receipt.';
+
+  @override
+  String get thatDoesNotLookLikeAnInstapay =>
+      'That does not look like an InstaPay address. It looks like name@instapay.';
+
+  @override
+  String get accountNameExactlyAsYourBankShows =>
+      'Account name, exactly as your bank shows it';
+
+  @override
+  String get aNewAddressStartsWorkingAfter24 =>
+      'A new address starts working after 24 hours. Clients with a payment waiting keep paying the old one, and we tell them.';
+
+  @override
+  String get code => 'Code';
+
+  @override
+  String get weSentACodeToYourPhone =>
+      'We sent a code to your phone. Type it to confirm it is you.';
+
+  @override
+  String get yourAddressIsSavedAndReady => 'Your address is saved and ready.';
+
+  @override
+  String get yourCoachAcceptedYouPayToStart =>
+      'Your coach accepted you. Pay to start.';
+
+  @override
+  String get payNow => 'Pay now';
+
+  @override
+  String get payYourCoach => 'Pay your coach';
+
+  @override
+  String get payExactly => 'Pay exactly';
+
+  @override
+  String get payTo => 'Pay to';
+
+  @override
+  String nameNameAsShownByYourBank(String name) {
+    return '$name (name as shown by your bank)';
+  }
+
+  @override
+  String get reference => 'Reference';
+
+  @override
+  String get putTheReferenceInTheTransferNote =>
+      'Put the reference in the transfer note if your bank has one.';
+
+  @override
+  String get n1OpenYourBankAppAndChoose =>
+      '1. Open your bank app and choose InstaPay.';
+
+  @override
+  String get n2SendTheExactAmountToThe =>
+      '2. Send the exact amount to the address above.';
+
+  @override
+  String get n3ComeBackHereAndTapI => '3. Come back here and tap I have paid.';
+
+  @override
+  String timeLeftTime(String time) {
+    return 'Time left $time';
+  }
+
+  @override
+  String get thisRequestHasExpiredIfYouAlready =>
+      'This request has expired. If you already paid, you can still send your proof for 7 days.';
+
+  @override
+  String get ownHubCannotUndoAnInstapayTransfer =>
+      'Own Hub cannot undo an InstaPay transfer. Before you send, check that the name on your bank\'s confirmation screen matches the name above.';
+
+  @override
+  String get iHavePaid => 'I have paid';
+
+  @override
+  String get yourCoachHasNotSetUpPayments =>
+      'Your coach has not set up payments yet. Message her.';
+
+  @override
+  String get copyAmount => 'Copy amount';
+
+  @override
+  String get copyAddress => 'Copy address';
+
+  @override
+  String get copyReference => 'Copy reference';
+
+  @override
+  String get openInstapay => 'Open InstaPay';
+
+  @override
+  String get theAmountIsCopiedOpenYourBank =>
+      'The amount is copied. Open your bank app and choose InstaPay.';
+
+  @override
+  String get hidePrivateDetails => 'Hide private details';
+
+  @override
+  String get dragOverAnythingPrivateLikeCardNumbers =>
+      'Drag over anything private, like card numbers or balances. The amount, transaction number and name stay visible.';
+
+  @override
+  String get blackOut => 'Black out';
+
+  @override
+  String get crop => 'Crop';
+
+  @override
+  String get useThisPicture => 'Use this picture';
+
+  @override
+  String get thatPartIsNeededToCheckYour =>
+      'That part is needed to check your payment.';
+
+  @override
+  String get onlyTheHiddenDetailCopyLeavesYour =>
+      'Only the hidden-detail copy leaves your phone. The original stays here.';
+
+  @override
+  String get thisPictureIsTooBigOrCould =>
+      'This picture is too big or could not be read. Pick another.';
+
+  @override
+  String get sendYourProof => 'Send your proof';
+
+  @override
+  String get addYourBankScreenshotsTheReceiptAnd =>
+      'Add your bank screenshots: the receipt, and the one with More Details open.';
+
+  @override
+  String get chooseScreenshots => 'Choose screenshots';
+
+  @override
+  String get youCanHidePrivateDetailsBeforeAnything =>
+      'You can hide private details before anything is sent.';
+
+  @override
+  String get paymentAmount => 'Payment amount';
+
+  @override
+  String get transactionNumber => 'Transaction number';
+
+  @override
+  String get notFoundYet => 'Not found yet';
+
+  @override
+  String picturesAddedCount(String count) {
+    return 'Pictures added: $count';
+  }
+
+  @override
+  String get yourOwnInstapayAddress => 'Your own InstaPay address';
+
+  @override
+  String get weUseItToMatchYourReceipt =>
+      'We use it to match your receipt. Asked once.';
+
+  @override
+  String get aPhoneNumberWouldShowOnYour =>
+      'A phone number would show on your coach\'s receipt. Use your @ address if you have one.';
+
+  @override
+  String get sendToCoach => 'Send to coach';
+
+  @override
+  String get everythingMatchesTapSend => 'Everything matches. Tap send.';
+
+  @override
+  String get weCouldNotReadEverythingAddThe =>
+      'We could not read everything. Add the screenshot with More Details open, or type the transaction number.';
+
+  @override
+  String get thisDoesNotMatchYourPaymentYou =>
+      'This does not match your payment. You can still send it and Own Hub will check.';
+
+  @override
+  String get thisLooksLikeACardMessageNot =>
+      'This looks like a card message, not an InstaPay transfer receipt. Please send the transfer receipt.';
+
+  @override
+  String get weNeedALittleMoreToCheck =>
+      'We need a little more to check your payment. Add the screenshot with More Details open, or type the transaction number.';
+
+  @override
+  String get weCouldNotReadTheAmountPick =>
+      'We could not read the amount. Pick a clearer screenshot or type the transaction number.';
+
+  @override
+  String get thisPaymentCameFromADifferentInstapay =>
+      'This payment came from a different InstaPay address than yours. If someone else paid for you, tap the button below.';
+
+  @override
+  String get yesSomeoneElsePaidForMe => 'Yes, someone else paid for me';
+
+  @override
+  String get weCouldNotSeeYourReferenceOn =>
+      'We could not see your reference on the receipt. Add the screenshot that shows the transfer note, or send again.';
+
+  @override
+  String get weCouldNotReadThisClearlyPick =>
+      'We could not read this clearly. Pick a clearer screenshot or type the transaction number.';
+
+  @override
+  String get savedWeWillSendItWhenYou =>
+      'Saved. We will send it when you have signal.';
+
+  @override
+  String get helpImproveReceiptReading => 'Help improve receipt reading?';
+
+  @override
+  String get weKeepOnlyTheTextFieldsWe =>
+      'We keep only the text fields we read, never your picture. You can say no.';
+
+  @override
+  String get yesHelp => 'Yes, help';
+
+  @override
+  String get noThanks => 'No thanks';
+
+  @override
+  String get yourPayment => 'Your payment';
+
+  @override
+  String get waitingForYourPayment => 'Waiting for your payment';
+
+  @override
+  String get proofSent => 'Proof sent';
+
+  @override
+  String get paymentConfirmed => 'Payment confirmed';
+
+  @override
+  String get confirmedAfterReview => 'Confirmed after review';
+
+  @override
+  String get yourCoachSaysItHasNotArrived =>
+      'Your coach says it has not arrived';
+
+  @override
+  String get reviewDone => 'Review done';
+
+  @override
+  String get differentAmount => 'Different amount';
+
+  @override
+  String get theRequestExpired => 'The request expired';
+
+  @override
+  String get paymentCancelled => 'Payment cancelled';
+
+  @override
+  String get refundAsked => 'Refund asked';
+
+  @override
+  String get refundRecorded => 'Refund recorded';
+
+  @override
+  String get refundNotAgreed => 'Refund not agreed';
+
+  @override
+  String get problemReported => 'Problem reported';
+
+  @override
+  String get payWithYourBankAppThenTap =>
+      'Pay with your bank app, then tap I have paid.';
+
+  @override
+  String get yourCoachWillConfirmIfSheDoes =>
+      'Your coach will confirm. If she does not answer in 3 days, Own Hub reviews it.';
+
+  @override
+  String get allSetYourCoachingIsActive => 'All set. Your coaching is active.';
+
+  @override
+  String get addYourBanksTransactionScreenshotAndOwn =>
+      'Add your bank\'s transaction screenshot and Own Hub will look at it.';
+
+  @override
+  String get ownHubIsLookingAtBothSides =>
+      'Own Hub is looking at both sides. This usually takes up to two working days.';
+
+  @override
+  String get weCouldNotFindThePaymentIf =>
+      'We could not find the payment. If you think this is wrong, write to support.';
+
+  @override
+  String yourCoachReceivedAmountPayTheRest(String amount) {
+    return 'Your coach received $amount. Pay the rest to start.';
+  }
+
+  @override
+  String yourCoachAcceptedAmountInsteadDoYou(String amount) {
+    return 'Your coach accepted $amount instead. Do you agree?';
+  }
+
+  @override
+  String get ifYouAlreadyPaidYouCanSend =>
+      'If you already paid, you can send your proof for 7 days.';
+
+  @override
+  String get nothingWasPaid => 'Nothing was paid.';
+
+  @override
+  String get yourCoachHas3DaysToAnswer =>
+      'Your coach has 3 days to answer. Then Own Hub steps in.';
+
+  @override
+  String get yourCoachRecordedTheRefund => 'Your coach recorded the refund.';
+
+  @override
+  String get ownHubWillLookAtIt => 'Own Hub will look at it.';
+
+  @override
+  String get ownHubIsLookingIntoIt => 'Own Hub is looking into it.';
+
+  @override
+  String get yourCoachIsCheckingHerBankThis =>
+      'Your coach is checking her bank. This can take up to a day.';
+
+  @override
+  String get weCouldNotMatchThisPaymentAdd =>
+      'We could not match this payment. Add your bank\'s transaction history and Own Hub will look at it.';
+
+  @override
+  String youCanStartNowThisStaysOpen(String date) {
+    return 'You can start now. This stays open until $date while your coach confirms.';
+  }
+
+  @override
+  String yourCoachSaysYouPaidReferenceIs(String reference) {
+    return 'Your coach says you paid $reference. Is that right?';
+  }
+
+  @override
+  String get yesIPaid => 'Yes, I paid';
+
+  @override
+  String get paymentRequestCreated => 'Payment request created';
+
+  @override
+  String get youSentYourProof => 'You sent your proof';
+
+  @override
+  String get yourCoachConfirmedIt => 'Your coach confirmed it';
+
+  @override
+  String get youConfirmedIt => 'You confirmed it';
+
+  @override
+  String get ownHubStartedAReview => 'Own Hub started a review';
+
+  @override
+  String get reviewDoneYourPaymentCounts => 'Review done: your payment counts';
+
+  @override
+  String get reviewDoneWeCouldNotFindThe =>
+      'Review done: we could not find the payment';
+
+  @override
+  String get yourCoachReceivedADifferentAmount =>
+      'Your coach received a different amount';
+
+  @override
+  String get youAskedForARefund => 'You asked for a refund';
+
+  @override
+  String get youReportedAProblemWithTheService =>
+      'You reported a problem with the service';
+
+  @override
+  String get yourCoachSaysYouPaidPleaseCheck =>
+      'Your coach says you paid. Please check.';
+
+  @override
+  String get sendMyProof => 'Send my proof';
+
+  @override
+  String get payTheRest => 'Pay the rest';
+
+  @override
+  String get addProof => 'Add proof';
+
+  @override
+  String get openMyCoaching => 'Open my coaching';
+
+  @override
+  String get iAgree => 'I agree';
+
+  @override
+  String get iDoNotAgree => 'I do not agree';
+
+  @override
+  String get yourPaymentIsOnItsWay => 'Your payment is on its way';
+
+  @override
+  String get seeYourPayment => 'See your payment';
+
+  @override
+  String get addAScreenshotOfYourBanksTransaction =>
+      'Add a screenshot of your bank\'s transaction or receipt. You can hide private details first.';
+
+  @override
+  String get sentOwnHubWillLookAtIt => 'Sent. Own Hub will look at it.';
 }

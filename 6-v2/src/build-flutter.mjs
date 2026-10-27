@@ -832,6 +832,14 @@ if (fs.existsSync(dictPath)) {
     "Record a video (up to {seconds} seconds)": {"description": "Chat attach sheet: the longest video she can send, from the coaching limits.", "placeholders": {"seconds": {"type": "String", "example": "30"}}},
     "That file is too big. A photo is up to {photoMb} MB and a video is up to {videoMb} MB.": {"description": "Chat: the two size limits, from the coaching limits.", "placeholders": {"photoMb": {"type": "String", "example": "3"}, "videoMb": {"type": "String", "example": "25"}}},
     "Videos can be up to {seconds} seconds. Choose a shorter one.": {"description": "Chat: the longest video she can send, from the coaching limits.", "placeholders": {"seconds": {"type": "String", "example": "30"}}},
+    "Your new address starts working at {time}.": {"description": "When the coach's new InstaPay address starts.", "placeholders": {"time": {"type": "String", "example": "14:30"}}},
+    "{name} (name as shown by your bank)": {"description": "The coach's account name to check on the bank screen.", "placeholders": {"name": {"type": "String", "example": "Rahma M."}}},
+    "Time left {time}": {"description": "Countdown to the end of a payment request.", "placeholders": {"time": {"type": "String", "example": "23:41"}}},
+    "Pictures added: {count}": {"description": "How many screenshots she picked.", "placeholders": {"count": {"type": "String", "example": "2"}}},
+    "Your coach received {amount}. Pay the rest to start.": {"description": "Shown when the coach received less than the price.", "placeholders": {"amount": {"type": "String", "example": "300 EGP"}}},
+    "Your coach accepted {amount} instead. Do you agree?": {"description": "Shown when the coach takes a lower amount in writing.", "placeholders": {"amount": {"type": "String", "example": "450 EGP"}}},
+    "You can start now. This stays open until {date} while your coach confirms.": {"description": "Bounded access while the coach confirms.", "placeholders": {"date": {"type": "String", "example": "27/10 14:32"}}},
+    "Your coach says you paid {reference}. Is that right?": {"description": "The coach reported a payment for the client to confirm.", "placeholders": {"reference": {"type": "String", "example": "OH-4821"}}},
   };
 
   const en = { '@@locale': 'en' }; const ar = { '@@locale': 'ar' };

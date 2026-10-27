@@ -15,6 +15,7 @@ import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_pill.dart';
 import '../../../../ui/app_sage_note.dart';
 import '../../../../ui/app_scaffold.dart';
+import '../../../payments/presentation/payment_address_view.dart';
 import '../../data/coaching_repository.dart';
 import '../../domain/coaching_failure.dart';
 import 'coach_application_view.dart';
@@ -37,6 +38,7 @@ class CoachSpaceView extends StatefulWidget {
     this.onInviteClient,
     this.onShareProfile,
     this.onBack,
+    this.instapayOn = false,
     this.photoChooser = chooseCoachPhoto,
     this.imageChooser = chooseCoachImage,
   });
@@ -57,6 +59,10 @@ class CoachSpaceView extends StatefulWidget {
   /// "Share my profile link": her public portfolio link.
   final void Function(String coachUid)? onShareProfile;
   final VoidCallback? onBack;
+
+  /// InstaPay payments are on (the flag and the server switch): shows the
+  /// rows that belong to them.
+  final bool instapayOn;
   final CoachPhotoChooser photoChooser;
   final CoachImageChooser imageChooser;
 
@@ -205,6 +211,13 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
                 icon: Icons.inventory_2_outlined,
                 onTap: () => _push(PackagesView(data: _data)),
               ),
+              if (widget.instapayOn)
+                _nav(
+                  title: l10n.myInstapayAddress,
+                  subtitle: l10n.whereClientsPayYou,
+                  icon: Icons.account_balance_wallet_outlined,
+                  onTap: () => _push(const PaymentAddressView()),
+                ),
               _nav(
                 title: l10n.photosAndResults,
                 subtitle: l10n.whatMembersSeeAfterOwnHubChecks,

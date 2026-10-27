@@ -76,6 +76,7 @@ class MyCoachView extends StatefulWidget {
     this.onJoin,
     this.onFind,
     this.onBack,
+    this.payCard,
   });
 
   final CoachingRepository repository;
@@ -99,6 +100,10 @@ class MyCoachView extends StatefulWidget {
   /// Opens the coach directory, from a request that did not go through.
   final VoidCallback? onFind;
   final VoidCallback? onBack;
+
+  /// The InstaPay payment entry (pay now, or see the payment). Null while
+  /// payments are off.
+  final Widget? payCard;
 
   @override
   State<MyCoachView> createState() => _MyCoachViewState();
@@ -262,6 +267,8 @@ class _MyCoachViewState extends State<MyCoachView> {
               ),
               children: [
                 _header(l10n, coach, name),
+                if (widget.payCard != null && !_ended && !_requested && !_closed)
+                  widget.payCard!,
                 if (_ended)
                   AppCard(
                     variant: AppCardVariant.filled,

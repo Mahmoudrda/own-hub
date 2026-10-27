@@ -2,6 +2,55 @@
 
 > Reference copy of the launch guide, saved 23 Oct 2026. Many steps below are already done (commit, Firebase deploy, dashboard, website, build 424738 uploaded). What is left, with dates, is in [OWNER-TODO.md](OWNER-TODO.md). The phase two plan for the coding agent is [docs/plan/RELEASE-2-PLAN.md](../plan/RELEASE-2-PLAN.md).
 
+## Release 1.1.0: what to run (27 Oct 2026)
+
+Payments stay OFF in this release: `config/payments` is absent and the coach-side payment screens are not built, so do not switch payments on. Everything else below is live. Run each block from `~/ownhub`.
+
+**What's new (App Store Connect, English)**
+- Send photos, short videos and voice notes to your coach in chat.
+- Your coach can send a plan for several weeks and a meal plan, ready in Train and Eat.
+- A one-minute weekly check-in goes straight to your coach.
+- Safer calorie targets: no target is shown when you should check in with your coach or a doctor first.
+
+**What's new (Arabic)**
+- ابعتي صور وفيديوهات ورسايل صوتية لمدربتك في الشات.
+- مدربتك تقدر تبعتلك برنامج تمرين لكذا أسبوع وخطة أكل، وتلاقيها جاهزة في تمرين وأكل.
+- تقييم أسبوعي سريع في دقيقة بيوصل لمدربتك.
+- أهداف سعرات أأمن، ومفيش هدف بيظهر لو محتاجة تتابعي مع مدربتك أو دكتورة الأول.
+
+1. Disk: the iOS build needs about 8 GB free. `df -h /`
+2. Indexes (wait until the console shows all Enabled), then the expiry policies:
+```bash
+firebase deploy --only firestore:indexes --project own-hub
+bash firebase/ops/ttl-policies.sh
+```
+3. Rules. The chat-media storage rule now reads Firestore, so the first deploy must let the Storage rules service read Firestore; answer yes if the CLI asks. If it does not ask, run the grant once:
+```bash
+firebase deploy --only firestore:rules,storage --project own-hub
+gcloud projects add-iam-policy-binding own-hub --member="serviceAccount:service-681714989950@gcp-sa-firebasestorage.iam.gserviceaccount.com" --role="roles/firebaserules.firestoreServiceAgent"
+```
+4. Staff dashboard, then re-add pre-approved numbers with the 18+ tick:
+```bash
+npx wrangler pages deploy admin-web --project-name ownhub-reviewers
+```
+5. Build the iPhone app (runs every check first and stops if one fails):
+```bash
+cd ~/ownhub/app && export PATH="$HOME/development/flutter/bin:$PATH" && RELEASE_BASE_URL=https://own-hub.app bash tool/release_preflight.sh && bash tool/build_ios.sh
+```
+6. Upload `app/build/ios/ipa/own_hub.ipa` with Transporter, then run the Crashlytics symbols command the build script prints. Test on TestFlight. In Apple Developer, App ID `com.ownhub.fitness`: tick Associated Domains and regenerate the store profile before building.
+7. App Store Connect: new version 1.1.0, paste What's new, new screenshots, App Privacy (Audio Data and chat photos and videos, see docs/owner/PAYMENTS-STORE-ANSWERS.md), review notes (AI photo scan may be unavailable until Google approves the appeal). Submit with manual release.
+8. When Apple approves and BEFORE you press Release, deploy the functions (check-ins start the first Friday 09:00 Cairo after this deploy, and build 1.0.0 cannot show them):
+```bash
+firebase deploy --only functions --project own-hub
+```
+9. Press Release in App Store Connect.
+10. Website (privacy, terms, coach terms with the microphone, chat media and payments text): only after counsel signs off.
+```bash
+~/ownhub/site/_build/deploy.sh https://own-hub.app --dry-run
+~/ownhub/site/_build/deploy.sh https://own-hub.app
+```
+11. Not in 1.1.0: live payments (coach screens, refunds and statements in the app, the two-phone test, counsel and store-policy review), voice logging, walking session, guest first workout, sound. Fill the Android assetlinks fingerprints in `site/.well-known/assetlinks.json`.
+
 > Version 1.0.0, with coaching · updated 23 Oct 2026 · only what is left to do
 
 New in this build: private coaching (free for now) and the gym improvements. Coaches apply in the app, Own Hub's woman reviewer approves them in the dashboard, coaches build a portfolio with packages and checked photos, members find a coach and ask to join, and the two chat and share workout and meal plans that show in Train, Eat and Home. Payments stay switched off. Below, in order: commit, deploy Firebase, the dashboard and the website, upload the build, a short phone check, App Store Connect, submit. Tick a step when it is done; the ticks stay in this browser.
