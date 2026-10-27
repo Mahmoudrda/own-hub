@@ -1,0 +1,14 @@
+Transfer Successful
+Transfer amount
+EGP 500.37
+Fees
+0.00 EGP
+From
+layla@instapay
+To
+rahma@instapay
+Transaction ID
+301234567890123
+Date & Time
+10 Nov 2026 02:05 PM
+Available balance 12,345.00 EGP

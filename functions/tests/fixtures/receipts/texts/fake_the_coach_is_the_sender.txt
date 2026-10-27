@@ -1,0 +1,6 @@
+Your transaction was successful
+500.37 EGP
+From rahma@instapay
+To layla@instapay
+Transaction ID 301234567890123
+Date 10/11/2026 14:05

@@ -12,6 +12,9 @@ CLIENT, COACH, STAFF, SYSTEM = "client", "coach", "staff", "system"
 #  - confirmed -> in_review by coach: ONLY for an auto-confirmed payment within 48 hours,
 #    with evidence (13.4); the callable checks that, not this table
 #  - resolved_* / confirmed -> in_review by staff: a second reviewer reopens (13.9)
+#  - refunded -> in_review: the coach's refund record is her word only, so the client
+#    (she did not receive it) or staff can open a dispute; no other way back (4.8)
+#  - expired -> cancelled: a request that nobody paid has an exit
 TRANSITIONS: dict[tuple[str, str], frozenset] = {
     ("awaiting_payment", "proof_submitted"): frozenset({CLIENT}),
     ("awaiting_payment", "confirmed"): frozenset({CLIENT}),
@@ -21,6 +24,7 @@ TRANSITIONS: dict[tuple[str, str], frozenset] = {
     ("expired", "proof_submitted"): frozenset({CLIENT}),
     ("expired", "confirmed"): frozenset({CLIENT}),
     ("expired", "in_review"): frozenset({SYSTEM}),
+    ("expired", "cancelled"): frozenset({CLIENT, SYSTEM}),
     ("proof_submitted", "confirmed"): frozenset({COACH, SYSTEM}),
     ("proof_submitted", "coach_not_received"): frozenset({COACH}),
     ("proof_submitted", "different_amount"): frozenset({COACH}),
@@ -40,6 +44,7 @@ TRANSITIONS: dict[tuple[str, str], frozenset] = {
     ("resolved_paid", "service_dispute"): frozenset({CLIENT}),
     ("resolved_paid", "in_review"): frozenset({STAFF}),
     ("resolved_unpaid", "in_review"): frozenset({STAFF}),
+    ("refunded", "in_review"): frozenset({CLIENT, STAFF}),
     ("refund_requested", "refunded"): frozenset({COACH}),
     ("refund_requested", "refund_denied"): frozenset({COACH}),
     ("refund_requested", "in_review"): frozenset({SYSTEM}),
@@ -80,6 +85,7 @@ _NOTICES: dict[tuple[str, str], list[tuple[str, str]]] = {
     ("refund_requested", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
     ("service_dispute", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
     ("refund_denied", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
+    ("refunded", "in_review"): [(CLIENT, "instapayReviewStarted"), (COACH, "instapayDisputeOpened")],
 }
 
 

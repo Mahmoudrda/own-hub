@@ -38,9 +38,18 @@ def test_the_table_only_names_known_statuses():
 
 
 def test_terminal_statuses_only_reopen_by_staff():
-    for terminal in ("cancelled", "refunded"):
-        assert not [p for p in states.TRANSITIONS if p[0] == terminal]
+    assert not [p for p in states.TRANSITIONS if p[0] == "cancelled"]
     assert states.TRANSITIONS[("resolved_unpaid", "in_review")] == frozenset({states.STAFF})
+
+
+def test_a_recorded_refund_is_the_coachs_word_so_it_reopens_only_into_review():
+    # The client (she did not receive it) or staff open a dispute; nothing else leaves 'refunded'.
+    assert [p for p in states.TRANSITIONS if p[0] == "refunded"] == [("refunded", "in_review")]
+    assert states.TRANSITIONS[("refunded", "in_review")] == frozenset({states.CLIENT, states.STAFF})
+
+
+def test_an_expired_request_has_an_exit():
+    assert states.TRANSITIONS[("expired", "cancelled")] == frozenset({states.CLIENT, states.SYSTEM})
 
 
 def test_every_notice_kind_has_both_languages_and_no_amount_or_em_dash():

@@ -46,6 +46,8 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
                       "ar": (TITLE, "فيه دفع محتاج مراجعة تانية. افتحي Own Hub وشوفي المطلوب.")},
     "instapayRefundRequested": {"en": (TITLE, "A client asked for a refund. Open Own Hub to answer within 3 days."),
                         "ar": (TITLE, "عميلة طلبت استرداد. افتحي Own Hub وردّي خلال 3 أيام.")},
+    "instapayAddressChangedCoach": {"en": (TITLE, "Your payment details were changed. If it was not you, contact us now."),
+                       "ar": (TITLE, "بيانات الدفع بتاعتك اتغيّرت. لو مش انتي اللي غيّرتيها كلمينا حالًا.")},
     "instapayStatementReady": {"en": (TITLE, "Your fee statement for last month is ready."),
                        "ar": (TITLE, "كشف الرسوم عن الشهر اللي فات جاهز.")},
     "instapayFeeOverdue": {"en": (TITLE, "Your Own Hub fee is late. Open Own Hub to see the statement."),

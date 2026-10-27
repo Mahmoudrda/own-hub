@@ -13,7 +13,7 @@ from . import activation, engine, errors, fees, model, profile, states
 
 
 def can_grant(seen: dict) -> bool:
-    return (seen["sub"] or {}).get("status") in ("awaiting_payment", "active")
+    return activation.grantable(seen["sub"])
 
 
 def apply_confirmation(transaction, db, ref, cur: dict, seen: dict, prof_ref, prof: dict, cfg: dict,
@@ -22,15 +22,16 @@ def apply_confirmation(transaction, db, ref, cur: dict, seen: dict, prof_ref, pr
     the coach's counters. All reads were done by the caller. Returns the payment."""
     rel_source = (seen["rel"].to_dict() or {}).get("source") if seen["rel"].exists else None
     got = received if received is not None else cur["amountPiasters"]
+    starts = can_grant(seen)  # false when the acceptance is gone: the money is confirmed, the coaching is for staff to restore
     changes = {
         "coachDecision": {**(cur.get("coachDecision") or {}), "confirmedAt": now, "receivedPiasters": got, "autoConfirmed": role == states.SYSTEM},
         "overpaidPiasters": max(0, got - cur["amountPiasters"]),
-        "access": {"state": "full", "until": None},
+        "access": {"state": "full" if starts else "none", "until": None},
         **fees.at_activation(cur, cfg, rel_source, now),
     }
     out = engine.move(transaction, db, ref, cur, "confirmed", role, actor_uid, now, changes=changes,
                       code="auto_confirmed" if role == states.SYSTEM else "coach_confirmed")
-    if can_grant(seen):
+    if starts:
         activation.grant(transaction, db, seen, now)
     clean = 1 if (cur.get("outcome") == "green" and not cur.get("dispute")) else 0
     transaction.update(prof_ref, {"paymentsConfirmed": firestore.Increment(1), "cleanConfirmed": firestore.Increment(clean)})
@@ -66,12 +67,15 @@ def confirm(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> d
 
 
 def set_auto_confirm(db, uid: str, data: dict, *, coach_v, now: dt.datetime) -> dict:
-    """The coach turns confirming green payments by themselves on or off. On is
-    offered after 3 clean payments (13.4). Off is always allowed."""
+    """The coach turns confirming green payments by themselves on or off. On needs
+    the owner's switch (model.config autoConfirmAllowed, off by default) and 3
+    clean payments (13.4). Off is always allowed."""
     common.require_active_coach(db, uid, coach_v)
     enabled = data.get("enabled")
     if not isinstance(enabled, bool):
         raise common.bad()
+    if enabled and not model.config(db)["autoConfirmAllowed"]:
+        raise common.refuse(errors.PRECONDITION, errors.AUTO_CONFIRM_OFF)  # the owner has not turned it on (coachingConfig/instapay)
     ref = profile.profile_ref(db, uid)
 
     def body(transaction):

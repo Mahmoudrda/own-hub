@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import datetime as dt
 
+import cv2
+import numpy as np
 import pytest
 
 from tests import fake_firestore
@@ -100,3 +102,15 @@ def events(db, payment_id=PAY):
 
 def payment_of(db, payment_id=PAY):
     return db.document(f"payments/{payment_id}").get().to_dict()
+
+
+def phone_jpeg(seed_value: int, noise: int = 0) -> bytes:
+    """A blocky 720x1560 picture: the shape of a phone screenshot, so the proof
+    checks that ask for a screenshot are met. Equal seeds give equal pictures."""
+    base = np.random.default_rng(seed_value).integers(0, 255, (8, 9), dtype=np.uint8)
+    image = cv2.resize(base, (720, 1560), interpolation=cv2.INTER_NEAREST)
+    if noise:
+        image = np.clip(image.astype(int) + np.random.default_rng(99).integers(-noise, noise + 1, image.shape), 0, 255).astype(np.uint8)
+    ok, out = cv2.imencode(".jpg", image)
+    assert ok
+    return out.tobytes()

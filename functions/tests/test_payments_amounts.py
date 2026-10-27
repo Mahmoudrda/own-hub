@@ -234,6 +234,7 @@ def test_client_answer_needs_a_report(db, notes):
 
 def test_auto_confirm_needs_three_clean_payments(db):
     seed_world(db)
+    db.document("coachingConfig/instapay").set({"autoConfirmAllowed": True})
     db.document(f"coachPaymentProfiles/{COACH}").update({"cleanConfirmed": 2})
 
     # cleanConfirmed < 3 -> WRONG_STATUS

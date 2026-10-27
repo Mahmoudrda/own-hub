@@ -45,7 +45,7 @@ def coach_report(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify)
             raise common.refuse(errors.PRECONDITION, errors.TXN_REUSED)
         transaction.set(reg_ref, {"paymentId": payment_id, "createdAt": now})
         transaction.update(ref, {"coachReport": {"txnNumber": txn, "txnKey": key, "reportedAt": now, "clientAnswer": None},
-                                 "reportedAt": now})
+                                 "reportedAt": now, "escalateAt": now + model.hours(model.LIMITS["silentEscalateHours"])})
         transaction.set(ref.collection("events").document(),
                         {"at": now, "from": cur["status"], "to": cur["status"], "role": states.COACH, "actor": states.COACH, "code": "coach_reported"})
         held["payment"] = cur

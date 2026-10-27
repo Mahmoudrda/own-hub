@@ -8,7 +8,7 @@ from typing import Callable, Optional
 
 from coaching import common
 
-from . import activation, engine, errors, fees, model, profile, states
+from . import activation, engine, errors, fees, model, profile, states, timers
 
 PAGE = 25
 OUTCOMES = ("resolved_paid", "resolved_unpaid", "no_refund", "refund_owed", "reopen")
@@ -26,33 +26,49 @@ def recommend(evidence: dict) -> dict:
         return {"outcome": "resolved_unpaid", "why": "proof_reused"}
     if kind == "not_received" and review.get("outcome") == "green" and not stmt:
         return {"outcome": "resolved_paid", "why": "green_proof_no_statement"}
-    if kind in ("service", "refund"):
+    if kind in ("service", "refund", "refund_not_received"):
         used = (evidence["dispute"].get("serviceFacts") or {}).get("sessionsUsed", 0)
         included = (evidence["dispute"].get("serviceFacts") or {}).get("sessionsIncluded", 0)
+        if kind == "refund_not_received":
+            return {"outcome": "refund_owed", "why": "refund_unconfirmed"}  # the coach's record is her word; the client says it never came
         return {"outcome": "refund_owed" if included and used == 0 else "no_refund", "why": "sessions_delivered" if used else "nothing_delivered"}
+    if kind and kind.startswith("silent_") and review.get("outcome") == "green":
+        return {"outcome": "resolved_paid", "why": "green_proof_coach_silent"}
     return {"outcome": None, "why": "ask_for_bank_statement_line"}
 
 
 def queue(db, actor: str, data: dict, *, now: dt.datetime) -> dict:
+    """What waits for staff: payments in review or reported 'not received'
+    (lane 'review'), and payments whose silent party ran out of time (lane
+    'escalated': escalateAt passed, still in a waiting state)."""
     after = data.get("after")
     common.log_access(db, actor, "payments.queue", "queue", now)
-    rows = [s for s in db.collection("payments").where("status", "==", "in_review").stream()]
-    rows.sort(key=lambda s: (common.as_utc((s.to_dict() or {}).get("statusAt")), s.id))
+    payments = db.collection("payments")
+    found = {}
+    for status in ("in_review", "coach_not_received"):
+        for snap in payments.where("status", "==", status).stream():
+            found[snap.id] = (snap, "review")
+    for snap in payments.where("escalateAt", "<=", now).stream():
+        if snap.id not in found and timers.overdue(snap.to_dict() or {}, now):
+            found[snap.id] = (snap, "escalated")
+    rows = sorted(found.values(), key=lambda t: (common.as_utc((t[0].to_dict() or {}).get("statusAt")), t[0].id))
     if after:
-        ids = [s.id for s in rows]
+        ids = [t[0].id for t in rows]
         rows = rows[ids.index(after) + 1:] if after in ids else []
     more = len(rows) > PAGE
     rows = rows[:PAGE]
     items = []
-    for s in rows:
+    for s, lane in rows:
         p = s.to_dict() or {}
         review = db.collection("payments").document(s.id).collection("staff").document("review").get()
         items.append({
-            "paymentId": s.id, "kind": (p.get("dispute") or {}).get("kind"), "amountPiasters": p.get("amountPiasters"),
-            "reference": p.get("reference"), "waitingHours": int((now - common.as_utc(p.get("statusAt"))).total_seconds() // 3600),
+            "paymentId": s.id, "lane": lane, "status": p.get("status"),
+            "kind": (p.get("dispute") or {}).get("kind") or (f"silent_{p.get('status')}" if lane == "escalated" else None),
+            "amountPiasters": p.get("amountPiasters"), "reference": p.get("reference"),
+            "waitingHours": int((now - common.as_utc(p.get("statusAt"))).total_seconds() // 3600),
             "riskScore": (review.to_dict() or {}).get("riskScore", 0) if review.exists else 0, "staffVisible": bool(p.get("staffVisible")),
         })
-    return {"items": items, "next": rows[-1].id if more and rows else None}
+    return {"items": items, "next": rows[-1][0].id if more and rows else None}
 
 
 def get_evidence(db, actor: str, data: dict, *, now: dt.datetime, blobs=None) -> dict:
@@ -68,6 +84,7 @@ def get_evidence(db, actor: str, data: dict, *, now: dt.datetime, blobs=None) ->
     staff = snap.reference.collection("staff")
     review = staff.document("review").get()
     stmt = staff.document("statement").get()
+    note = staff.document("dispute").get()
     events = sorted((e.to_dict() for e in snap.reference.collection("events").stream()), key=lambda e: common.as_utc(e["at"]))
     prof = db.collection("coachPaymentProfiles").document(p["coachUid"]).get().to_dict() or {}
     cs = db.collection("paymentStanding").document(p["clientUid"]).get().to_dict() or {}
@@ -83,7 +100,8 @@ def get_evidence(db, actor: str, data: dict, *, now: dt.datetime, blobs=None) ->
         "6_history": {"coach": {"paymentsConfirmed": prof.get("paymentsConfirmed", 0), "disputesLost": prof.get("disputesLost", 0),
                                 "strikes": ks.get("coachStrikes", 0)}, "client": {"strikes": cs.get("clientStrikes", 0)}},
         "7_statementRequest": (p.get("dispute") or {}).get("statementRequests"),
-        "dispute": common.plain(p.get("dispute")), "status": p["status"],
+        "dispute": common.plain({**(p.get("dispute") or {}), "clientNote": (note.to_dict() or {}).get("clientNote") if note.exists else None}),
+        "status": p["status"],
         "clientProof": {"outcome": p.get("outcome"), "reasons": r.get("reasons")},
         "coachStatement": stmt.to_dict() if stmt.exists else None,
     }
@@ -107,7 +125,7 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
 
     def body(transaction):
         ref = engine.payment_ref(db, payment_id)
-        cur = common.read(ref, transaction)
+        cur = engine.read_payment(transaction, db, ref)
         if cur is None:
             raise common.refuse(errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
         common.refuse_if_subject(actor, cur.get("clientUid"), cur.get("coachUid"))
@@ -119,16 +137,20 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
         log = ref.collection("staff").document("decisions").collection("log").document()
         decided = common.decided_stamp(actor, now)
         dispute = {**(cur.get("dispute") or {}), "staffDecision": outcome, "decidedAt": now, "reasonCode": outcome}
-        pay = cur
         held["payment"], held["from"] = cur, cur["status"]
-        held["moves"] = []
+        moves = []
+        if outcome != "reopen" and timers.overdue(cur, now):  # a silent party ran out of time: the system hands it over first
+            cur = timers.escalate_move(transaction, db, ref, cur, now)
+            moves.append((held["from"], "in_review"))
+            dispute = {**(cur.get("dispute") or {}), "staffDecision": outcome, "decidedAt": now, "reasonCode": outcome}
+        pay = cur
 
         if outcome == "reopen":
             if last_by and last_by[0].get("by") == decided["decidedBy"]:
                 raise common.refuse(errors.PRECONDITION, errors.SAME_STAFF)  # a second reviewer reopens
             engine.move(transaction, db, ref, cur, "in_review", states.STAFF, actor, now, code="reopened",
                         changes={"dispute": {**dispute, "kind": (cur.get("dispute") or {}).get("kind") or "reopened", "staffDecision": None}})
-            held["moves"] = [(cur["status"], "in_review")]
+            moves.append((cur["status"], "in_review"))
         elif outcome == "refund_owed":
             if cur["status"] != "in_review":
                 raise common.refuse(errors.PRECONDITION, errors.ILLEGAL_TRANSITION)
@@ -153,10 +175,11 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
                 activation.grant(transaction, db, seen_start, now)
             if target == "resolved_unpaid":
                 activation.end(transaction, db, cur["subId"], seen_end, "dispute", now)
-            held["moves"] = [("in_review", target)]
+            moves.append(("in_review", target))
+        held["moves"] = moves
         transaction.set(log, {"by": decided["decidedBy"], "at": now, "outcome": outcome, "reasonText": reason, "proofFalse": proof_false})
         held["kind"] = (cur.get("dispute") or {}).get("kind")
-        return {"status": held["moves"][0][1] if held["moves"] else "in_review", "outcome": outcome}
+        return {"status": moves[-1][1] if moves else "in_review", "outcome": outcome}
 
     result = common.run(db, body)
     engine.notify_moves(notify, held["payment"], held["moves"])
@@ -166,7 +189,7 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
 
 
 def activation_ok(seen: dict) -> bool:
-    return (seen["sub"] or {}).get("status") in ("awaiting_payment", "active")
+    return activation.grantable(seen["sub"])
 
 
 def party_image(db, uid: str, data: dict, *, blobs) -> dict:

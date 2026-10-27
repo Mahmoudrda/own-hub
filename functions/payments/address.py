@@ -82,6 +82,10 @@ def set_address(db, uid: str, data: dict, *, coach_v, recent_sign_in: bool, now:
 
     result = common.run(db, body)
     if held.get("changed"):
+        try:
+            notify(uid, "instapayAddressChangedCoach")  # she is told of her own change, so a taken-over account cannot redirect payments unseen (S3)
+        except Exception:  # noqa: BLE001
+            pass
         for snap in db.collection("payments").where("coachUid", "==", uid).stream():
             row = snap.to_dict() or {}
             late = common.as_utc(row.get("lateUntil"))

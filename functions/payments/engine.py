@@ -24,10 +24,31 @@ def payment_ref(db, payment_id: str):
     return db.collection("payments").document(payment_id)
 
 
-def load(transaction, db, payment_id: str) -> tuple:
-    """(ref, payment dict) or the one 'not found' refusal."""
-    ref = payment_ref(db, payment_id)
+class Payment(dict):
+    """A payment row that knows whether the amount lock it names is still its
+    own. `move` only touches a lock that is: a lapsed lock may have been taken
+    by another payment of the same coach and amount (WO-10m)."""
+
+    lock_owned = False
+
+
+def read_payment(transaction, db, ref) -> Optional[Payment]:
+    """The payment as `Payment`, or None. Reads the row and its lock, both
+    before any write of the caller's transaction."""
     row = common.read(ref, transaction)
+    if row is None:
+        return None
+    pay = Payment(row)
+    if row.get("lockId"):
+        lock = db.collection("paymentAmountLocks").document(row["lockId"]).get(transaction=transaction)
+        pay.lock_owned = lock.exists and (lock.to_dict() or {}).get("paymentId") == ref.id
+    return pay
+
+
+def load(transaction, db, payment_id: str) -> tuple:
+    """(ref, payment) or the one 'not found' refusal."""
+    ref = payment_ref(db, payment_id)
+    row = read_payment(transaction, db, ref)
     if row is None:
         raise common.refuse(errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
     return ref, row
@@ -54,12 +75,12 @@ def move(transaction, db, ref, payment: dict, to: str, role: str, actor_uid: Opt
     second move in the same transaction). The event holds a role and a short
     code, never a name, an amount or a uid: both parties read the timeline."""
     states.check(payment["status"], to, role)
-    update = {"status": to, "statusAt": now, **(changes or {})}
+    update = {"status": to, "statusAt": now, "escalateAt": model.escalate_at(to, now), **(changes or {})}
     if to == "in_review" and payment.get("feeState") == "owed" and "feeState" not in update:
         update["feeState"] = "disputed"  # the statement lists it as disputed, pending (13.5)
     transaction.update(ref, update)
     lock = payment.get("lockId")
-    if lock and (to in model.LONG_HOLD or to not in model.HOLDS_AMOUNT):
+    if lock and getattr(payment, "lock_owned", False) and (to in model.LONG_HOLD or to not in model.HOLDS_AMOUNT):
         held = now + model.days(30) if to in model.LONG_HOLD else now
         transaction.update(db.collection("paymentAmountLocks").document(lock), {"heldUntil": held})
     transaction.set(
@@ -73,7 +94,9 @@ def move(transaction, db, ref, payment: dict, to: str, role: str, actor_uid: Opt
             "code": code,
         },
     )
-    return {**payment, **update}
+    out = Payment({**payment, **update})
+    out.lock_owned = getattr(payment, "lock_owned", False)
+    return out
 
 
 def replay(transaction, db, uid: str, scope: str, key: str) -> Optional[dict]:

@@ -53,7 +53,7 @@ def create(db, uid: str, data: dict, *, now: dt.datetime, on: bool, rng: Optiona
         if data.get("topUpOf") is not None:
             top_id = common.text(data.get("topUpOf"), max_len=128)
             top_ref = engine.payment_ref(db, top_id)
-            top = common.read(top_ref, transaction)
+            top = engine.read_payment(transaction, db, top_ref)
             lower = (top or {}).get("coachDecision") or {}
             if (top is None or top.get("clientUid") != uid or top.get("subId") != sub_id
                     or top.get("status") != "different_amount" or lower.get("acceptLower") is True):
@@ -65,7 +65,10 @@ def create(db, uid: str, data: dict, *, now: dt.datetime, on: bool, rng: Optiona
             raise common.refuse(errors.PRECONDITION, errors.AMOUNT_OVER_LIMIT)
 
         rows = [(s.id, s.to_dict() or {}) for s in mine]
-        if any(r.get("subId") == sub_id and r.get("status") in model.HOLDS_AMOUNT and not (top is not None and pid == top_ref.id) for pid, r in rows):
+        # An expired request whose late-proof window has closed is dead: it must not block a new one.
+        dead = lambda r: r.get("status") == "expired" and (common.as_utc(r.get("lateUntil")) or now) < now  # noqa: E731
+        if any(r.get("subId") == sub_id and r.get("status") in model.HOLDS_AMOUNT and not dead(r)
+               and not (top is not None and pid == top_ref.id) for pid, r in rows):
             raise common.refuse(errors.PRECONDITION, errors.OPEN_PAYMENT_EXISTS)
         since = now - model.hours(24)
         recent = [r for _, r in rows if (common.as_utc(r.get("createdAt")) or since) > since and not r.get("topUpOf")]
@@ -109,7 +112,9 @@ def create(db, uid: str, data: dict, *, now: dt.datetime, on: bool, rng: Optiona
         if top is not None:
             engine.move(transaction, db, top_ref, top, "cancelled", states.CLIENT, uid, now, code="topped_up")
         transaction.update(prof_ref, {"paymentsCreated": firestore.Increment(1)})
-        transaction.update(sub_ref, {"payment.paymentId": pay_ref.id})
+        # The acceptance must not lapse while a proof may still arrive for this request (M5).
+        late = now + model.days(LIMITS["lateProofDays"])
+        transaction.update(sub_ref, {"payment.paymentId": pay_ref.id, "payBy": max(common.as_utc(sub.get("payBy")) or late, late)})
         result = {
             "paymentId": pay_ref.id, "amountPiasters": amount, "reference": reference,
             "address": where[0], "accountName": where[1], "expiresAt": now + model.hours(LIMITS["expiryHours"]),

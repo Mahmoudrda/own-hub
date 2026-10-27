@@ -32,6 +32,9 @@ from tests.payments_helpers import (
 )
 
 
+PAID_AT = NOW.isoformat()
+
+
 def seed_confirmed_payment(db, **over):
     seed_world(db)
     row = {
@@ -107,7 +110,7 @@ def test_coach_records_a_refund_the_package_ends_and_the_fee_follows_what_was_ke
     seed_confirmed_payment(db, status="refund_requested", refund={"requestedAt": NOW, "coachDueAt": NOW + dt.timedelta(days=3)})
     db.document(f"coaches/{COACH}").update({"activeClients": 1})
 
-    res = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 50037, "kind": "refund"}, coach_v="active", now=NOW + dt.timedelta(days=1), notify=notes)
+    res = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 50037, "kind": "refund"}, coach_v="active", now=NOW + dt.timedelta(days=1), notify=notes)
     assert res == {"status": "refunded"}
 
     pay = payment_of(db)
@@ -124,14 +127,14 @@ def test_coach_records_a_refund_the_package_ends_and_the_fee_follows_what_was_ke
     assert coach_doc["activeClients"] == 0
 
     # Repeat is harmless
-    res2 = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 50037, "kind": "refund"}, coach_v="active", now=NOW + dt.timedelta(days=1), notify=notes)
+    res2 = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 50037, "kind": "refund"}, coach_v="active", now=NOW + dt.timedelta(days=1), notify=notes)
     assert res2 == {"status": "refunded"}
 
 
 def test_a_partial_refund_after_sessions_were_delivered(db, notes):
     seed_confirmed_payment(db, status="refund_requested", refund={"requestedAt": NOW, "coachDueAt": NOW + dt.timedelta(days=3)})
 
-    refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 20000, "kind": "refund"}, coach_v="active", now=NOW + dt.timedelta(days=1), notify=notes)
+    refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 20000, "kind": "refund"}, coach_v="active", now=NOW + dt.timedelta(days=1), notify=notes)
 
     pay = payment_of(db)
     assert pay["refund"]["partial"] is True
@@ -142,7 +145,7 @@ def test_a_partial_refund_after_sessions_were_delivered(db, notes):
 def test_an_overpayment_is_recorded_without_ending_anything(db, notes):
     seed_confirmed_payment(db, overpaidPiasters=963)
 
-    res = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "OP12345678901", "amountPiasters": 963, "kind": "overpayment"}, coach_v="active", now=NOW, notify=notes)
+    res = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567891", "paidAt": PAID_AT, "amountPiasters": 963, "kind": "overpayment"}, coach_v="active", now=NOW, notify=notes)
     assert res == {"status": "confirmed"}
 
     pay = payment_of(db)
@@ -150,13 +153,13 @@ def test_an_overpayment_is_recorded_without_ending_anything(db, notes):
     assert pay["refund"]["overpayment"]["amountPiasters"] == 963
 
     # amount > overpaidPiasters -> bad_request
-    assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "OP12345678901", "amountPiasters": 964, "kind": "overpayment"}, coach_v="active", now=NOW, notify=notes))[0] == c_errors.INVALID
+    assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567891", "paidAt": PAID_AT, "amountPiasters": 964, "kind": "overpayment"}, coach_v="active", now=NOW, notify=notes))[0] == c_errors.INVALID
 
 
 def test_a_refund_cannot_exceed_the_payment_and_needs_a_valid_number(db, notes):
     seed_confirmed_payment(db, status="refund_requested")
 
-    assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 50038, "kind": "refund"}, coach_v="active", now=NOW, notify=notes))[0] == c_errors.INVALID
+    assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 50038, "kind": "refund"}, coach_v="active", now=NOW, notify=notes))[0] == c_errors.INVALID
 
     assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "12", "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes))[0] == c_errors.INVALID
 
@@ -165,11 +168,11 @@ def test_in_review_needs_the_staff_refund_decision_before_the_coach_records(db, 
     seed_confirmed_payment(db, status="in_review")
 
     # Without staffDecision -> ILLEGAL_TRANSITION
-    assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes)) == (errors.PRECONDITION, errors.ILLEGAL_TRANSITION)
+    assert refusal(lambda: refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes)) == (errors.PRECONDITION, errors.ILLEGAL_TRANSITION)
 
     # With staffDecision == refund_owed -> success
     db.document(f"payments/{PAY}").update({"dispute.staffDecision": "refund_owed"})
-    res = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes)
+    res = refund.record(db, COACH, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes)
     assert res == {"status": "refunded"}
 
 
@@ -202,4 +205,4 @@ def test_no_cross_party_access(db, notes):
 
     # Client cannot record refund
     db.document(f"coachPrivate/{CLIENT}").set({"suspended": False})
-    assert refusal(lambda: refund.record(db, CLIENT, {"paymentId": PAY, "txnNumber": "R123456789012", "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
+    assert refusal(lambda: refund.record(db, CLIENT, {"paymentId": PAY, "txnNumber": "301234567890", "paidAt": PAID_AT, "amountPiasters": 50000, "kind": "refund"}, coach_v="active", now=NOW, notify=notes)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)

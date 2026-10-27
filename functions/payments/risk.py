@@ -19,6 +19,7 @@ WEIGHTS = {
     "nearImageOther": 30,
     "txnReused": 40,
 }
+MIN_LABELS = 3  # labelled fields (from, to, amount, date, transaction id, status ...) a receipt shows
 _EDITORS = (b"Photoshop", b"Adobe", b"GIMP", b"Canva", b"Snapseed", b"PicsArt", b"Pixelmator", b"Lightroom")
 
 
@@ -55,11 +56,19 @@ class Outcome:
 
 
 def decide(checks: dict, uniq: dict, flags: list[str], *, retry_used: bool, other_payer_ok: bool = False) -> Outcome:
-    """GREEN: amount, success status and recipient all found, and a transaction
-    number or a time inside the window, on something that looks like a transfer
-    receipt. RED: a deterministic contradiction or a reuse. Everything else is
-    AMBER. A card or balance message is AMBER with reason wrongMessage and never
-    uses up the retry. Tamper flags change the score only."""
+    """GREEN: every deterministic fact found, each in the shape it has on a
+    transfer receipt: the exact amount alone on a line, the success status on a
+    status line, her whole handle as the recipient, the transaction number read
+    from the picture AND a time inside the window, labelled fields, the
+    reference in the note when the bank has a note field, and a picture that
+    can be a phone screenshot. RED: only a deterministic contradiction or an
+    exact reuse (a transaction number, or the same picture). Everything else is
+    AMBER: nothing the checks cannot be sure of is ever GREEN. A picture that is
+    only SIMILAR to an earlier one (a 64-bit hash cannot read text, so another
+    woman's receipt from the same bank app is just as close as an edited copy)
+    raises the staff score and nothing more. A card or
+    balance message is AMBER with reason wrongMessage and never uses up the
+    retry. Tamper flags change the score only."""
     all_flags = list(flags)
     if uniq.get("sameImageOf"):
         all_flags.append("sameImageOther")
@@ -86,9 +95,7 @@ def decide(checks: dict, uniq: dict, flags: list[str], *, retry_used: bool, othe
     if uniq.get("txnReusedBy"):
         red.append("txnReused")
     if uniq.get("sameImageOf"):
-        red.append("sameImage")
-    if uniq.get("nearImageOf"):
-        red.append("nearImage")
+        red.append("sameImage")  # the identical picture: a true duplicate
     if red:
         return Outcome(RED, red, points, False)
 
@@ -97,14 +104,24 @@ def decide(checks: dict, uniq: dict, flags: list[str], *, retry_used: bool, othe
         missing.append("amountUnreadable")
     if checks.get("status") != "success":
         missing.append("statusUnknown")
-    if checks.get("recipient") != "match":
+    if checks.get("recipient") in ("masked", "unclear"):
+        missing.append("recipientUnclear")
+    elif checks.get("recipient") != "match":
         missing.append("recipientUnreadable")
-    if not (checks.get("txn") or checks.get("when") == "in"):
+    if not (checks.get("txnRead") and checks.get("when") == "in"):
         missing.append("needDetails")          # the receipt without More Details open (13.12 item 1)
+    if checks.get("txnTypedDiffers"):
+        missing.append("txnTypedDiffers")
     if not checks.get("transferLike"):
         missing.append("notATransferReceipt")  # an SMS alone is never GREEN (13.13)
     if checks.get("sender") == "different" and not other_payer_ok:
         missing.append("someoneElsePaid")
+    if checks.get("labels", 0) < MIN_LABELS:
+        missing.append("layoutUnclear")        # not enough labelled fields to be a receipt
+    if checks.get("reference") in ("absent", "different"):
+        missing.append("referenceMissing" if checks["reference"] == "absent" else "referenceDiffers")
+    if checks.get("screenshot") is False:
+        missing.append("notAScreenshot")
     if missing:
         offer = (not retry_used) and not checks.get("typedTxn")
         return Outcome(AMBER, missing, points, offer)

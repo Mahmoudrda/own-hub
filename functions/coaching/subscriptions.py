@@ -738,6 +738,38 @@ def _expire(db, sub_id: str, wanted: str, now: dt.datetime, due: Callable[[dict]
     return common.run(db, body)
 
 
+PAYMENT_WAITING = ("proof_submitted", "coach_not_received", "in_review", "different_amount")
+"""InstaPay payment statuses in which a decision is pending: the acceptance it
+pays for must outlive its pay-by day (functions/payments/model.py)."""
+
+
+def _payment_in_flight(transaction, db, sub_id: str, now: dt.datetime) -> bool:
+    """Whether a payment for this acceptance still has a proof to come or a
+    decision to wait for. Such an acceptance is held, never expired."""
+    for snap in db.collection("payments").where("subId", "==", sub_id).stream(transaction=transaction):
+        row = snap.to_dict() or {}
+        if row.get("status") in PAYMENT_WAITING:
+            return True
+        if row.get("status") in ("awaiting_payment", "expired") and (_at(row, "lateUntil") or now) > now:
+            return True
+    return False
+
+
+def _expire_unpaid(db, sub_id: str, now: dt.datetime) -> bool:
+    ref = db.collection("subscriptions").document(sub_id)
+
+    def body(transaction):
+        row = common.read(ref, transaction)
+        if row is None or row.get("status") != "awaiting_payment" or not _due(row, now, "payBy"):
+            return False
+        if _payment_in_flight(transaction, db, sub_id, now):
+            return False
+        transaction.update(ref, {"status": "expired", "statusAt": now})
+        return True
+
+    return common.run(db, body)
+
+
 def _finish(db, sub_id: str, now: dt.datetime):
     """Active past its end: ended, chat read-only, her slot freed."""
     ref = db.collection("subscriptions").document(sub_id)
@@ -764,6 +796,8 @@ def _warn(db, sub_id: str, now: dt.datetime):
         ends = _at(row, "endsAt")
         if row.get("status") != "active" or row.get("endsSoonSent") or ends is None:
             return None
+        if row.get("provisionalUntil"):
+            return None  # a short stay waiting for the coach's confirmation, not a package running out
         if not (now < ends <= horizon):
             return None
         transaction.update(ref, {"endsSoonSent": True})
@@ -841,9 +875,7 @@ def sweep(
     if payments:
         unpaid = subs.where("status", "==", "awaiting_payment").where("payBy", "<=", now)
         for snap in list(unpaid.stream()):
-            counts["expiredPayments"] += _expire(
-                db, snap.id, "awaiting_payment", now, lambda row: _due(row, now, "payBy")
-            )
+            counts["expiredPayments"] += _expire_unpaid(db, snap.id, now)
 
         for snap in list(db.collection_group("ledger").where("status", "==", "pending").where("eligibleAt", "<=", now).stream()):
             counts["ledgerEligible"] += _release_entry(db, snap.reference, now)

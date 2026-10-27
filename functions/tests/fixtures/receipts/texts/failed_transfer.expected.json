@@ -1,0 +1,11 @@
+{
+ "amountPiasters": 50037,
+ "address": "rahma@instapay",
+ "created": "2026-11-10T12:00:00+00:00",
+ "now": "2026-11-10T12:10:00+00:00",
+ "colour": "red",
+ "honest": false,
+ "reasons": [
+  "transferFailed"
+ ]
+}

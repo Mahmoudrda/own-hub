@@ -22,28 +22,48 @@ def read_for_start(transaction, db, sub_id: str) -> dict:
             "rel": rel_ref.get(transaction=transaction)}
 
 
+def lapsed(sub: dict) -> bool:
+    """A subscription the sweeper ended when its provisional access ran out
+    with the payment still unconfirmed. `provisionalUntil` stays set on it."""
+    return sub.get("status") == "ended" and sub.get("provisionalUntil") is not None
+
+
+def grantable(sub: Optional[dict]) -> bool:
+    """Whether a confirmation can still start (or restart) the coaching."""
+    sub = sub or {}
+    return sub.get("status") in ("awaiting_payment", "active") or lapsed(sub)
+
+
 def grant(transaction, db, seen: dict, now: dt.datetime, *, provisional_until: Optional[dt.datetime] = None) -> str:
     """Makes the subscription `active`. With `provisional_until` the access is
-    short and says so on the subscription (`provisionalUntil`); without it the
-    access is full. Calling it again on a running subscription only upgrades a
-    provisional one to full. Returns 'started', 'upgraded' or 'unchanged'."""
+    short: `endsAt` is that moment (so every check of the coaching's end, the
+    hourly sweeper first, enforces it) and `provisionalUntil` says why. Without
+    it the access is the whole package. A later full grant on a running
+    provisional subscription extends it to the package length; on one the
+    sweeper ended at the provisional limit it starts the coaching again.
+    Returns 'started', 'upgraded' or 'unchanged'."""
     sub, sub_ref = seen["sub"], seen["subRef"]
     payment = dict(sub.get("payment") or {})
+    package = sub.get("package") or {}
     if sub.get("status") == "active":
         if provisional_until is None and sub.get("provisionalUntil"):
-            transaction.update(sub_ref, {"provisionalUntil": None, "payment": {**payment, "state": "approved"}})
+            began = common.as_utc(sub.get("startsAt")) or now
+            transaction.update(sub_ref, {"provisionalUntil": None, "endsAt": began + common.days(package["durationDays"]),
+                                         "payment": {**payment, "state": "approved"}})
             return "upgraded"
         return "unchanged"
-    if sub.get("status") != "awaiting_payment":
+    revive = lapsed(sub)
+    if sub.get("status") != "awaiting_payment" and not revive:
         raise common.refuse(coaching_errors.PRECONDITION, coaching_errors.WRONG_STATUS)
-    package = sub.get("package") or {}
+    full_end = now + common.days(package["durationDays"])
+    ends = min(provisional_until, full_end) if provisional_until else full_end
     transaction.update(
         sub_ref,
         {
             "status": "active",
             "startsAt": now,
-            "endsAt": now + common.days(package["durationDays"]),
-            "provisionalUntil": provisional_until,
+            "endsAt": ends,
+            "provisionalUntil": ends if provisional_until else None,
             "payment": {**payment, "state": "review" if provisional_until else "approved"},
             "statusAt": now,
         },

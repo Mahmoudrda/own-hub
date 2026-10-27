@@ -32,7 +32,7 @@ from tests.payments_helpers import (
     refusal,
     seed_world,
 )
-from tests.test_coaching_subscriptions import make_jpeg
+from tests.payments_helpers import phone_jpeg as make_jpeg
 
 INSTAPAY_FIRST = (
     "Approved Transaction\nYour transaction was successful\n500.37 EGP\n"
@@ -100,8 +100,9 @@ def test_green_two_screenshots_give_bounded_access_and_tell_the_coach(db, blobs,
     rel = db.document(f"relationships/{COACH}__{CLIENT}").get().to_dict()
     assert rel["status"] == "active"
 
-    assert f"payment-proofs/{PAY}/client-1.jpg" in blobs.objects
-    assert f"payment-proofs/{PAY}/client-2.jpg" in blobs.objects
+    paths = pay["proof"]["screenshotPaths"]
+    assert len(paths) == 2 and set(paths) == set(blobs.objects)
+    assert all(p.startswith(f"payment-proofs/{PAY}/client-") for p in paths)
     assert notes.sent == [(COACH, "instapayProofSent")]
 
     review = db.document(f"payments/{PAY}/staff/review").get().to_dict()
@@ -205,19 +206,19 @@ def test_the_same_picture_for_another_payment_is_red(db, blobs, notes):
     assert "sameImage" in pay["proof"]["imageFlags"]
 
 
-def test_a_near_copy_is_red(db, blobs, notes):
+def test_a_near_copy_is_flagged_for_staff_and_is_neither_red_nor_blocked(db, blobs, notes):
     seed_world(db)
     make_payment(db)
     h1 = dhash.to_text(dhash.dhash(make_jpeg(1)))
     db.document("paymentImageHashes/prior-sha").set({"paymentId": "other", "dHash": h1, "createdAt": NOW})
     reader = Reader(INSTAPAY_FIRST, DETAILS)
 
-    # noise=1 or 3
-    img = make_jpeg(1, noise=1)
+    img = make_jpeg(1, noise=1)  # a re-saved copy of the earlier picture, one bit away at most
     res = send(db, blobs, notes, reader, images=[img, make_jpeg(2)])
-    assert res["outcome"] == "red"
+    assert res["outcome"] == "green"
     pay = payment_of(db)
-    assert "nearImage" in pay["proof"]["imageFlags"]
+    assert pay["status"] == "proof_submitted" and "nearImage" in pay["proof"]["imageFlags"]
+    assert db.document(f"payments/{PAY}/staff/review").get().to_dict()["riskScore"] == risk.WEIGHTS["nearImageOther"]
 
 
 def test_a_card_message_gets_a_retry_that_does_not_count(db, blobs, notes):
@@ -358,6 +359,7 @@ def test_someone_else_paying_is_amber_then_allowed_once(db, blobs, notes):
 def test_auto_confirm_green_confirms_at_once_and_keeps_the_audit(db, blobs, notes):
     seed_world(db)
     make_payment(db)
+    db.document("coachingConfig/instapay").set({"autoConfirmAllowed": True})
     db.document(f"coachPaymentProfiles/{COACH}").update({"autoConfirmGreen": True})
     reader = Reader(INSTAPAY_FIRST, DETAILS)
 

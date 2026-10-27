@@ -50,7 +50,28 @@ LIMITS = {
     "feeBpsMarketplace": 1500,    # D63 default; the owner overrides in coachingConfig/instapay
     "feeBpsInvite": 800,          # D63 default
     "maxAmountEgp": 20000,        # UNVERIFIED placeholder, see WO-10m step 1
+    "nearImageHamming": 1,        # score only: bits apart for a "similar picture" flag (honest receipts of one bank template land 1 to 4 apart)
+    "acceptLowerMinPercent": 80,  # 4.3: a coach may accept at most a 20 percent discount in writing; the fee base follows what she took
+    "serviceDisputeGraceDays": 14,  # 4.9: a service problem can be raised until the package ended plus this many days
+    "refundTxnMinDigits": 10,     # same shape as a transfer receipt number (receipt_checks._TXN)
+    "refundTxnMaxDigits": 20,
+    "refundPaidSlackMinutes": 5,
+    "silentEscalateHours": 72,    # 4.1, 4.5: a party who stays silent this long sends the payment to staff
 }
+
+# Waiting states in which one party must act. After this long the payment is
+# staff work (staff.queue lists it, timers.escalate moves it). A state missing
+# here never escalates by itself.
+ESCALATE_STATES = ("proof_submitted", "different_amount", "refund_requested")
+
+
+def escalate_at(to: str, now: dt.datetime) -> Optional[dt.datetime]:
+    """When a payment that just entered `to` becomes staff work, else None."""
+    if to == "refund_requested":
+        return now + days(LIMITS["refundCoachDays"])
+    if to in ESCALATE_STATES:
+        return now + hours(LIMITS["silentEscalateHours"])
+    return None
 
 
 def hours(n: int) -> dt.timedelta:
@@ -80,4 +101,8 @@ def config(db) -> dict:
     row: dict[str, Any] = (snap.to_dict() or {}) if snap.exists else {}
     keys = ("feeBpsMarketplace", "feeBpsInvite", "maxAmountEgp",
             "disputeRateMinPayments", "disputeRatePercent")
-    return {k: row[k] if isinstance(row.get(k), int) and not isinstance(row.get(k), bool) else LIMITS[k] for k in keys}
+    out = {k: row[k] if isinstance(row.get(k), int) and not isinstance(row.get(k), bool) else LIMITS[k] for k in keys}
+    # The coach's own confirmation is the control (13.4): automatic confirmation of a
+    # GREEN proof exists but stays off until the owner turns it on here.
+    out["autoConfirmAllowed"] = row.get("autoConfirmAllowed") is True
+    return out

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import os
 import random
 import struct
 
@@ -85,7 +84,12 @@ def test_card_alert_is_the_wrong_kind_of_message():
 def test_recipient():
     assert rc.recipient_check(INSTAPAY_FIRST, ADDRESS) == "match"
     assert rc.recipient_check(OTHER_RECIPIENT, ADDRESS) == "mismatch"
-    assert rc.recipient_check("To Rah*** M***\nrah***@instapay", ADDRESS) == "match"
+    # A masked handle fits hers but is not proof: consistent, never a match.
+    assert rc.recipient_check("To Rah*** M***\nrah***@instapay", ADDRESS) == "masked"
+    # A two-column receipt read labels-first puts "Beneficiary" nearest to the payer's own handle:
+    # that is no contradiction, only an unclear page (AMBER), never a RED.
+    assert rc.recipient_check("Sender\nBeneficiary\nAmount\nlayla@instapay\nRahma M.\n500.37 EGP", ADDRESS) == "unclear"
+    assert rc.recipient_check("From\nTo\nlayla@instapay\nRahma M.", ADDRESS) == "unclear"
     assert rc.recipient_check("nothing here", ADDRESS) == "missing"
     assert rc.recipient_check("to 01012345678", "01012345678") == "match"
 
@@ -220,13 +224,12 @@ def test_unknown_layout_is_amber_never_red():
     assert out.colour != risk.RED
 
 
-def test_typed_txn_counts_as_found():
+def test_a_typed_transaction_number_is_kept_but_never_makes_a_green():
     checks = run(INSTAPAY_FIRST, typed_txn="301234567890123")
     assert checks["txn"] == "301234567890123"
-    assert checks["typedTxn"] is True
+    assert checks["typedTxn"] is True and checks["txnRead"] is False
     out = risk.decide(checks, CLEAN, [], retry_used=False)
-    # With amount match, recipient match, status success, transferLike true, and typedTxn -> GREEN
-    assert out.colour == risk.GREEN
+    assert out.colour == risk.AMBER and "needDetails" in out.reasons
 
 
 def test_garbage_never_raises():
@@ -270,36 +273,3 @@ def test_sanity():
 def test_tamper_never_changes_the_colour():
     out = risk.decide(run(INSTAPAY_FIRST, DETAILS), CLEAN, ["editorTag", "oddSize"], retry_used=False)
     assert out.colour == risk.GREEN
-
-
-FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "receipts")
-
-
-@pytest.mark.skipif(
-    os.environ.get("OWNHUB_LIVE_OCR") != "1"
-    or not os.path.exists(FIXTURES)
-    or not any(f.endswith(".jpg") for f in os.listdir(FIXTURES)),
-    reason="live Vision test: set OWNHUB_LIVE_OCR=1 and add real receipts",
-)
-def test_real_receipts_reach_the_expected_colour_and_none_is_red():
-    import json
-    from payments import ocr
-
-    reader, green, total = ocr.TextReader(), 0, 0
-    for name in sorted(f for f in os.listdir(FIXTURES) if f.endswith(".jpg")):
-        want = json.load(open(os.path.join(FIXTURES, name[:-4] + ".expected.json")))
-        text = reader.read(open(os.path.join(FIXTURES, name), "rb").read())
-        checks = rc.run_checks(
-            [text],
-            expected_piasters=want["amountPiasters"],
-            address=want["address"],
-            created_at=dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc),
-            now=dt.datetime(2100, 1, 1, tzinfo=dt.timezone.utc),
-        )
-        colour = risk.decide(
-            checks, {"txnReusedBy": None, "sameImageOf": None, "nearImageOf": None}, [], retry_used=False
-        ).colour
-        assert colour != risk.RED, name
-        total += 1
-        green += colour == risk.GREEN
-    assert green / total >= 0.95

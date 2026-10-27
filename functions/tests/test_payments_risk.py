@@ -4,8 +4,9 @@ import pytest
 
 from payments import risk
 
-GOOD = dict(amount="match", status="success", recipient="match", when="in", txn="1234567890123",
-            wrongMessage=False, transferLike=True, sender="match", typedTxn=False)
+GOOD = dict(amount="match", status="success", recipient="match", when="in", txn="1234567890123", txnRead=True,
+            txnTypedDiffers=False, wrongMessage=False, transferLike=True, sender="match", typedTxn=False,
+            labels=4, reference="match", screenshot=True)
 CLEAN = dict(txnReusedBy=None, sameImageOf=None, nearImageOf=None)
 
 
@@ -22,7 +23,7 @@ def test_everything_found_is_green():
 @pytest.mark.parametrize("over,reason", [
     ({"amount": "different"}, "amountDiffers"), ({"status": "failed"}, "transferFailed"),
     ({"recipient": "mismatch"}, "recipientDiffers"), ({"when": "outside"}, "timeOutsideWindow"),
-    ({"txnReusedBy": "p9"}, "txnReused"), ({"sameImageOf": "p9"}, "sameImage"), ({"nearImageOf": "p9"}, "nearImage"),
+    ({"txnReusedBy": "p9"}, "txnReused"), ({"sameImageOf": "p9"}, "sameImage"),
 ])
 def test_a_contradiction_or_a_reuse_is_red_and_offers_no_retry(over, reason):
     out = decide(**over)
@@ -31,7 +32,9 @@ def test_a_contradiction_or_a_reuse_is_red_and_offers_no_retry(over, reason):
 
 @pytest.mark.parametrize("over", [
     {"amount": "missing"}, {"status": "unknown"}, {"recipient": "missing"},
-    {"when": "missing", "txn": None}, {"transferLike": False},
+    {"when": "missing", "txn": None, "txnRead": False}, {"transferLike": False},
+    {"recipient": "masked"}, {"recipient": "unclear"}, {"txnRead": False}, {"txnTypedDiffers": True},
+    {"labels": 2}, {"reference": "absent"}, {"reference": "different"}, {"screenshot": False},
 ])
 def test_a_missing_invariant_is_amber_never_red(over):
     out = decide(**over)
@@ -39,12 +42,23 @@ def test_a_missing_invariant_is_amber_never_red(over):
 
 
 def test_the_receipt_without_details_is_amber_with_need_details():
-    out = decide(txn=None, when="missing")
+    out = decide(txn=None, txnRead=False, when="missing")
     assert out.colour == risk.AMBER and "needDetails" in out.reasons
 
 
-def test_a_time_inside_the_window_replaces_the_transaction_number():
-    assert decide(txn=None, when="in").colour == risk.GREEN
+def test_green_needs_the_number_read_from_the_picture_and_the_time_together():
+    assert decide(txnRead=False).reasons == ["needDetails"]          # a typed number is not on the receipt
+    assert decide(when="missing").reasons == ["needDetails"]         # a number without a date in the window
+    assert decide(reference="notShown").colour == risk.GREEN         # a bank with no note field owes no reference
+
+
+def test_a_similar_picture_raises_the_staff_score_and_never_the_colour():
+    out = decide(nearImageOf="p9")
+    assert out.colour == risk.GREEN and out.score == risk.WEIGHTS["nearImageOther"]
+
+
+def test_an_exact_copy_is_the_only_picture_reuse_that_is_red():
+    assert decide(sameImageOf="p9").colour == risk.RED
 
 
 def test_the_second_amber_offers_no_retry_and_a_typed_number_offers_none():
