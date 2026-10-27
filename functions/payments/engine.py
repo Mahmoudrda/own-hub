@@ -108,7 +108,7 @@ def replay(transaction, db, uid: str, scope: str, key: str) -> Optional[dict]:
 def remember(transaction, db, uid: str, scope: str, key: str, result: dict, now: dt.datetime) -> None:
     transaction.set(
         db.collection("paymentIdempotency").document(f"{uid}__{scope}__{key}"),
-        {"result": common.plain(result), "at": now, "expireAt": now + model.days(model.LIMITS["idempotencyDays"])},
+        {"uid": uid, "result": common.plain(result), "at": now, "expireAt": now + model.days(model.LIMITS["idempotencyDays"])},
     )
 
 

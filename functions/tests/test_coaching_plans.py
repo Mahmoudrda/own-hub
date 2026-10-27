@@ -587,7 +587,11 @@ def test_a_goal_for_a_pregnant_or_postpartum_client_waits_for_her_health_review(
     db.collection("subscriptions").document("sub1").update(
         {"intake": _stored_intake(lifeStage=stage, doctorAck=True)}
     )
-    refused(db, req(kind="meal", body=_goal_body(2000, 110)), errors.HEALTH_NOT_REVIEWED)
+    refused(db, req(kind="meal", body=_goal_body(2000, 110), reviewsHealth=True), errors.HEALTH_NOT_REVIEWED)
+    # A coach on build 1.0.0 cannot clear the hold, so it is not enforced for her; the floor still is.
+    refused(db, req(kind="meal", body=_goal_body(1799, 110)), errors.PLAN_INVALID)
+    out, _ = publish(db, req(kind="meal", body=_goal_body(2000, 110)))
+    assert out["revision"] == 1
     # A plan without a goal is not held.
     out, _ = publish(db, req(kind="meal", body=meal()))
     assert out["revision"] == 1

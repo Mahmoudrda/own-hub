@@ -393,7 +393,7 @@ def publish(
             if eating:
                 raise common.refuse(errors.PRECONDITION, errors.EATING_HISTORY_HOLD)
             if intake.get("lifeStage") in subscriptions.FLAGGED_STAGES:
-                if not sub.get("healthReviewedAt"):
+                if reviews_health and not sub.get("healthReviewedAt"):
                     raise common.refuse(errors.PRECONDITION, errors.HEALTH_NOT_REVIEWED)
                 if body["goal"]["kcalPerDay"] < STAGE_GOAL_KCAL_FLOOR:
                     raise common.bad(errors.PLAN_INVALID)

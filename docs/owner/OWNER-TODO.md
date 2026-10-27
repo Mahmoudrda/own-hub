@@ -93,9 +93,9 @@ cd ~/ownhub/app && firebase crashlytics:symbols:upload --app=1:681714989950:ios:
 - [ ] Then follow "Google Play, step by step" in [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md) (create the app, internal test, Firebase fingerprints, App content, listing, closed test, production in Egypt).
 - [ ] Reviewer account: Google needs it working at all times, so keep the reviewer number in the `store-reviewer-phones` secret and use a number and code that are hard to guess (not 0001 or 123456).
 
-## Payments by InstaPay: your steps before the next release
+## Payments by InstaPay: your steps AFTER release 1.1.0 (payments are off in 1.1.0)
 
-Payments go live in the next release. The member pays the coach's own InstaPay address; Own Hub never holds the money. Your off-switch is `config/payments.enabled` (server): if it is off, the app shows "Free for now" as today. The full rules are in `docs/plan/INSTAPAY-PAYMENTS-SPEC.md` section 12. Do these in order.
+Payments are NOT live in 1.1.0: the coach-side payment screens (inbox, decision, refunds, statements) are still to be built, so keep `config/payments` absent and do none of P10 to P12 until a later release says so. The member pays the coach's own InstaPay address; Own Hub never holds the money. Your off-switch is `config/payments.enabled` (server): if it is off, the app shows "Free for now" as today. The full rules are in `docs/plan/INSTAPAY-PAYMENTS-SPEC.md` section 12. Do these in order.
 
 - [ ] **P1. Before 31 October 2026: PDPC filing.** See step 1 above (payment data and Cloud Vision added).
 - [ ] **P2. Counsel sign-off, before the website deploy and before you submit the app.** Give counsel `docs/owner/INSTAPAY-TERMS-DRAFTS.md` (clauses, questions, and the table of claims that must match the build), and the six built pages: `site/privacy.html`, `terms.html`, `coach-terms.html` and their `ar/` twins. Counsel also decides whether existing members and coaches must accept the new terms again (the app's terms and privacy version numbers are 3 and are not changed yet). Nothing is deployed until she or he signs.

@@ -14,3 +14,9 @@
 # When Firebase lands, its own consumer rules ship inside the artifacts and are
 # applied automatically. Do NOT pre-emptively add broad -keep rules for it here;
 # add only what a real release-build crash proves is needed.
+
+# ML Kit text recognition declares its other-script models compileOnly with no consumer rules.
+-dontwarn com.google.mlkit.vision.text.chinese.**
+-dontwarn com.google.mlkit.vision.text.devanagari.**
+-dontwarn com.google.mlkit.vision.text.japanese.**
+-dontwarn com.google.mlkit.vision.text.korean.**
