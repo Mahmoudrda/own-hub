@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/private_coaching/data/inbody_ocr.dart';
@@ -20,6 +22,14 @@ class FakeOcr implements InBodyOcr {
     calls++;
     return text;
   }
+}
+
+/// A read that finishes only when the test says so.
+class HeldOcr implements InBodyOcr {
+  final done = Completer<String?>();
+
+  @override
+  Future<String?> readPhoto() => done.future;
 }
 
 const _sheet = '''
@@ -75,6 +85,7 @@ Future<_HostState> _open(
   WidgetTester tester, {
   InBodyMode mode = InBodyMode.forCoach,
   String? text,
+  InBodyOcr? ocr,
   Locale locale = const Locale('en'),
   double scale = 1,
   Size size = const Size(390, 844),
@@ -92,7 +103,7 @@ Future<_HostState> _open(
             .copyWith(textScaler: TextScaler.linear(scale)),
         child: app!,
       ),
-      home: _Host(mode: mode, ocr: FakeOcr(text)),
+      home: _Host(mode: mode, ocr: ocr ?? FakeOcr(text)),
     ),
   );
   await tester.tap(find.byKey(const ValueKey('open')));
@@ -146,6 +157,30 @@ void main() {
           bmrKcal: 1340,
         ),
       );
+    });
+
+    testWidgets('while it reads she sees progress and can type instead', (
+      tester,
+    ) async {
+      final ocr = HeldOcr();
+      await _open(tester, ocr: ocr);
+      await tester.tap(find.byKey(const ValueKey('inbody-choose')));
+      await tester.pump();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('inbody-reading-type')));
+      await tester.pump();
+      await tester.enterText(
+        find.byKey(const ValueKey('inbody-weight-field')),
+        '70',
+      );
+      await tester.pump();
+
+      // A read that lands late does not overwrite what she typed.
+      ocr.done.complete(_sheet);
+      await tester.pumpAndSettle();
+      expect(_text(tester, 'inbody-weight-field'), '70');
+      expect(_text(tester, 'inbody-fat-field'), '');
     });
 
     testWidgets('she can correct a number before confirming', (tester) async {

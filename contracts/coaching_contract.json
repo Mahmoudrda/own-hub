@@ -406,6 +406,7 @@
       "coachDecision",
       "coachingRequest",
       "requestAnswered",
+      "requestExpired",
       "paymentApproved",
       "paymentRejected",
       "coachingStarted",

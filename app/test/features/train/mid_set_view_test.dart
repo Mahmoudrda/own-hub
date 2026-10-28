@@ -506,6 +506,70 @@ void main() {
     expect(ended, 1);
   });
 
+  testWidgets('the "Tap Change" hint comes with the Change it names', (
+    tester,
+  ) async {
+    var changed = 0;
+    PlannedMove loaded({double? kg}) => PlannedMove(
+      exerciseId: 'goblet_squat',
+      name: 'Goblet squat',
+      prescriptionLabel: '3 × 10',
+      sets: [
+        for (var i = 1; i <= 3; i++)
+          PrescribedSet(
+            exerciseId: 'goblet_squat',
+            order: i,
+            reps: 10,
+            weightKg: kg,
+          ),
+      ],
+    );
+    const hint =
+        'Tap Change to add the weight you lifted, so next time starts from it.';
+    await tester.pumpWidget(
+      _host(
+        MidSetView(
+          move: loaded(),
+          progressionLine: hint,
+          onChange: () => changed++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(hint), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('r07-add-weight')));
+    await tester.pump();
+    expect(changed, 1);
+
+    // A second session with reps only: her last result stays beside the hint.
+    await tester.pumpWidget(
+      _host(
+        MidSetView(
+          move: loaded(),
+          progressionLine: hint,
+          lastLogged: const SetOutcome(reps: 10),
+          onChange: () => changed++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('r07-last-time')), findsOneWidget);
+    expect(find.byKey(const ValueKey('r07-add-weight')), findsOneWidget);
+
+    // With a weight on the set there is nothing to add, so no button.
+    await tester.pumpWidget(
+      _host(
+        MidSetView(
+          move: loaded(kg: 12),
+          progressionLine: 'Last time you did 12 kg × 10. Stay there.',
+          onChange: () => changed++,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('r07-add-weight')), findsNothing);
+  });
+
   testWidgets('every other tool is in the "…": change, all moves, cues', (
     tester,
   ) async {

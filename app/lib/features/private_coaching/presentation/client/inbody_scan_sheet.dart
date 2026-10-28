@@ -83,7 +83,8 @@ class _InBodyScanSheetState extends State<InBodyScanSheet> {
   Future<void> _choose() async {
     setState(() => _phase = _Phase.reading);
     final text = await _ocr.readPhoto();
-    if (!mounted) return;
+    // She may have chosen to type the numbers while it was reading.
+    if (!mounted || _phase != _Phase.reading) return;
     final reading = text == null ? null : InBodyReader.read(text);
     setState(() {
       if (reading == null || reading.scan.isEmpty) {
@@ -221,6 +222,15 @@ class _InBodyScanSheetState extends State<InBodyScanSheet> {
     children: [
       Semantics(liveRegion: true, child: _title(l10n.readingYourSheet)),
       const SizedBox(height: 24),
+      const Center(child: CircularProgressIndicator()),
+      const SizedBox(height: 24),
+      AppButton(
+        l10n.typeTheNumbersInstead,
+        key: const ValueKey('inbody-reading-type'),
+        variant: AppButtonVariant.text,
+        onPressed: () => setState(() => _phase = _Phase.confirm),
+      ),
+      const SizedBox(height: 12),
     ],
   );
 

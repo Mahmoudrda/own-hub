@@ -8848,7 +8848,10 @@ class AppRouter {
       weightOptionsKg: options,
       equipment: equipment,
       askWeight: move?.needsEquipment ?? false,
-      progressionLine: move == null ? null : _lineFor(l10n, move, advice),
+      // Without advice the line is "Tap Change", wrong on the Change screen.
+      progressionLine: move == null || advice == null
+          ? null
+          : _lineFor(l10n, move, advice),
       plateHelper: featureFlags.isOn(Feature.gymHelpers),
       bus: session.bus,
       onAttach: session.attachScreen,

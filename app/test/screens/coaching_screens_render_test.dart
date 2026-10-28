@@ -1207,7 +1207,10 @@ final List<_Shot> _shots = <_Shot>[
       _Step('find-coach-results', (c) async {
         await _tapText(c, goalLabel(c.l10n, 'stronger'));
         await _tapText(c, placeLabel(c.l10n, 'home'));
-        await _tapText(c, budgetLabel(c.l10n, 'under1500'));
+        // The budget question is asked only while money can move.
+        if (coachingPaymentsOn) {
+          await _tapText(c, budgetLabel(c.l10n, 'under1500'));
+        }
       }, pages: 2),
     ],
     pages: 1,

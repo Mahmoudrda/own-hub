@@ -31,6 +31,10 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
         "en": (TITLE, "Your coaching request has an answer."),
         "ar": (TITLE, "طلب التدريب بتاعك اتردّ عليه."),
     },
+    "requestExpired": {
+        "en": (TITLE, "Your coaching request ran out of time. You can ask her again or choose another coach."),
+        "ar": (TITLE, "طلب التدريب بتاعك خلص وقته. تقدري تطلبي منها تاني أو تختاري مدربة تانية."),
+    },
     "paymentApproved": {
         "en": (TITLE, "Your payment is confirmed."),
         "ar": (TITLE, "الدفع بتاعك اتأكد."),

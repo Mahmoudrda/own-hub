@@ -416,6 +416,7 @@ abstract final class CoachingEnums {
     'coachDecision',
     'coachingRequest',
     'requestAnswered',
+    'requestExpired',
     'paymentApproved',
     'paymentRejected',
     'coachingStarted',

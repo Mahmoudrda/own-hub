@@ -757,15 +757,16 @@ def _due(row: dict, limit: dt.datetime, *keys: str) -> bool:
     return moment is not None and moment <= limit
 
 
-def _expire(db, sub_id: str, wanted: str, now: dt.datetime, due: Callable[[dict], bool]) -> bool:
+def _expire(db, sub_id: str, wanted: str, now: dt.datetime, due: Callable[[dict], bool]) -> Optional[dict]:
+    """The row it expired, or None when it was no longer due."""
     ref = db.collection("subscriptions").document(sub_id)
 
     def body(transaction):
         row = common.read(ref, transaction)
         if row is None or row.get("status") != wanted or not due(row):
-            return False
+            return None
         transaction.update(ref, {"status": "expired", "statusAt": now})
-        return True
+        return row
 
     return common.run(db, body)
 
@@ -884,9 +885,11 @@ def sweep(
         answer_by = now - common.hours(LIMITS["requestAnswerHours"])
         unanswered = subs.where("status", "==", "requested").where("statusAt", "<=", answer_by)
         for snap in list(unanswered.stream()):
-            counts["expiredRequests"] += _expire(
-                db, snap.id, "requested", now, lambda row: _due(row, answer_by, "statusAt")
-            )
+            lapsed = _expire(db, snap.id, "requested", now, lambda row: _due(row, answer_by, "statusAt"))
+            if lapsed is not None:
+                counts["expiredRequests"] += 1
+                if lapsed.get("clientUid"):
+                    notify(lapsed["clientUid"], "requestExpired")
 
         ending = subs.where("status", "==", "active").where("endsAt", "<=", now + common.days(LIMITS["endsSoonDays"]))
         for snap in list(ending.stream()):

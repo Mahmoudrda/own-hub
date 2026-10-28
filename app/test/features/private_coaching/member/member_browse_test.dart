@@ -420,6 +420,24 @@ void main() {
     expect(ys, orderedEquals(<double>[...ys]..sort()));
   });
 
+  testWidgets('once the server opens payments, cards and portfolio price', (
+    tester,
+  ) async {
+    moneyIsLive();
+    expect(coachingPaymentsOn, isTrue);
+    phone(tester);
+    await tester.pumpWidget(host(FindCoachView(repository: seeded())));
+    await tester.pump();
+    expect(find.textContaining('From EGP'), findsWidgets);
+    expect(find.text('Free for now'), findsNothing);
+    await tester.pumpWidget(portfolio(MemberRepo()));
+    expect(find.text('EGP 2,000'), findsOneWidget);
+    expect(find.textContaining('taxes and fees'), findsOneWidget);
+    await openJoin(tester);
+    // The join sheet no longer promises it is free.
+    expect(find.text('Free while Own Hub opens coaching'), findsNothing);
+  });
+
   testWidgets('from line uses the cheapest package per 28 days', (
     tester,
   ) async {
@@ -492,7 +510,10 @@ void main() {
   ) async {
     phone(tester);
     await tester.pumpWidget(portfolio(MemberRepo()));
-    expect(find.text('EGP 2,000 when payments open'), findsOneWidget);
+    // Payments are off: a member sees no price and no payment wording.
+    expect(find.textContaining('EGP'), findsNothing);
+    expect(find.textContaining('payments open'), findsNothing);
+    expect(find.text('Free while Own Hub opens coaching'), findsNothing);
     expect(find.text('Free for now'), findsOneWidget);
     expect(find.textContaining('taxes and fees'), findsNothing);
     expect(find.text('Ask to join'), findsOneWidget);
@@ -625,6 +646,8 @@ void main() {
     phone(tester);
     await tester.pumpWidget(portfolio(MemberRepo(), preview: true));
     expect(find.text('This is how members see you'), findsOneWidget);
+    // Only the coach sees the price her package will have.
+    expect(find.text('EGP 2,000 when payments open'), findsOneWidget);
     expect(find.text('Report this profile'), findsNothing);
     expect(find.text('Ask to join'), findsNothing);
   });
@@ -790,6 +813,7 @@ void main() {
         portfolio(repo, allergies: <String>['peanuts', 'tree_nuts']),
       );
       await openJoin(tester);
+      expect(find.text('Free while Own Hub opens coaching'), findsOneWidget);
       // Take one allergy off her list.
       await tapText(tester, find.text('Peanuts'));
       await fillJoin(tester);
@@ -1219,7 +1243,7 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.text('Amal'), findsOneWidget);
-      expect(find.text('EGP 2,000 when payments open'), findsOneWidget);
+      expect(find.text('Free for now'), findsOneWidget);
       expect(find.text('Results'), findsOneWidget);
     });
   });

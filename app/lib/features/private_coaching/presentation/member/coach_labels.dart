@@ -1,15 +1,18 @@
 /// Words for the coaching enums, in her language, and the price format.
 library;
 
+import '../../../../app_state/payments_switch.dart';
 import '../../../../domain/flags/feature_flags.dart';
 import '../../../../domain/format/number_label.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../routing/app_router.dart';
 import '../../../account/presentation/allergen_labels.dart';
 
-/// Whether prices are charged. While it is off every package is free for
-/// members and the price is shown as what it will be when payments open.
-bool get coachingPaymentsOn => AppRouter.featureFlags.isOn(Feature.payments);
+/// Whether prices are charged: the compiled-in payments flag, or the InstaPay
+/// server switch (`config/payments.enabled`), the one that is real in this
+/// release. While it is off every package is free for members.
+bool get coachingPaymentsOn =>
+    AppRouter.featureFlags.isOn(Feature.payments) || PaymentsSwitch.live;
 
 /// Allergies in her language, joined as a list. A name this
 /// build does not know is shown as it came rather than hidden.

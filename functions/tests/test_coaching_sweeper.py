@@ -33,6 +33,10 @@ def test_requests_expire_after_the_answer_window(db, pushes):
     assert counts["expiredRequests"] == 1
     assert old.get().to_dict()["status"] == "expired"
     assert sub_of(db, fresh)["status"] == "requested"
+    assert pushes.count(("x", "requestExpired")) == 1
+    pushes.clear()
+    assert subscriptions.sweep(db, now=NOW, notify=pushes, payments=True)["expiredRequests"] == 0
+    assert pushes == []
 
 
 def test_unpaid_subscriptions_expire_at_pay_by(db, pushes):

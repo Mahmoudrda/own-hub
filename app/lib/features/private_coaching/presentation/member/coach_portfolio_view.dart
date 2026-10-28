@@ -525,10 +525,10 @@ class _PortfolioBody extends StatelessWidget {
               foreground: AppColors.onTertiaryContainer,
             ),
           ),
-          _muted(l10n.egpPriceWhenPaymentsOpen(formatEgp(p.priceFinalEgp))),
+          // Only the coach previewing her page sees the price to come.
+          if (ownPage)
+            _muted(l10n.egpPriceWhenPaymentsOpen(formatEgp(p.priceFinalEgp))),
         ],
-        if (!ownPage && coachingPaymentsOn)
-          _muted(l10n.freeWhileOwnHubOpensCoaching),
       ],
     );
     if (onPick == null) return card;

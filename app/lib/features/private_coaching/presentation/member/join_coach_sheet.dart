@@ -557,12 +557,14 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
             l10n.sendRequest,
             onPressed: _sending || !_ready ? null : _send,
           ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.freeWhileOwnHubOpensCoaching,
-            textAlign: TextAlign.center,
-            style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
-          ),
+          if (!coachingPaymentsOn) ...[
+            const SizedBox(height: 6),
+            Text(
+              l10n.freeWhileOwnHubOpensCoaching,
+              textAlign: TextAlign.center,
+              style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
         ],
       ),
     );

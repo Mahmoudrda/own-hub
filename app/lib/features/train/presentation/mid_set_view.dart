@@ -414,16 +414,35 @@ class _MidSetViewState extends State<MidSetView> {
     if (line != null) {
       // The advice may already say what she did; when it does not, her last
       // result is stated beside it, so it is always in view.
-      if (was.isEmpty || line.contains(was)) return AppSageNote(line);
+      final Widget note = was.isEmpty || line.contains(was)
+          ? AppSageNote(line)
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AppSageNote(line),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.lastTimeLast(was),
+                  key: const ValueKey('r07-last-time'),
+                  style: AppText.bodyM.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            );
+      // The "Tap Change" hint: Change is in the Pause menu, so it is put here.
+      if (prescribed?.weightKg != null || widget.onChange == null) return note;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppSageNote(line),
-          const SizedBox(height: 8),
-          Text(
-            l10n.lastTimeLast(was),
-            key: const ValueKey('r07-last-time'),
-            style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          note,
+          AppButton(
+            l10n.change,
+            key: const ValueKey('r07-add-weight'),
+            variant: AppButtonVariant.text,
+            height: 48,
+            fontSize: 15,
+            onPressed: widget.onChange,
           ),
         ],
       );

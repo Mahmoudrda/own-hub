@@ -4,7 +4,6 @@ library;
 
 import 'package:flutter/material.dart';
 
-import '../../../../app_state/payments_switch.dart';
 import '../../../../app_state/private_coaching_state.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
@@ -172,7 +171,7 @@ class _FindCoachViewState extends State<FindCoachView> {
     }
     // A budget is asked only once money can move; until then the quiz is two
     // questions and the coaches are matched on those.
-    final asksBudget = coachingPaymentsOn || PaymentsSwitch.live;
+    final asksBudget = coachingPaymentsOn;
     final answered =
         _goal != null && _place != null && (!asksBudget || _budget != null);
     final matches = answered
