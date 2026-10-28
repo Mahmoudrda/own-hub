@@ -19,6 +19,11 @@ const double steadyStrengthMet = 3.5;
 /// Circuit-style or high-rep work with short rests.
 const double hardCircuitMet = 5.0;
 
+/// An ordinary, unhurried walk on a firm surface. The compendium gives about
+/// 3.0 at 2.5 mph and 3.5 at 3 mph; this is the low end, so a walk's figure is
+/// never flattering. The pace is not measured, so there is one value.
+const double walkingMet = 3.0;
+
 /// A session left open for hours is almost always a forgotten one; the
 /// estimate stops counting at this length.
 const int maxEstimatedSeconds = 3 * 3600;
@@ -35,7 +40,7 @@ const int highRepAverage = 15;
 /// The longest cycle at which high reps still read as hard.
 const int highRepSecondsPerSet = 100;
 
-enum EffortKind { steady, hard }
+enum EffortKind { steady, hard, walk }
 
 /// Reads the pattern of a session: how long each logged set took, rest
 /// included, and how many reps a rep set had on average.
@@ -59,8 +64,11 @@ EffortKind classifyEffort({
   return EffortKind.steady;
 }
 
-double metFor(EffortKind kind) =>
-    kind == EffortKind.hard ? hardCircuitMet : steadyStrengthMet;
+double metFor(EffortKind kind) => switch (kind) {
+  EffortKind.hard => hardCircuitMet,
+  EffortKind.steady => steadyStrengthMet,
+  EffortKind.walk => walkingMet,
+};
 
 /// The weight to calculate with: hers when it is a believable one, else the
 /// default.

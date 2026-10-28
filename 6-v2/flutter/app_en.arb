@@ -8146,7 +8146,6 @@
   "mealPhotosSentToGoogleToRead": "Meal photos sent to Google to read the food",
   "editToday": "Edit today",
   "shortVersion": "Short version",
-  "a10MinuteWalk": "A 10-minute walk",
   "doMyOwnPlanInstead": "Do my own plan instead",
   "eatenOfTargetKcal": "{eaten} of {target} kcal",
   "@eatenOfTargetKcal": {
@@ -8732,5 +8731,483 @@
         "example": "1,200"
       }
     }
-  }
+  },
+  "payments": "Payments",
+  "paymentsFromYourClients": "Payments from your clients",
+  "addYourInstapayAddressSoClientsCan": "Add your InstaPay address so clients can pay you.",
+  "addAddress": "Add address",
+  "waitingForYou": "Waiting for you",
+  "nothingIsWaitingForYou": "Nothing is waiting for you.",
+  "earlier": "Earlier",
+  "matches": "Matches",
+  "checkYourBank": "Check your bank",
+  "referenceAmountProofSentTime": "{reference} · {amount} · proof sent {time}",
+  "@referenceAmountProofSentTime": {
+    "description": "A waiting payment in the coach's inbox: her reference, the amount and when the proof came.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "OH-4821"
+      },
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      },
+      "time": {
+        "type": "String",
+        "example": "14:32"
+      }
+    }
+  },
+  "paymentReference": "Payment {reference}",
+  "@paymentReference": {
+    "description": "Title of the coach's decision sheet.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "OH-4821"
+      }
+    }
+  },
+  "lookForExactlyAmount": "Look for exactly {amount}",
+  "@lookForExactlyAmount": {
+    "description": "What the coach looks for in her bank.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      }
+    }
+  },
+  "transactionNumberTxn": "Transaction number {txn}",
+  "@transactionNumberTxn": {
+    "description": "The number read from the client's proof.",
+    "placeholders": {
+      "txn": {
+        "type": "String",
+        "example": "123456789012"
+      }
+    }
+  },
+  "paidAtTime": "Paid at {time}",
+  "@paidAtTime": {
+    "description": "When the client says she paid.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:32"
+      }
+    }
+  },
+  "herProofLooksRightStillCheckYour": "Her proof looks right. Still check your bank before you confirm.",
+  "partOfHerProofDidNotMatch": "Part of her proof did not match. Check your bank closely.",
+  "seeHerProof": "See her proof",
+  "weCouldNotLoadThisPicture": "We could not load this picture.",
+  "iReceivedIt": "I received it",
+  "notReceived": "Not received",
+  "confirmedYourClientCanStart": "Confirmed. Your client can start.",
+  "whatDoYouSeeInYourBank": "What do you see in your bank?",
+  "iDoNotSeeItInMy": "I do not see it in my account",
+  "theAmountIsDifferent": "The amount is different",
+  "theNameIsDifferent": "The name is different",
+  "someoneElsePaid": "Someone else paid",
+  "iSearchedMyBankForAmount": "I searched my bank for {amount}.",
+  "@iSearchedMyBankForAmount": {
+    "description": "The tick on Not received.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      }
+    }
+  },
+  "iSearchedMyBankForAmountAnd": "I searched my bank for {amount} and transaction number {txn}.",
+  "@iSearchedMyBankForAmountAnd": {
+    "description": "The tick on Not received when the number was read.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      },
+      "txn": {
+        "type": "String",
+        "example": "123456789012"
+      }
+    }
+  },
+  "tellUsWhatYouSaw": "Tell us what you saw",
+  "addYourBankListForThatDay": "Add your bank list for that day",
+  "howMuchDidYouReceive": "How much did you receive?",
+  "amountReceivedEgp": "Amount received (EGP)",
+  "acceptThisLowerAmountAndStartThe": "Accept this lower amount and start the coaching",
+  "ifYouAcceptHerPackageStartsOtherwise": "If you accept, her package starts. Otherwise she can pay the rest.",
+  "sentYourClientWillSeeIt": "Sent. Your client will see it.",
+  "confirmMatchingPaymentsForMe": "Confirm matching payments for me",
+  "onlyPaymentsThatMatchYouCanStill": "Only payments that match. You can still flag one within {hours} hours.",
+  "@onlyPaymentsThatMatchYouCanStill": {
+    "description": "Under the auto-confirm switch. The hours are the server's window.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "48"
+      }
+    }
+  },
+  "automaticConfirmingOpensAfterNPaymentsThat": "Automatic confirming opens after {n} payments that matched.",
+  "@automaticConfirmingOpensAfterNPaymentsThat": {
+    "description": "Why the auto-confirm switch was refused.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "automaticConfirmingIsNotAvailableToYou": "Automatic confirming is not available to you yet.",
+  "thisPaymentAppearsInYourStatementPlease": "This payment appears in your statement. Please check again.",
+  "pleaseTickThatYouSearchedYourBank": "Please tick that you searched your bank and add your bank list.",
+  "pleaseTellUsWhatYouSawIn": "Please tell us what you saw, in a few words.",
+  "thatIsTooFarBelowThePrice": "That is too far below the price to accept. Turn the switch off and she can pay the rest.",
+  "aClientPaidMe": "A client paid me",
+  "pickThePaymentThenTypeTheTransaction": "Pick the payment, then type the transaction number from your bank.",
+  "noClientHasAnOpenPaymentRight": "No client has an open payment right now.",
+  "sentYourClientWillBeAskedTo": "Sent. Your client will be asked to confirm.",
+  "waitingForHerPayment": "Waiting for her payment",
+  "youSaidItHasNotArrived": "You said it has not arrived",
+  "sheAskedForARefund": "She asked for a refund",
+  "askForARefund": "Ask for a refund",
+  "iHaveAProblemWithTheService": "I have a problem with the service",
+  "theRefundDidNotReachMe": "The refund did not reach me",
+  "askOwnHubToLookAgain": "Ask Own Hub to look again",
+  "cancelPayment": "Cancel payment",
+  "cancelThisPaymentOnlyDoThisIf": "Cancel this payment? Only do this if you have not paid. If you already sent the money, send your proof instead.",
+  "youCanAskOnceInTheFirst": "You can ask once in the first {days} days. Your coach has {n} days to answer, then Own Hub steps in.",
+  "@youCanAskOnceInTheFirst": {
+    "description": "Refund screen. days is the refund window and n is the days the coach has to answer, both from payments_rules.dart.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "14"
+      },
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "ownHubDoesNotMoveMoneyIf": "Own Hub does not move money. If your coach agrees, she sends it back by InstaPay and records it here.",
+  "sentYourCoachHasNDaysTo": "Sent. Your coach has {n} days to answer.",
+  "@sentYourCoachHasNDaysTo": {
+    "description": "Snackbar after a refund request. n is the days the coach has.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "serviceProblem": "Service problem",
+  "tellUsWhatWentWrongOwnHub": "Tell us what went wrong. Own Hub looks at your sessions and messages and decides.",
+  "refundProblem": "Refund problem",
+  "yourCoachSaysSheSentTheMoney": "Your coach says she sent the money back. If it did not reach you, tell us and Own Hub will look into it.",
+  "yourCoachDidNotAgreeToThe": "Your coach did not agree to the refund. Tell us why you think Own Hub should look again.",
+  "tellUsMore": "Tell us more",
+  "yourCoachDidNotAgreeToThe_9dkzl": "Your coach did not agree to the refund. If you disagree, open the menu at the top and ask Own Hub to look again.",
+  "theFirstNDaysAreOverSo": "The first {n} days are over, so a refund can no longer be asked for here.",
+  "@theFirstNDaysAreOverSo": {
+    "description": "The server refused a refund request after the window. n is the window in days.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "youAlreadyAskedForARefundOn": "You already asked for a refund on this payment.",
+  "theTimeToReportAProblemOn": "The time to report a problem on this payment has passed.",
+  "youAlreadyReportedThisOwnHubHas": "You already reported this. Own Hub has your note.",
+  "youHaveReachedTheNumberOfReports": "You have reached the number of reports you can send this month. Please try next month.",
+  "pleaseCheckTheTransactionNumberFromYour": "Please check the transaction number from your bank. It is made of digits only.",
+  "theDateOrTimeOnYourPhone": "The date or time on your phone looks wrong. Fix it and try again.",
+  "pleaseCheckTheAmountItCannotBe": "Please check the amount. It cannot be more than the payment.",
+  "refundRequests": "Refund requests",
+  "askedTimeAnswerByDate": "Asked {time}. Answer by {date}.",
+  "@askedTimeAnswerByDate": {
+    "description": "Refund request row in the coach inbox. time is when it was asked, date is when the coach has to answer (Cairo time).",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "27/10 14:32"
+      },
+      "date": {
+        "type": "String",
+        "example": "30/10 14:32"
+      }
+    }
+  },
+  "askedTimeTheAnswerWasDueDate": "Asked {time}. The answer was due {date}. Own Hub may step in.",
+  "@askedTimeTheAnswerWasDueDate": {
+    "description": "Refund request row after its answer date has passed.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "27/10 14:32"
+      },
+      "date": {
+        "type": "String",
+        "example": "30/10 14:32"
+      }
+    }
+  },
+  "recordRefund": "Record refund",
+  "sendTheMoneyBackToYourClient": "Send the money back to your client by InstaPay, then record it here. Own Hub does not move money.",
+  "amountSentBackEgp": "Amount sent back (EGP)",
+  "partOfThePaymentAmountOfTotal": "Part of the payment: {amount} of {total}.",
+  "@partOfThePaymentAmountOfTotal": {
+    "description": "Coach records a refund smaller than the payment.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "250 EGP"
+      },
+      "total": {
+        "type": "String",
+        "example": "500 EGP"
+      }
+    }
+  },
+  "iDoNotAgreeToThisRefund": "I do not agree to this refund",
+  "whyDoYouNotAgree": "Why do you not agree?",
+  "yourClientCanThenAskOwnHub": "Your client can then ask Own Hub to look at it.",
+  "iAlreadyGaveTheSessions": "I already gave the sessions",
+  "itIsOutsideTheTerms": "It is outside the terms",
+  "yourInbodySheet": "Your InBody sheet",
+  "chooseAPhotoOrScreenshotOfYour": "Choose a photo or screenshot of your result sheet. It is read on your phone. The photo is not saved and never leaves your phone.",
+  "typeTheNumbersInstead": "Type the numbers instead",
+  "readingYourSheet": "Reading your sheet",
+  "checkYourNumbers": "Check your numbers",
+  "weReadTheseFromYourSheetCheck": "We read these from your sheet. Check each one against the paper and fix anything wrong. Nothing is used until you confirm.",
+  "typeTheNumbersFromYourSheetLeave": "Type the numbers from your sheet. Leave blank what you do not have. Nothing is used until you confirm.",
+  "weCouldNotReadNumbersFromThat": "We could not read numbers from that picture. Try a clearer photo, or type them.",
+  "checkThisNumberItLooksOutsideThe": "Check this number, it looks outside the usual range.",
+  "weightHeightAndBmiOnYourSheet": "Weight, height and BMI on your sheet do not agree. Check those three against the paper.",
+  "weightFatAndLeanMassOnYour": "Weight, fat and lean mass on your sheet do not add up. Check them against the paper.",
+  "yourSheetShowsPoundsSoTheWeight": "Your sheet shows pounds, so the weight was changed to kilograms.",
+  "chooseAnotherPhoto": "Choose another photo",
+  "confirmTheseNumbers": "Confirm these numbers",
+  "yourWeightAndHeightStayOnThis": "Your weight and height stay on this phone.",
+  "yourCoachSeesTheseNumbersOnlyIf": "Your coach sees these numbers only if you tick the box on the request form. The photo is never sent.",
+  "inbodyNumbers": "InBody numbers",
+  "aPlaceToStartKcalKcalAnd": "A place to start: {kcal} kcal and {protein} g protein a day",
+  "@aPlaceToStartKcalKcalAnd": {
+    "description": "The coach's starting point for a client's day, from her InBody numbers. Both figures are whole numbers.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1600"
+      },
+      "protein": {
+        "type": "String",
+        "example": "110"
+      }
+    }
+  },
+  "useTheInbodySuggestionKcalKcalAnd": "Use the InBody suggestion: {kcal} kcal and {protein} g protein",
+  "@useTheInbodySuggestionKcalKcalAnd": {
+    "description": "The button on the coach's meal goal that fills both fields from the client's InBody numbers.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1600"
+      },
+      "protein": {
+        "type": "String",
+        "example": "110"
+      }
+    }
+  },
+  "noTargetIsSuggestedWhileSheIs": "No target is suggested while she is pregnant or after a birth. Set her food with her doctor.",
+  "noTargetIsSuggestedForHerHer": "No target is suggested for her. Her answers ask you to guide her food yourself.",
+  "thereIsNotEnoughOnHerSheet": "There is not enough on her sheet to suggest a target. Set it by hand.",
+  "addYourInbodyNumbers": "Add your InBody numbers",
+  "optionalYourCoachSeesTheNumbersNever": "Optional. Your coach sees the numbers, never the photo.",
+  "inbodyNumbersAdded": "InBody numbers added",
+  "iShareMyInbodyNumbersWithName": "I share my InBody numbers with {name}. They are body measurements, stored with my other answers in Frankfurt, Germany, outside Egypt.",
+  "@iShareMyInbodyNumbersWithName": {
+    "description": "The tick on the request form that lets the client send her InBody numbers to the coach. Its hash goes to the server with the request.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Rahma"
+      }
+    }
+  },
+  "readMyInbodySheet": "Read my InBody sheet",
+  "feeStatements": "Fee statements",
+  "whatYouOweOwnHubEachMonth": "What you owe Own Hub each month",
+  "monthlyStatement": "Monthly statement",
+  "feeForMonth": "Fee for {month}",
+  "@feeForMonth": {
+    "description": "Heading of a fee statement; month is YYYY-MM.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "2026-10"
+      }
+    }
+  },
+  "paymentsCount": "Payments: {count}",
+  "@paymentsCount": {
+    "description": "How many payments a fee statement lists.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "feeFeeOnBase": "{fee} fee on {base}",
+  "@feeFeeOnBase": {
+    "description": "One statement line: the fee and the package price it is on.",
+    "placeholders": {
+      "fee": {
+        "type": "String",
+        "example": "75 EGP"
+      },
+      "base": {
+        "type": "String",
+        "example": "500 EGP"
+      }
+    }
+  },
+  "due": "Due",
+  "disputedPending": "Disputed, pending",
+  "settled": "Settled",
+  "waived": "Waived",
+  "totalDue": "Total due",
+  "payOwnHubsFeeByInstapayTo": "Pay Own Hub's fee by InstaPay to:",
+  "accountNameName": "Account name: {name}",
+  "@accountNameName": {
+    "description": "The name on the InstaPay account the fee is paid to.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Own Hub"
+      }
+    }
+  },
+  "ownHubWillSendYouTheAddress": "Own Hub will send you the address to pay to.",
+  "feesUnpaidForMoreThanNDays": "Fees unpaid for more than {n} days stop new clients. Your current clients are never cut off.",
+  "@feesUnpaidForMoreThanNDays": {
+    "description": "The overdue rule, n from the server limit.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "thisFeeIsLateNewClientsCannot": "This fee is late. New clients cannot join you until it is paid. Your current clients are not affected.",
+  "dueByDate": "Due by {date}",
+  "@dueByDate": {
+    "description": "The day a fee statement falls due, Cairo time.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "30/11/2026"
+      }
+    }
+  },
+  "markFeeAsPaid": "Mark fee as paid",
+  "useTheTransactionNumberFromYourInstapay": "Use the transaction number from your InstaPay transfer to Own Hub.",
+  "recordedOwnHubWillConfirmIt": "Recorded. Own Hub will confirm it.",
+  "paidOwnHubWillConfirm": "Paid. Own Hub will confirm.",
+  "paidAndConfirmed": "Paid and confirmed.",
+  "thisStatementChangedGoBackAndOpen": "This statement changed. Go back and open it again.",
+  "noStatementYetTheFirstOneComes": "No statement yet. The first one comes at the start of next month.",
+  "otherMonths": "Other months",
+  "pleaseCheckTheTransactionNumberFromYour_653l2": "Please check the transaction number from your transfer.",
+  "savePaymentRecord": "Save payment record",
+  "paymentRecord": "Payment record",
+  "ownHubPaymentRecord": "Own Hub payment record",
+  "date": "Date",
+  "status": "Status",
+  "client": "Client",
+  "thisIsAPaymentRecordItIs": "This is a payment record. It is not a tax invoice.",
+  "saveOrShare": "Save or share",
+  "ownHubDecidedYouOweARefund": "Own Hub decided you owe a refund. Send it by {date}.",
+  "@ownHubDecidedYouOweARefund": {
+    "description": "A refund staff ordered, with the day it is due.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "03/11"
+      }
+    }
+  },
+  "ownHubDecidedYouOweARefund_c85m6": "Own Hub decided you owe a refund. It was due on {date}.",
+  "@ownHubDecidedYouOweARefund_c85m6": {
+    "description": "A refund staff ordered that is now late.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "03/11"
+      }
+    }
+  },
+  "ownHubSetThisAmount": "Own Hub set this amount.",
+  "sayWhatYouAte": "Say what you ate",
+  "tapToSpeak": "Tap to speak",
+  "listeningTapWhenYouAreDone": "Listening, tap when you are done",
+  "ownHubListensOnlyWhileYouSpeak": "Own Hub listens only while you speak, to write down what you said so you can check it. Your phone's speech service (Apple on iPhone, Google on Android) may process what you say, and Own Hub never keeps the audio.",
+  "fixAnyWordAndWeWillAdd": "Fix any word and we will add it up again.",
+  "ownHubCantUseTheMicrophoneOr": "Own Hub can't use the microphone or speech recognition on this phone right now. Turn them on in Settings, or type your meal.",
+  "weDidntCatchAnythingTryAgainA": "We didn't catch anything. Try again a little closer to the phone, or type your meal.",
+  "sayingYourMealNeedsAnInternetConnection": "Saying your meal needs an internet connection on this phone right now. Type it instead, or try again when you are back online.",
+  "thisPhoneCantTurnSpeechIntoText": "This phone can't turn speech into text. Type your meal instead.",
+  "somethingWentWrongWhileListeningTryAgain": "Something went wrong while listening. Try again, or type your meal.",
+  "weHeardYouButNoneOfIt": "We heard you, but none of it matched a food. Fix the words above, or type your meal.",
+  "speakIn": "Speak in",
+  "turnOnPaymentAlerts": "Turn on payment alerts",
+  "tellMeWhenItChanges": "Tell me when it changes",
+  "ownHubCanTellYouOnThis": "Own Hub can tell you on this phone when a client pays or asks for a refund, and when your fee statement is ready. These are payment updates only, and no name or amount shows on the lock screen.",
+  "weWillSendANotificationToThis": "We will send a notification to this phone when your payment is confirmed or needs something from you. These are payment updates only, and no name or amount shows on the lock screen.",
+  "paymentAlertsAreOnForThisPhone": "Payment alerts are on for this phone.",
+  "nPluralOneSentToNClient": "{n, plural, one{Sent to {n} client} other{Sent to {n} clients}}",
+  "@nPluralOneSentToNClient": {
+    "description": "After a coach shares a plan with several clients at once: how many it reached. A plural message because Arabic counts agree differently at one, two, three to ten and eleven and up; the old sentence said 'Sent to 1 clients' when one got it and others did not.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "thatWasForYou": "That was for you.",
+  "restWellYouEarnedIt": "Rest well, you earned it.",
+  "beProudOfThatOne": "Be proud of that one.",
+  "strongWorkToday": "Strong work today.",
+  "keepThisWorkout": "Keep this workout",
+  "createYourAccountAndThisWorkoutCounts": "Create your account and this workout counts in your week.",
+  "goForAWalk": "Go for a walk",
+  "walkAsLongAsYouLikeLog": "Walk as long as you like. Log it after, and Own Hub counts the calories you burned.",
+  "theCaloriesAreAnEstimateTheyNever": "The calories are an estimate. They never change what you eat.",
+  "startWalking": "Start walking",
+  "finishWalk": "Finish walk",
+  "caloriesBurnedEstimate": "Calories burned, estimate",
+  "logThisWalk": "Log this walk",
+  "loggingCountsItInYourWeekAnd": "Logging counts it in your week and saves the calories you burned.",
+  "dontLogIt": "Don't log it",
+  "walkLogged": "Walk logged",
+  "thatWasUnderAMinuteSoThere": "That was under a minute, so there is nothing to log.",
+  "workedOutWithATypicalWeightAdd": "Worked out with a typical weight. Add yours for a closer figure.",
+  "twoQuickQuestionsThenTheCoachesWho": "Two quick questions, then the coaches who fit you best.",
+  "matchedOnYourTwoAnswersOnlyThen": "Matched on your two answers only, then by name A to Z.",
+  "logItToCountTheCaloriesYou": "Log it to count the calories you burned",
+  "soundsAndTouch": "Sounds and touch",
+  "chooseWhatYouHearAndFeel": "Choose what you hear and feel",
+  "sounds": "Sounds",
+  "softSoundsWhenYouLogASet": "Soft sounds when you log a set, finish a workout or add a meal.",
+  "haptics": "Haptics",
+  "aLightTapYouCanFeelAt": "A light tap you can feel at the same moments."
 }

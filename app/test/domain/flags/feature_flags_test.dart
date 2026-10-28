@@ -40,6 +40,30 @@ void main() {
       expect(Feature.instapayPayments.serverMayTurnOn, isFalse);
     });
 
+    test(
+      'reading an InBody sheet ships on, under Eat, and the server may stop it',
+      () {
+        expect(Feature.inbodyScan.parent, Feature.eat);
+        expect(FeatureFlags.shipped.isOn(Feature.inbodyScan), isTrue);
+        expect(Feature.inbodyScan.serverMayTurnOff, isTrue);
+        expect(Feature.inbodyScan.serverMayTurnOn, isFalse);
+        expect(
+          FeatureFlags.shipped
+              .with_(<Feature, bool>{Feature.eat: false})
+              .isOn(Feature.inbodyScan),
+          isFalse,
+          reason: 'switching Eat off switches the sheet off with it',
+        );
+      },
+    );
+
+    test('the cue sounds ship on, top level, and the server may stop them', () {
+      expect(FeatureFlags.shipped.isOn(Feature.sounds), isTrue);
+      expect(Feature.sounds.parent, isNull);
+      expect(Feature.sounds.serverMayTurnOff, isTrue);
+      expect(Feature.sounds.serverMayTurnOn, isFalse);
+    });
+
     test('everything that needs a back end is off', () {
       // Not taste, and not sequencing for its own sake: each of these makes a
       // promise the build cannot keep on its own. An account needs somewhere

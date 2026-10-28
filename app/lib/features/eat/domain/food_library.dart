@@ -109,6 +109,7 @@ class Food {
     this.kind,
     this.custom = false,
     this.community = false,
+    this.mediumPieces = 1,
   });
 
   final String foodId;
@@ -154,6 +155,31 @@ class Food {
   /// True for a food other women confirmed and the owner approved. It is
   /// [custom] too, so its name travels with each meal it is logged in.
   final bool community;
+
+  /// How many pieces (eggs, dates, slices) the medium size holds, where its
+  /// label counts them ("2 eggs" is 2); 1 for a bowl, a glass, a loaf. It is
+  /// what turns "4 eggs" into two medium servings and "3 eggs" into the weight
+  /// of three, instead of four or three times the medium size.
+  final int mediumPieces;
+
+  /// Weighed raw or dry in the pack, so the bare word ("lentils", "potato")
+  /// must not log it: a woman means what she ate, which was cooked. The sentence
+  /// parser offers these only when she says raw or dry.
+  bool get isCookedFirst => _cookedFirstIds.contains(foodId);
+
+  static const Set<String> _cookedFirstIds = {
+    'chicken_breast_raw',
+    'chicken_liver_raw',
+    'chicken_wings_raw',
+    'chicken_whole_raw',
+    'beef_steak_raw',
+    'beef_mince_lean',
+    'shrimp_raw',
+    'tilapia_raw',
+    'lentils_dry',
+    'pasta_dry',
+    'potato_raw',
+  };
 
   /// What she gets if she picks nothing — the middle size, which is the one she
   /// usually serves.
@@ -278,6 +304,130 @@ class FoodLibrary {
     exact.sort((a, b) => b.popularity.compareTo(a.popularity));
     partial.sort((a, b) => b.popularity.compareTo(a.popularity));
     return [...exact, ...partial];
+  }
+
+  /// Foods whose name or alias is [words], word for word, for the sentence
+  /// parser. Order, case, diacritics, "the", "of", a plural and Arabic "ال" do
+  /// not matter; a word that is only part of another word ("stuff" in
+  /// "stuffed") never matches, and neither does a name that merely contains
+  /// the words. Most popular first. A food weighed raw or dry is left out
+  /// unless [allowRaw].
+  List<Food> named(
+    String words, {
+    bool allowRaw = false,
+    bool spelledOnly = false,
+  }) {
+    final index = _index(this);
+    // Her spelling, as the pack spells it, before the folded form: "لبن" is
+    // milk and "لبنة" is labneh, though both fold to the same stem.
+    for (final hits in [
+      index.spelled[_normalise(words)],
+      if (!spelledOnly) index.keyed[_key(words)],
+    ]) {
+      final usable = [
+        for (final food in hits ?? const <Food>[])
+          if (allowRaw || !food.isCookedFirst) food,
+      ];
+      if (usable.isNotEmpty) return usable;
+    }
+    return const <Food>[];
+  }
+
+  static final Expando<
+    ({Map<String, List<Food>> spelled, Map<String, List<Food>> keyed})
+  >
+  _indexes = Expando();
+
+  static ({Map<String, List<Food>> spelled, Map<String, List<Food>> keyed})
+  _index(FoodLibrary library) {
+    return _indexes[library] ??= () {
+      final spelled = <String, List<Food>>{};
+      final keyed = <String, List<Food>>{};
+      void add(Map<String, List<Food>> into, String key, Food food) {
+        if (key.isEmpty) return;
+        final bucket = into.putIfAbsent(key, () => <Food>[]);
+        if (!bucket.contains(food)) bucket.add(food);
+      }
+
+      for (final food in library.foods) {
+        for (final name in food.names) {
+          add(spelled, _normalise(name), food);
+          add(keyed, _key(name), food);
+        }
+      }
+      for (final bucket in [...spelled.values, ...keyed.values]) {
+        bucket.sort((a, b) => b.popularity.compareTo(a.popularity));
+      }
+      return (spelled: spelled, keyed: keyed);
+    }();
+  }
+
+  /// Words that change nothing about which food is meant: articles, and the
+  /// portion words a name may carry ("Koshari bowl", "طبق كشري").
+  static const Set<String> _fillerWords = {
+    'a',
+    'an',
+    'the',
+    'of',
+    'some',
+    'من',
+    'plate',
+    'bowl',
+    'portion',
+    'serving',
+    'medium',
+    'small',
+    'large',
+    'طبق',
+    'وجبه',
+    'وسط',
+    'صغير',
+    'كبير',
+  };
+
+  /// [input] as [named] compares it: normalised, without filler words, each
+  /// word in its singular form, the words in sorted order.
+  static String _key(String input) {
+    final folded = _normalise(input)
+        .replaceAll(RegExp('ساندويتش|ساندوتش|سندويتش|ساندويش'), 'سندوتش');
+    final tokens = <String>[
+      for (final token in folded.split(' '))
+        if (token.isNotEmpty && !_fillerWords.contains(token)) _singular(token),
+    ]..sort();
+    return tokens.join(' ');
+  }
+
+  static final RegExp _arabicLetter = RegExp(r'[؀-ۿ]');
+
+  static String _singular(String token) {
+    if (token.length <= 3) return token;
+    if (_arabicLetter.hasMatch(token)) {
+      var out = token;
+      if (out.startsWith('ال') && out.length > 4) out = out.substring(2);
+      if (out.endsWith('ات') && out.length > 3) {
+        out = out.substring(0, out.length - 2);
+      } else if (out.endsWith('ه') && out.length > 3) {
+        out = out.substring(0, out.length - 1);
+      }
+      return out;
+    }
+    if (token.endsWith('ies')) {
+      return '${token.substring(0, token.length - 3)}y';
+    }
+    if (token.endsWith('oes') ||
+        token.endsWith('ches') ||
+        token.endsWith('shes') ||
+        token.endsWith('sses') ||
+        token.endsWith('xes')) {
+      return token.substring(0, token.length - 2);
+    }
+    if (token.endsWith('s') &&
+        !token.endsWith('ss') &&
+        !token.endsWith('us') &&
+        !token.endsWith('is')) {
+      return token.substring(0, token.length - 1);
+    }
+    return token;
   }
 
   /// The food whose **whole name** is [text], or null.

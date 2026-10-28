@@ -70,7 +70,7 @@ def seed(fs):
     d[f"relationships/{COACH}__{HER}/checkIns/2026-W44"] = {"clientUid": HER, "state": "answered", "answers": {"note": "my knee"}}
     d["subscriptions/sub-hers"] = {
         "coachUid": COACH, "clientUid": HER, "relId": f"{COACH}__{HER}", "status": "active",
-        "intake": {"goal": "weight", "health": {"q1": False}},
+        "intake": {"goal": "weight", "health": {"q1": False}, "inbody": {"weightKg": 64.5, "bodyFatPercent": 26.6}},
     }
     d["subscriptions/sub-hers/private/terms"] = {"coachPriceEgp": 700}
     d["subscriptions/sub-hers/sessions/s1"] = {"minutes": 30}
@@ -136,6 +136,13 @@ def test_every_coaching_path_of_hers_is_gone(fs):
         f"users/{HER}",
         f"plans/{HER}",
     )
+
+
+def test_her_inbody_numbers_go_with_the_subscription_that_held_them(fs):
+    seed(fs)
+    assert "bodyFatPercent" in repr(fs.docs)
+    docs = run_all(fs)
+    assert "bodyFatPercent" not in repr(docs)
 
 
 def test_her_consent_records_go_with_her_user_tree(fs):

@@ -81,13 +81,15 @@ class DailyTargets {
     TargetStage stage = TargetStage.none,
     int? trimester,
     bool eatingHistory = false,
+    double? bmrKcal,
   }) {
     if (eatingHistory) return const DailyTargets.withheld();
     final weight = body.weightKg ?? defaultWeightKg;
     final height = (body.heightCm ?? defaultHeightCm).toDouble();
     final age = (body.ageYears ?? defaultAgeYears).toDouble();
 
-    final bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    // A measured rate (an InBody sheet's) stands in for the formula.
+    final bmr = bmrKcal ?? 10 * weight + 6.25 * height - 5 * age - 161;
     final factor = activityFactor(
       daysPerWeek: daysPerWeek,
       minutesPerSession: minutesPerSession,

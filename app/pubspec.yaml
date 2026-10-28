@@ -141,6 +141,26 @@ dependencies:
   # The microphone is asked for only on the first hold. Declared as audio
   # data in ios/Runner/PrivacyInfo.xcprivacy and android/play-data-safety.txt.
   record: ^7.1.2
+  # Saying a meal on E03: the phone's own speech service (Apple Speech on iOS,
+  # SpeechRecognizer on Android), asked for on-device recognition first. No
+  # audio is recorded or kept by Own Hub; the words come back as text she
+  # checks before anything is logged (lib/features/eat/data/
+  # platform_meal_speech.dart). Asks for the microphone and, on iOS, speech
+  # recognition only when she first taps the microphone, never at launch. Declared
+  # as audio data in ios/Runner/PrivacyInfo.xcprivacy and
+  # android/play-data-safety.txt. Ships no privacy manifest of its own and uses
+  # no required-reason API.
+  speech_to_text: ^7.5.0
+  # The short cues that answer a logged set, the end of a rest, the finish and
+  # a logged meal (lib/app_state/sound.dart). Original files synthesised by
+  # tool/make_sounds.py and bundled in assets/sounds/, so nothing is fetched,
+  # no permission is asked for and no data is collected. Played on the ambient
+  # audio session with no audio focus: the phone's silent switch and volume
+  # decide, and her own music is never stopped or ducked. Maintained by the
+  # Blue Fire team. Its iOS plugin ships no privacy manifest and uses no
+  # required-reason API (checked in audioplayers_darwin 6.5.0), so
+  # ios/Runner/PrivacyInfo.xcprivacy needs no new entry.
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -258,6 +278,24 @@ flutter:
     # functions/nutrition/egyptian_dishes.json by tool/build_food_pack.py. USDA
     # FoodData Central (CC0) is the source; the recipes are pending dietitian review.
     - assets/content/foods_eg.json
+    # The sound cues, synthesised by tool/make_sounds.py and named one by one
+    # so assets/sounds/SOUNDS.md (source and licence) stays out of the binary.
+    # The cue table is lib/app_state/sound.dart.
+    - assets/sounds/set_done_1.wav
+    - assets/sounds/set_done_2.wav
+    - assets/sounds/set_done_3.wav
+    - assets/sounds/set_done_4.wav
+    - assets/sounds/set_done_5.wav
+    - assets/sounds/rest_tick.wav
+    - assets/sounds/rest_end.wav
+    - assets/sounds/session_done.wav
+    - assets/sounds/personal_best.wav
+    - assets/sounds/week_closed.wav
+    - assets/sounds/food_logged.wav
+    - assets/sounds/undo.wav
+    - assets/sounds/milestone.wav
+    - assets/sounds/verified.wav
+    - assets/sounds/saved.wav
 
   fonts:
     - family: Rubik

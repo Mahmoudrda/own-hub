@@ -1015,6 +1015,10 @@
     "description": "a bowl of small dry orange-brown lentils",
     "vessel": "bowl"
   },
+  "lentils_cooked": {
+    "description": "a bowl of soft boiled brown-orange lentils",
+    "vessel": "bowl"
+  },
   "butter": {
     "description": "a small pale yellow block of butter on a plate with a knife",
     "vessel": "plate"

@@ -21,22 +21,24 @@
 /// ## There is no sample transcript
 ///
 /// The prototype draws an Arabic sentence. That is a **mockup value, not copy** —
-/// it is what the designer imagined a woman saying. Rendering it here would show
-/// her words she never said, on the one screen whose entire purpose is showing
-/// her what was actually heard. So the transcript is null until a recogniser
-/// produces one, and the card simply does not appear.
+/// it is what the designer imagined a woman saying. So the transcript is null
+/// until the phone's speech service produces one, and the card simply does not
+/// appear.
 ///
-/// The recogniser itself is not wired: G5 §9 Q4 is blocking and owner-track
-/// (vendor, PDPL data-processing agreement, consent copy, whether audio may
-/// leave Egypt), and tier 1 is on-device. Until a platform recogniser is
-/// attached, tapping the microphone reaches [VoiceState.refused] and offers the
-/// keyboard — which is honest, and is what §3.3 specifies for exactly this case.
+/// ## The recogniser is the phone's own
+///
+/// `MealSpeechEngine`: Apple Speech or Android's recogniser, on the phone where
+/// it can be and through the phone's own service where it must. The screen
+/// listens on its own only when the phone has **already** let Own Hub listen;
+/// otherwise it says why in one sentence and waits for a tap, and after the
+/// system's prompts it waits for another. Nothing here keeps audio.
 library;
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/first_run_moments.dart';
 import '../../../app_state/guest_session.dart';
 import '../../../app_state/haptics.dart';
 import '../../../domain/clock/app_clock.dart';
@@ -45,14 +47,18 @@ import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
-import '../../../ui/app_card.dart';
+import '../../../app_state/open_app_settings.dart';
+import '../../../ui/app_field.dart';
+import '../../../ui/app_segmented.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/hand/hand.dart';
 import '../../../ui/app_undo_snackbar.dart';
 import '../domain/allergy_guard.dart';
 import '../domain/food_library.dart';
 import '../domain/meal_log_service.dart';
 import '../domain/meal_repository.dart';
 import '../domain/meal_sentence_parser.dart';
+import '../domain/meal_speech.dart';
 import 'eat_day_view_model.dart';
 import 'eat_sample_library.dart';
 import 'eat_widgets.dart';
@@ -60,6 +66,7 @@ import 'meal_log_session.dart';
 import 'meal_result_card.dart';
 import 'say_it_view_model.dart';
 import 'meal_labels.dart';
+import 'voice_mic_button.dart';
 
 class SayItView extends StatefulWidget {
   const SayItView({
@@ -70,6 +77,7 @@ class SayItView extends StatefulWidget {
     this.session,
     this.library,
     this.now,
+    this.engine,
     this.initialTranscript,
     this.onClose,
     this.onLogged,
@@ -90,60 +98,110 @@ class SayItView extends StatefulWidget {
   final FoodLibrary? library;
   final DateTime? now;
 
-  /// A transcript from the recogniser.
-  ///
-  /// Null in the shipped app, because no recogniser is attached yet. Supplying
-  /// one drives the screen into [VoiceState.transcriptShown], which is how the
-  /// `P0-LOG-08` path is exercised.
+  /// The phone's speech service. Null uses [MealSpeech.engine], the one the app
+  /// installs and a test replaces.
+  final MealSpeechEngine? engine;
+
+  /// A transcript already in hand, which drives the screen straight into
+  /// [VoiceState.transcriptShown]. How the `P0-LOG-08` path is exercised
+  /// without a recogniser.
   final String? initialTranscript;
 
   final VoidCallback? onClose;
   final ValueChanged<LogHandle>? onLogged;
   final ValueChanged<MealLogRefused>? onBlocked;
 
-  /// Where `refused` and `failed` send her — E02, with an explanation rather
-  /// than a spinner.
+  /// Where `refused`, `failed` and `denied` send her: E02, with an explanation
+  /// rather than a spinner.
   final VoidCallback? onTypeInstead;
 
-  /// Edit on the result card: opens E02 with what she said already in the box.
-  /// Falls back to [onTypeInstead] when not given.
+  /// "Type what you ate" once there are words: opens E02 with what she said
+  /// already in the box. Falls back to [onTypeInstead] when not given.
   final ValueChanged<String>? onEditSentence;
 
   @override
   State<SayItView> createState() => _SayItViewState();
 }
 
-class _SayItViewState extends State<SayItView> {
+class _SayItViewState extends State<SayItView> with WidgetsBindingObserver {
   late final MealRepository _repo;
   late final LogCommandBus _bus;
   late final bool _ownsRepo;
   late final bool _ownsBus;
 
+  final TextEditingController _editor = TextEditingController();
+  StreamSubscription<SpeechEvent>? _hearing;
+
   SayItState? _state;
 
+  /// A system prompt or the phone is busy; a second press must wait.
+  bool _preparing = false;
+
+  /// The phone already lets Own Hub listen, so no prompt can appear.
+  bool _knownAllowed = false;
+
+  /// Which language the phone listens for. The sentence parser reads both, so
+  /// it is her choice and not the interface's.
+  bool? _speaksArabic;
+
   DateTime get _now => widget.now ?? AppClock.now();
+
+  MealSpeechEngine get _engine => widget.engine ?? MealSpeech.engine;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _ownsRepo = widget.repository == null;
     _repo = widget.repository ?? InMemoryMealRepository();
     _ownsBus = widget.bus == null && widget.session == null;
     _bus = widget.bus ?? widget.session?.bus ?? LogCommandBus();
+    _editor.text = widget.initialTranscript ?? '';
+    if (widget.initialTranscript == null) unawaited(_listenIfAlreadyAllowed());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _speaksArabic ??= Localizations.localeOf(context).languageCode == 'ar';
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_stopHearing());
+    _editor.dispose();
     if (_ownsBus) unawaited(_bus.flushAll());
     if (_ownsRepo) unawaited(_repo.dispose());
     super.dispose();
   }
 
+  /// Out of sight means not listening: the microphone is never left open behind
+  /// the app.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    if (lifecycle == AppLifecycleState.resumed) return;
+    final held = _state;
+    if (held == null || !held.isBusy) return;
+    unawaited(_stopHearing());
+    if (mounted) setState(() => _state = SayItState.idle);
+  }
+
+  Future<void> _stopHearing() async {
+    final hearing = _hearing;
+    _hearing = null;
+    // The phone is told first and not after a wait: closing the microphone is
+    // the part that must not be late.
+    unawaited(hearing?.cancel());
+    await _engine.cancel();
+  }
+
   FoodLibrary _library(AppL10n l10n) =>
       widget.library ?? eatSampleLibrary(l10n);
 
-  SayItViewModel _model(AppL10n l10n) =>
-      SayItViewModel(parser: MealSentenceParser(_library(l10n)));
+  SayItViewModel _model(AppL10n l10n) => SayItViewModel(
+    parser: MealSentenceParser(_library(l10n), fromSpeech: true),
+  );
 
   SayItState _current(AppL10n l10n) {
     final held = _state;
@@ -153,10 +211,99 @@ class _SayItViewState extends State<SayItView> {
     return SayItState.idle;
   }
 
-  /// No recogniser is attached, so this refuses clearly rather than spinning.
-  void _listen() {
+  /// Listens on its own only when the phone has already let Own Hub listen and
+  /// she has already read, on this screen, who turns her words into text. So
+  /// opening it can never raise a system prompt, and a woman who allowed the
+  /// microphone for a voice note is still told before the first meal.
+  Future<void> _listenIfAlreadyAllowed() async {
+    final allowed = await _engine.isAllowed();
+    if (!mounted) return;
+    setState(() => _knownAllowed = allowed);
+    if (allowed && FirstRunMoments.instance.voiceExplained && _state == null) {
+      await _start();
+    }
+  }
+
+  /// Her tap. The first time it raises the system's prompts, and when they have
+  /// been answered it waits for her next tap rather than listening at once.
+  Future<void> _start() async {
+    if (_preparing || (_state?.isBusy ?? false)) return;
+    FirstRunMoments.instance.markVoiceExplained();
+    setState(() => _preparing = true);
+    final wasAllowed = _knownAllowed || await _engine.isAllowed();
+    final problem = await _engine.prepare();
+    if (!mounted) return;
+    final model = _model(AppL10n.of(context));
+    if (problem != null) {
+      setState(() {
+        _preparing = false;
+        _state = model.failed(problem);
+      });
+      return;
+    }
+    if (!wasAllowed) {
+      setState(() {
+        _preparing = false;
+        _knownAllowed = true;
+        _state = SayItState.idle;
+      });
+      return;
+    }
+    final offered = await _engine.locales();
+    if (!mounted) return;
+    final locale = pickSpeechLocale(offered, arabic: _speaksArabic ?? false);
+    unawaited(_hearing?.cancel());
+    setState(() {
+      _preparing = false;
+      _knownAllowed = true;
+      _state = model.start();
+    });
+    _hearing = _engine
+        .listen(localeId: locale)
+        .listen(
+          _onSpeech,
+          onDone: () {
+            final held = _state;
+            if (mounted && held != null && held.isBusy) {
+              setState(() => _state = model.failed(SpeechFailure.noSpeech));
+            }
+          },
+        );
+  }
+
+  void _stop() {
+    final held = _state;
+    if (held == null || !held.isRecording) return;
+    setState(() => _state = _model(AppL10n.of(context)).stopped());
+    unawaited(_engine.stop());
+  }
+
+  void _onSpeech(SpeechEvent event) {
+    if (!mounted) return;
+    final model = _model(AppL10n.of(context));
+    final failure = event.failure;
+    if (failure != null) {
+      setState(() => _state = model.failed(failure));
+      return;
+    }
+    if (!event.isFinal) {
+      // Words so far are shown dimly while she speaks. They are not the
+      // transcript, and nothing can be logged from them.
+      final held = _state;
+      if (held != null && held.isRecording) {
+        setState(() => _state = model.listening(event.words));
+      }
+      return;
+    }
+    final next = model.heard(event.words);
+    if (next.transcript != null) _editor.text = next.transcript!;
+    setState(() => _state = next);
+  }
+
+  /// She fixed a word: the sentence is read again from what is in the box.
+  void _edited(String text) {
     final l10n = AppL10n.of(context);
-    setState(() => _state = _model(l10n).refuse());
+    setState(() => _state = _model(l10n).edited(_current(l10n), text));
   }
 
   /// The **one** undo offer for one log (§2 rule 9).
@@ -244,46 +391,153 @@ class _SayItViewState extends State<SayItView> {
       '${at.month.toString().padLeft(2, '0')}-'
       '${at.day.toString().padLeft(2, '0')}';
 
+  /// The calm line for a state with nothing to confirm.
+  String? _reason(AppL10n l10n, SayItState state) => switch (state.state) {
+    VoiceState.denied => l10n.ownHubCantUseTheMicrophoneOr,
+    VoiceState.refused => l10n.thisPhoneCantTurnSpeechIntoText,
+    VoiceState.failed => switch (state.failure) {
+      SpeechFailure.noSpeech => l10n.weDidntCatchAnythingTryAgainA,
+      SpeechFailure.offline => l10n.sayingYourMealNeedsAnInternetConnection,
+      _ => l10n.somethingWentWrongWhileListeningTryAgain,
+    },
+    VoiceState.transcriptShown when state.parse.items.isEmpty =>
+      l10n.weHeardYouButNoneOfIt,
+    _ => null,
+  };
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final state = _current(l10n);
     final model = _model(l10n);
+    final transcript = state.transcript;
+    final reason = _reason(l10n, state);
+    final canSpeak =
+        state.state != VoiceState.denied && state.state != VoiceState.refused;
+    final isBusy = state.isBusy;
+    final typeInstead = transcript != null && widget.onEditSentence != null
+        ? () => widget.onEditSentence!(transcript)
+        : widget.onTypeInstead;
 
     return AppScaffold(
       appBar: AppTopBar(onBack: widget.onClose, leadingIcon: Icons.close),
       footer: [
         AppButton(
-          // `thatsRightLog696Kcal` — "That's right · log 696 kcal" — states the
-          // total of the prototype's sample sentence, so it named 696 whatever
-          // the recogniser had actually heard. The rows above state the
-          // numbers; this states the action.
           l10n.addIt,
           onPressed: state.canLog ? () => _log(state.parse.items) : null,
         ),
-        AppButton(
-          state.shouldOfferTyping ? l10n.sayOrTypeWhatYouAte : l10n.sayItAgain,
-          variant: AppButtonVariant.text,
-          height: 44,
-          fontSize: 15,
-          icon: state.shouldOfferTyping ? Icons.keyboard : Icons.mic,
-          onPressed: state.shouldOfferTyping ? widget.onTypeInstead : _listen,
-        ),
+        if (state.state == VoiceState.denied)
+          AppButton(
+            l10n.openSettings,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            icon: Icons.settings,
+            onPressed: () => unawaited(openAppSettings()),
+          ),
+        if (!isBusy && transcript != null && canSpeak)
+          AppButton(
+            l10n.sayItAgain,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            icon: Icons.mic,
+            onPressed: _preparing ? null : () => unawaited(_start()),
+          ),
+        if (!isBusy)
+          AppButton(
+            l10n.typeWhatYouAte,
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            icon: Icons.keyboard,
+            onPressed: typeInstead,
+          ),
       ],
       children: [
-        Text(l10n.weHeardThis, style: AppText.headline),
-        _Waveform(active: state.isRecording),
-        // Only ever her words. Absent until a recogniser produces some.
-        if (state.transcript != null)
-          AppCard(
-            variant: AppCardVariant.filled,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            children: [Text(state.transcript!, style: AppText.body)],
+        Text(
+          transcript != null ? l10n.weHeardThis : l10n.sayWhatYouAte,
+          style: AppText.headline,
+        ),
+        if (canSpeak && transcript == null) ...[
+          _Waveform(active: state.isRecording),
+          VoiceMicButton(
+            label: state.isRecording
+                ? l10n.listeningTapWhenYouAreDone
+                : l10n.tapToSpeak,
+            listening: state.isRecording,
+            enabled: !_preparing && state.state != VoiceState.transcribing,
+            onTap: state.isRecording ? _stop : () => unawaited(_start()),
+            onHoldStart: () => unawaited(_start()),
+            onHoldEnd: _stop,
           ),
-        if (state.shouldOfferTyping)
           Text(
-            l10n.weNeedTheMicrophoneToHearWhat,
+            state.isRecording
+                ? l10n.listeningTapWhenYouAreDone
+                : l10n.tapToSpeak,
+            textAlign: TextAlign.center,
+            style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          if (state.isRecording && (state.partial ?? '').isNotEmpty)
+            Text(
+              state.partial!,
+              textAlign: TextAlign.center,
+              style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+          if (state.state == VoiceState.idle &&
+              !FirstRunMoments.instance.voiceExplained &&
+              !_preparing)
+            Text(
+              l10n.ownHubListensOnlyWhileYouSpeak,
+              style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+        ],
+        if (canSpeak && transcript == null && !isBusy) ...[
+          Text(
+            l10n.speakIn,
+            style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+          AppSegmented(
+            items: [l10n.arabic, l10n.english],
+            selectedIndex: (_speaksArabic ?? false) ? 0 : 1,
+            onChanged: (index) => setState(() => _speaksArabic = index == 0),
+          ),
+        ],
+        if (reason != null)
+          Text(
+            reason,
             style: AppText.bodyM.copyWith(color: AppColors.onSurfaceVariant),
+          ),
+        // Only ever her words, editable. Absent until the phone produces some.
+        if (transcript != null)
+          AppField(
+            key: const ValueKey('voice-transcript'),
+            controller: _editor,
+            hint: l10n.sayOrTypeWhatYouAte,
+            helper: l10n.fixAnyWordAndWeWillAdd,
+            maxLines: 3,
+            onChanged: _edited,
+          ),
+        if (state.parse.unresolved.isNotEmpty)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final fragment in state.parse.unresolved)
+                HandSurface(
+                  seed: handSeed(['unresolved', fragment.text]),
+                  frame: AppColors.outline,
+                  dashed: true,
+                  radius: 4,
+                  looseCorner: 12,
+                  child: Chip(
+                    label: Text(fragment.text, style: AppText.bodyM),
+                    backgroundColor: Colors.transparent,
+                    side: BorderSide.none,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+            ],
           ),
         if (state.parse.items.isNotEmpty)
           Text(
@@ -315,13 +569,18 @@ class _SayItViewState extends State<SayItView> {
         if (state.state == VoiceState.transcribing)
           const MealResultCard(adding: true)
         else if (state.canLog)
-          MealResultCard(
-            items: state.parse.items,
-            onYes: () => _log(state.parse.items),
-            onEdit: widget.onEditSentence != null && state.transcript != null
-                ? () => widget.onEditSentence!(state.transcript!)
-                : widget.onTypeInstead,
+          MealResultCard(items: state.parse.items, asksIfRight: false),
+        if (canSpeak && transcript != null && !isBusy) ...[
+          Text(
+            l10n.speakIn,
+            style: AppText.titleS.copyWith(color: AppColors.onSurfaceVariant),
           ),
+          AppSegmented(
+            items: [l10n.arabic, l10n.english],
+            selectedIndex: (_speaksArabic ?? false) ? 0 : 1,
+            onChanged: (index) => setState(() => _speaksArabic = index == 0),
+          ),
+        ],
       ],
     );
   }

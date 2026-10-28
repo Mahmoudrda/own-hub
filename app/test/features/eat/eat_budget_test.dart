@@ -69,6 +69,30 @@ InMemoryMealRepository _midDay() {
   return repository;
 }
 
+/// The same day, and a lunch yesterday that "Yesterday's lunch again" repeats.
+InMemoryMealRepository _withYesterdaysLunch() {
+  final repository = _midDay();
+  repository.store.days['2026-09-14'] = MealDay(
+    dayId: '2026-09-14',
+    slots: {
+      MealSlot.lunch: [
+        MealItem(
+          itemId: 'lunch-0914',
+          foodId: 'molokhia_chicken',
+          servings: 1,
+          size: 'M',
+          loggedAt: DateTime(2026, 9, 14, 13),
+          source: MealSource.search,
+          origin: MealOrigin.suggestion,
+          kcal: 460,
+          proteinG: 34,
+        ),
+      ],
+    },
+  );
+  return repository;
+}
+
 void main() {
   final savedFlags = AppRouter.featureFlags;
 
@@ -151,6 +175,11 @@ void main() {
         (
           name: 'E01 mid-day with logged meals',
           repository: _midDay,
+          enter: (_) async {},
+        ),
+        (
+          name: "E01 mid-day with yesterday's lunch on offer",
+          repository: _withYesterdaysLunch,
           enter: (_) async {},
         ),
         (

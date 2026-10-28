@@ -317,6 +317,7 @@
     "halib",
     "laban kamel el dasam",
     "حليب",
+    "لبن",
     "حليب كامل الدسم",
     "لبن كامل الدسم",
     "لبن بقري"
@@ -662,6 +663,7 @@
     "plain potato",
     "batates masloo2a",
     "batates bel forn",
+    "بطاطس",
     "بطاطس مسلوقة",
     "بطاطس مسلوقه",
     "بطاطس بالفرن",
@@ -1816,9 +1818,7 @@
    "aliases": [
     "dry lentils",
     "lentils raw",
-    "brown lentils",
-    "ads",
-    "عدس"
+    "brown lentils"
    ],
    "category": "vegetablesAndSalads",
    "fdcId": 172420,
@@ -1826,6 +1826,26 @@
    "servingG": 60,
    "allergens": [],
    "note": "dry weight before cooking"
+  },
+  {
+   "id": "lentils_cooked",
+   "nameEn": "Lentils, boiled",
+   "nameAr": "عدس مسلوق",
+   "aliases": [
+    "lentils",
+    "boiled lentils",
+    "cooked lentils",
+    "ads",
+    "ads masloo2",
+    "عدس",
+    "عدس مطبوخ"
+   ],
+   "category": "vegetablesAndSalads",
+   "fdcId": 172421,
+   "usdaName": "Lentils, mature seeds, cooked, boiled",
+   "servingG": 99,
+   "allergens": [],
+   "note": "drained, boiled weight; the bare word lentils or ads means this one, the dry weight is lentils_dry"
   },
   {
    "id": "butter",
@@ -1992,7 +2012,6 @@
     "raw potato",
     "potatoes raw",
     "batates nei",
-    "بطاطس",
     "بطاطس نيئة"
    ],
    "category": "vegetablesAndSalads",
@@ -2949,6 +2968,29 @@
      "en": "Half a cup",
      "ar": "نص كوب",
      "grams": 96
+    }
+   ]
+  },
+  "lentils_cooked": {
+   "source": "USDA FoodData Central household weight for this food",
+   "sizes": [
+    {
+     "id": "S",
+     "en": "Quarter cup",
+     "ar": "ربع كوب",
+     "grams": 50
+    },
+    {
+     "id": "M",
+     "en": "Half a cup",
+     "ar": "نص كوب",
+     "grams": 99
+    },
+    {
+     "id": "L",
+     "en": "1 cup",
+     "ar": "كوب",
+     "grams": 198
     }
    ]
   },

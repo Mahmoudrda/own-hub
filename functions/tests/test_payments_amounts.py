@@ -160,6 +160,7 @@ def test_coach_reports_a_payment_by_reference_and_by_subscription(db, notes):
     pay = payment_of(db)
     assert pay["coachReport"]["txnNumber"] == "301234567890123"
     assert (CLIENT, "instapayCoachReported") in notes.sent
+    assert (CLIENT, "instapayCoachReported", PAY) in notes.refs
 
     # Repeat is idempotent
     res2 = report.coach_report(db, COACH, {"reference": "OH-4821", "txnNumber": "301234567890123"}, coach_v="active", now=NOW, notify=notes)

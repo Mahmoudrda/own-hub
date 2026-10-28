@@ -8,8 +8,8 @@ import UserNotifications
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Training reminders and "your check is done" go through the app
-    // delegate, which hands them to the notification plugins.
+    // Training reminders, "your check is done" and payment alerts go through
+    // the app delegate, which hands them to the notification plugins.
     UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -29,6 +29,30 @@ import UserNotifications
           result(true)
         } else {
           result(FlutterMethodNotImplemented)
+        }
+      }
+    }
+
+    // Keeps a folder of queued uploads (payment screenshots waiting for a
+    // signal) out of the iCloud and computer backup.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "OwnHubFiles") {
+      let channel = FlutterMethodChannel(
+        name: "com.ownhub.app/files",
+        binaryMessenger: registrar.messenger()
+      )
+      channel.setMethodCallHandler { call, result in
+        guard call.method == "excludeFromBackup", let path = call.arguments as? String else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        var url = URL(fileURLWithPath: path)
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        do {
+          try url.setResourceValues(values)
+          result(true)
+        } catch {
+          result(false)
         }
       }
     }

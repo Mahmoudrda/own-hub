@@ -96,6 +96,12 @@ check "privacy manifest declares SensitiveInfo" "grep -q NSPrivacyCollectedDataT
 check "privacy manifest declares PhotosorVideos" "grep -q NSPrivacyCollectedDataTypePhotosorVideos ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares OtherDataTypes" "grep -q NSPrivacyCollectedDataTypeOtherDataTypes ios/Runner/PrivacyInfo.xcprivacy"
 check "RECORD_AUDIO declared in the manifest" "grep -q '<uses-permission android:name=\"android.permission.RECORD_AUDIO\" />' android/app/src/main/AndroidManifest.xml"
+# Saying a meal (speech_to_text): iOS refuses a build whose binary can reach
+# speech recognition without its purpose string, and Android 11 and up see no
+# recogniser without the query.
+check "speech purpose string, all three files" "! grep -q '^  speech_to_text:' pubspec.yaml || (grep -q NSSpeechRecognitionUsageDescription ios/Runner/Info.plist && grep -q NSSpeechRecognitionUsageDescription ios/Runner/en.lproj/InfoPlist.strings && grep -q NSSpeechRecognitionUsageDescription ios/Runner/ar.lproj/InfoPlist.strings)"
+check "speech recogniser visible on Android 11+" "! grep -q '^  speech_to_text:' pubspec.yaml || grep -q 'android.speech.RecognitionService' android/app/src/main/AndroidManifest.xml"
+check "no Bluetooth permission declared"   "! grep -q 'android.permission.BLUETOOTH' android/app/src/main/AndroidManifest.xml"
 check "READ_EXTERNAL_STORAGE stripped"     "grep -q 'READ_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "WRITE_EXTERNAL_STORAGE stripped"    "grep -q 'WRITE_EXTERNAL_STORAGE\" tools:node=\"remove\"' android/app/src/main/AndroidManifest.xml"
 check "push is declared where it is used"  "! grep -q '^  firebase_messaging:' pubspec.yaml || (grep -q POST_NOTIFICATIONS android/app/src/main/AndroidManifest.xml && grep -q aps-environment ios/Runner/Runner.entitlements && grep -q 'push token' android/play-data-safety.txt)"

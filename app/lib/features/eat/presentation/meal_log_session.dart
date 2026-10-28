@@ -25,6 +25,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../app_state/meal_cue.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/week/week_key.dart';
 import '../domain/item_id.dart';
@@ -139,9 +140,13 @@ class MealLogSession extends ChangeNotifier {
     );
     _issued[handle] = true;
     _pending.add(meal);
+    MealCue.logged(prepared.kcal, byVoice: _byVoice(prepared.items));
     _notify();
     return handle;
   }
+
+  static bool _byVoice(List<MealItem> items) =>
+      items.any((item) => item.origin == MealOrigin.voice);
 
   /// Takes [items] out of [slot] on [dayId], after she logged them. Offers
   /// five seconds and asks nothing, like a log; the write waits for the window
@@ -181,6 +186,11 @@ class MealLogSession extends ChangeNotifier {
   bool undo(LogHandle handle) {
     final undone = handle.undo();
     if (undone) {
+      for (final meal in _pending) {
+        if (identical(meal.handle, handle) && !_byVoice(meal.items)) {
+          MealCue.takenBack(meal.write.kcalDelta);
+        }
+      }
       _pending.removeWhere((meal) => identical(meal.handle, handle));
       _removals.removeWhere((meal) => identical(meal.handle, handle));
       _notify();
@@ -191,6 +201,15 @@ class MealLogSession extends ChangeNotifier {
   /// Call after something outside the session undid a handle directly — the
   /// snackbar does — so every screen redraws without it.
   void settle() {
+    // A meal still listed with its window closed was taken back: one that was
+    // written has already left the list.
+    for (final meal in _pending) {
+      if (!bus.isPending(meal.handle) &&
+          !isCommitted(meal.handle) &&
+          !_byVoice(meal.items)) {
+        MealCue.takenBack(meal.write.kcalDelta);
+      }
+    }
     _pending.removeWhere((meal) => !bus.isPending(meal.handle));
     _removals.removeWhere((meal) => !bus.isPending(meal.handle));
     _notify();

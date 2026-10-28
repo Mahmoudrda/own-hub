@@ -96,6 +96,7 @@ import 'onboarding_state.dart';
 import 'tip_anchors.dart';
 import 'workout_session_state.dart';
 import 'follow_up_state.dart';
+import 'walk_session_state.dart';
 
 /// The five handset steps, done against the stores this build actually has.
 ///
@@ -285,6 +286,8 @@ class ThisPhoneWipe implements LocalWipe {
     RestTimerPrefs.instance.reset();
     // Her notes on moves and the bar she loads, kept on this phone only.
     MoveNotes.instance.reset();
+    // A walk under way, or finished and not logged.
+    WalkSessionState.instance.reset();
     // The coach application she was writing and its photo copies.
     CoachApplicationDraft.instance.reset();
     // The private notes a coach keeps about her clients, on this phone only.
@@ -595,6 +598,7 @@ bool get nothingOfHersRemains {
       !MyPlanState.instance.hasPlan &&
       !RestTimerPrefs.instance.touched &&
       !MoveNotes.instance.touched &&
+      !WalkSessionState.instance.touched &&
       !CoachApplicationDraft.instance.touched &&
       !CoachClientNotes.instance.touched &&
       !BarPreference.instance.touched;

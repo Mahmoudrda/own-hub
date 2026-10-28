@@ -130,6 +130,36 @@ class EgyptianFoodPack {
       popularity: 40,
       category: FoodCategory.fromWire(dish['category'] as String?),
       kind: dish['kind'] as String?,
+      mediumPieces: _pieces(sizes['M']),
     );
+  }
+
+  static final RegExp _countedLabel = RegExp(
+    r'^(\d+) (?:eggs?|pieces?|dates?|olives?|slices?|fingers?|skewers?|links?|'
+    r'livers?|wings?|biscuits?|cakes?|squares?|shrimp)$',
+  );
+
+  /// The count in the medium size's English label ("2 eggs" is 2), or 1 when
+  /// the label names one thing ("1 loaf", "Medium plate").
+  static int _pieces(Object? medium) {
+    final label = (medium as Map?)?['label'] as Map?;
+    final match = _countedLabel.firstMatch(label?['en'] as String? ?? '');
+    return match == null ? 1 : int.parse(match.group(1)!);
+  }
+
+  /// Every name of the pack's dish [id], in both languages, whether or not the
+  /// pack lists it (four are left out because a sample covers them). Lets the
+  /// sample carry them, so Arabic speech under an English interface still
+  /// finds koshari.
+  static List<String> namesOf(String id) {
+    for (final dish in _dishes) {
+      if (dish['id'] != id) continue;
+      return [
+        dish['nameEn'] as String,
+        dish['nameAr'] as String,
+        for (final alias in dish['aliases'] as List) alias as String,
+      ];
+    }
+    return const <String>[];
   }
 }

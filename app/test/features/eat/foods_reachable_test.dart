@@ -1,5 +1,5 @@
 // Every food in the bundled pack can be found and logged by a woman who has
-// no allergy. The pack has 251 foods; four of them are left out of the pack's
+// no allergy. The pack has 252 foods; four of them are left out of the pack's
 // own list because a hand-written sample already covers the same plate, and
 // the test names them so nobody mistakes that for a gap.
 
@@ -36,8 +36,8 @@ void main() {
   });
   tearDownAll(EgyptianFoodPack.reset);
 
-  test('the pack holds 251 foods, every one with an allergen list', () {
-    expect(packFoods, hasLength(251));
+  test('the pack holds 252 foods, every one with an allergen list', () {
+    expect(packFoods, hasLength(252));
     for (final f in packFoods) {
       expect(f['allergens'], isA<List<Object?>>(), reason: '${f['id']}');
     }

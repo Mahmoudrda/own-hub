@@ -33,6 +33,7 @@ class MealResultCard extends StatelessWidget {
     this.adding = false,
     this.onYes,
     this.onEdit,
+    this.asksIfRight = true,
   });
 
   /// What the words became. Ignored while [adding].
@@ -47,6 +48,10 @@ class MealResultCard extends StatelessWidget {
   /// "Edit": go and change the words. Null leaves the button off.
   final VoidCallback? onEdit;
 
+  /// Whether the card asks "Does this look right?". Off where the screen has
+  /// its own button for the answer and the question would hang.
+  final bool asksIfRight;
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
@@ -59,6 +64,7 @@ class MealResultCard extends StatelessWidget {
               items: items,
               onYes: onYes,
               onEdit: onEdit,
+              asksIfRight: asksIfRight,
             ),
     );
   }
@@ -162,11 +168,18 @@ class _AddingCardState extends State<_AddingCard>
 }
 
 class _FilledCard extends StatelessWidget {
-  const _FilledCard({super.key, required this.items, this.onYes, this.onEdit});
+  const _FilledCard({
+    super.key,
+    required this.items,
+    this.onYes,
+    this.onEdit,
+    required this.asksIfRight,
+  });
 
   final List<ParsedItem> items;
   final VoidCallback? onYes;
   final VoidCallback? onEdit;
+  final bool asksIfRight;
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +234,7 @@ class _FilledCard extends StatelessWidget {
             if (fat != null) _Dot(kFatDot, l10n.fatGramsG(countLabel(fat))),
           ],
         ),
-        Text(l10n.doesThisLookRight, style: AppText.titleS),
+        if (asksIfRight) Text(l10n.doesThisLookRight, style: AppText.titleS),
         if (onYes != null || onEdit != null)
           Row(
             children: [

@@ -25,6 +25,7 @@ def test_the_12_hour_reminder_is_sent_once_and_only_in_the_second_half_of_the_da
     assert notes.sent == []
     counts = timers.hourly(db, at(hours=13), notes)
     assert notes.sent == [(CLIENT, "instapayReminder")] and counts["clientReminded"] == 1 and payment_of(db)["reminded12h"] is True
+    assert notes.refs == [(CLIENT, "instapayReminder", PAY)]
     timers.hourly(db, at(hours=14), notes)
     assert notes.sent == [(CLIENT, "instapayReminder")]
 
@@ -44,6 +45,7 @@ def test_at_48_hours_the_coach_is_reminded_once(db, notes):
     assert notes.sent == []
     counts = timers.half_hourly(db, at(hours=49), notes)
     assert notes.sent == [(COACH, "instapayCoachReminder")] and counts["coachReminded"] == 1 and payment_of(db)["reminded48h"] is True
+    assert notes.refs == [(COACH, "instapayCoachReminder", PAY)]
     timers.half_hourly(db, at(hours=50), notes)
     assert notes.sent == [(COACH, "instapayCoachReminder")] and payment_of(db)["status"] == "proof_submitted"
 
@@ -135,6 +137,7 @@ def test_one_day_before_bounded_access_ends_the_client_is_warned_once(db, notes)
     assert notes.sent == []
     counts = timers.hourly(db, at(days=6, hours=1), notes)
     assert notes.sent == [(CLIENT, "instapayAccessEndsSoon")] and counts["accessWarned"] == 1
+    assert notes.refs == [(CLIENT, "instapayAccessEndsSoon", PAY)]
     timers.hourly(db, at(days=6, hours=3), notes)
     assert notes.sent == [(CLIENT, "instapayAccessEndsSoon")]
 

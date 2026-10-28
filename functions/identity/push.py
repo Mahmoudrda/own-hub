@@ -1,12 +1,19 @@
-"""The one push the review loop sends: a woman reviewer approved her.
+"""The push the review loop sends (a woman reviewer approved her), and the
+delivery every other push shares.
 
 She waits on C14 with the app closed for up to 72 hours (config.
 REVIEW_SLA_HOURS). Without this, the only way to learn the app had opened was
 to keep opening it.
 
 Sent only to the tokens on users/{uid}/devices, which the app writes after she
-said yes to notifications on C14 (rules: key whitelist token, platform,
-appVersion, locale, updatedAt). No token, no push: nothing here asks.
+said yes to notifications (rules: key whitelist token, platform, appVersion,
+locale, updatedAt, topics). No token, no push: nothing here asks.
+
+What a phone said yes to is its `topics`. A phone that said yes on C14 has no
+`topics` and hears "approval" (the check, and the coaching pushes the app
+already sent). A phone that said yes to payment alerts lists "payments" and
+hears only the topics it lists, so payment pushes reach nobody who did not ask
+for them and a phone that asked only for them hears nothing else.
 
 The text names no check, no ID and no result beyond "done", because a lock
 screen is read by whoever holds the phone. No reason code, no flag id and no
@@ -29,8 +36,19 @@ APPROVED_TEXT = {
 """Title and body by the device's locale. Arabic is the fallback: most of the
 women this is for read the app in Arabic."""
 
+TOPIC_APPROVAL = "approval"
+TOPIC_PAYMENTS = "payments"
+"""The two things a phone can say yes to. The words the app writes."""
+
 DATA_KIND = "verificationApproved"
 """The only data key: what the push is about, so the app can open C13."""
+
+
+def topics_of(row: dict) -> list:
+    """What this phone said yes to. No list is the C14 yes, written before
+    topics existed."""
+    topics = row.get("topics")
+    return topics if isinstance(topics, list) else [TOPIC_APPROVAL]
 
 
 def approved_text(locale: Optional[str]) -> tuple[str, str]:
@@ -47,6 +65,7 @@ def send_to_user(
     *,
     texts: Optional[Callable[[str], tuple[str, str]]] = None,
     fallback_locale: str = "ar",
+    topic: str = TOPIC_APPROVAL,
 ) -> int:
     """Sends one push to each of her registered phones. Returns how many were
     accepted. A token the push service says is gone is deleted, so a phone she
@@ -54,7 +73,9 @@ def send_to_user(
 
     With `texts`, the title and body come from `texts(locale)` for each phone's
     own locale (a phone with none, or one we have no text for, hears
-    `fallback_locale`); otherwise every phone gets `title` and `body`."""
+    `fallback_locale`); otherwise every phone gets `title` and `body`.
+
+    Only phones that said yes to [topic] are written to."""
     devices = (
         db.collection(config.COL_USERS).document(uid).collection(DEVICES).stream()
     )
@@ -64,6 +85,8 @@ def send_to_user(
         row = snapshot.to_dict() or {}
         token = row.get("token")
         if not isinstance(token, str) or not token:
+            continue
+        if topic not in topics_of(row):
             continue
         locale = row.get("locale") if row.get("locale") in APPROVED_TEXT else fallback_locale
         by_locale.setdefault(locale, []).append(token)

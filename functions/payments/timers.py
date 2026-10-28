@@ -203,9 +203,9 @@ def promote_addresses(db, now: dt.datetime) -> int:
     return done
 
 
-def _notify(notify, uid: str, kind: str) -> None:
+def _notify(notify, uid: str, kind: str, ref: Optional[str] = None) -> None:
     try:
-        notify(uid, kind)
+        notify(uid, kind, ref)
     except Exception:  # noqa: BLE001
         pass
 
@@ -217,7 +217,7 @@ def half_hourly(db, now: dt.datetime, notify) -> dict:
     for payment_id in _stream(db, "status", "proof_submitted"):
         row = remind_coach(db, payment_id, now)
         if row:
-            _notify(notify, row["coachUid"], "instapayCoachReminder")
+            _notify(notify, row["coachUid"], "instapayCoachReminder", payment_id)
             counts["coachReminded"] += 1
         counts["amberGranted"] += bool(grant_amber(db, payment_id, now, cfg))
     return counts
@@ -231,7 +231,7 @@ def hourly(db, now: dt.datetime, notify) -> dict:
     for snap in list(soon.stream()):
         row = remind_client(db, snap.id, now)
         if row:
-            _notify(notify, row["clientUid"], "instapayReminder")
+            _notify(notify, row["clientUid"], "instapayReminder", snap.id)
             counts["clientReminded"] += 1
     for payment_id in [s.id for s in db.collection("payments").where("access.state", "==", "provisional").stream()]:
         if lapse_access(db, payment_id, now):
@@ -239,7 +239,7 @@ def hourly(db, now: dt.datetime, notify) -> dict:
             continue
         row = warn_access(db, payment_id, now)
         if row:
-            _notify(notify, row["clientUid"], "instapayAccessEndsSoon")
+            _notify(notify, row["clientUid"], "instapayAccessEndsSoon", payment_id)
             counts["accessWarned"] += 1
     counts["addresses"] = promote_addresses(db, now)
     counts["feesOverdue"] = fees.mark_overdue(db, now=now, notify=notify)

@@ -579,7 +579,7 @@ void main() {
       await t.tap(find.byKey(const ValueKey('workout-publish')));
       await t.pumpAndSettle();
       expect(find.byKey(const ValueKey('assign-partial')), findsOneWidget);
-      expect(find.text('Sent to 1 clients'), findsOneWidget);
+      expect(find.text('Sent to 1 client'), findsOneWidget);
       await t.tap(find.byKey(const ValueKey('assign-retry')));
       await t.pumpAndSettle();
       final subIds = [

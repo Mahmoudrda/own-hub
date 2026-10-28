@@ -60,8 +60,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../app_state/haptics.dart';
+import '../../../app_state/sound.dart';
+import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../l10n/app_l10n.dart';
+import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
@@ -214,12 +217,29 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _touchForBest();
     if (widget.autoStart) _start();
+  }
+
+  /// The best the heavy touch was played for.
+  LiveBest? _touchedFor;
+
+  /// One heavy touch, once per best, for a best she really beat on the set she
+  /// just saved. The best lands when the set's undo window closes, a few
+  /// seconds after this page opens, so it is read as the page redraws as well
+  /// as when it opens. The same best on a later redraw never repeats it.
+  void _touchForBest() {
+    final best = widget.liveBest;
+    if (best == null || identical(best, _touchedFor)) return;
+    if (!AppRouter.featureFlags.isOn(Feature.warmFinish)) return;
+    _touchedFor = best;
+    unawaited(AppHaptics.play(HapticMoment.bigMoment));
   }
 
   @override
   void didUpdateWidget(covariant RestingView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _touchForBest();
     if (widget.remaining != oldWidget.remaining ||
         widget.total != oldWidget.total) {
       _clock.value = (remaining: widget.remaining, total: widget.total);
@@ -251,6 +271,8 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
   /// tests host it.
   bool get _isOnTop => ModalRoute.of(context)?.isCurrent ?? true;
 
+  static const Duration _tickFrom = Duration(seconds: 3);
+
   void _start() {
     _stop();
     if (_remaining <= Duration.zero) return;
@@ -265,11 +287,18 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
         // in front of her. Behind another route, the rest simply ends.
         if (!_isOnTop || _ended) return;
         _ended = true;
-        // One light buzz as the rest ends with the phone in her hand. Not
-        // when she comes back late: the notification already told her.
+        // One light buzz and one kind chime as the rest ends with the phone in
+        // her hand. Not when she comes back late: the notification already
+        // told her.
         unawaited(AppHaptics.play(HapticMoment.actionDone));
+        unawaited(AppSound.play(SoundCue.restEnd));
         widget.onReady?.call();
         return;
+      }
+      // Three gentle ticks, one for each of the last three seconds, only while
+      // this screen is the one in front of her.
+      if (next <= _tickFrom && _isOnTop) {
+        unawaited(AppSound.play(SoundCue.restTick));
       }
       _remaining = next;
     });
@@ -360,8 +389,14 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    // The ring, the card and the buttons under them have to fit above the
+    // fold: the illustration strip is for tall phones only, and a short phone
+    // gets a smaller ring, so the next set is never cut off by the buttons.
+    final height = MediaQuery.sizeOf(context).height;
+    final short = height < 700;
 
     return AppScaffold(
+      showArt: height >= 900,
       // Deliberately a scrolling body, with fixed gaps around the ring rather
       // than Spacers. Spacers would centre it optically, but they only work
       // inside the non-scrolling scaffold, whose IntrinsicHeight cannot hold a
@@ -413,7 +448,7 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
             ),
           ),
         ],
-        const SizedBox(height: 24),
+        SizedBox(height: short ? 12 : 24),
         Center(
           // The only part of the screen that changes each second.
           child: ValueListenableBuilder<({Duration remaining, Duration total})>(
@@ -438,25 +473,14 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
                   fraction: value,
                   big: clockLabel(clock.remaining),
                   small: l10n.rest,
-                  size: 210,
-                  thickness: 14,
+                  size: short ? 140 : 210,
+                  thickness: short ? 12 : 14,
                 ),
               );
             },
           ),
         ),
-        const SizedBox(height: 4),
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 300),
-            child: Text(
-              l10n.catchYourBreathThisStartsAndStops,
-              textAlign: TextAlign.center,
-              style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         // What is next, when the caller has said.
         //
         // This card was two fixed strings: `gobletSquatSet3` — "Goblet squat,
@@ -510,6 +534,18 @@ class _RestingViewState extends State<RestingView> with WidgetsBindingObserver {
             ],
           ),
         ],
+        // Under the card, not above it: on a short phone this is what scrolls.
+        const SizedBox(height: 4),
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: Text(
+              l10n.catchYourBreathThisStartsAndStops,
+              textAlign: TextAlign.center,
+              style: AppText.body.copyWith(color: AppColors.onSurfaceVariant),
+            ),
+          ),
+        ),
       ],
     );
   }

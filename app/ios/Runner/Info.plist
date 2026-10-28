@@ -33,7 +33,13 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Own Hub uses the camera to photograph both sides of your ID card and take one selfie, so we can check that you are a woman, to photograph a meal if you choose so we can estimate what is on your plate, and to take a profile photo or coach photos if you choose. Nothing is uploaded until you tap send, analyse or submit. The ID card, selfie and meal photographs are read in memory and never stored. A profile photo you take stays on this phone. Photos you add as a coach (your photo, certificates, feedback and results) are uploaded for Own Hub to check, and the approved ones may be shown on your coach page. Photos and videos you choose to send in a coaching chat are uploaded to your coach.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Own Hub uses the microphone only when you hold the mic button in a coaching chat to record a voice note, or record a video with sound to send your coach. Nothing is recorded until you press, and nothing is sent until you let go. Voice notes and videos you send stay in the chat until you or your coach delete your account, so you can listen and watch again.</string>
+	<string>Own Hub uses the microphone only when you hold the mic button in a coaching chat to record a voice note, when you record a video with sound to send your coach, or when you tap the microphone to say what you ate. Nothing is recorded until you press, and a voice note is sent only when you let go. Voice notes and videos you send stay in the chat until you or your coach delete your account, so you can listen and watch again. When you say a meal, your phone turns your words into text that you check before anything is logged, and Own Hub does not keep the audio.</string>
+	<!-- Saying a meal on E03 (speech_to_text). Asked for with the microphone,
+	     the first time she taps the microphone there, never at launch.
+	     Localised in the InfoPlist.strings files; this copy is the
+	     development-region fallback and must stay in step with them. -->
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Own Hub uses speech recognition only when you tap the microphone to say what you ate. Your words become text that you check and fix before anything is logged. Where your phone can, this happens on the phone; otherwise Apple may process what you say to turn it into text. Own Hub does not keep the audio.</string>
 	<!-- Read by sensors_plus for the gentle tilt on a few illustrations
 	     (lib/ui/hand/tilt_parallax.dart). Localised in the InfoPlist.strings
 	     files; this copy is the development-region fallback. -->

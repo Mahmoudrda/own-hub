@@ -104,6 +104,7 @@ def test_green_two_screenshots_give_bounded_access_and_tell_the_coach(db, blobs,
     assert len(paths) == 2 and set(paths) == set(blobs.objects)
     assert all(p.startswith(f"payment-proofs/{PAY}/client-") for p in paths)
     assert notes.sent == [(COACH, "instapayProofSent")]
+    assert notes.refs == [(COACH, "instapayProofSent", PAY)]
 
     review = db.document(f"payments/{PAY}/staff/review").get().to_dict()
     assert "riskScore" in review

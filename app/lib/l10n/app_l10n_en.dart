@@ -14812,9 +14812,6 @@ class AppL10nEn extends AppL10n {
   String get shortVersion => 'Short version';
 
   @override
-  String get a10MinuteWalk => 'A 10-minute walk';
-
-  @override
   String get doMyOwnPlanInstead => 'Do my own plan instead';
 
   @override
@@ -15864,4 +15861,725 @@ class AppL10nEn extends AppL10n {
   String weNeverSetATargetBelowKcal(String kcal) {
     return 'We never set a target below $kcal kcal.';
   }
+
+  @override
+  String get payments => 'Payments';
+
+  @override
+  String get paymentsFromYourClients => 'Payments from your clients';
+
+  @override
+  String get addYourInstapayAddressSoClientsCan =>
+      'Add your InstaPay address so clients can pay you.';
+
+  @override
+  String get addAddress => 'Add address';
+
+  @override
+  String get waitingForYou => 'Waiting for you';
+
+  @override
+  String get nothingIsWaitingForYou => 'Nothing is waiting for you.';
+
+  @override
+  String get earlier => 'Earlier';
+
+  @override
+  String get matches => 'Matches';
+
+  @override
+  String get checkYourBank => 'Check your bank';
+
+  @override
+  String referenceAmountProofSentTime(
+    String reference,
+    String amount,
+    String time,
+  ) {
+    return '$reference · $amount · proof sent $time';
+  }
+
+  @override
+  String paymentReference(String reference) {
+    return 'Payment $reference';
+  }
+
+  @override
+  String lookForExactlyAmount(String amount) {
+    return 'Look for exactly $amount';
+  }
+
+  @override
+  String transactionNumberTxn(String txn) {
+    return 'Transaction number $txn';
+  }
+
+  @override
+  String paidAtTime(String time) {
+    return 'Paid at $time';
+  }
+
+  @override
+  String get herProofLooksRightStillCheckYour =>
+      'Her proof looks right. Still check your bank before you confirm.';
+
+  @override
+  String get partOfHerProofDidNotMatch =>
+      'Part of her proof did not match. Check your bank closely.';
+
+  @override
+  String get seeHerProof => 'See her proof';
+
+  @override
+  String get weCouldNotLoadThisPicture => 'We could not load this picture.';
+
+  @override
+  String get iReceivedIt => 'I received it';
+
+  @override
+  String get notReceived => 'Not received';
+
+  @override
+  String get confirmedYourClientCanStart => 'Confirmed. Your client can start.';
+
+  @override
+  String get whatDoYouSeeInYourBank => 'What do you see in your bank?';
+
+  @override
+  String get iDoNotSeeItInMy => 'I do not see it in my account';
+
+  @override
+  String get theAmountIsDifferent => 'The amount is different';
+
+  @override
+  String get theNameIsDifferent => 'The name is different';
+
+  @override
+  String get someoneElsePaid => 'Someone else paid';
+
+  @override
+  String iSearchedMyBankForAmount(String amount) {
+    return 'I searched my bank for $amount.';
+  }
+
+  @override
+  String iSearchedMyBankForAmountAnd(String amount, String txn) {
+    return 'I searched my bank for $amount and transaction number $txn.';
+  }
+
+  @override
+  String get tellUsWhatYouSaw => 'Tell us what you saw';
+
+  @override
+  String get addYourBankListForThatDay => 'Add your bank list for that day';
+
+  @override
+  String get howMuchDidYouReceive => 'How much did you receive?';
+
+  @override
+  String get amountReceivedEgp => 'Amount received (EGP)';
+
+  @override
+  String get acceptThisLowerAmountAndStartThe =>
+      'Accept this lower amount and start the coaching';
+
+  @override
+  String get ifYouAcceptHerPackageStartsOtherwise =>
+      'If you accept, her package starts. Otherwise she can pay the rest.';
+
+  @override
+  String get sentYourClientWillSeeIt => 'Sent. Your client will see it.';
+
+  @override
+  String get confirmMatchingPaymentsForMe => 'Confirm matching payments for me';
+
+  @override
+  String onlyPaymentsThatMatchYouCanStill(String hours) {
+    return 'Only payments that match. You can still flag one within $hours hours.';
+  }
+
+  @override
+  String automaticConfirmingOpensAfterNPaymentsThat(String n) {
+    return 'Automatic confirming opens after $n payments that matched.';
+  }
+
+  @override
+  String get automaticConfirmingIsNotAvailableToYou =>
+      'Automatic confirming is not available to you yet.';
+
+  @override
+  String get thisPaymentAppearsInYourStatementPlease =>
+      'This payment appears in your statement. Please check again.';
+
+  @override
+  String get pleaseTickThatYouSearchedYourBank =>
+      'Please tick that you searched your bank and add your bank list.';
+
+  @override
+  String get pleaseTellUsWhatYouSawIn =>
+      'Please tell us what you saw, in a few words.';
+
+  @override
+  String get thatIsTooFarBelowThePrice =>
+      'That is too far below the price to accept. Turn the switch off and she can pay the rest.';
+
+  @override
+  String get aClientPaidMe => 'A client paid me';
+
+  @override
+  String get pickThePaymentThenTypeTheTransaction =>
+      'Pick the payment, then type the transaction number from your bank.';
+
+  @override
+  String get noClientHasAnOpenPaymentRight =>
+      'No client has an open payment right now.';
+
+  @override
+  String get sentYourClientWillBeAskedTo =>
+      'Sent. Your client will be asked to confirm.';
+
+  @override
+  String get waitingForHerPayment => 'Waiting for her payment';
+
+  @override
+  String get youSaidItHasNotArrived => 'You said it has not arrived';
+
+  @override
+  String get sheAskedForARefund => 'She asked for a refund';
+
+  @override
+  String get askForARefund => 'Ask for a refund';
+
+  @override
+  String get iHaveAProblemWithTheService => 'I have a problem with the service';
+
+  @override
+  String get theRefundDidNotReachMe => 'The refund did not reach me';
+
+  @override
+  String get askOwnHubToLookAgain => 'Ask Own Hub to look again';
+
+  @override
+  String get cancelPayment => 'Cancel payment';
+
+  @override
+  String get cancelThisPaymentOnlyDoThisIf =>
+      'Cancel this payment? Only do this if you have not paid. If you already sent the money, send your proof instead.';
+
+  @override
+  String youCanAskOnceInTheFirst(String days, String n) {
+    return 'You can ask once in the first $days days. Your coach has $n days to answer, then Own Hub steps in.';
+  }
+
+  @override
+  String get ownHubDoesNotMoveMoneyIf =>
+      'Own Hub does not move money. If your coach agrees, she sends it back by InstaPay and records it here.';
+
+  @override
+  String sentYourCoachHasNDaysTo(String n) {
+    return 'Sent. Your coach has $n days to answer.';
+  }
+
+  @override
+  String get serviceProblem => 'Service problem';
+
+  @override
+  String get tellUsWhatWentWrongOwnHub =>
+      'Tell us what went wrong. Own Hub looks at your sessions and messages and decides.';
+
+  @override
+  String get refundProblem => 'Refund problem';
+
+  @override
+  String get yourCoachSaysSheSentTheMoney =>
+      'Your coach says she sent the money back. If it did not reach you, tell us and Own Hub will look into it.';
+
+  @override
+  String get yourCoachDidNotAgreeToThe =>
+      'Your coach did not agree to the refund. Tell us why you think Own Hub should look again.';
+
+  @override
+  String get tellUsMore => 'Tell us more';
+
+  @override
+  String get yourCoachDidNotAgreeToThe_9dkzl =>
+      'Your coach did not agree to the refund. If you disagree, open the menu at the top and ask Own Hub to look again.';
+
+  @override
+  String theFirstNDaysAreOverSo(String n) {
+    return 'The first $n days are over, so a refund can no longer be asked for here.';
+  }
+
+  @override
+  String get youAlreadyAskedForARefundOn =>
+      'You already asked for a refund on this payment.';
+
+  @override
+  String get theTimeToReportAProblemOn =>
+      'The time to report a problem on this payment has passed.';
+
+  @override
+  String get youAlreadyReportedThisOwnHubHas =>
+      'You already reported this. Own Hub has your note.';
+
+  @override
+  String get youHaveReachedTheNumberOfReports =>
+      'You have reached the number of reports you can send this month. Please try next month.';
+
+  @override
+  String get pleaseCheckTheTransactionNumberFromYour =>
+      'Please check the transaction number from your bank. It is made of digits only.';
+
+  @override
+  String get theDateOrTimeOnYourPhone =>
+      'The date or time on your phone looks wrong. Fix it and try again.';
+
+  @override
+  String get pleaseCheckTheAmountItCannotBe =>
+      'Please check the amount. It cannot be more than the payment.';
+
+  @override
+  String get refundRequests => 'Refund requests';
+
+  @override
+  String askedTimeAnswerByDate(String time, String date) {
+    return 'Asked $time. Answer by $date.';
+  }
+
+  @override
+  String askedTimeTheAnswerWasDueDate(String time, String date) {
+    return 'Asked $time. The answer was due $date. Own Hub may step in.';
+  }
+
+  @override
+  String get recordRefund => 'Record refund';
+
+  @override
+  String get sendTheMoneyBackToYourClient =>
+      'Send the money back to your client by InstaPay, then record it here. Own Hub does not move money.';
+
+  @override
+  String get amountSentBackEgp => 'Amount sent back (EGP)';
+
+  @override
+  String partOfThePaymentAmountOfTotal(String amount, String total) {
+    return 'Part of the payment: $amount of $total.';
+  }
+
+  @override
+  String get iDoNotAgreeToThisRefund => 'I do not agree to this refund';
+
+  @override
+  String get whyDoYouNotAgree => 'Why do you not agree?';
+
+  @override
+  String get yourClientCanThenAskOwnHub =>
+      'Your client can then ask Own Hub to look at it.';
+
+  @override
+  String get iAlreadyGaveTheSessions => 'I already gave the sessions';
+
+  @override
+  String get itIsOutsideTheTerms => 'It is outside the terms';
+
+  @override
+  String get yourInbodySheet => 'Your InBody sheet';
+
+  @override
+  String get chooseAPhotoOrScreenshotOfYour =>
+      'Choose a photo or screenshot of your result sheet. It is read on your phone. The photo is not saved and never leaves your phone.';
+
+  @override
+  String get typeTheNumbersInstead => 'Type the numbers instead';
+
+  @override
+  String get readingYourSheet => 'Reading your sheet';
+
+  @override
+  String get checkYourNumbers => 'Check your numbers';
+
+  @override
+  String get weReadTheseFromYourSheetCheck =>
+      'We read these from your sheet. Check each one against the paper and fix anything wrong. Nothing is used until you confirm.';
+
+  @override
+  String get typeTheNumbersFromYourSheetLeave =>
+      'Type the numbers from your sheet. Leave blank what you do not have. Nothing is used until you confirm.';
+
+  @override
+  String get weCouldNotReadNumbersFromThat =>
+      'We could not read numbers from that picture. Try a clearer photo, or type them.';
+
+  @override
+  String get checkThisNumberItLooksOutsideThe =>
+      'Check this number, it looks outside the usual range.';
+
+  @override
+  String get weightHeightAndBmiOnYourSheet =>
+      'Weight, height and BMI on your sheet do not agree. Check those three against the paper.';
+
+  @override
+  String get weightFatAndLeanMassOnYour =>
+      'Weight, fat and lean mass on your sheet do not add up. Check them against the paper.';
+
+  @override
+  String get yourSheetShowsPoundsSoTheWeight =>
+      'Your sheet shows pounds, so the weight was changed to kilograms.';
+
+  @override
+  String get chooseAnotherPhoto => 'Choose another photo';
+
+  @override
+  String get confirmTheseNumbers => 'Confirm these numbers';
+
+  @override
+  String get yourWeightAndHeightStayOnThis =>
+      'Your weight and height stay on this phone.';
+
+  @override
+  String get yourCoachSeesTheseNumbersOnlyIf =>
+      'Your coach sees these numbers only if you tick the box on the request form. The photo is never sent.';
+
+  @override
+  String get inbodyNumbers => 'InBody numbers';
+
+  @override
+  String aPlaceToStartKcalKcalAnd(String kcal, String protein) {
+    return 'A place to start: $kcal kcal and $protein g protein a day';
+  }
+
+  @override
+  String useTheInbodySuggestionKcalKcalAnd(String kcal, String protein) {
+    return 'Use the InBody suggestion: $kcal kcal and $protein g protein';
+  }
+
+  @override
+  String get noTargetIsSuggestedWhileSheIs =>
+      'No target is suggested while she is pregnant or after a birth. Set her food with her doctor.';
+
+  @override
+  String get noTargetIsSuggestedForHerHer =>
+      'No target is suggested for her. Her answers ask you to guide her food yourself.';
+
+  @override
+  String get thereIsNotEnoughOnHerSheet =>
+      'There is not enough on her sheet to suggest a target. Set it by hand.';
+
+  @override
+  String get addYourInbodyNumbers => 'Add your InBody numbers';
+
+  @override
+  String get optionalYourCoachSeesTheNumbersNever =>
+      'Optional. Your coach sees the numbers, never the photo.';
+
+  @override
+  String get inbodyNumbersAdded => 'InBody numbers added';
+
+  @override
+  String iShareMyInbodyNumbersWithName(String name) {
+    return 'I share my InBody numbers with $name. They are body measurements, stored with my other answers in Frankfurt, Germany, outside Egypt.';
+  }
+
+  @override
+  String get readMyInbodySheet => 'Read my InBody sheet';
+
+  @override
+  String get feeStatements => 'Fee statements';
+
+  @override
+  String get whatYouOweOwnHubEachMonth => 'What you owe Own Hub each month';
+
+  @override
+  String get monthlyStatement => 'Monthly statement';
+
+  @override
+  String feeForMonth(String month) {
+    return 'Fee for $month';
+  }
+
+  @override
+  String paymentsCount(String count) {
+    return 'Payments: $count';
+  }
+
+  @override
+  String feeFeeOnBase(String fee, String base) {
+    return '$fee fee on $base';
+  }
+
+  @override
+  String get due => 'Due';
+
+  @override
+  String get disputedPending => 'Disputed, pending';
+
+  @override
+  String get settled => 'Settled';
+
+  @override
+  String get waived => 'Waived';
+
+  @override
+  String get totalDue => 'Total due';
+
+  @override
+  String get payOwnHubsFeeByInstapayTo => 'Pay Own Hub\'s fee by InstaPay to:';
+
+  @override
+  String accountNameName(String name) {
+    return 'Account name: $name';
+  }
+
+  @override
+  String get ownHubWillSendYouTheAddress =>
+      'Own Hub will send you the address to pay to.';
+
+  @override
+  String feesUnpaidForMoreThanNDays(String n) {
+    return 'Fees unpaid for more than $n days stop new clients. Your current clients are never cut off.';
+  }
+
+  @override
+  String get thisFeeIsLateNewClientsCannot =>
+      'This fee is late. New clients cannot join you until it is paid. Your current clients are not affected.';
+
+  @override
+  String dueByDate(String date) {
+    return 'Due by $date';
+  }
+
+  @override
+  String get markFeeAsPaid => 'Mark fee as paid';
+
+  @override
+  String get useTheTransactionNumberFromYourInstapay =>
+      'Use the transaction number from your InstaPay transfer to Own Hub.';
+
+  @override
+  String get recordedOwnHubWillConfirmIt =>
+      'Recorded. Own Hub will confirm it.';
+
+  @override
+  String get paidOwnHubWillConfirm => 'Paid. Own Hub will confirm.';
+
+  @override
+  String get paidAndConfirmed => 'Paid and confirmed.';
+
+  @override
+  String get thisStatementChangedGoBackAndOpen =>
+      'This statement changed. Go back and open it again.';
+
+  @override
+  String get noStatementYetTheFirstOneComes =>
+      'No statement yet. The first one comes at the start of next month.';
+
+  @override
+  String get otherMonths => 'Other months';
+
+  @override
+  String get pleaseCheckTheTransactionNumberFromYour_653l2 =>
+      'Please check the transaction number from your transfer.';
+
+  @override
+  String get savePaymentRecord => 'Save payment record';
+
+  @override
+  String get paymentRecord => 'Payment record';
+
+  @override
+  String get ownHubPaymentRecord => 'Own Hub payment record';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get client => 'Client';
+
+  @override
+  String get thisIsAPaymentRecordItIs =>
+      'This is a payment record. It is not a tax invoice.';
+
+  @override
+  String get saveOrShare => 'Save or share';
+
+  @override
+  String ownHubDecidedYouOweARefund(String date) {
+    return 'Own Hub decided you owe a refund. Send it by $date.';
+  }
+
+  @override
+  String ownHubDecidedYouOweARefund_c85m6(String date) {
+    return 'Own Hub decided you owe a refund. It was due on $date.';
+  }
+
+  @override
+  String get ownHubSetThisAmount => 'Own Hub set this amount.';
+
+  @override
+  String get sayWhatYouAte => 'Say what you ate';
+
+  @override
+  String get tapToSpeak => 'Tap to speak';
+
+  @override
+  String get listeningTapWhenYouAreDone => 'Listening, tap when you are done';
+
+  @override
+  String get ownHubListensOnlyWhileYouSpeak =>
+      'Own Hub listens only while you speak, to write down what you said so you can check it. Your phone\'s speech service (Apple on iPhone, Google on Android) may process what you say, and Own Hub never keeps the audio.';
+
+  @override
+  String get fixAnyWordAndWeWillAdd =>
+      'Fix any word and we will add it up again.';
+
+  @override
+  String get ownHubCantUseTheMicrophoneOr =>
+      'Own Hub can\'t use the microphone or speech recognition on this phone right now. Turn them on in Settings, or type your meal.';
+
+  @override
+  String get weDidntCatchAnythingTryAgainA =>
+      'We didn\'t catch anything. Try again a little closer to the phone, or type your meal.';
+
+  @override
+  String get sayingYourMealNeedsAnInternetConnection =>
+      'Saying your meal needs an internet connection on this phone right now. Type it instead, or try again when you are back online.';
+
+  @override
+  String get thisPhoneCantTurnSpeechIntoText =>
+      'This phone can\'t turn speech into text. Type your meal instead.';
+
+  @override
+  String get somethingWentWrongWhileListeningTryAgain =>
+      'Something went wrong while listening. Try again, or type your meal.';
+
+  @override
+  String get weHeardYouButNoneOfIt =>
+      'We heard you, but none of it matched a food. Fix the words above, or type your meal.';
+
+  @override
+  String get speakIn => 'Speak in';
+
+  @override
+  String get turnOnPaymentAlerts => 'Turn on payment alerts';
+
+  @override
+  String get tellMeWhenItChanges => 'Tell me when it changes';
+
+  @override
+  String get ownHubCanTellYouOnThis =>
+      'Own Hub can tell you on this phone when a client pays or asks for a refund, and when your fee statement is ready. These are payment updates only, and no name or amount shows on the lock screen.';
+
+  @override
+  String get weWillSendANotificationToThis =>
+      'We will send a notification to this phone when your payment is confirmed or needs something from you. These are payment updates only, and no name or amount shows on the lock screen.';
+
+  @override
+  String get paymentAlertsAreOnForThisPhone =>
+      'Payment alerts are on for this phone.';
+
+  @override
+  String nPluralOneSentToNClient(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Sent to $n clients',
+      one: 'Sent to $n client',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get thatWasForYou => 'That was for you.';
+
+  @override
+  String get restWellYouEarnedIt => 'Rest well, you earned it.';
+
+  @override
+  String get beProudOfThatOne => 'Be proud of that one.';
+
+  @override
+  String get strongWorkToday => 'Strong work today.';
+
+  @override
+  String get keepThisWorkout => 'Keep this workout';
+
+  @override
+  String get createYourAccountAndThisWorkoutCounts =>
+      'Create your account and this workout counts in your week.';
+
+  @override
+  String get goForAWalk => 'Go for a walk';
+
+  @override
+  String get walkAsLongAsYouLikeLog =>
+      'Walk as long as you like. Log it after, and Own Hub counts the calories you burned.';
+
+  @override
+  String get theCaloriesAreAnEstimateTheyNever =>
+      'The calories are an estimate. They never change what you eat.';
+
+  @override
+  String get startWalking => 'Start walking';
+
+  @override
+  String get finishWalk => 'Finish walk';
+
+  @override
+  String get caloriesBurnedEstimate => 'Calories burned, estimate';
+
+  @override
+  String get logThisWalk => 'Log this walk';
+
+  @override
+  String get loggingCountsItInYourWeekAnd =>
+      'Logging counts it in your week and saves the calories you burned.';
+
+  @override
+  String get dontLogIt => 'Don\'t log it';
+
+  @override
+  String get walkLogged => 'Walk logged';
+
+  @override
+  String get thatWasUnderAMinuteSoThere =>
+      'That was under a minute, so there is nothing to log.';
+
+  @override
+  String get workedOutWithATypicalWeightAdd =>
+      'Worked out with a typical weight. Add yours for a closer figure.';
+
+  @override
+  String get twoQuickQuestionsThenTheCoachesWho =>
+      'Two quick questions, then the coaches who fit you best.';
+
+  @override
+  String get matchedOnYourTwoAnswersOnlyThen =>
+      'Matched on your two answers only, then by name A to Z.';
+
+  @override
+  String get logItToCountTheCaloriesYou =>
+      'Log it to count the calories you burned';
+
+  @override
+  String get soundsAndTouch => 'Sounds and touch';
+
+  @override
+  String get chooseWhatYouHearAndFeel => 'Choose what you hear and feel';
+
+  @override
+  String get sounds => 'Sounds';
+
+  @override
+  String get softSoundsWhenYouLogASet =>
+      'Soft sounds when you log a set, finish a workout or add a meal.';
+
+  @override
+  String get haptics => 'Haptics';
+
+  @override
+  String get aLightTapYouCanFeelAt =>
+      'A light tap you can feel at the same moments.';
 }

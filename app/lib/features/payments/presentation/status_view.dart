@@ -8,13 +8,17 @@ import '../../../l10n/app_l10n.dart';
 import '../../../theme/app_tokens.dart';
 import '../../../ui/app_button.dart';
 import '../../../ui/app_card.dart';
+import '../../../ui/app_overflow_menu.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../events/domain/cairo_time.dart';
 import '../data/payments_hub.dart';
 import '../data/payments_repository.dart';
 import '../data/pending_proofs.dart';
 import '../domain/payment_models.dart';
+import 'payment_alerts_card.dart';
+import 'payment_record_view.dart';
 import 'payment_text.dart';
+import 'problem_view.dart';
 import 'status_text.dart';
 
 /// What the one primary does for the current state. [agree] is answered on
@@ -31,9 +35,13 @@ class PaymentStatusView extends StatefulWidget {
     this.repository,
     this.now,
     this.onBack,
+    this.alerts,
   });
 
   final String paymentId;
+
+  /// Where "tell me when it changes" comes from; the app's own by default.
+  final PaymentAlertsAccess? alerts;
   final void Function(StatusAction action, Payment payment) onAction;
   final PaymentsRepository? repository;
   final DateTime Function()? now;
@@ -111,6 +119,60 @@ class _PaymentStatusViewState extends State<PaymentStatusView> {
     }
   }
 
+  void _openProblem(Payment p, DisputeKind? dispute) => unawaited(
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => PaymentProblemView(
+          payment: p,
+          dispute: dispute,
+          repository: widget.repository,
+        ),
+      ),
+    ),
+  );
+
+  /// The "..." menu: only what the server would accept for this status.
+  List<AppOverflowItem> _menu(AppL10n l10n, Payment p) {
+    final dispute = p.disputeToOpen(_now);
+    return [
+      if (p.canCancel)
+        AppOverflowItem(
+          icon: Icons.close,
+          label: l10n.cancelPayment,
+          confirmMessage: l10n.cancelThisPaymentOnlyDoThisIf,
+          onTap: () => unawaited(_run((r) => r.cancelPayment(p.id))),
+        ),
+      if (p.refundWindowOpen(_now))
+        AppOverflowItem(
+          icon: Icons.undo,
+          label: l10n.askForARefund,
+          onTap: () => _openProblem(p, null),
+        ),
+      if (dispute != null)
+        AppOverflowItem(
+          icon: Icons.flag_outlined,
+          label: switch (dispute) {
+            DisputeKind.service => l10n.iHaveAProblemWithTheService,
+            DisputeKind.refund => l10n.askOwnHubToLookAgain,
+            DisputeKind.refundNotReceived => l10n.theRefundDidNotReachMe,
+          },
+          onTap: () => _openProblem(p, dispute),
+        ),
+      if (p.status.activatesPackage)
+        AppOverflowItem(
+          icon: Icons.download_outlined,
+          label: l10n.savePaymentRecord,
+          onTap: () => unawaited(
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                builder: (_) => PaymentRecordView(payment: p),
+              ),
+            ),
+          ),
+        ),
+    ];
+  }
+
   /// A payment that is not there, cannot be read, or has no signal.
   String _failureLine(AppL10n l10n, Object? failure) {
     if (failure is PaymentFailure &&
@@ -137,11 +199,13 @@ class _PaymentStatusViewState extends State<PaymentStatusView> {
         final until = p?.accessUntil;
         final open = until != null && until.isAfter(_now);
         final failure = snap.error;
+        final menu = p == null ? const <AppOverflowItem>[] : _menu(l10n, p);
         return AppScaffold(
           showArt: false,
           appBar: AppTopBar(
             title: l10n.yourPayment,
             onBack: widget.onBack ?? () => Navigator.of(context).maybePop(),
+            actions: [if (menu.isNotEmpty) AppOverflowMenu(items: menu)],
           ),
           footer: [
             if (p != null && action != null)
@@ -272,6 +336,12 @@ class _PaymentStatusViewState extends State<PaymentStatusView> {
                             ),
                           ),
                   ),
+                ),
+              // Only while something is still to happen to this payment.
+              if (p.status.unpaid || p.status.settling)
+                PaymentAlertsCard(
+                  who: PaymentAlertsFor.client,
+                  access: widget.alerts,
                 ),
               StreamBuilder<List<PaymentEvent>>(
                 stream: _events,

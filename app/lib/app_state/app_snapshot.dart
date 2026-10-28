@@ -79,6 +79,7 @@ import '../features/onboarding/domain/starting_program.dart'
     show migratedProgrammeFamily, splitDaysOf;
 import 'pledge.dart';
 import 'guest_session.dart';
+import 'walk_session_state.dart';
 import 'onboarding_state.dart';
 import '../features/progress/domain/progress_repository.dart';
 import '../features/signup/domain/locale_preference.dart';
@@ -174,6 +175,7 @@ abstract final class AppSnapshot {
     'coachClientNotes': ?_captureCoachClientNotes(),
     'barKg': ?_captureBarKg(),
     'guest': ?_captureGuest(),
+    'walk': ?_captureWalk(),
   };
 
   /// Reads [raw] and puts it back into the stores.
@@ -255,6 +257,7 @@ abstract final class AppSnapshot {
     'coachClientNotes': _readCoachClientNotes,
     'barKg': _readBarKg,
     'guest': _readGuest,
+    'walk': _readWalk,
     // After `train`: it points at a session that section restores.
     'liveSession': _readLiveSession,
   };
@@ -2534,6 +2537,30 @@ void Function()? _readRestTimer(Object? raw) {
   };
   if (saved.isEmpty) return null;
   return () => RestTimerPrefs.instance.restore(saved);
+}
+
+// ------------------------------------------------------------------ walk ---
+
+// The walk she is on, or one she finished and has not logged yet. Phone only.
+// Written only while there is one.
+Map<String, Object?>? _captureWalk() {
+  final walk = WalkSessionState.instance;
+  return walk.touched ? walk.toJson() : null;
+}
+
+void Function()? _readWalk(Object? raw) {
+  final section = _map(raw);
+  if (section == null) return null;
+  final startedAt = _time(section['startedAt']);
+  final finished = section['finishedSec'];
+  if (startedAt == null && finished is! int) return null;
+  final pausedMs = section['pausedMs'];
+  return () => WalkSessionState.instance.restore(
+    startedAt: startedAt,
+    pausedAt: _time(section['pausedAt']),
+    pausedMs: pausedMs is int ? pausedMs : 0,
+    finishedSec: finished is int && finished >= 0 ? finished : null,
+  );
 }
 
 // ------------------------------------------------------------- moveNotes ---

@@ -87,16 +87,22 @@ enum Feature {
   eat,
 
   /// Logging a meal by saying it (`E03` and every microphone that leads
-  /// there). **Off**: no speech recogniser is wired, the release manifest
-  /// strips `RECORD_AUDIO`, and the privacy policy and site say the app never
-  /// uses the microphone. A microphone drawn on Eat would be a feature the
-  /// build does not have. Its parent is [eat].
+  /// there). The phone's own speech service turns her words into text, which
+  /// she reads and fixes before anything is logged; Own Hub keeps no audio.
+  /// Asked for only when she first taps the microphone. The server may switch
+  /// it off. Its parent is [eat].
   voiceLogging,
 
   /// A photo of her plate, read by the server into foods and grams she checks
   /// before anything is logged (`E12`, `E13`). For verified members only.
   /// Its parent is [eat].
   mealPhotos,
+
+  /// Reading an InBody result sheet on the phone: the numbers she confirms
+  /// fill her weight and height in Eat, and, only if she ticks a box, go with
+  /// her request to a coach. The picture is read on the phone and never sent or
+  /// kept. Its parent is [eat]. A pushed sheet, not a routed screen.
+  inbodyScan,
   progress,
   cycle,
   privacyCentre,
@@ -305,7 +311,34 @@ enum Feature {
 
   /// The small helpers inside a gym session: the plate line for a barbell move
   /// and the note she keeps for a move.
-  gymHelpers;
+  gymHelpers,
+
+  // ------------------------------------------------------------ Batch B
+  /// A woman with no account may start and finish her first workout on the
+  /// phone (D62). R10 then offers "Keep this workout", which opens sign-up.
+  guestFirstWorkout,
+
+  /// Sign-up does not ask a member whether she is a client or a coach (`C08`).
+  /// A coach says so from her profile ("Become a coach").
+  skipRoleChoice,
+
+  /// The join sheet and the coach quiz start from the answers she gave in
+  /// setup, each still editable, and the quiz stops asking a budget while
+  /// nothing can be paid.
+  prefillFromSetup,
+
+  /// A walk of any length, logged to count the calories she burned. A pushed
+  /// page, not a routed screen. Its parent is [train].
+  walkingSession,
+
+  /// R10's one warm closing line from a small bank, and the stronger touch
+  /// when she really beat a best. Its parent is [train].
+  warmFinish,
+
+  /// The short sounds that answer a logged set, the end of a rest, the finish,
+  /// a logged meal and the passed check. Top level, and hers to turn off in
+  /// Profile; this is the server's own switch for the same thing.
+  sounds;
 
   /// The feature this one lives inside, or null when it is top level.
   Feature? get parent => switch (this) {
@@ -317,7 +350,7 @@ enum Feature {
     communityStories => community,
     payments => marketplace,
     instapayPayments => marketplace,
-    voiceLogging || recipes || mealPhotos => eat,
+    voiceLogging || recipes || mealPhotos || inbodyScan => eat,
     // The plan is built from recipes, and the list from the plan.
     weekPlan => recipes,
     groceryList => weekPlan,
@@ -337,7 +370,15 @@ enum Feature {
     shareCard ||
     muscleMap ||
     trainingStreak => progress,
-    weeklyChallenge || finishReveal || trainHistory || gymHelpers => train,
+    weeklyChallenge ||
+    finishReveal ||
+    trainHistory ||
+    gymHelpers ||
+    guestFirstWorkout ||
+    walkingSession ||
+    warmFinish => train,
+    skipRoleChoice => signUp,
+    prefillFromSetup => marketplace,
     cycleMeals || cycleCalendar || cyclePatterns => cycle,
     appTour => signUp,
     coachResults || coachReviews || coachAds => coachPortfolio,
@@ -356,9 +397,9 @@ enum Feature {
   ///   * [today] — Home is the front door. Off would leave her nowhere.
   ///   * [privacyCentre] — her data and her way out are never switched off.
   ///   * [adminConsole] — compiled out of store builds anyway.
-  ///   * [communityFollowerCounts], [voiceLogging], [payments],
-  ///     [recipeTiering] — off already, and they stay off by rule or until
-  ///     a release that has what they need.
+  ///   * [communityFollowerCounts], [payments], [recipeTiering] — off
+  ///     already, and they stay off by rule or until a release that has what
+  ///     they need.
   bool get serverMayTurnOff => !const {
     Feature.accountRequired,
     Feature.signUp,
@@ -367,7 +408,6 @@ enum Feature {
     Feature.privacyCentre,
     Feature.adminConsole,
     Feature.communityFollowerCounts,
-    Feature.voiceLogging,
     Feature.payments,
     Feature.recipeTiering,
   }.contains(this);
@@ -390,7 +430,10 @@ enum Feature {
   static const Map<Feature, String> gatesNoScreen = {
     Feature.instapayPayments:
         'Checked by the payment entry points: the pay card on H05 and the '
-        'InstaPay row on K18. Its screens are pushed, not routed.',
+        'InstaPay and Payments rows on K18. Its screens are pushed, not routed.',
+    Feature.inbodyScan:
+        'The Read my InBody sheet rows on the Personalise sheet (E01) and on '
+        'the form that asks a coach to join. Its sheet is pushed, not routed.',
     Feature.accountRequired: 'The whole-app gate: AppRouter.verificationGate.',
     Feature.verification:
         'The check screens belong to signUp and open with '
@@ -412,7 +455,9 @@ enum Feature {
         'How R10 arrives: the staged reveal and the paper '
         'confetti.',
     Feature.workoutLibrary: 'The Workouts group in Explore on R01.',
-    Feature.haptics: 'A light tap on a logged set and on R10.',
+    Feature.haptics:
+        'A light tap on a logged set and on R10, and the Haptics switch in '
+        'Profile.',
     Feature.reassuringWaits: 'The named steps on O05 and C12.',
     Feature.followUps:
         'One card on T01, its week review sheet, and a switch on A01.',
@@ -421,6 +466,24 @@ enum Feature {
         'P01, P03, R04 and R07, and the set editor inside Recent sessions.',
     Feature.gymHelpers:
         'The plate line and the move note on R07, and the plate line on R08.',
+    Feature.guestFirstWorkout:
+        'Whether Start on R03 and Home runs for a woman with no account, '
+        'and the "Keep this workout" card on R10. No screen of its own.',
+    Feature.skipRoleChoice:
+        'Whether the code screen goes on to C08 or straight to the check. '
+        'C08 stays routed.',
+    Feature.prefillFromSetup:
+        'The goal, level, days and place on the join sheet and the coach '
+        'quiz on H01. Sheets and a form, not screens.',
+    Feature.walkingSession:
+        'The walk page, pushed from Home and Train, and the "Go for a walk" '
+        'row. Not a routed screen.',
+    Feature.warmFinish:
+        'The closing line on R10 and the stronger touch for a real best on '
+        'R09 and R10.',
+    Feature.sounds:
+        'The cue sounds on R07, R09, R10, the meal logs and C13, and the '
+        'Sounds switch in Profile.',
   };
 }
 
@@ -477,13 +540,17 @@ class FeatureFlags {
     Feature.cycle: true,
     Feature.privacyCentre: true,
 
-    // No recogniser, no microphone permission, and a privacy policy that says
-    // the microphone is never used. She types what she ate.
-    Feature.voiceLogging: false,
+    // Her words come from the phone's own speech service, are shown to her to
+    // fix, and are logged only when she confirms. No audio is kept.
+    Feature.voiceLogging: true,
 
     // A photo of her plate, checked by her before it is logged. Each scan is
     // a paid call, capped on the server at five a day for each member.
     Feature.mealPhotos: true,
+
+    // Read on the phone and confirmed number by number before anything is
+    // used; the picture is never sent or kept.
+    Feature.inbodyScan: true,
 
     // The console is for the people who run the product, not for the women
     // using it. It is also compiled out of a release build entirely.
@@ -564,6 +631,15 @@ class FeatureFlags {
     // helpers.
     Feature.trainHistory: true,
     Feature.gymHelpers: true,
+
+    // Batch B. Each is finished and tested; each can be switched off on its
+    // own from the server.
+    Feature.guestFirstWorkout: true,
+    Feature.skipRoleChoice: true,
+    Feature.prefillFromSetup: true,
+    Feature.walkingSession: true,
+    Feature.warmFinish: true,
+    Feature.sounds: true,
   });
 
   /// Every feature on, with no account required.

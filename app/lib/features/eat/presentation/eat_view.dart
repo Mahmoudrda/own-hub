@@ -124,7 +124,6 @@ class EatView extends StatefulWidget {
     this.justLogged,
     this.foodPointsPreview = 0,
     this.plannedMeal,
-    this.yesterdaysLunch,
     this.onOpenRecipes,
     this.onOpenWeekPlan,
     this.onType,
@@ -209,10 +208,6 @@ class EatView extends StatefulWidget {
   /// Null for every woman in the MVP — see [PlannedMeal].
   final PlannedMeal? plannedMeal;
 
-  /// "Yesterday's lunch again", read cache-only. Absent ⇒ the row is omitted
-  /// rather than rendered empty (§2).
-  final SuggestionView? yesterdaysLunch;
-
   final VoidCallback? onOpenRecipes;
 
   /// `E07`, this week's dinners and the shopping list.
@@ -270,6 +265,10 @@ class _EatViewState extends State<EatView> {
   /// day total moves." Undo removes them again, because nothing was written.
   final List<MealItem> _pending = <MealItem>[];
 
+  /// The day before, read once when the screen opens, for "Yesterday's lunch
+  /// again". Null until read, and when it cannot be.
+  MealDay? _yesterday;
+
   DateTime get _now => widget.now ?? AppClock.now();
   String get _dayId => _dayIdOf(_now);
 
@@ -293,6 +292,7 @@ class _EatViewState extends State<EatView> {
     session?.addListener(_sessionChanged);
 
     unawaited(_load());
+    unawaited(_loadYesterday());
     _sub = _repo.watchDay(_dayId).listen((day) {
       if (mounted) setState(() => _day = day);
     });
@@ -317,6 +317,20 @@ class _EatViewState extends State<EatView> {
       _day = day;
       _prefs = prefs;
     });
+  }
+
+  /// Yesterday is read once, when the screen opens: it does not change while
+  /// she logs today's meals, so a log or an undo must not read it again.
+  Future<void> _loadYesterday() async {
+    final now = _now;
+    try {
+      final yesterday = await _repo.day(
+        _dayIdOf(DateTime(now.year, now.month, now.day - 1)),
+      );
+      if (mounted) setState(() => _yesterday = yesterday);
+    } catch (_) {
+      // No row is better than a broken screen.
+    }
   }
 
   @override
@@ -612,6 +626,15 @@ class _EatViewState extends State<EatView> {
     final slot = widget.slot ?? _slotChoice ?? view.activeSlot;
     final embedded = widget.embedded;
     final shelf = embedded ? null : _category;
+    // Offered only at lunch and only while lunch is empty, so one tap cannot
+    // log it twice; screened like every other row.
+    final yesterdaysLunch =
+        slot == MealSlot.lunch && _projected.itemsIn(MealSlot.lunch).isEmpty
+        ? EatDayViewModel(
+            library: _library(l10n),
+            guard: AllergyGuard(widget.constraints),
+          ).yesterdaysLunch(_yesterday)
+        : null;
     final picks = shelf == null
         ? slotPicks(
             prefs: _prefs,
@@ -788,17 +811,17 @@ class _EatViewState extends State<EatView> {
         quickAdd
       else if (!embedded && shelf == null && _screenedToNothing(view.starters))
         _guardNote(l10n),
-      if (widget.yesterdaysLunch != null)
+      if (yesterdaysLunch != null)
         MealRow(
           title: l10n.yesterdaysLunchAgain,
           // Yesterday's own figure, through the same [_metaOf] the quick plates
           // use: the row's whole promise is that it repeats HER meal.
-          meta: _metaOf(l10n, widget.yesterdaysLunch!),
+          meta: _metaOf(l10n, yesterdaysLunch),
           logLabel: l10n.iAteThis,
-          imageAsset: widget.yesterdaysLunch!.entries.length == 1
-              ? widget.yesterdaysLunch!.entries.first.food.imageAsset
+          imageAsset: yesterdaysLunch.entries.length == 1
+              ? yesterdaysLunch.entries.first.food.imageAsset
               : null,
-          onLog: () => _log(widget.yesterdaysLunch!.entries, slot),
+          onLog: () => _log(yesterdaysLunch.entries, slot),
         ),
       if (!embedded && view.isDayOne && AppRouter.screenIsOn('E07'))
         AppListItem(
@@ -1280,9 +1303,9 @@ class _EatViewState extends State<EatView> {
     onTap: () => openScreen(context, 'E05', widget.onOpenRecipes),
   );
 
-  // The microphone is drawn only when saying a meal is on in this build. With
-  // `Feature.voiceLogging` off there is no recogniser and no microphone
-  // permission, so the box offers typing and says only that.
+  // The microphone is drawn only when saying a meal is on. With
+  // `Feature.voiceLogging` off (the server can switch it off) the box offers
+  // typing and says only that.
   //
   // The camera beside it is drawn only when the router passed [onSnap]: E12
   // on, and she verified.

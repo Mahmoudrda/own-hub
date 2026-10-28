@@ -19,6 +19,8 @@ import '../domain/flags/feature_flags.dart';
 import '../features/eat/domain/meal_repository.dart';
 import '../features/eat/domain/meal_sentence_parser.dart';
 import '../features/eat/presentation/eat_sample_library.dart';
+import '../features/train/domain/train_repository.dart'
+    show EndedReason, SessionSource;
 import '../l10n/app_l10n.dart';
 import '../routing/app_router.dart';
 import '../routing/app_routes.dart';
@@ -26,6 +28,7 @@ import 'app_changes.dart';
 import 'demo_mode.dart';
 import 'eat_state.dart';
 import 'snapshot_owner.dart';
+import 'workout_session_state.dart';
 
 /// The things a guest can try that need an account.
 enum PendingKind { startWorkout, logMeal, favourite, bookmarkRecipe, savePlan }
@@ -104,7 +107,8 @@ class GuestSession {
   static final GuestSession instance = GuestSession._();
 
   /// The screens a woman without an account can open. Everything else stays
-  /// behind the gate. R03 is view only: starting it is a protected action.
+  /// behind the gate. R03 is view only: starting it is a protected action,
+  /// except her first workout (D62, [mayStartFirstWorkout]).
   static const Set<String> screens = {
     'T01',
     'R01',
@@ -118,6 +122,50 @@ class GuestSession {
     'E06',
     'A02',
   };
+
+  /// The live-workout screens a guest may open, and only while her first
+  /// workout is under way or has just finished ([mayOpenForFirstWorkout], D62).
+  static const Set<String> workoutScreens = {'R06', 'R07', 'R08', 'R09', 'R10'};
+
+  /// Workouts she has finished on this phone: measured and closed as
+  /// finished. A session with no set logged, or one she discarded, is closed
+  /// as abandoned (`WorkoutSessionState`), so it does not use up the guest
+  /// workout. Read from the sessions themselves, so it holds after the app is
+  /// closed.
+  static int finishedWorkouts() => AppRouter.trainRepository.sessions
+      .where(
+        (s) =>
+            s.source == SessionSource.live &&
+            s.completed &&
+            s.endedReason == EndedReason.finished,
+      )
+      .length;
+
+  static bool get _guestWithNoAccount =>
+      AppRouter.featureFlags.isOn(Feature.guestFirstWorkout) &&
+      isBrowsing &&
+      AppRouter.signedInUid == null;
+
+  /// Whether she may start a workout without an account (D62): the switch is
+  /// on, she has no account, her setup is done (life-stage screening runs
+  /// there, before the plan) and she has finished no workout yet. Never inside
+  /// the sample tour, which raises the join sheet instead.
+  static bool mayStartFirstWorkout(BuildContext context) =>
+      DemoScope.maybeOf(context) == null &&
+      _guestWithNoAccount &&
+      AppRouter.intakeRepository.setupDone &&
+      finishedWorkouts() == 0;
+
+  /// Whether this guest may open [screenId] as part of her first workout: any
+  /// live screen while it is under way, and R10 alone once it has finished, so
+  /// the finished page opens but no second workout can be started from it.
+  static bool mayOpenForFirstWorkout(String screenId) {
+    if (!workoutScreens.contains(screenId) || !_guestWithNoAccount) return false;
+    final session = WorkoutSessionState.instance;
+    final finished = finishedWorkouts();
+    if (session.day != null && finished == 0) return true;
+    return screenId == 'R10' && session.lastFinished != null && finished <= 1;
+  }
 
   /// A kept action is dropped after this long, so a meal she walked away from
   /// is never logged days later.

@@ -39,6 +39,8 @@ class CoachSpaceView extends StatefulWidget {
     this.onShareProfile,
     this.onBack,
     this.instapayOn = false,
+    this.onOpenPayments,
+    this.onOpenStatements,
     this.photoChooser = chooseCoachPhoto,
     this.imageChooser = chooseCoachImage,
   });
@@ -63,6 +65,14 @@ class CoachSpaceView extends StatefulWidget {
   /// InstaPay payments are on (the flag and the server switch): shows the
   /// rows that belong to them.
   final bool instapayOn;
+
+  /// Opens her payments inbox. Given while the payments flag is on, even if
+  /// the server has paused new payments: she still answers the open ones.
+  final VoidCallback? onOpenPayments;
+
+  /// Opens her monthly fee statements. Given with the payments flag, like
+  /// [onOpenPayments].
+  final VoidCallback? onOpenStatements;
   final CoachPhotoChooser photoChooser;
   final CoachImageChooser imageChooser;
 
@@ -211,6 +221,20 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
                 icon: Icons.inventory_2_outlined,
                 onTap: () => _push(PackagesView(data: _data)),
               ),
+              if (widget.onOpenPayments != null)
+                _nav(
+                  title: l10n.payments,
+                  subtitle: l10n.paymentsFromYourClients,
+                  icon: Icons.payments_outlined,
+                  onTap: widget.onOpenPayments!,
+                ),
+              if (widget.onOpenStatements != null)
+                _nav(
+                  title: l10n.feeStatements,
+                  subtitle: l10n.whatYouOweOwnHubEachMonth,
+                  icon: Icons.receipt_long_outlined,
+                  onTap: widget.onOpenStatements!,
+                ),
               if (widget.instapayOn)
                 _nav(
                   title: l10n.myInstapayAddress,

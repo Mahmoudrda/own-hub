@@ -161,6 +161,47 @@ void main() {
       },
     );
 
+    testWidgets(
+      'a partial total never says remaining or reached, on screen or aloud',
+      (tester) async {
+        final handle = tester.ensureSemantics();
+        for (final current in [40, 110, 130]) {
+          await tester.pumpWidget(
+            wrap(
+              GamifiedTargetBar(
+                label: 'Protein',
+                current: current,
+                target: 100,
+                unit: 'g',
+                partial: true,
+              ),
+            ),
+          );
+          expect(find.text('Some items have no figures.'), findsOneWidget);
+          expect(find.text('Target reached'), findsNothing);
+          expect(find.textContaining('remaining'), findsNothing);
+          expect(
+            tester.getSemantics(find.byType(GamifiedTargetBar)).label,
+            'Protein: $current of 100 g. Some items have no figures.',
+          );
+        }
+        await tester.pumpWidget(
+          wrap(
+            const GamifiedTargetBar(
+              label: 'بروتين',
+              current: 30,
+              target: 120,
+              unit: 'جم',
+              partial: true,
+            ),
+            locale: const Locale('ar'),
+          ),
+        );
+        expect(find.text('بعض الأصناف ملهاش أرقام.'), findsOneWidget);
+        handle.dispose();
+      },
+    );
+
     testWidgets('the fill does not animate when motion is off', (tester) async {
       Duration fill() => tester
           .widget<AnimatedContainer>(find.byType(AnimatedContainer))

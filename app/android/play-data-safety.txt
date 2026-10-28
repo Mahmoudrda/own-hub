@@ -6,6 +6,9 @@ match ios/Runner/PrivacyInfo.xcprivacy, the App Store App Privacy answers and
 the published privacy policy (v3, sections 3 to 5). Wording of the policy is
 pending review by a licensed Egyptian lawyer. After any change, regenerate the
 Xcode privacy report and compare all four line by line before submitting.
+Updated 28 October 2026: saying a meal (the phone's own speech service turns
+her words into text; Own Hub receives and keeps no audio) and the InBody
+sheet reader (read on the phone, picture never sent or kept) are noted below.
 Updated 23 October 2026: the PostHog note is folded into the data types below,
 a member's first name for a coach is under Name, the meal photo is under
 Photos, coaching pushes are under Device or other IDs, and live sessions are
@@ -109,6 +112,11 @@ Coaching (applications, portfolios, joining a coach; no payments yet)
       Google Meet, Zoom or Microsoft Teams link the coach set, status and who
       marked it done. Linked. Deleted with either account.
   - Plans a coach shares are stored under the member's account.
+  - InBody numbers (weight, body fat, muscle mass, metabolic rate), only if she
+      ticks a separate box as she asks to join: sent with that request, visible
+      to that coach. They fall under Health info, already declared. The picture
+      of the sheet is read on the phone (ML Kit text recognition) and is never
+      sent or kept. Optional. Linked.
   - No payments exist in this version: no payment info, purchase history or
       financial info is collected.
 
@@ -151,6 +159,11 @@ Photos and videos: Collected = yes (chat photos and clips in addition to the coa
 
 Audio files (voice notes): Collected = yes. Shared = no. Required = no (optional feature).
   Purpose: App functionality. Encrypted in transit: yes. Deletion: deleted with the coaching chat or her account.
+  Saying a meal on Eat is not in this answer: when she taps the microphone there,
+  the phone's own speech recogniser turns her words into text (on the phone where
+  it can, otherwise on the recogniser's servers, usually Google's). Own Hub
+  receives and keeps only the text, never the audio. RECORD_AUDIO is the same
+  permission as for voice notes; no Bluetooth permission is declared.
 
 App activity
   - App interactions

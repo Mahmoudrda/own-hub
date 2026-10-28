@@ -149,6 +149,28 @@ describe('collections that used to carry no field validation at all', () => {
       }));
     t.diagnostic(`  ${ok.outcome.padEnd(8)} ${ok.label}`);
     assert.equal(ok.outcome, 'ALLOWED');
+
+    // What she said yes to travels as `topics`, and only the two words the
+    // server filters on: payment alerts are a second, separate yes.
+    const asked = await observe('the registration of a phone that asked for payment alerts',
+      setDoc(doc(db, `users/${who}/devices/d2`), {
+        token: 'tok2', platform: 'ios', appVersion: '1.1.0',
+        topics: ['approval', 'payments'],
+      }));
+    t.diagnostic(`  ${asked.outcome.padEnd(8)} ${asked.label}`);
+    assert.equal(asked.outcome, 'ALLOWED');
+    const other = await observe('a topic the server never sends',
+      setDoc(doc(db, `users/${who}/devices/d3`), {
+        token: 'tok3', platform: 'ios', appVersion: '1.1.0', topics: ['marketing'],
+      }));
+    t.diagnostic(`  ${other.outcome.padEnd(8)} ${other.label}`);
+    assert.equal(other.outcome, 'DENIED');
+    const notAList = await observe('topics that is not a list',
+      setDoc(doc(db, `users/${who}/devices/d4`), {
+        token: 'tok4', platform: 'ios', appVersion: '1.1.0', topics: 'payments',
+      }));
+    t.diagnostic(`  ${notAList.outcome.padEnd(8)} ${notAList.label}`);
+    assert.equal(notAList.outcome, 'DENIED');
   });
 
   test('groups/{g}/members: no role, no roster, and not while unverified', async (t) => {

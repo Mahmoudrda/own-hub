@@ -88,6 +88,7 @@ def test_clients_with_an_open_payment_are_told_and_others_are_not(db, notes):
 
     notified = [call[0] for call in notes.sent if call[1] == "instapayAddressChanged"]
     assert set(notified) == {CLIENT, CLIENT2}
+    assert {(uid, ref) for uid, kind, ref in notes.refs if kind == "instapayAddressChanged"} == {(CLIENT, "p-a"), (CLIENT2, "p-b")}
 
 
 def test_a_second_change_replaces_the_pending_one_and_restarts_the_delay(db, notes):

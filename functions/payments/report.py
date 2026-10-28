@@ -53,7 +53,7 @@ def coach_report(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify)
 
     out = common.run(db, body)
     if held:
-        notify(held["payment"]["clientUid"], "instapayCoachReported")
+        notify(held["payment"]["clientUid"], "instapayCoachReported", payment_id)
     return out
 
 

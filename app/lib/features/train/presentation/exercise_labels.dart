@@ -13,8 +13,12 @@ import '../domain/exercise_library.dart';
 /// The English strings, for the move names that stay English in every locale.
 final AppL10n englishMoveNames = lookupAppL10n(const Locale('en'));
 
-/// An exercise name. Names are English in every locale, so this reads left to
-/// right even inside an Arabic screen.
+/// Whether [name] is written in Arabic. Exercise names come in both
+/// languages now, so a name's direction follows its own letters.
+bool _isArabicName(String name) => RegExp(r'[\u0600-\u06FF]').hasMatch(name);
+
+/// An exercise name. An English one reads left to right even inside an Arabic
+/// screen; an Arabic one reads as Arabic.
 class MoveName extends StatelessWidget {
   const MoveName(
     this.name, {
@@ -31,7 +35,7 @@ class MoveName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Directionality(
-    textDirection: TextDirection.ltr,
+    textDirection: _isArabicName(name) ? TextDirection.rtl : TextDirection.ltr,
     child: Text(name, style: style, maxLines: maxLines, overflow: overflow),
   );
 }
@@ -40,9 +44,11 @@ class MoveName extends StatelessWidget {
 /// inside a sentence which may be right-to-left.
 ///
 /// Only in Arabic, where the sentence around it reads the other way; English
-/// is left exactly as written.
+/// is left exactly as written, and so is a name that is itself Arabic.
 String isolateLtr(AppL10n l10n, String name) =>
-    l10n.localeName == 'ar' ? '\u2066$name\u2069' : name;
+    l10n.localeName == 'ar' && !_isArabicName(name)
+    ? '\u2066$name\u2069'
+    : name;
 
 String muscleLabel(AppL10n l10n, Muscle muscle) => switch (muscle) {
   Muscle.glutes => l10n.glutes,

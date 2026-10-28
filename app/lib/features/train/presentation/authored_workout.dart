@@ -48,7 +48,7 @@ PlannedMove plannedMoveFrom(
       : '';
   return PlannedMove(
     exerciseId: move.exerciseId,
-    name: move.nameEn.trim().isNotEmpty ? move.nameEn : move.nameAr,
+    name: _pick(languageCode, move.nameEn, move.nameAr),
     prescriptionLabel: _joined(languageCode, amount, rest),
     quiet: move.quiet,
     floorOnly: move.floorOnly,

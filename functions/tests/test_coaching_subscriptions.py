@@ -778,3 +778,119 @@ def test_the_app_1_0_0_request_has_no_consent_field_and_records_the_version_1_ti
     for name in ("coaching-share-v1", "transfer-abroad-v1"):
         assert db.document(f"users/{CLIENT}/consents/{name}").get().to_dict() == {"version": 1, "at": NOW, "locale": "ar"}
     assert db.document(f"users/{CLIENT}/consents/coaching-request-v2-{out['subId']}").get().to_dict() is None
+
+
+# -- InBody numbers in the intake -----------------------------------------------
+
+SCAN = {"weightKg": 64.5, "heightCm": 164, "bodyFatPercent": 26.6, "skeletalMuscleMassKg": 24.8, "bmrKcal": 1340}
+
+
+def with_scan(locale="en", **scan):
+    """An intake holding her numbers and the consent that carries the third tick."""
+    numbers = {**SCAN, **scan}
+    return {
+        "intake": intake(inbody=numbers),
+        "consent": consent(locale, inbodyHash=hash_of(locale, "inbody")),
+        "locale": locale,
+    }
+
+
+@pytest.mark.parametrize("locale", ["en", "ar"])
+def test_her_inbody_numbers_are_kept_with_her_answers_and_the_third_tick(db, pushes, locale):
+    seed(db, auto=False)
+    out = ask(db, pushes, **with_scan(locale))
+    assert sub_of(db, out["subId"])["intake"]["inbody"] == SCAN
+    record = db.document(f"users/{CLIENT}/consents/coaching-request-v2-{out['subId']}").get().to_dict()
+    assert record["inbodyHash"] == hash_of(locale, "inbody")
+    assert record["shareHash"] == hash_of(locale, "share") and record["transferHash"] == hash_of(locale, "transfer")
+
+
+def test_a_request_without_numbers_has_no_inbody_key_and_no_third_hash(db, pushes):
+    seed(db, auto=False)
+    out = ask(db, pushes)
+    assert "inbody" not in sub_of(db, out["subId"])["intake"]
+    record = db.document(f"users/{CLIENT}/consents/coaching-request-v2-{out['subId']}").get().to_dict()
+    assert "inbodyHash" not in record
+
+
+def test_a_part_of_the_numbers_is_enough_and_a_metabolic_rate_is_a_whole_number(db, pushes):
+    seed(db, auto=False)
+    out = ask(db, pushes, **with_scan())
+    assert set(sub_of(db, out["subId"])["intake"]["inbody"]) == set(SCAN)
+    seed(db, auto=False)
+    body = with_scan()
+    body["intake"]["inbody"] = {"bmrKcal": 1340.4, "weightKg": 64.55}
+    second = ask(db, pushes, uid="client-uid-2", **body)
+    assert sub_of(db, second["subId"])["intake"]["inbody"] == {"bmrKcal": 1340, "weightKg": 64.5}
+
+
+BAD_SCANS = [
+    "64 kg",
+    [],
+    {},
+    {"weightKg": 64.5, "rawText": "Weight 64.5 kg"},
+    {"weightKg": 64.5, "scanDate": "2026-10-06"},
+    {"weightKg": 29.9},
+    {"weightKg": 250.1},
+    {"heightCm": 119},
+    {"heightCm": 231},
+    {"bodyFatPercent": 4.9},
+    {"bodyFatPercent": 65.1},
+    {"skeletalMuscleMassKg": 9.9},
+    {"skeletalMuscleMassKg": 80.1},
+    {"bmrKcal": 799},
+    {"bmrKcal": 3501},
+    {"weightKg": True},
+    {"weightKg": "64.5"},
+    {"weightKg": None},
+    {"weightKg": float("nan")},
+    {"weightKg": float("inf")},
+]
+
+
+@pytest.mark.parametrize("scan", BAD_SCANS)
+def test_a_bad_scan_is_refused_and_writes_nothing(db, pushes, scan):
+    seed(db, auto=False)
+    before = copy.deepcopy(db.docs)
+    body = with_scan()
+    body["intake"]["inbody"] = scan
+    refuse(lambda: ask(db, pushes, **body), errors.INVALID, errors.BAD_REQUEST)
+    assert db.docs == before and pushes == []
+
+
+@pytest.mark.parametrize(
+    "bad_consent",
+    [
+        consent("en"),
+        consent("en", inbodyHash="a" * 64),
+        consent("en", inbodyHash="x"),
+        consent("ar", inbodyHash=hash_of("ar", "inbody")),
+        consent("en", inbodyHash=hash_of("en", "share")),
+        None,
+    ],
+)
+def test_numbers_without_the_third_tick_recorded_are_refused_and_write_nothing(db, pushes, bad_consent):
+    seed(db, auto=False)
+    before = copy.deepcopy(db.docs)
+    body = with_scan()
+    body["consent"] = bad_consent
+    refuse(lambda: ask(db, pushes, **body), errors.INVALID, errors.BAD_REQUEST)
+    assert db.docs == before and pushes == []
+
+
+def test_the_third_tick_without_numbers_is_refused(db, pushes):
+    seed(db, auto=False)
+    before = copy.deepcopy(db.docs)
+    refuse(
+        lambda: ask(db, pushes, consent=consent("en", inbodyHash=hash_of("en", "inbody"))),
+        errors.INVALID,
+        errors.BAD_REQUEST,
+    )
+    assert db.docs == before
+
+
+def test_the_inbody_text_has_the_coachs_name_in_its_hash(db, pushes):
+    seed(db, auto=False)
+    body = with_scan()
+    body["consent"] = consent("en", inbodyHash=hash_of("en", "inbody", name="Someone Else"))
+    refuse(lambda: ask(db, pushes, **body), errors.INVALID, errors.BAD_REQUEST)

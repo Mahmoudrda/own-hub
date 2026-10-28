@@ -33,6 +33,7 @@ import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 
 import '../../../app_state/haptics.dart';
 import '../../../app_state/move_notes.dart';
+import '../../../app_state/sound.dart';
 
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart';
@@ -341,6 +342,7 @@ class _MidSetViewState extends State<MidSetView> {
       ),
     );
     unawaited(AppHaptics.play(HapticMoment.setLogged));
+    unawaited(AppSound.play(SoundCue.setDone));
     setState(() => _warmUp = false);
     logged(handle, outcome);
   }
@@ -387,6 +389,8 @@ class _MidSetViewState extends State<MidSetView> {
       ),
     );
     unawaited(AppHaptics.play(HapticMoment.setLogged));
+    // The pitch steps up with the set of the move and starts over on the next.
+    unawaited(AppSound.play(SoundCue.setDone, variant: prescribed.order - 1));
     widget.onSetLogged?.call(handle);
   }
 
@@ -458,6 +462,7 @@ class _MidSetViewState extends State<MidSetView> {
       ),
     );
     unawaited(AppHaptics.play(HapticMoment.setLogged));
+    unawaited(AppSound.play(SoundCue.setDone, variant: move.sets.length - 1));
     widget.onMoveLogged?.call(handle);
   }
 

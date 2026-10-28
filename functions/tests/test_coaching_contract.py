@@ -89,3 +89,15 @@ def test_the_coach_side_ships_with_payments_off():
     assert coaching.COACH_PORTFOLIO_LIVE is True
     assert coaching.COACH_CLIENTS_LIVE is True
     assert coaching.COACH_PAYMENTS_LIVE is False
+
+
+def test_the_intake_may_carry_inbody_numbers_with_ranges_and_both_consent_texts():
+    doc = contract()["documents"]["subscription"]
+    assert doc["intakeOptional"] == ["inbody"]
+    assert "inbody" not in doc["intake"]
+    assert set(doc["inbody"]) == {"weightKg", "heightCm", "bodyFatPercent", "skeletalMuscleMassKg", "bmrKcal"}
+    for low, high in doc["inbody"].values():
+        assert 0 < low < high
+    for locale in ("en", "ar"):
+        texts = contract()["consentTexts"]["coachingRequest2"][locale]["inbody"]
+        assert len(texts) == 1 and "{name}" in texts[0]

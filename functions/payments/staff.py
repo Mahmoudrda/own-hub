@@ -203,7 +203,7 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
     engine.notify_moves(notify, held["payment"], held["moves"])
     for who, kind in held["notices"]:
         try:
-            notify(held["payment"]["clientUid" if who == states.CLIENT else "coachUid"], kind)
+            notify(held["payment"]["clientUid" if who == states.CLIENT else "coachUid"], kind, payment_id)
         except Exception:  # noqa: BLE001
             pass
     if on_decision is not None:

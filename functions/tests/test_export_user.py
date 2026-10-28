@@ -201,8 +201,14 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
     db = fake_firestore.FakeFirestore()
     db.docs.update(
         {
-            f"subscriptions/s1": {"clientUid": HER, "coachUid": "coach-9", "intake": {"goal": "strength"}},
-            f"subscriptions/s2": {"clientUid": OTHER, "coachUid": HER, "relId": "r2", "intake": {"goal": "x"}, "status": "active"},
+            f"subscriptions/s1": {
+                "clientUid": HER, "coachUid": "coach-9",
+                "intake": {"goal": "strength", "inbody": {"weightKg": 64.5, "bmrKcal": 1340}},
+            },
+            f"subscriptions/s2": {
+                "clientUid": OTHER, "coachUid": HER, "relId": "r2", "status": "active",
+                "intake": {"goal": "x", "inbody": {"weightKg": 70.0}},
+            },
             f"relationships/{HER}__{OTHER}": {"coachUid": HER, "clientUid": OTHER},
             f"relationships/{HER}__{OTHER}/messages/m1": {"senderUid": HER, "text": "mine"},
             f"relationships/{HER}__{OTHER}/messages/m2": {"senderUid": OTHER, "text": "hers"},
@@ -218,8 +224,9 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
         }
     )
     got = export_user.FirestoreReader(db).coaching(HER)
-    assert got["asClient"]["s1"]["intake"] == {"goal": "strength"}
+    assert got["asClient"]["s1"]["intake"] == {"goal": "strength", "inbody": {"weightKg": 64.5, "bmrKcal": 1340}}
     assert got["asCoach"]["s2"] == {"coachUid": HER, "status": "active"}
+    assert "inbody" not in repr(got["asCoach"])  # her client's InBody numbers are the client's, not hers
     assert got["messages"] == {f"{HER}__{OTHER}/m1": {"senderUid": HER, "text": "mine"}}
     assert got["checkIns"] == {f"coach-9__{HER}/2026-W44": {"clientUid": HER, "answers": {"note": "my knee"}}}
     assert got["private"]["prices/p1"] == {"coachPriceEgp": 500}

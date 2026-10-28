@@ -121,8 +121,8 @@ void main() {
     });
   });
 
-  group('exercise names stay English', () {
-    testWidgets('in Arabic the title is English, the cues and buttons Arabic', (
+  group('exercise names follow the language', () {
+    testWidgets('in Arabic the title, the cues and buttons are all Arabic', (
       tester,
     ) async {
       final en = lookupAppL10n(const Locale('en'));
@@ -139,9 +139,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(move.name, en.donkeyKick);
-      expect(find.text(en.donkeyKick), findsWidgets);
-      expect(find.text(ar.donkeyKick), findsNothing);
+      expect(move.name, ar.donkeyKick);
+      expect(find.text(ar.donkeyKick), findsWidgets);
+      expect(find.text(en.donkeyKick), findsNothing);
       expect(find.byTooltip(ar.pause), findsWidgets);
     });
   });

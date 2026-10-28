@@ -114,4 +114,50 @@ void main() {
       );
     });
   });
+
+  group('a walk', () {
+    test('is an ordinary walk at the low end of the compendium', () {
+      expect(metFor(EffortKind.walk), 3.0);
+      expect(metFor(EffortKind.walk), lessThan(metFor(EffortKind.steady)));
+    });
+
+    test('30 minutes at 65 kg is about 98 kcal', () {
+      expect(
+        estimateKcal(
+          durationSec: 1800,
+          kind: EffortKind.walk,
+          bodyWeightKg: 65,
+        ),
+        98,
+      );
+    });
+
+    test('uses a typical weight when hers is missing or not believable', () {
+      final typical = estimateKcal(durationSec: 1800, kind: EffortKind.walk);
+      expect(typical, 98);
+      expect(
+        estimateKcal(durationSec: 1800, kind: EffortKind.walk, bodyWeightKg: 5),
+        typical,
+      );
+    });
+
+    test('stops counting at three hours, like any session', () {
+      expect(
+        estimateKcal(
+          durationSec: 12 * 3600,
+          kind: EffortKind.walk,
+          bodyWeightKg: 65,
+        ),
+        estimateKcal(
+          durationSec: maxEstimatedSeconds,
+          kind: EffortKind.walk,
+          bodyWeightKg: 65,
+        ),
+      );
+    });
+
+    test('no time, no calories', () {
+      expect(estimateKcal(durationSec: 0, kind: EffortKind.walk), 0);
+    });
+  });
 }

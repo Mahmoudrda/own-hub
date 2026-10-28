@@ -11,9 +11,13 @@ import 'app_state/posthog_analytics.dart';
 import 'app_state/profile_photo_state.dart';
 import 'app_state/cloud_store.dart';
 import 'app_state/crash_consent.dart';
+import 'app_state/feel_prefs.dart';
 import 'app_state/first_run_moments.dart';
+import 'app_state/sound.dart';
 import 'app_state/tip_anchors.dart';
 import 'features/eat/data/meal_camera.dart' show sweepCameraLeftovers;
+import 'features/eat/data/platform_meal_speech.dart';
+import 'features/eat/domain/meal_speech.dart';
 import 'features/onboarding/presentation/deep_breath_view.dart';
 import 'ui/hand/launch_splash.dart';
 import 'features/eat/domain/meal_images.dart';
@@ -69,6 +73,9 @@ Future<void> main() async {
   // all. Without this those screens keep the platform default and draw a
   // near-white clock on the pale surface colour.
   WidgetsFlutterBinding.ensureInitialized();
+  // Only built, and the phone's speech service only touched, when she taps the
+  // microphone on E03.
+  MealSpeech.create = PlatformMealSpeechEngine.new;
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -132,6 +139,8 @@ Future<void> main() async {
   await FirstRunMoments.instance.load();
   // Her profile photo, if she set one. Kept on this phone only.
   await ProfilePhotoState.instance.load();
+  // Her Sounds and Haptics switches, kept on this phone only.
+  await FeelPrefs.instance.load();
   // The starting programmes, bundled. A file that cannot be read leaves the
   // placeholder catalogue, and Train is what it was.
   try {
@@ -278,6 +287,10 @@ Future<void> main() async {
   // Only a cold start draws the logo on; a resume never builds the app again.
   LaunchSplash.enabled = true;
   runApp(const OwnHubApp());
+
+  // The cue sounds are loaded into memory after the first frame is queued and
+  // never waited on; until they are, nothing plays.
+  unawaited(AppSound.start());
 
   // Any photo file the camera left behind (a shutter that failed after it
   // wrote, a delete that did not go through) goes now, after the first frame

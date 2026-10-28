@@ -1,0 +1,253 @@
+id,name_en,kind,status,ours_kcal,ours_protein_g,ours_carbs_g,ours_fat_g,ref_kcal,ref_protein_g,ref_carbs_g,ref_fat_g,kcal_diff_pct,source,source_id,fetched,note
+koshary,Koshary,dish,unverified,133.2,4.3,20.6,3.8,,,,,,none consulted,,,"standard recipe of USDA records 168878, 172421, 169737, 173757, 170000, 171025, 170054, 169230, 172237, 170923"
+ful_medames,Ful medames,dish,unverified,127.5,7.3,19.0,2.9,,,,,,none consulted,,,"standard recipe of USDA records 173753, 171025, 167747, 170923"
+ful_bel_zeit,Ful with oil,dish,unverified,145.4,6.2,16.6,6.4,,,,,,none consulted,,,"standard recipe of USDA records 173753, 171025, 167747, 170923, 170457, 170000"
+ful_bel_tahina,Ful with tahini,dish,unverified,167.8,8.1,19.3,7.2,,,,,,none consulted,,,"standard recipe of USDA records 173753, 170189, 167747, 171413, 170923, 169230"
+ful_bel_beid,Ful with egg,dish,unverified,143.9,8.5,14.8,5.8,,,,,,none consulted,,,"standard recipe of USDA records 173753, 171287, 171025, 170923"
+ful_iskandarani,Alexandrian ful,dish,unverified,120.1,5.4,14.9,4.7,,,,,,none consulted,,,"standard recipe of USDA records 173753, 170457, 170427, 170000, 169230, 171025, 170923"
+taameya,Taameya (Egyptian falafel),dish,unverified,270.9,9.3,21.6,17.3,,,,,,none consulted,,,"standard recipe of USDA records 175205, 173647, 170416, 172233, 169997, 170000, 169230, 170151, 170923, 171025"
+besara,Besara,dish,unverified,107.8,4.5,12.1,5.1,,,,,,none consulted,,,"standard recipe of USDA records 173753, 168420, 170416, 172233, 169997, 173647, 170000, 171025, 169230, 170923"
+shakshuka,Shakshuka,dish,unverified,98.5,5.3,3.9,7.0,,,,,,none consulted,,,"standard recipe of USDA records 171287, 170457, 170427, 170000, 171025, 169230"
+eggs_pastirma,Baladi eggs with pastirma,dish,unverified,190.7,15.0,0.6,13.8,,,,,,none consulted,,,"standard recipe of USDA records 171287, 170204, 173412"
+eggs_fried_ghee,Fried baladi eggs,dish,unverified,222.2,13.1,0.8,18.1,,,,,,none consulted,,,"standard recipe of USDA records 173423, 173412"
+egga,Eggah (Egyptian herb omelette),dish,unverified,197.5,10.6,5.1,14.8,,,,,,none consulted,,,"standard recipe of USDA records 171287, 170416, 170000, 168894, 171025"
+eggs_boiled,Boiled eggs,dish,record_matches,155.0,12.6,1.1,10.6,155.0,12.6,1.12,10.6,0.0,"USDA FoodData Central SR Legacy: Egg, whole, cooked, hard-boiled",173424,2026-10-28,
+omelette,Omelette,dish,verified,180.0,12.2,1.3,13.6,154.0,10.6,0.64,11.7,16.9,"USDA FoodData Central SR Legacy: Egg, whole, cooked, omelet",172185,2026-10-28,a USDA record of the same food that the recipe does not use
+egg_fried_olive,Fried egg in olive oil,dish,unverified,219.1,11.9,0.7,18.5,,,,,,none consulted,,,"USDA Egg, whole, cooked, fried (fdcId 173423) reads 196 kcal, 13.6 g protein, 0.83 g carbohydrate, 14.8 g fat per 100 g; outside tolerance on fat, recipe left as it is"
+kesk,Kesk (fermented wheat and yoghurt),dish,unverified,75.3,4.8,5.3,4.0,,,,,,none consulted,,,"standard recipe of USDA records 170287, 171284, 173412, 169230, 171451, 173647"
+mesh,Mesh (aged cheese),dish,unverified,265.1,12.6,3.7,22.4,,,,,,none consulted,,,"standard recipe of USDA records 173420, 171249, 170457, 170427, 171025"
+gebna_areesh,Areesh cheese,dish,unverified,72.0,12.4,2.7,1.0,,,,,,none consulted,,,standard recipe of USDA records 173417
+areesh_tomato,Areesh cheese with tomato,dish,unverified,82.2,7.7,3.1,4.4,,,,,,none consulted,,,"standard recipe of USDA records 173417, 170457, 170427, 171413"
+gebna_rumi,Rumi cheese,dish,unverified,387.0,31.8,3.6,26.9,,,,,,none consulted,,,standard recipe of USDA records 171249
+gebna_domiati,Domiati cheese,dish,unverified,265.0,14.2,3.9,21.5,,,,,,none consulted,,,standard recipe of USDA records 173420
+ful_sandwich,Ful sandwich,dish,unverified,189.8,7.5,28.7,6.0,,,,,,none consulted,,,"standard recipe of USDA records 174916, 173753, 171025, 167747, 170923, 170457, 170000, 170189, 173647, 169230"
+taameya_sandwich,Taameya sandwich,dish,unverified,227.8,8.0,28.4,10.4,,,,,,none consulted,,,"standard recipe of USDA records 174916, 175205, 173647, 170416, 172233, 169997, 170000, 169230, 170151, 170923, 171025, 170457, 170189, 167747, 168558"
+ful_taameya_breakfast,Ful and taameya breakfast,dish,unverified,186.2,6.9,24.2,7.8,,,,,,none consulted,,,"standard recipe of USDA records 173753, 171025, 167747, 170923, 170457, 170000, 175205, 173647, 170416, 172233, 169997, 169230, 170151, 174916, 168409, 170427, 170189"
+tahina,Tahini sauce,dish,unverified,283.3,8.2,12.1,24.8,,,,,,none consulted,,,"standard recipe of USDA records 170189, 173647, 167747, 169230, 170923"
+baba_ghanoug,Baba ghanoug,dish,unverified,120.3,2.5,10.1,8.9,,,,,,none consulted,,,"standard recipe of USDA records 169229, 170189, 167747, 169230, 171413"
+salata_baladi,Egyptian salad,dish,unverified,41.2,0.8,4.3,2.7,,,,,,none consulted,,,"standard recipe of USDA records 170457, 168409, 170000, 170427, 170416, 167747, 171025"
+salata_zabadi,Yogurt cucumber salad,dish,unverified,48.8,2.7,4.7,2.3,,,,,,none consulted,,,"standard recipe of USDA records 171284, 168409, 169230, 173475"
+molokhia,Molokhia,dish,unverified,51.4,2.3,5.1,3.1,,,,,,none consulted,,,"standard recipe of USDA records 168420, 173647, 173412, 169230, 169997"
+molokhia_chicken,Molokhia with chicken,dish,unverified,121.7,11.7,3.2,7.0,,,,,,none consulted,,,"standard recipe of USDA records 168420, 173647, 173412, 169230, 169997, 171450"
+molokhia_rabbit,Molokhia with rabbit,dish,unverified,109.3,12.8,3.2,5.1,,,,,,none consulted,,,"standard recipe of USDA records 168420, 173647, 173412, 169230, 169997, 174346"
+mahshi_vine,Stuffed vine leaves (warak enab),dish,unverified,140.9,2.6,18.2,6.7,,,,,,none consulted,,,"standard recipe of USDA records 169393, 168878, 170054, 170000, 170416, 172233, 173475, 171025, 167747"
+mahshi_peppers,Stuffed peppers,dish,unverified,98.1,1.6,13.5,4.3,,,,,,none consulted,,,"standard recipe of USDA records 170427, 168878, 170054, 170000, 170416, 172233, 171025"
+mahshi_zucchini,Stuffed zucchini (kousa),dish,unverified,88.3,1.6,11.3,4.3,,,,,,none consulted,,,"standard recipe of USDA records 169292, 168878, 170054, 170000, 170416, 172233, 171025"
+mahshi_eggplant,Stuffed eggplant,dish,unverified,100.4,1.5,14.4,4.4,,,,,,none consulted,,,"standard recipe of USDA records 169229, 168878, 170054, 170000, 170416, 172233, 171025"
+mahshi_cabbage,Stuffed cabbage,dish,unverified,120.7,2.0,17.4,4.9,,,,,,none consulted,,,"standard recipe of USDA records 169975, 168878, 170054, 170000, 172233, 171025, 169230"
+mahshi_mix,Mixed mahshi,dish,unverified,109.3,1.9,14.3,5.1,,,,,,none consulted,,,"standard recipe of USDA records 169393, 168878, 170054, 170000, 170416, 172233, 173475, 171025, 167747, 170427, 169292"
+fattah,Fattah with meat,dish,unverified,183.1,8.0,17.5,8.7,,,,,,none consulted,,,"standard recipe of USDA records 168878, 174915, 172480, 170054, 169230, 172237, 173412, 173647"
+fattah_chicken,Fattah with chicken,dish,unverified,168.5,9.6,16.8,6.7,,,,,,none consulted,,,"standard recipe of USDA records 168878, 174915, 171450, 170054, 169230, 172237, 173412, 173647"
+hawawshi,Hawawshi,dish,unverified,236.8,14.5,21.5,10.8,,,,,,none consulted,,,"standard recipe of USDA records 174916, 171799, 170000, 170427, 170457, 170416, 171025"
+feteer,Feteer meshaltet,dish,unverified,479.3,6.8,49.5,28.3,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173412, 173647"
+feteer_honey,Feteer with honey,dish,unverified,371.4,4.6,46.2,19.2,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173412, 173647, 169640"
+feteer_cheese,Feteer with cheese,dish,unverified,355.7,8.6,29.9,22.4,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173412, 173647, 173420, 170845"
+roz_shareya,Rice with vermicelli,dish,unverified,159.6,2.9,27.4,3.9,,,,,,none consulted,,,"standard recipe of USDA records 168878, 169737, 171025"
+roz_abyad,Plain white rice,dish,unverified,139.6,2.7,27.7,1.6,,,,,,none consulted,,,"standard recipe of USDA records 168878, 173430"
+roz_khalta,Rice with liver and nuts,dish,unverified,196.5,9.1,21.5,8.1,,,,,,none consulted,,,"standard recipe of USDA records 168878, 174491, 171799, 170567, 168165, 173412"
+roz_meammar,Baked rice with milk (roz me'ammar),dish,unverified,239.9,4.6,25.8,13.0,,,,,,none consulted,,,"standard recipe of USDA records 168877, 171265, 170859, 173430"
+macarona_bechamel,Macarona bechamel,dish,unverified,186.1,8.8,20.0,7.7,,,,,,none consulted,,,"standard recipe of USDA records 169737, 171799, 170000, 170459, 171265, 173430, 168894"
+macarona_salsa,Pasta with tomato sauce,dish,unverified,137.6,4.2,22.4,3.4,,,,,,none consulted,,,"standard recipe of USDA records 169737, 170054, 170000, 171025"
+kofta,Kofta,dish,unverified,219.9,22.4,1.2,13.2,,,,,,none consulted,,,"standard recipe of USDA records 174032, 170000, 170416"
+kebab,Lamb kebab,dish,unverified,278.1,23.1,0.6,19.6,,,,,,none consulted,,,"standard recipe of USDA records 172480, 170000"
+kebab_kofta,Kebab and kofta plate,dish,unverified,218.4,16.8,8.9,12.8,,,,,,none consulted,,,"standard recipe of USDA records 174032, 170000, 170416, 172480, 170457, 168409, 170427, 167747, 171025, 174916, 170189, 173647, 169230, 170923"
+shish_tawook,Shish tawook,dish,unverified,181.2,25.5,1.6,7.5,,,,,,none consulted,,,"standard recipe of USDA records 171477, 171284, 171413, 167747, 169230, 170459"
+kebda_iskandarani,Alexandrian liver,dish,unverified,185.2,19.1,5.9,9.3,,,,,,none consulted,,,"standard recipe of USDA records 168627, 170427, 169230, 171025, 170923, 167747"
+kebda_sandwich,Liver sandwich,dish,unverified,222.2,14.2,23.3,7.9,,,,,,none consulted,,,"standard recipe of USDA records 172796, 168627, 170427, 169230, 171025, 170923, 167747, 170189, 173647, 168558"
+sayadeya,Sayadeya (fish with rice),dish,unverified,156.1,11.3,14.5,5.9,,,,,,none consulted,,,"standard recipe of USDA records 168878, 175177, 170000, 171025, 170459, 170923"
+samak_mashwi,Grilled fish,dish,unverified,144.6,24.6,0.8,4.9,,,,,,none consulted,,,"standard recipe of USDA records 175177, 171413, 167747, 169230, 170923"
+samak_maqli,Fried fish,dish,unverified,198.9,23.1,5.5,9.5,,,,,,none consulted,,,"standard recipe of USDA records 175177, 168894, 171025"
+bouri,Grilled mullet (bouri),dish,unverified,164.4,23.6,0.2,7.0,,,,,,none consulted,,,"standard recipe of USDA records 175124, 171413, 167747"
+renga,Smoked herring (renga),dish,unverified,214.6,19.8,1.4,13.9,,,,,,none consulted,,,"standard recipe of USDA records 173668, 167747, 171413, 170000"
+gambari,Grilled shrimp,dish,unverified,152.2,20.4,2.5,6.3,,,,,,none consulted,,,"standard recipe of USDA records 171971, 173430, 169230, 167747"
+bamya,Okra stew (bamya),dish,unverified,85.5,8.7,4.0,4.3,,,,,,none consulted,,,"standard recipe of USDA records 169261, 171203, 170054, 170000, 169230, 173412"
+torly,Torly (baked mixed vegetables),dish,unverified,89.1,6.0,8.2,4.0,,,,,,none consulted,,,"standard recipe of USDA records 170440, 169292, 170393, 169141, 170017, 170000, 170054, 171203, 171025"
+fasolia,Green bean stew,dish,unverified,88.5,7.9,5.9,4.3,,,,,,none consulted,,,"standard recipe of USDA records 169141, 171203, 170054, 170000, 173412, 169230"
+fasolia_beida,White bean stew,dish,unverified,137.7,10.4,15.5,4.2,,,,,,none consulted,,,"standard recipe of USDA records 175203, 170054, 170000, 171203, 171025"
+batates_lahma,Potatoes with meat,dish,unverified,120.7,8.7,11.8,4.6,,,,,,none consulted,,,"standard recipe of USDA records 170440, 171203, 170054, 170000, 171025"
+bisella,Peas and carrots with meat,dish,unverified,102.0,8.6,8.5,4.0,,,,,,none consulted,,,"standard recipe of USDA records 170017, 170393, 171203, 170054, 170000, 173412"
+sabanekh,Spinach stew,dish,unverified,91.9,6.5,3.8,6.1,,,,,,none consulted,,,"standard recipe of USDA records 168463, 171799, 170000, 169230, 173412, 169997"
+colcas,Taro stew (colcas),dish,unverified,101.7,0.9,18.7,2.8,,,,,,none consulted,,,"standard recipe of USDA records 168486, 168463, 169997, 169230, 173647, 173412"
+mesaqaa,Egyptian moussaka (mesaqaa),dish,unverified,128.0,4.2,6.2,10.1,,,,,,none consulted,,,"standard recipe of USDA records 169229, 171025, 170054, 170427, 171799, 170000, 169230"
+arnabeet_maqli,Fried cauliflower,dish,unverified,139.7,3.4,7.5,11.2,,,,,,none consulted,,,"standard recipe of USDA records 169986, 171287, 168894, 171025"
+betingan_maqli,Fried eggplant,dish,unverified,180.2,1.1,6.7,17.3,,,,,,none consulted,,,"standard recipe of USDA records 169228, 171025, 169230, 172237"
+batates_maqlia,Egyptian fries,dish,record_matches,312.0,3.4,41.4,14.7,312.0,3.43,41.4,14.7,0.0,"USDA FoodData Central SR Legacy: Fast foods, potato, french fried in vegetable oil",170698,2026-10-28,
+lesan_asfour,Orzo soup,dish,unverified,44.9,1.9,5.3,1.7,,,,,,none consulted,,,"standard recipe of USDA records 169737, 173647, 171451, 173430, 170000"
+shorbet_ads,Lentil soup,dish,unverified,96.5,4.8,13.6,2.9,,,,,,none consulted,,,"standard recipe of USDA records 172421, 170393, 170000, 170440, 170457, 173647, 171025, 170923"
+shorbet_frakh,Chicken soup,dish,unverified,47.7,4.7,2.7,1.9,,,,,,none consulted,,,"standard recipe of USDA records 171451, 173647, 170393, 170000, 169737, 173430"
+shorbet_freekeh,Freekeh soup,dish,unverified,58.0,3.9,5.8,2.3,,,,,,none consulted,,,"standard recipe of USDA records 170287, 173647, 171451, 173430, 170000"
+mombar,Mombar,dish,unverified,167.5,4.3,15.1,10.0,,,,,,none consulted,,,"standard recipe of USDA records 174769, 168878, 170054, 170000, 171025, 170416"
+hamam_mahshi,Stuffed pigeon,dish,unverified,206.0,15.3,9.4,11.9,,,,,,none consulted,,,"standard recipe of USDA records 169905, 168878, 173412, 170000"
+frakh_mashwi,Grilled chicken,dish,unverified,239.6,25.3,0.5,14.4,,,,,,none consulted,,,"standard recipe of USDA records 171450, 171413, 167747, 170000"
+frakh_pane,Chicken pane,dish,unverified,242.6,23.2,9.0,12.0,,,,,,none consulted,,,"standard recipe of USDA records 171477, 174924, 171287, 168894, 171025"
+frakh_batates,Chicken with potatoes,dish,unverified,166.4,13.5,8.0,8.7,,,,,,none consulted,,,"standard recipe of USDA records 171450, 170440, 170054, 170000, 171025"
+lahma_basal,Meat with onions,dish,unverified,169.2,20.6,3.1,8.4,,,,,,none consulted,,,"standard recipe of USDA records 171203, 170000, 173412"
+sogo2,Egyptian sausage (sogo'),dish,unverified,230.0,11.3,2.2,19.4,,,,,,none consulted,,,"standard recipe of USDA records 174618, 170427, 170457, 170000, 171025"
+sogo2_sandwich,Sausage sandwich,dish,unverified,252.2,10.6,22.4,13.2,,,,,,none consulted,,,"standard recipe of USDA records 172796, 174618, 170427, 170457, 170000, 171025, 170189, 173647, 167747, 169230, 170923"
+kofta_sandwich,Kofta sandwich,dish,unverified,234.7,15.2,20.1,10.1,,,,,,none consulted,,,"standard recipe of USDA records 172796, 174032, 170000, 170416, 170189, 173647, 167747, 169230, 170923, 170457"
+pane_sandwich,Chicken pane sandwich,dish,unverified,228.2,15.4,23.8,7.5,,,,,,none consulted,,,"standard recipe of USDA records 172796, 171477, 174924, 171287, 168894, 171025, 169247, 170457"
+hummus_el_sham,Hummus el sham (chickpea drink),dish,unverified,56.0,3.0,9.4,0.9,,,,,,none consulted,,,"standard recipe of USDA records 173757, 173647, 170457, 167747, 170923"
+termes,Termes (lupini beans),dish,record_matches,119.0,15.6,9.9,2.9,119.0,15.6,9.88,2.92,0.0,"USDA FoodData Central SR Legacy: Lupins, mature seeds, cooked, boiled, without salt",172424,2026-10-28,
+batata,Roasted sweet potato,dish,record_matches,90.0,2.0,20.7,0.1,90.0,2.01,20.7,0.15,0.0,"USDA FoodData Central SR Legacy: Sweet potato, cooked, baked in skin, flesh, without salt",168483,2026-10-28,
+dora_mashwi,Grilled corn,dish,unverified,96.0,3.4,21.0,1.5,,,,,,none consulted,,,standard recipe of USDA records 169999
+aish_baladi,Aish baladi (Egyptian bread),dish,unverified,262.0,9.8,55.9,1.7,,,,,,none consulted,,,standard recipe of USDA records 174916
+aish_shami,Aish shami (white pita),dish,record_matches,275.0,9.1,55.7,1.2,275.0,9.1,55.7,1.2,0.0,"USDA FoodData Central SR Legacy: Bread, pita, white, enriched",174915,2026-10-28,
+aish_fino,Fino bread,dish,unverified,279.0,9.8,50.1,3.9,,,,,,none consulted,,,standard recipe of USDA records 172796
+simit,Simit (sesame bread ring),dish,unverified,341.3,8.6,57.5,8.4,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 170151, 169655, 171025"
+basbousa,Basbousa,dish,unverified,417.7,5.8,61.8,17.2,,,,,,none consulted,,,"standard recipe of USDA records 169715, 169655, 171284, 173412, 170170, 173647, 170567"
+basbousa_cream,Basbousa with cream,dish,unverified,353.0,4.7,45.3,17.7,,,,,,none consulted,,,"standard recipe of USDA records 169715, 169655, 171284, 173412, 170170, 173647, 170567, 170859"
+kunafa,Kunafa with cream,dish,unverified,343.8,3.8,43.7,17.6,,,,,,none consulted,,,"standard recipe of USDA records 172791, 173412, 171265, 169698, 170859, 169655, 173647, 170185"
+kunafa_nuts,Kunafa with nuts,dish,unverified,485.1,6.4,50.6,30.1,,,,,,none consulted,,,"standard recipe of USDA records 172791, 173412, 170187, 170185, 169655, 173647"
+kunafa_nabulsi,Kunafa with cheese (nabulsi),dish,unverified,375.5,11.3,36.1,21.0,,,,,,none consulted,,,"standard recipe of USDA records 172791, 173412, 170845, 169655, 173647, 170185"
+om_ali,Om Ali,dish,unverified,278.6,5.3,25.4,17.9,,,,,,none consulted,,,"standard recipe of USDA records 172738, 171265, 169655, 170859, 168165, 170170, 170567, 170185"
+roz_bel_laban,Rice pudding,dish,unverified,149.6,3.9,26.5,3.1,,,,,,none consulted,,,"standard recipe of USDA records 168877, 171265, 169655, 169698"
+mahalabeya,Mahalabeya,dish,unverified,135.1,3.1,21.9,4.0,,,,,,none consulted,,,"standard recipe of USDA records 171265, 169698, 169655, 170185, 170170"
+qatayef,Qatayef with nuts,dish,unverified,415.8,6.3,51.4,21.7,,,,,,none consulted,,,"standard recipe of USDA records 168894, 171265, 173647, 169655, 170187, 168165, 170170, 171025"
+qatayef_cream,Qatayef with cream,dish,unverified,232.5,4.3,37.1,7.4,,,,,,none consulted,,,"standard recipe of USDA records 168894, 171265, 173647, 169655, 170859, 169698"
+zalabya,Zalabya (Egyptian doughnuts),dish,unverified,374.9,4.1,55.5,15.4,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 171025, 169655"
+baklava,Baklava,dish,unverified,462.8,6.2,48.2,28.9,,,,,,none consulted,,,"standard recipe of USDA records 172791, 173430, 170187, 170185, 169655, 169640, 173647"
+ghorayeba,Ghorayeba (butter cookies),dish,unverified,519.4,5.7,63.1,27.5,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173412, 169655"
+kahk,Kahk (Eid cookies),dish,unverified,483.7,6.4,58.1,25.6,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173412, 169655, 170151, 171265, 169640"
+petit_four,Petit four (butter biscuits),dish,unverified,468.0,6.1,58.6,23.5,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173430, 169655, 171287, 169641"
+maamoul,Maamoul,dish,unverified,423.9,6.7,63.1,17.3,,,,,,none consulted,,,"standard recipe of USDA records 169715, 173412, 171726, 169655, 171265"
+balah_el_sham,Balah el sham,dish,unverified,395.4,5.0,48.0,20.8,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 171287, 173430, 171025, 169655"
+couscous_sweet,Sweet couscous,dish,unverified,205.1,3.8,30.5,8.0,,,,,,none consulted,,,"standard recipe of USDA records 169700, 173430, 169655, 168165, 170170, 170567"
+belila,Belila (wheat with milk),dish,unverified,118.5,3.3,19.3,3.8,,,,,,none consulted,,,"standard recipe of USDA records 170287, 171265, 169655, 168165, 170170, 170567"
+halawa,Halawa (sesame halva),dish,unverified,491.0,8.5,60.6,26.9,,,,,,none consulted,,,"USDA Candies, halavah, plain (fdcId 167996) reads 469 kcal, 12.5 g protein, 60.5 g carbohydrate, 21.5 g fat per 100 g; outside tolerance on protein, fat, recipe left as it is"
+shai_bel_laban,Tea with milk,dish,unverified,59.5,2.1,7.9,2.2,,,,,,none consulted,,,"standard recipe of USDA records 171265, 173227, 169655"
+karkadeh,Karkadeh (hibiscus drink),dish,unverified,37.9,0.0,9.8,0.0,,,,,,none consulted,,,"standard recipe of USDA records 171946, 169655"
+asab,Sugarcane juice,dish,unverified,69.7,0.0,18.0,0.0,,,,,,none consulted,,,"standard recipe of USDA records 173647, 169655"
+sahlab,Sahlab,dish,unverified,130.4,3.2,18.7,5.1,,,,,,none consulted,,,"standard recipe of USDA records 171265, 169698, 169655, 170170, 170185, 170187, 168165"
+tamr_hindi,Tamarind drink (tamr hindi),dish,unverified,72.2,0.3,18.8,0.1,,,,,,none consulted,,,"standard recipe of USDA records 167763, 169655, 173647"
+kharoub,Carob drink,dish,unverified,48.7,0.4,15.1,0.1,,,,,,none consulted,,,"standard recipe of USDA records 173755, 169655, 173647"
+sobia,Sobia (coconut rice drink),dish,unverified,106.2,1.9,16.4,4.0,,,,,,none consulted,,,"standard recipe of USDA records 168877, 170170, 171265, 169655, 173647"
+lemon_mint,Lemon mint juice,dish,unverified,49.9,0.1,13.1,0.1,,,,,,none consulted,,,"standard recipe of USDA records 167747, 169655, 173475, 173647"
+ahwa_mazboot,"Turkish coffee, medium sugar",dish,unverified,36.1,0.1,9.1,0.0,,,,,,none consulted,,,"standard recipe of USDA records 171890, 169655"
+coffee_milk,Coffee with milk,dish,unverified,51.8,2.0,6.4,2.1,,,,,,none consulted,,,"standard recipe of USDA records 171890, 171265, 169655"
+mango_juice,Mango juice,dish,unverified,67.0,0.5,17.0,0.2,,,,,,none consulted,,,"standard recipe of USDA records 169910, 169655, 173647"
+guava_juice,Guava juice,dish,unverified,72.3,1.4,16.9,0.5,,,,,,none consulted,,,"standard recipe of USDA records 173044, 169655, 173647"
+strawberry_juice,Strawberry juice,dish,unverified,50.2,0.4,12.6,0.2,,,,,,none consulted,,,"standard recipe of USDA records 167762, 169655, 173647"
+hummus,Hummus,dish,unverified,250.2,8.2,21.1,16.0,,,,,,none consulted,,,"USDA analogues differ from each other and from the pack: Hummus, home prepared (fdcId 172454) 177 kcal; Hummus, commercial (fdcId 174289) 237 kcal"
+mutabbal,Mutabbal,dish,unverified,127.1,3.0,9.8,9.5,,,,,,none consulted,,,"standard recipe of USDA records 169229, 170189, 171284, 167747, 169230, 171413"
+tabbouleh,Tabbouleh,dish,unverified,112.7,1.9,7.3,9.2,,,,,,none consulted,,,"standard recipe of USDA records 170416, 170287, 170457, 170000, 173475, 167747, 171413"
+fattoush,Fattoush,dish,unverified,116.9,1.8,9.2,8.5,,,,,,none consulted,,,"standard recipe of USDA records 169247, 170457, 168409, 169276, 170000, 170416, 173475, 174915, 171025, 171413, 167747"
+muhammara,Muhammara,dish,unverified,295.1,4.6,10.7,27.7,,,,,,none consulted,,,"standard recipe of USDA records 170108, 170187, 174924, 171413, 167747"
+labneh,Labneh,dish,unverified,168.6,8.2,3.6,13.6,,,,,,none consulted,,,"standard recipe of USDA records 171304, 171413"
+falafel,Falafel,dish,unverified,285.9,7.6,23.7,18.8,,,,,,none consulted,,,"USDA Falafel, home-prepared (fdcId 172455) reads 333 kcal, 13.3 g protein, 31.8 g carbohydrate, 17.8 g fat per 100 g; outside tolerance on protein, carbohydrate, recipe left as it is"
+falafel_sandwich,Falafel sandwich,dish,unverified,216.5,6.5,27.2,9.6,,,,,,none consulted,,,"standard recipe of USDA records 174915, 173756, 173647, 170416, 169997, 170000, 169230, 170923, 171025, 170189, 167747, 170457, 169247, 168558"
+shawarma_chicken_sandwich,Chicken shawarma sandwich,dish,unverified,245.2,14.4,21.9,10.8,,,,,,none consulted,,,"standard recipe of USDA records 174915, 172388, 171025, 169230, 167747, 168558, 170698"
+shawarma_beef_sandwich,Beef shawarma sandwich,dish,unverified,214.2,15.7,18.7,8.4,,,,,,none consulted,,,"standard recipe of USDA records 174915, 172480, 171203, 170189, 173647, 167747, 169230, 170923, 170000, 170457, 170416, 168558"
+shawarma_chicken_plate,Chicken shawarma plate,dish,unverified,214.5,12.7,14.7,11.5,,,,,,none consulted,,,"standard recipe of USDA records 172388, 170698, 171025, 169230, 167747, 168558, 174915, 170457, 168409"
+shawarma_beef_plate,Beef shawarma plate,dish,unverified,216.2,15.2,14.0,11.1,,,,,,none consulted,,,"standard recipe of USDA records 172480, 171203, 170189, 173647, 167747, 169230, 170923, 170698, 174915, 170457, 168409, 170000"
+kabsa_chicken,Chicken kabsa,dish,unverified,186.9,11.4,15.3,8.7,,,,,,none consulted,,,"standard recipe of USDA records 168878, 171450, 170457, 170000, 170393, 168165, 170567, 173412, 170459"
+kabsa_lamb,Lamb kabsa,dish,unverified,213.8,11.0,16.3,11.4,,,,,,none consulted,,,"standard recipe of USDA records 168878, 172497, 170457, 170000, 170393, 168165, 170567, 173412"
+mandi_chicken,Chicken mandi,dish,unverified,194.3,13.3,14.5,8.7,,,,,,none consulted,,,"standard recipe of USDA records 168878, 171450, 173412, 170000"
+mandi_lamb,Lamb mandi,dish,unverified,232.6,13.3,15.2,12.6,,,,,,none consulted,,,"standard recipe of USDA records 168878, 172497, 173412, 170000"
+mansaf,Mansaf,dish,unverified,213.5,11.9,13.8,12.0,,,,,,none consulted,,,"standard recipe of USDA records 168878, 172497, 171304, 171284, 173412, 170567, 174915"
+majboos,Chicken majboos,dish,unverified,177.7,11.8,14.1,7.8,,,,,,none consulted,,,"standard recipe of USDA records 168878, 171450, 170457, 170000, 173412, 167747, 171320"
+harees,Harees,dish,unverified,127.1,9.1,9.5,6.0,,,,,,none consulted,,,"standard recipe of USDA records 170287, 171451, 173412, 173647"
+jareesh,Jareesh,dish,unverified,118.7,6.3,12.9,5.0,,,,,,none consulted,,,"standard recipe of USDA records 170287, 171284, 170000, 173412, 171451"
+saleeg,Saleeg,dish,unverified,158.4,10.3,15.4,5.8,,,,,,none consulted,,,"standard recipe of USDA records 168877, 171265, 171451, 173430, 173647"
+thareed,Thareed,dish,unverified,154.4,8.5,12.2,7.9,,,,,,none consulted,,,"standard recipe of USDA records 174915, 172497, 170440, 169292, 170393, 170054, 173647, 173412"
+luqaimat,Luqaimat,dish,unverified,382.9,5.1,57.6,15.2,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 171025, 169640"
+kibbeh,Fried kibbeh,dish,unverified,237.3,10.7,10.1,17.6,,,,,,none consulted,,,"standard recipe of USDA records 170287, 171799, 170000, 170187, 171025"
+kibbeh_baked,Baked kibbeh,dish,unverified,209.3,11.5,10.0,14.0,,,,,,none consulted,,,"standard recipe of USDA records 170287, 171799, 170000, 173412, 170187"
+manakish_zaatar,Zaatar manakish,dish,unverified,371.6,7.4,50.8,15.7,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 170938, 170151, 171413"
+manakish_cheese,Cheese manakish,dish,unverified,317.2,12.6,38.0,12.3,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 170845, 173420, 171413"
+fatayer_spinach,Spinach fatayer,dish,unverified,225.1,5.3,32.4,8.3,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 168463, 170000, 171413, 167747"
+sfiha,Sfiha (meat pies),dish,unverified,261.5,12.4,30.6,9.5,,,,,,none consulted,,,"standard recipe of USDA records 168894, 173647, 171799, 170457, 170000, 171413"
+musakhan,Musakhan,dish,unverified,250.0,13.8,15.1,14.8,,,,,,none consulted,,,"standard recipe of USDA records 174915, 171450, 170000, 171413, 170567"
+maqluba,Maqluba,dish,unverified,158.3,8.3,13.4,7.7,,,,,,none consulted,,,"standard recipe of USDA records 168878, 171450, 169228, 171025, 169986, 170000"
+mujaddara,Mujaddara,dish,unverified,159.6,4.4,19.2,7.4,,,,,,none consulted,,,"standard recipe of USDA records 172421, 168878, 170000, 171413"
+fatteh_hummus,Fatteh hummus,dish,unverified,213.2,6.8,20.0,12.4,,,,,,none consulted,,,"standard recipe of USDA records 173757, 174915, 171025, 171284, 170189, 169230, 173412, 170567"
+arayes,Arayes,dish,unverified,273.5,16.1,25.4,11.4,,,,,,none consulted,,,"standard recipe of USDA records 174915, 171799, 170000, 170416, 171413"
+chicken_breast_grilled,Grilled chicken breast,single,record_matches,165.0,31.0,0.0,3.6,165.0,31.0,0.0,3.57,0.0,"USDA FoodData Central SR Legacy: Chicken, broilers or fryers, breast, meat only, cooked, roasted",171477,2026-10-28,
+steak_grilled,Grilled steak,single,record_matches,206.0,29.6,0.0,8.8,206.0,29.6,0.0,8.8,0.0,"USDA FoodData Central SR Legacy: Beef, top sirloin, steak, separable lean and fat, trimmed to 0"" fat, select, cooked, broiled",168633,2026-10-28,
+tuna_canned,"Canned tuna in water, drained",single,record_matches,86.0,19.4,0.0,1.0,86.0,19.4,0.0,0.96,0.0,"USDA FoodData Central SR Legacy: Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)",173709,2026-10-28,
+tuna_in_oil,"Canned tuna in oil, drained",single,record_matches,198.0,29.1,0.0,8.2,198.0,29.1,0.0,8.21,0.0,"USDA FoodData Central SR Legacy: Fish, tuna, light, canned in oil, drained solids",173708,2026-10-28,
+turkey_smoked,Smoked turkey breast,single,record_matches,95.0,20.9,1.3,0.7,95.0,20.9,1.31,0.69,0.0,"USDA FoodData Central SR Legacy: Turkey, breast, smoked, lemon pepper flavor, 97% fat-free",174612,2026-10-28,
+greek_yoghurt,Greek yoghurt,single,record_matches,73.0,9.9,3.9,1.9,73.0,9.95,3.94,1.92,0.0,"USDA FoodData Central SR Legacy: Yogurt, Greek, plain, lowfat",170903,2026-10-28,
+yoghurt_baladi,Plain baladi yoghurt,single,record_matches,61.0,3.5,4.7,3.2,61.0,3.47,4.66,3.25,0.0,"USDA FoodData Central SR Legacy: Yogurt, plain, whole milk",171284,2026-10-28,
+mozzarella_light,Light mozzarella,single,record_matches,254.0,24.3,2.8,15.9,254.0,24.3,2.77,15.9,0.0,"USDA FoodData Central SR Legacy: Cheese, mozzarella, part skim milk",170847,2026-10-28,
+milk_skim,Skim milk,single,record_matches,35.0,3.4,4.9,0.2,35.0,3.37,4.86,0.18,0.0,"USDA FoodData Central SR Legacy: Milk, nonfat, fluid, without added vitamin A and vitamin D (fat free or skim)",173432,2026-10-28,
+milk_full,Full-cream milk,single,record_matches,61.0,3.1,4.8,3.2,61.0,3.15,4.8,3.25,0.0,"USDA FoodData Central SR Legacy: Milk, whole, 3.25% milkfat, with added vitamin D",171265,2026-10-28,
+laban_rayeb,Laban rayeb,single,unverified,40.0,3.3,4.8,1.1,,,,,,none consulted,,,stand-in: cultured buttermilk stands in for laban rayeb
+toast_ww,Whole-wheat toast,single,record_matches,306.0,16.3,51.2,4.1,306.0,16.3,51.2,4.07,0.0,"USDA FoodData Central SR Legacy: Bread, whole-wheat, commercially prepared, toasted",172689,2026-10-28,
+tortilla_ww,Whole-wheat tortilla,single,record_matches,310.0,9.8,45.9,9.8,310.0,9.76,45.9,9.76,0.0,"USDA FoodData Central SR Legacy: Tortillas, ready-to-bake or -fry, whole wheat",174081,2026-10-28,
+oats_rolled,Rolled oats,single,record_matches,389.0,16.9,66.3,6.9,389.0,16.9,66.3,6.9,0.0,USDA FoodData Central SR Legacy: Oats (Includes foods for USDA's Food Distribution Program),169705,2026-10-28,
+rice_basmati,Basmati rice,single,unverified,130.0,2.7,28.2,0.3,,,,,,none consulted,,,stand-in: cooked long-grain white rice stands in for basmati
+freekeh,Freekeh,single,unverified,83.0,3.1,18.6,0.2,,,,,,none consulted,,,stand-in: cooked bulgur stands in for freekeh
+pasta_ww,Whole-wheat pasta,single,record_matches,149.0,6.0,30.1,1.7,149.0,5.99,30.1,1.71,0.0,"USDA FoodData Central SR Legacy: Pasta, whole-wheat, cooked (Includes foods for USDA's Food Distribution Program)",168910,2026-10-28,
+potato_boiled,Boiled or baked potato,single,record_matches,86.0,1.7,20.0,0.1,86.0,1.71,20.0,0.1,0.0,"USDA FoodData Central SR Legacy: Potatoes, boiled, cooked without skin, flesh, without salt",170440,2026-10-28,
+cucumber,Cucumber,single,record_matches,15.0,0.7,3.6,0.1,15.0,0.65,3.63,0.11,0.0,"USDA FoodData Central SR Legacy: Cucumber, with peel, raw",168409,2026-10-28,
+tomato,Tomato,single,record_matches,18.0,0.9,3.9,0.2,18.0,0.88,3.89,0.2,0.0,"USDA FoodData Central SR Legacy: Tomatoes, red, ripe, raw, year round average",170457,2026-10-28,
+gargeer,Rocket (gargeer),single,record_matches,25.0,2.6,3.6,0.7,25.0,2.58,3.65,0.66,0.0,"USDA FoodData Central SR Legacy: Arugula, raw",169387,2026-10-28,
+broccoli_steamed,Steamed broccoli,single,record_matches,35.0,2.4,7.2,0.4,35.0,2.38,7.18,0.41,0.0,"USDA FoodData Central SR Legacy: Broccoli, cooked, boiled, drained, without salt",169967,2026-10-28,
+zucchini_cooked,Zucchini,single,record_matches,15.0,1.1,2.7,0.4,15.0,1.14,2.69,0.36,0.0,"USDA FoodData Central SR Legacy: Squash, summer, zucchini, includes skin, cooked, boiled, drained, without salt",169292,2026-10-28,
+green_beans_plain,"Green beans, steamed",single,record_matches,35.0,1.9,7.9,0.3,35.0,1.89,7.88,0.28,0.0,"USDA FoodData Central SR Legacy: Beans, snap, green, cooked, boiled, drained, without salt",169141,2026-10-28,
+dates,Dates,single,record_matches,282.0,2.5,75.0,0.4,282.0,2.45,75.0,0.39,0.0,"USDA FoodData Central SR Legacy: Dates, deglet noor",171726,2026-10-28,
+banana,Banana,single,record_matches,89.0,1.1,22.8,0.3,89.0,1.09,22.8,0.33,0.0,"USDA FoodData Central SR Legacy: Bananas, raw",173944,2026-10-28,
+apple,Apple,single,record_matches,52.0,0.3,13.8,0.2,52.0,0.26,13.8,0.17,0.0,"USDA FoodData Central SR Legacy: Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",171688,2026-10-28,
+orange,Orange,single,record_matches,47.0,0.9,11.8,0.1,47.0,0.94,11.8,0.12,0.0,"USDA FoodData Central SR Legacy: Oranges, raw, all commercial varieties",169097,2026-10-28,
+watermelon,Watermelon,single,record_matches,30.0,0.6,7.5,0.1,30.0,0.61,7.55,0.15,0.0,"USDA FoodData Central SR Legacy: Watermelon, raw",167765,2026-10-28,
+strawberries,Strawberries,single,record_matches,32.0,0.7,7.7,0.3,32.0,0.67,7.68,0.3,0.0,"USDA FoodData Central SR Legacy: Strawberries, raw",167762,2026-10-28,
+mango,Mango,single,record_matches,60.0,0.8,15.0,0.4,60.0,0.82,15.0,0.38,0.0,"USDA FoodData Central SR Legacy: Mangos, raw",169910,2026-10-28,
+grapes,Grapes,single,record_matches,69.0,0.7,18.1,0.2,69.0,0.72,18.1,0.16,0.0,"USDA FoodData Central SR Legacy: Grapes, red or green (European type, such as Thompson seedless), raw",174683,2026-10-28,
+guava,Guava,single,record_matches,68.0,2.5,14.3,0.9,68.0,2.55,14.3,0.95,0.0,"USDA FoodData Central SR Legacy: Guavas, common, raw",173044,2026-10-28,
+almonds,Almonds,single,record_matches,579.0,21.1,21.6,49.9,579.0,21.2,21.6,49.9,0.0,"USDA FoodData Central SR Legacy: Nuts, almonds",170567,2026-10-28,
+walnuts,Walnuts,single,record_matches,654.0,15.2,13.7,65.2,654.0,15.2,13.7,65.2,0.0,"USDA FoodData Central SR Legacy: Nuts, walnuts, english",170187,2026-10-28,
+peanuts,Peanuts,single,record_matches,587.0,24.4,21.3,49.7,587.0,24.4,21.3,49.7,0.0,"USDA FoodData Central SR Legacy: Peanuts, all types, dry-roasted, without salt",173806,2026-10-28,
+peanut_butter,Natural peanut butter,single,record_matches,598.0,22.2,22.3,51.4,598.0,22.2,22.3,51.4,0.0,"USDA FoodData Central SR Legacy: Peanut butter, smooth style, without salt",172470,2026-10-28,
+chia_seeds,Chia seeds,single,record_matches,486.0,16.5,42.1,30.7,486.0,16.5,42.1,30.7,0.0,"USDA FoodData Central SR Legacy: Seeds, chia seeds, dried",170554,2026-10-28,
+popcorn_air,Air-popped popcorn,single,record_matches,387.0,12.9,77.8,4.5,387.0,12.9,77.8,4.54,0.0,"USDA FoodData Central SR Legacy: Snacks, popcorn, air-popped",167959,2026-10-28,
+rice_cakes,Rice cakes,single,record_matches,387.0,8.2,81.5,2.8,387.0,8.2,81.5,2.8,0.0,"USDA FoodData Central SR Legacy: Snacks, rice cakes, brown rice, plain, unsalted",170250,2026-10-28,
+dark_chocolate_70,Dark chocolate 70%,single,record_matches,598.0,7.8,45.9,42.6,598.0,7.79,45.9,42.6,0.0,"USDA FoodData Central SR Legacy: Chocolate, dark, 70-85% cacao solids",170273,2026-10-28,
+karkadeh_unsweetened,Unsweetened karkadeh,single,record_matches,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,"USDA FoodData Central SR Legacy: Beverages, tea, hibiscus, brewed",171946,2026-10-28,
+turkish_coffee_sada,"Turkish coffee, no sugar",single,unverified,9.0,0.1,1.7,0.2,,,,,,none consulted,,,stand-in: restaurant espresso stands in for Turkish coffee
+egg_whole,"Whole egg, raw",single,record_matches,143.0,12.6,0.7,9.5,143.0,12.6,0.72,9.51,0.0,"USDA FoodData Central SR Legacy: Egg, whole, raw, fresh",171287,2026-10-28,
+chicken_breast_raw,"Chicken breast, raw",single,record_matches,120.0,22.5,0.0,2.6,120.0,22.5,0.0,2.62,0.0,"USDA FoodData Central SR Legacy: Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",171077,2026-10-28,
+beef_mince_lean,"Lean minced beef, raw",single,record_matches,176.0,20.0,0.0,10.0,176.0,20.0,0.0,10.0,0.0,"USDA FoodData Central SR Legacy: Beef, ground, 90% lean meat / 10% fat, raw",174030,2026-10-28,
+beef_steak_raw,"Beef steak, raw",single,record_matches,189.0,20.7,0.0,11.1,189.0,20.7,0.0,11.1,0.0,"USDA FoodData Central SR Legacy: Beef, top sirloin, steak, separable lean and fat, trimmed to 1/8"" fat, select, raw",169551,2026-10-28,
+chicken_liver_raw,"Chicken liver, raw",single,record_matches,119.0,16.9,0.7,4.8,119.0,16.9,0.73,4.83,0.0,"USDA FoodData Central SR Legacy: Chicken, liver, all classes, raw",171060,2026-10-28,
+shrimp_raw,"Shrimp, raw",single,record_matches,71.0,13.6,0.9,1.0,71.0,13.6,0.91,1.01,0.0,"USDA FoodData Central SR Legacy: Crustaceans, shrimp, mixed species, raw (may contain additives to retain moisture)",174210,2026-10-28,
+chicken_wings_raw,"Chicken wings, raw",single,record_matches,191.0,17.5,0.0,12.8,191.0,17.5,0.0,12.8,0.0,"USDA FoodData Central SR Legacy: Chicken, broilers or fryers, wing, meat and skin, raw",172390,2026-10-28,
+chicken_whole_raw,"Chicken, meat and skin, raw",single,record_matches,215.0,18.6,0.0,15.1,215.0,18.6,0.0,15.1,0.0,"USDA FoodData Central SR Legacy: Chicken, broilers or fryers, meat and skin, raw",171447,2026-10-28,
+tilapia_raw,"Tilapia fillet, raw",single,record_matches,96.0,20.1,0.0,1.7,96.0,20.1,0.0,1.7,0.0,"USDA FoodData Central SR Legacy: Fish, tilapia, raw",175176,2026-10-28,
+chickpeas_cooked,"Chickpeas, boiled",single,record_matches,164.0,8.9,27.4,2.6,164.0,8.86,27.4,2.59,0.0,"USDA FoodData Central SR Legacy: Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",173757,2026-10-28,
+lentils_dry,"Lentils, dry",single,record_matches,352.0,24.6,63.4,1.1,352.0,24.6,63.4,1.06,0.0,"USDA FoodData Central SR Legacy: Lentils, raw",172420,2026-10-28,
+lentils_cooked,"Lentils, boiled",single,record_matches,116.0,9.0,20.1,0.4,116.0,9.02,20.1,0.38,0.0,"USDA FoodData Central SR Legacy: Lentils, mature seeds, cooked, boiled, without salt",172421,2026-10-28,
+butter,Butter,single,record_matches,717.0,0.8,0.1,81.1,717.0,0.85,0.06,81.1,0.0,"USDA FoodData Central SR Legacy: Butter, salted",173410,2026-10-28,
+milk_half_fat,Half-fat milk,single,record_matches,51.0,3.5,5.0,1.9,51.0,3.48,4.97,1.92,0.0,"USDA FoodData Central SR Legacy: Milk, reduced fat, fluid, 2% milkfat, with added nonfat milk solids and vitamin A and vitamin D",170870,2026-10-28,
+olive_oil,Olive oil,single,record_matches,884.0,0.0,0.0,100.0,884.0,0.0,0.0,100.0,0.0,"USDA FoodData Central SR Legacy: Oil, olive, salad or cooking",171413,2026-10-28,
+honey,Honey,single,record_matches,304.0,0.3,82.4,0.0,304.0,0.3,82.4,0.0,0.0,USDA FoodData Central SR Legacy: Honey,169640,2026-10-28,
+strawberry_jam,Strawberry jam,single,record_matches,278.0,0.4,68.9,0.1,278.0,0.37,68.9,0.07,0.0,USDA FoodData Central SR Legacy: Jams and preserves,169641,2026-10-28,
+cocoa_powder,"Cocoa powder, unsweetened",single,record_matches,228.0,19.6,57.9,13.7,228.0,19.6,57.9,13.7,0.0,"USDA FoodData Central SR Legacy: Cocoa, dry powder, unsweetened",169593,2026-10-28,
+flour_white,White flour,single,record_matches,364.0,10.3,76.3,1.0,364.0,10.3,76.3,0.98,0.0,"USDA FoodData Central SR Legacy: Wheat flour, white, all-purpose, enriched, bleached",168894,2026-10-28,
+pasta_dry,"Pasta, dry",single,record_matches,371.0,13.0,74.7,1.5,371.0,13.0,74.7,1.51,0.0,"USDA FoodData Central SR Legacy: Pasta, dry, enriched",169736,2026-10-28,
+potato_raw,"Potato, raw",single,record_matches,77.0,2.0,17.5,0.1,77.0,2.05,17.5,0.09,0.0,"USDA FoodData Central SR Legacy: Potatoes, flesh and skin, raw",170026,2026-10-28,
+digestive_biscuit,Digestive biscuit,single,unverified,430.0,6.7,77.7,10.6,,,,,,none consulted,,,stand-in: graham cracker stands in for a digestive biscuit
+onion_raw,Onion,single,record_matches,40.0,1.1,9.3,0.1,40.0,1.1,9.34,0.1,0.0,"USDA FoodData Central SR Legacy: Onions, raw",170000,2026-10-28,
+bell_pepper_green,Green pepper,single,record_matches,20.0,0.9,4.6,0.2,20.0,0.86,4.64,0.17,0.0,"USDA FoodData Central SR Legacy: Peppers, sweet, green, raw",170427,2026-10-28,
+bell_pepper_red,Red pepper,single,record_matches,26.0,1.0,6.0,0.3,26.0,0.99,6.03,0.3,0.0,"USDA FoodData Central SR Legacy: Peppers, sweet, red, raw",170108,2026-10-28,
+lettuce,Lettuce,single,record_matches,17.0,1.2,3.3,0.3,17.0,1.23,3.29,0.3,0.0,"USDA FoodData Central SR Legacy: Lettuce, cos or romaine, raw",169247,2026-10-28,
+carrot_raw,"Carrot, raw",single,record_matches,41.0,0.9,9.6,0.2,41.0,0.93,9.58,0.24,0.0,"USDA FoodData Central SR Legacy: Carrots, raw",170393,2026-10-28,
+zucchini_raw,"Zucchini, raw",single,record_matches,17.0,1.2,3.1,0.3,17.0,1.21,3.11,0.32,0.0,"USDA FoodData Central SR Legacy: Squash, summer, zucchini, includes skin, raw",169291,2026-10-28,
+spinach_raw,"Spinach, raw",single,record_matches,23.0,2.9,3.6,0.4,23.0,2.86,3.63,0.39,0.0,"USDA FoodData Central SR Legacy: Spinach, raw",168462,2026-10-28,
+avocado,Avocado,single,record_matches,160.0,2.0,8.5,14.7,160.0,2.0,8.53,14.7,0.0,"USDA FoodData Central SR Legacy: Avocados, raw, all commercial varieties",171705,2026-10-28,
+tomato_sauce,Tomato sauce,single,record_matches,24.0,1.2,5.3,0.3,24.0,1.2,5.31,0.3,0.0,"USDA FoodData Central SR Legacy: Tomato products, canned, sauce",170054,2026-10-28,
+olives_green,Green olives,single,record_matches,145.0,1.0,3.8,15.3,145.0,1.03,3.84,15.3,0.0,"USDA FoodData Central SR Legacy: Olives, pickled, canned or bottled, green",169096,2026-10-28,
+veg_mix_frozen,Mixed vegetables,single,unverified,72.0,3.3,13.5,0.5,,,,,,none consulted,,,stand-in: frozen mixed vegetables stand in for a roasting tray
+tahini_paste,Tahini paste,single,record_matches,595.0,17.0,21.2,53.8,595.0,17.0,21.2,53.8,0.0,"USDA FoodData Central SR Legacy: Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type)",170189,2026-10-28,
+sesame_seeds,Sesame seeds,single,record_matches,573.0,17.7,23.4,49.7,573.0,17.7,23.4,49.7,0.0,"USDA FoodData Central SR Legacy: Seeds, sesame seeds, whole, dried",170150,2026-10-28,
+coconut_shredded,Shredded coconut,single,record_matches,660.0,6.9,23.6,64.5,660.0,6.88,23.6,64.5,0.0,"USDA FoodData Central SR Legacy: Nuts, coconut meat, dried (desiccated), not sweetened",170170,2026-10-28,
+raisins,Raisins,single,record_matches,299.0,3.3,79.3,0.2,299.0,3.3,79.3,0.25,0.0,"USDA FoodData Central SR Legacy: Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)",168165,2026-10-28,
+protein_crisps,Protein crisps,single,unverified,385.0,66.7,17.9,5.1,,,,,,none consulted,,,stand-in: a whey protein powder stands in for a branded crisp
+stock_cube,Stock cube,single,record_matches,267.0,16.7,18.0,13.9,267.0,16.7,18.0,13.9,0.0,"USDA FoodData Central SR Legacy: Soup, chicken broth or bouillon, dry",171562,2026-10-28,
+spices_and_seasoning,"Salt, pepper and dry spices",single,unverified,251.0,10.4,64.0,3.3,,,,,,none consulted,,,stand-in: black pepper stands in for a pinch of seasoning
+curry_powder,Curry powder,single,record_matches,325.0,14.3,55.8,14.0,325.0,14.3,55.8,14.0,0.0,"USDA FoodData Central SR Legacy: Spices, curry powder",170924,2026-10-28,
+zaatar_mix,Za'atar,single,unverified,276.0,9.1,63.9,7.4,,,,,,none consulted,,,stand-in: dried thyme stands in for the thyme and sesame blend
+spice_blend_store,Shop-bought spice blend,single,unverified,282.0,14.1,54.0,12.9,,,,,,none consulted,,,stand-in: paprika stands in for a packet spice blend
+baking_powder,Baking powder,single,record_matches,53.0,0.0,27.7,0.0,53.0,0.0,27.7,0.0,0.0,"USDA FoodData Central SR Legacy: Leavening agents, baking powder, double-acting, sodium aluminum sulfate",172803,2026-10-28,
+salt,Table salt,single,record_matches,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,"USDA FoodData Central SR Legacy: Salt, table",173468,2026-10-28,
+water,Water,single,record_matches,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,,"USDA FoodData Central SR Legacy: Beverages, water, tap, drinking",173647,2026-10-28,
+lemon_juice,Lemon juice,single,record_matches,22.0,0.3,6.9,0.2,22.0,0.35,6.9,0.24,0.0,"USDA FoodData Central SR Legacy: Lemon juice, raw",167747,2026-10-28,

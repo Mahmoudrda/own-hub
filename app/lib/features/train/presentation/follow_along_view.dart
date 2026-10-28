@@ -25,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../../app_state/haptics.dart';
+import '../../../app_state/sound.dart';
 import '../../../domain/logging/log_command_bus.dart';
 import '../../../domain/training/prescribed_set.dart';
 import '../../../l10n/app_l10n.dart';
@@ -237,6 +238,7 @@ class _FollowAlongViewState extends State<FollowAlongView>
       ),
     );
     unawaited(AppHaptics.play(HapticMoment.setLogged));
+    unawaited(AppSound.play(SoundCue.setDone, variant: prescribed.order - 1));
     widget.onSetLogged?.call(handle);
   }
 

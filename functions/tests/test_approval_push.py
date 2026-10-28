@@ -154,3 +154,19 @@ def test_the_text_names_no_check_and_no_document():
         for word in ("id", "selfie", "face", "woman", "verified", "بطاقة", "هوية", "امرأة"):
             assert f" {word} " not in f" {text} ", word
     assert push.approved_text("fr") == push.APPROVED_TEXT["ar"]
+
+
+def test_a_phone_that_asked_only_for_payment_alerts_hears_no_approval():
+    db = fake_firestore.FakeFirestore()
+    _devices(
+        db,
+        "her",
+        {
+            "pay": {"token": "t-pay", "locale": "en", "topics": ["payments"]},
+            "c14": {"token": "t-c14", "locale": "en"},
+            "both": {"token": "t-both", "locale": "en", "topics": ["approval", "payments"]},
+        },
+    )
+    messaging = _Messaging()
+    assert push.send_approved("her", db, messaging) == 2
+    assert {t for m in messaging.sent for t in m.tokens} == {"t-c14", "t-both"}

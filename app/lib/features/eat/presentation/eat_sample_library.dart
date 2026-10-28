@@ -69,7 +69,12 @@ FoodLibrary eatSampleLibrary(AppL10n l10n, {List<CustomFood>? custom}) {
   return FoodLibrary([
     Food(
       foodId: 'koshari_bowl',
-      names: [l10n.koshariBowl, l10n.koshariBowlMedium, 'koshari'],
+      names: [
+        l10n.koshariBowl,
+        l10n.koshariBowlMedium,
+        'koshari',
+        ...EgyptianFoodPack.namesOf('koshary'),
+      ],
       popularity: 95,
       sizes: [
         FoodSize(
@@ -103,7 +108,16 @@ FoodLibrary eatSampleLibrary(AppL10n l10n, {List<CustomFood>? custom}) {
     ),
     Food(
       foodId: 'boiled_eggs',
-      names: [l10n.boiledEggs, l10n.twoBoiledEggs, 'eggs'],
+      names: [
+        l10n.boiledEggs,
+        l10n.twoBoiledEggs,
+        'eggs',
+        l10n.eggs,
+        ...EgyptianFoodPack.namesOf('eggs_boiled'),
+        // The whole egg's bare words ("egg", "بيض"), but not its raw ones.
+        ...EgyptianFoodPack.namesOf('egg_whole')
+            .where((n) => !n.toLowerCase().contains('raw')),
+      ],
       popularity: 88,
       sizes: [
         FoodSize(
@@ -137,7 +151,11 @@ FoodLibrary eatSampleLibrary(AppL10n l10n, {List<CustomFood>? custom}) {
     ),
     Food(
       foodId: 'ful_baladi',
-      names: [l10n.fulAndBaladi, 'ful'],
+      names: [
+        l10n.fulAndBaladi,
+        'ful',
+        ...EgyptianFoodPack.namesOf('ful_medames'),
+      ],
       popularity: 92,
       sizes: [
         FoodSize(
@@ -153,7 +171,11 @@ FoodLibrary eatSampleLibrary(AppL10n l10n, {List<CustomFood>? custom}) {
     ),
     Food(
       foodId: 'molokhia_chicken',
-      names: [l10n.molokhiaWithChicken, 'molokhia'],
+      // No bare "molokhia": that is the plain dish, which the pack holds.
+      names: [
+        l10n.molokhiaWithChicken,
+        ...EgyptianFoodPack.namesOf('molokhia_chicken'),
+      ],
       popularity: 80,
       sizes: [
         FoodSize(

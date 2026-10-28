@@ -9,6 +9,7 @@ import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart'
 import 'package:own_hub/features/private_coaching/domain/inbody_scan.dart';
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
 import 'package:own_hub/features/private_coaching/presentation/plans/share_meal_plan_view.dart';
+import 'package:own_hub/ui/app_button.dart';
 
 import 'plans_support.dart';
 
@@ -107,36 +108,87 @@ void main() {
   });
 
   group('the InBody suggestion', () {
-    const scan = InBodyScan(weightKg: 100, bmrKcal: 1100, heightCm: 165);
-    final lose = Intake(
-      goal: 'lose_steadily',
+    const scan = InBodyScan(weightKg: 100, bmrKcal: 1100);
+    const chip = ValueKey('meal-apply-inbody-targets');
+    const label = 'Use the InBody suggestion: 1,200 kcal and 105 g protein';
+    Intake intake({
+      String? stage,
+      bool eating = false,
+      InBodyScan? scan = scan,
+    }) => Intake(
+      goal: 'loseSteadily',
       daysPerWeek: 1,
+      lifeStage: stage,
+      eatingHistory: eating,
       inbodyScan: scan,
     );
 
-    testWidgets('is held to the floor and 35% protein', (t) async {
-      await _open(t, intake: lose);
-      // 1100 x 1.25 = 1375 - 400 = 975 -> 1200; protein 200 g -> 105 g.
+    testWidgets('is held to the floor and 35% protein, and fills both fields', (
+      t,
+    ) async {
+      final repo = await _open(t, intake: intake());
+      // 1100 x 1.2 x 0.85 = 1122 -> the 1200 floor; protein 160 g -> 105 g.
+      expect(find.text(label), findsOneWidget);
+      await t.tap(find.byKey(chip));
+      await t.pump();
+      expect(find.text('1200'), findsOneWidget);
+      expect(find.text('105'), findsOneWidget);
+      expect(find.byKey(const ValueKey('meal-goal-safety')), findsNothing);
+      await _publish(t);
+      expect(repo.calls.single.$2['body'], isNotNull, reason: 'it goes out');
+    });
+
+    testWidgets('is a real button: one tap target, not filled, no sparkle', (
+      t,
+    ) async {
+      await _open(t, intake: intake());
+      final button = t.widget<AppButton>(find.byKey(chip));
+      expect(button.variant, AppButtonVariant.outlined);
+      expect(t.getSize(find.byKey(chip)).height, greaterThanOrEqualTo(48));
+      expect(find.byIcon(Icons.auto_awesome), findsNothing);
       expect(
-        find.textContaining('InBody suggested: 1200 kcal · 105g protein'),
+        find.bySemanticsLabel(label),
         findsOneWidget,
+        reason: 'announced as what it does',
       );
     });
 
-    testWidgets('is not shown for a pregnant or postpartum client', (t) async {
-      await _open(
-        t,
-        intake: Intake(
-          goal: 'lose_steadily',
-          daysPerWeek: 1,
-          lifeStage: 'pregnant',
-          inbodyScan: scan,
-        ),
-      );
+    for (final stage in ['pregnant', 'postpartum']) {
+      testWidgets('is not shown for a $stage client', (t) async {
+        await _open(t, intake: intake(stage: stage));
+        expect(find.byKey(chip), findsNothing);
+      });
+    }
+
+    testWidgets(
+      'is not shown, and no figure is, for an eating-history answer',
+      (t) async {
+        await _open(t, intake: intake(eating: true));
+        expect(find.byKey(chip), findsNothing);
+        expect(find.byKey(const ValueKey('meal-goal-kcal')), findsNothing);
+        expect(find.textContaining('InBody suggestion'), findsNothing);
+      },
+    );
+
+    testWidgets('is not shown when the sheet has no metabolic rate', (t) async {
+      await _open(t, intake: intake(scan: const InBodyScan(weightKg: 100)));
+      expect(find.byKey(chip), findsNothing);
+    });
+  });
+
+  group('the bars under a goal', () {
+    testWidgets('say a day with items that have no figures is incomplete', (
+      t,
+    ) async {
+      await _open(t, intake: const Intake());
+      await _goal(t, '1600', '110');
       expect(
-        find.byKey(const ValueKey('meal-apply-inbody-targets')),
-        findsNothing,
+        find.byKey(const ValueKey('meal-target-kcal-bar')),
+        findsOneWidget,
       );
+      expect(find.text('Some items have no figures.'), findsNWidgets(2));
+      expect(find.textContaining('remaining'), findsNothing);
+      expect(find.text('Target reached'), findsNothing);
     });
   });
 }

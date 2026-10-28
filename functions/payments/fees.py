@@ -101,7 +101,7 @@ def generate(db, *, now: dt.datetime, notify) -> int:
         if common.run(db, body):
             made += 1
             try:
-                notify(coach_uid, "instapayStatementReady")
+                notify(coach_uid, "instapayStatementReady", f"{year}-{month:02d}")
             except Exception:  # noqa: BLE001
                 pass
     return made
@@ -136,7 +136,7 @@ def mark_overdue(db, *, now: dt.datetime, notify) -> int:
         if common.run(db, body):
             flagged += 1
             try:
-                notify(row["coachUid"], "instapayFeeOverdue")
+                notify(row["coachUid"], "instapayFeeOverdue", f"{row['year']}-{int(row['month']):02d}")
             except Exception:  # noqa: BLE001
                 pass
     return flagged

@@ -454,7 +454,7 @@
     ]
   },
   "consentTexts": {
-    "about": "Words the app shows beside each tick, per consent version and language, oldest first. The server accepts only the hash of one of these; when a text changes, add the new text to the end and keep the old one for the app versions still in use. The share text has {name}, the coach's display name.",
+    "about": "Words the app shows beside each tick, per consent version and language, oldest first. The server accepts only the hash of one of these; when a text changes, add the new text to the end and keep the old one for the app versions still in use. The share text has {name}, the coach's display name. The inbody text, shown only when she sends her InBody numbers, also has {name}; its hash is required if and only if the intake holds inbody.",
     "coachingRequest2": {
       "en": {
         "share": [
@@ -462,6 +462,9 @@
         ],
         "transfer": [
           "I agree that my answers are sent to Own Hub's servers in Frankfurt, Germany, outside Egypt, and stored there."
+        ],
+        "inbody": [
+          "I share my InBody numbers with {name}. They are body measurements, stored with my other answers in Frankfurt, Germany, outside Egypt."
         ]
       },
       "ar": {
@@ -470,6 +473,9 @@
         ],
         "transfer": [
           "موافقة إن إجاباتي تتبعت وتتخزّن على سيرفرات Own Hub في فرانكفورت بألمانيا، يعني برّه مصر."
+        ],
+        "inbody": [
+          "أنا بشارك أرقام الـ InBody بتاعتي مع {name}. دي قياسات جسم، وبتتخزّن مع باقي إجاباتي في فرانكفورت بألمانيا، يعني برّه مصر."
         ]
       }
     },
@@ -805,6 +811,31 @@
         "doctorAck",
         "note"
       ],
+      "intakeOptional": [
+        "inbody"
+      ],
+      "inbody": {
+        "weightKg": [
+          30,
+          250
+        ],
+        "heightCm": [
+          120,
+          230
+        ],
+        "bodyFatPercent": [
+          5,
+          65
+        ],
+        "skeletalMuscleMassKg": [
+          10,
+          80
+        ],
+        "bmrKcal": [
+          800,
+          3500
+        ]
+      },
       "payment": [
         "state",
         "attempts",

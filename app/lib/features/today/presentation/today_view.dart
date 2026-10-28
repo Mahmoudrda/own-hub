@@ -586,8 +586,9 @@ class _TodayViewState extends State<TodayView> {
           row(
             const ValueKey('change-ten-minute-walk'),
             Icons.directions_walk,
-            l10n.a10MinuteWalk,
+            l10n.goForAWalk,
             walk,
+            subtitle: l10n.logItToCountTheCaloriesYou,
           ),
       ],
     );

@@ -499,8 +499,8 @@ class _TypeItViewState extends State<TypeItView> {
           controller: _controller,
           focusNode: _fieldFocus,
           onChanged: _onChanged,
-          // No microphone while saying a meal is off in this build
-          // (`Feature.voiceLogging`): there is nothing to hear her with.
+          // The microphone is drawn only while saying a meal is on
+          // (`Feature.voiceLogging`); with it off the box offers typing only.
           hint: _voice ? l10n.sayOrTypeWhatYouAte : l10n.typeWhatYouAte,
           trailing: Row(
             mainAxisSize: MainAxisSize.min,

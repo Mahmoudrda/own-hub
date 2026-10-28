@@ -273,6 +273,43 @@ class EatDayViewModel {
     );
   }
 
+  /// "Yesterday's lunch again": what she logged for lunch the day before, as
+  /// one row she can log in a tap. Null when there was none, or when any part
+  /// of it can no longer be offered: a food that fails her allergy guard, has
+  /// left the pack, or was logged as less than a whole serving cannot be
+  /// repeated as "the same", and a meal minus a food is not the meal she ate.
+  SuggestionView? yesterdaysLunch(MealDay? yesterday) {
+    if (yesterday == null) return null;
+    final items = reader.itemsIn(yesterday, MealSlot.lunch);
+    if (items.isEmpty) return null;
+    final allowed = guard
+        .screenSuggestions(library.foods)
+        .map((food) => food.foodId)
+        .toSet();
+    final entries = <ParsedItem>[];
+    for (final item in items) {
+      final food = library.byId(item.foodId);
+      final size = food?.sizeById(item.size);
+      final whole =
+          item.servings >= 1 && item.servings == item.servings.toInt();
+      if (food == null || size == null || !whole) return null;
+      if (!allowed.contains(food.foodId)) return null;
+      entries.add(
+        ParsedItem(
+          food: food,
+          size: size,
+          servings: item.servings.toInt(),
+          sourceText: food.names.first,
+        ),
+      );
+    }
+    return SuggestionView(
+      key: 'yesterdays-lunch',
+      entries: entries,
+      primary: false,
+    );
+  }
+
   List<ParsedItem> _entriesFor(Plate plate) {
     final entries = <ParsedItem>[];
     for (final item in plate.items) {

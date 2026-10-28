@@ -4,7 +4,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../domain/flags/feature_flags.dart';
 import '../../../../l10n/app_l10n.dart';
+import '../../../../routing/app_router.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_chip_row.dart';
@@ -12,11 +14,15 @@ import '../../../../ui/app_sheet.dart';
 import '../../../account/presentation/allergen_labels.dart';
 import '../../../signup/domain/legal_acceptance.dart' show kAppVersion;
 import '../../data/coaching_repository.dart';
+import '../../data/inbody_ocr.dart';
 import '../../domain/coach_profile.dart';
 import '../../domain/coaching_contract.dart';
 import '../../domain/coaching_failure.dart';
+import '../../domain/inbody_scan.dart';
 import '../../domain/requests.dart';
+import '../../domain/setup_prefill.dart';
 import '../../domain/subscription.dart';
+import '../client/inbody_scan_sheet.dart';
 import 'coach_labels.dart';
 
 Future<void> showJoinCoachSheet({
@@ -26,6 +32,7 @@ Future<void> showJoinCoachSheet({
   required CoachPackage package,
   List<String> declaredAllergies = const <String>[],
   String firstName = '',
+  SetupAnswers? setupAnswers,
 }) => showAppSheet<void>(
   context: context,
   children: [
@@ -35,6 +42,7 @@ Future<void> showJoinCoachSheet({
       package: package,
       declaredAllergies: declaredAllergies,
       firstName: firstName,
+      setupAnswers: setupAnswers ?? AppRouter.setupAnswersForCoaching(),
     ),
     const SizedBox(height: 12),
   ],
@@ -82,6 +90,8 @@ class JoinCoachForm extends StatefulWidget {
     required this.package,
     this.declaredAllergies = const <String>[],
     this.firstName = '',
+    this.inbodyOcr,
+    this.setupAnswers = noSetupAnswers,
   });
 
   final CoachingRepository repository;
@@ -95,6 +105,13 @@ class JoinCoachForm extends StatefulWidget {
   /// it or empty it.
   final String firstName;
 
+  /// Null reads an InBody sheet with the phone's own text recognition.
+  final InBodyOcr? inbodyOcr;
+
+  /// Her goal, level, days and place from setup, each one still a choice she
+  /// can change. Never her health, life stage or eating answers.
+  final SetupAnswers setupAnswers;
+
   @override
   State<JoinCoachForm> createState() => _JoinCoachFormState();
 }
@@ -105,16 +122,18 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
     text: widget.firstName,
   );
   late final Set<String> _allergies = <String>{...widget.declaredAllergies};
-  String? _goal;
-  String? _level;
-  int? _days;
-  String? _place;
+  late String? _goal = widget.setupAnswers.goal;
+  late String? _level = widget.setupAnswers.level;
+  late int? _days = widget.setupAnswers.days;
+  late String? _place = widget.setupAnswers.place;
   final Map<String, bool> _health = <String, bool>{};
   bool _doctorAck = false;
   String? _stage; // null = not answered, 'none' | 'pregnant' | 'postpartum'
   bool? _eating;
   bool _shares = false;
   bool _stored = false;
+  InBodyScan? _inbody;
+  bool _inbodyShared = false;
   bool _sending = false;
   bool _sent = false;
   String? _failure;
@@ -140,6 +159,7 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
     lifeStage: (_stage == 'pregnant' || _stage == 'postpartum') ? _stage : null,
     eatingHistory: _eating == true,
     note: _note.text.trim(),
+    inbodyScan: _inbody,
   );
 
   bool get _anyYes => _health.values.any((yes) => yes);
@@ -155,7 +175,8 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
       _stage != null &&
       _eating != null &&
       _shares &&
-      _stored;
+      _stored &&
+      (_inbody == null || _inbodyShared);
 
   Future<void> _send() async {
     if (_sending || !_ready) return;
@@ -175,6 +196,9 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
             widget.coach.displayName,
           ),
           transferText: l10n.iAgreeThatMyAnswersAreSent,
+          inbodyText: _inbody == null
+              ? null
+              : l10n.iShareMyInbodyNumbersWithName(widget.coach.displayName),
           appVersion: kAppVersion,
         ),
         locale: locale,
@@ -188,6 +212,17 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
           _failure = joinFailureText(l10n, error);
         });
       }
+    }
+  }
+
+  Future<void> _addInbody() async {
+    final scan = await showInBodyScanSheet(
+      context: context,
+      mode: InBodyMode.forCoach,
+      ocr: widget.inbodyOcr,
+    );
+    if (scan != null && scan.isNotEmpty && mounted) {
+      setState(() => _inbody = scan);
     }
   }
 
@@ -430,6 +465,47 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
               style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
             ),
           ],
+          if (AppRouter.featureFlags.isOn(Feature.inbodyScan)) ...[
+            const SizedBox(height: 14),
+            _title(
+              _inbody == null
+                  ? l10n.addYourInbodyNumbers
+                  : l10n.inbodyNumbersAdded,
+            ),
+            if (_inbody == null) ...[
+              Text(
+                l10n.optionalYourCoachSeesTheNumbersNever,
+                style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              AppButton(
+                l10n.readMyInbodySheet,
+                key: const ValueKey('join-inbody-add'),
+                variant: AppButtonVariant.outlined,
+                onPressed: _addInbody,
+              ),
+            ] else
+              Wrap(
+                spacing: 8,
+                children: [
+                  AppButton(
+                    l10n.change,
+                    key: const ValueKey('join-inbody-change'),
+                    variant: AppButtonVariant.text,
+                    onPressed: _addInbody,
+                  ),
+                  AppButton(
+                    l10n.remove,
+                    key: const ValueKey('join-inbody-remove'),
+                    variant: AppButtonVariant.text,
+                    onPressed: () => setState(() {
+                      _inbody = null;
+                      _inbodyShared = false;
+                    }),
+                  ),
+                ],
+              ),
+          ],
           const SizedBox(height: 14),
           TextField(
             controller: _note,
@@ -452,6 +528,12 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
             l10n.iShareTheseAnswersWithNameMy(name),
             (v) => setState(() => _shares = v),
           ),
+          if (_inbody != null)
+            _tick(
+              _inbodyShared,
+              l10n.iShareMyInbodyNumbersWithName(name),
+              (v) => setState(() => _inbodyShared = v),
+            ),
           _tick(
             _stored,
             l10n.iAgreeThatMyAnswersAreSent,

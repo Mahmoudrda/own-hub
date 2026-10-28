@@ -14,7 +14,8 @@
 /// - **the big moment** — a heavy impact. R10 no longer plays it (D46): the
 ///   one haptic there is the medium impact above.
 ///
-/// Behind [Feature.haptics]. The platform's own setting still decides whether
+/// Behind [Feature.haptics] and her own Haptics switch in Profile
+/// ([FeelPrefs.haptics]). The platform's own setting still decides whether
 /// anything is felt: a phone with haptics off feels nothing, and nothing here
 /// overrides that. A platform without haptics throws nothing at her.
 library;
@@ -23,13 +24,15 @@ import 'package:flutter/services.dart';
 
 import '../domain/flags/feature_flags.dart';
 import '../routing/app_router.dart';
+import 'feel_prefs.dart';
 
 enum HapticMoment { setLogged, actionDone, sessionFinished, bigMoment }
 
 abstract final class AppHaptics {
   /// Whether haptics are switched on. Tests replace it.
   static bool Function() enabled = () =>
-      AppRouter.featureFlags.isOn(Feature.haptics);
+      AppRouter.featureFlags.isOn(Feature.haptics) &&
+      FeelPrefs.instance.haptics;
 
   static Future<void> play(HapticMoment moment) async {
     if (!enabled()) return;

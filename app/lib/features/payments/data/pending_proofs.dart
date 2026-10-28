@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../app_state/backup_exclusion.dart';
 import 'payments_repository.dart';
 
 class PendingProof {
@@ -69,12 +70,15 @@ class PendingProof {
 
 /// Proofs that could not be sent for want of signal. They stay on this phone
 /// only: the list in shared preferences, the pictures (already hidden-detail
-/// copies) as files in the app support folder. A proof is removed when sent,
+/// copies) as files in the app support folder, which is kept out of the
+/// phone's backup. A proof is removed when sent,
 /// and everything by [clear] ("Delete everything"). The same key goes out
 /// again, so a retry never makes a second payment.
 class PendingProofs {
-  PendingProofs({Directory? dir}) : _dirOverride = dir;
+  PendingProofs({Directory? dir, this._keepOutOfBackup = excludeFromBackup})
+    : _dirOverride = dir;
   final Directory? _dirOverride;
+  final Future<void> Function(String path) _keepOutOfBackup;
   static const _k = 'payments.pendingProofs';
 
   Future<Directory> _folder() async {
@@ -83,7 +87,11 @@ class PendingProofs {
         Directory(
           '${(await getApplicationSupportDirectory()).path}/payments-pending',
         );
-    if (!await base.exists()) await base.create(recursive: true);
+    if (!await base.exists()) {
+      await base.create(recursive: true);
+      // The pictures are hers and wait for a signal: never in a backup.
+      await _keepOutOfBackup(base.path);
+    }
     return base;
   }
 

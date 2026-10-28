@@ -42,6 +42,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../app_state/feel_prefs.dart';
 import '../../../app_state/honest_notice.dart';
 import '../../../app_state/profile_photo_state.dart';
 import '../../../domain/flags/feature_flags.dart';
@@ -54,6 +55,7 @@ import '../../../ui/app_chip_row.dart';
 import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
+import '../../../ui/app_toggle.dart';
 import '../../../ui/sign_in_pill.dart';
 import '../../../ui/app_sheet.dart';
 import '../../../ui/hand/hand.dart';
@@ -344,6 +346,17 @@ class _ProfileViewState extends State<ProfileView> {
           title: l10n.privacyAndData,
           onTap: _openPrivacyAndData,
         ),
+        // The two switches for how the app answers a touch. One row, with the
+        // switches in a sheet, so the page keeps its few controls. A switch
+        // whose feature the server has turned off is not shown, and with both
+        // off there is no row.
+        if (_soundsOn || _hapticsOn)
+          _row(
+            icon: Icons.volume_up_outlined,
+            title: l10n.soundsAndTouch,
+            subtitle: l10n.chooseWhatYouHearAndFeel,
+            onTap: _openSoundsAndTouch,
+          ),
         if (widget.onOpenAdmin != null || widget.onOpenAllScreens != null)
           const SizedBox(height: 6),
         if (widget.onOpenAdmin != null)
@@ -451,6 +464,69 @@ class _ProfileViewState extends State<ProfileView> {
     if (open == null || !mounted) return;
     open();
   }
+
+  bool get _soundsOn => AppRouter.featureFlags.isOn(Feature.sounds);
+  bool get _hapticsOn => AppRouter.featureFlags.isOn(Feature.haptics);
+
+  /// Sounds and haptics, each its own switch, both on until she turns them off.
+  /// They are this phone's, so nothing here touches her account.
+  Future<void> _openSoundsAndTouch() async {
+    final l10n = AppL10n.of(context);
+    await showAppSheet<void>(
+      context: context,
+      gap: 8,
+      children: [
+        Text(l10n.soundsAndTouch, style: AppText.titleL),
+        ListenableBuilder(
+          listenable: FeelPrefs.instance,
+          builder: (context, _) => Column(
+            children: [
+              if (_soundsOn)
+                _feelRow(
+                  key: 'a02-sounds',
+                  icon: Icons.volume_up_outlined,
+                  title: l10n.sounds,
+                  subtitle: l10n.softSoundsWhenYouLogASet,
+                  value: FeelPrefs.instance.sounds,
+                  onChanged: (on) =>
+                      unawaited(FeelPrefs.instance.setSounds(on)),
+                ),
+              if (_hapticsOn)
+                _feelRow(
+                  key: 'a02-haptics',
+                  icon: Icons.vibration,
+                  title: l10n.haptics,
+                  subtitle: l10n.aLightTapYouCanFeelAt,
+                  value: FeelPrefs.instance.haptics,
+                  onChanged: (on) =>
+                      unawaited(FeelPrefs.instance.setHaptics(on)),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _feelRow({
+    required String key,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) => AppListItem(
+    key: ValueKey(key),
+    leading: Icon(icon, size: 24, color: AppColors.primaryDim),
+    title: title,
+    subtitle: subtitle,
+    trailing: AppToggle(
+      value: value,
+      semanticLabel: title,
+      onChanged: onChanged,
+    ),
+    onTap: () => onChanged(!value),
+  );
 
   /// Asks before signing out, and says what stays. Staying is the filled
   /// answer: nothing is lost by tapping it by mistake.

@@ -43,6 +43,26 @@ abstract final class HandTiming {
   /// Rows beyond this many arrive with the last one rather than later.
   static const int staggerMax = 8;
 
+  // The guide's vocabulary (emotional redesign, 5.1), by name. D46's three
+  // timings above stay as they are, and each sits beside its guide name:
+  // [short] is [quick], [medium] is the card timing between [quick] and
+  // [base], and [long] is the low end of [emphasis]. New motion uses these.
+
+  /// Any tap's pressed state: 80 to 120 ms. Scale 0.97 or a tint.
+  static const Duration press = Duration(milliseconds: 100);
+
+  /// Toggles, chips and small reveals: 150 to 200 ms.
+  static const Duration quick = short;
+
+  /// Sheets, cards entering, page changes: 250 to 300 ms.
+  static const Duration base = Duration(milliseconds: 260);
+
+  /// The one hero moment of a screen: 400 to 500 ms.
+  static const Duration emphasis = Duration(milliseconds: 450);
+
+  /// A drawn tick, a count-up. Plays once: 700 to 1200 ms.
+  static const Duration moment = Duration(milliseconds: 800);
+
   /// Things settling into place.
   static const Curve standard = Curves.easeOutCubic;
 

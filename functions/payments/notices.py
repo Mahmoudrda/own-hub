@@ -1,5 +1,9 @@
 """Pushes for payments. A lock screen is read by whoever holds the phone, so no
-text names a person or carries an amount (spec section 8, default)."""
+text names a person or carries an amount (spec section 8, default).
+
+They go only to phones that said yes to payment alerts (topic "payments", asked
+for on the coach's Payments inbox and on a payment's status screen), never to a
+phone that only said yes on C14."""
 
 from __future__ import annotations
 
@@ -58,18 +62,34 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
 
 KINDS = tuple(TEXT)
 
+STATEMENT_KINDS = frozenset({"instapayStatementReady", "instapayFeeOverdue"})
+"""Their tap opens a fee statement, named by its month: the statement's own id
+holds the coach's uid, and no uid goes in a payload."""
+
+
+def data_for(kind: str, ref: Optional[str]) -> dict:
+    """What a tap needs to open the right screen: the kind, plus `paymentId`
+    (an auto id) or, for a fee statement, `statementMonth` ("2026-10"). No name,
+    no amount."""
+    data = {"kind": kind}
+    if ref:
+        data["statementMonth" if kind in STATEMENT_KINDS else "paymentId"] = ref
+    return data
+
 
 def text_for(kind: str, locale: Optional[str]) -> tuple[str, str]:
     by_locale = TEXT[kind]
     return by_locale.get(locale or "", by_locale["ar"])
 
 
-def send_kind(uid: str, kind: str, *, db, messaging, locale: Optional[str] = None) -> int:
-    """Same delivery as coaching/push.send_kind; an unknown kind sends nothing."""
+def send_kind(uid: str, kind: str, *, db, messaging, locale: Optional[str] = None, ref: Optional[str] = None) -> int:
+    """Same delivery as coaching/push.send_kind; an unknown kind sends nothing.
+    `ref` is the payment id, or the statement month for the two fee kinds."""
     if kind not in TEXT:
         return 0
     return identity_push.send_to_user(
-        uid, "", "", {"kind": kind}, db, messaging,
+        uid, "", "", data_for(kind, ref), db, messaging,
         texts=lambda phone_locale: text_for(kind, phone_locale),
         fallback_locale=locale if locale in ("en", "ar") else "ar",
+        topic=identity_push.TOPIC_PAYMENTS,
     )

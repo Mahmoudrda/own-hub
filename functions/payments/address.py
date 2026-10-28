@@ -91,7 +91,7 @@ def set_address(db, uid: str, data: dict, *, coach_v, recent_sign_in: bool, now:
             late = common.as_utc(row.get("lateUntil"))
             if row.get("status") in ("awaiting_payment", "expired") and late is not None and now <= late:
                 try:
-                    notify(row["clientUid"], "instapayAddressChanged")
+                    notify(row["clientUid"], "instapayAddressChanged", snap.id)
                 except Exception:  # noqa: BLE001
                     pass
     return result

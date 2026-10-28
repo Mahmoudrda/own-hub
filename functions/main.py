@@ -1967,14 +1967,15 @@ def _coaching_notify(uid: str, kind: str) -> None:
         logs.error("coaching_push_failed")
 
 
-def _payments_notify(uid: str, kind: str) -> None:
-    """Push for payments using the payments notice texts."""
+def _payments_notify(uid: str, kind: str, ref: Optional[str] = None) -> None:
+    """Push for payments using the payments notice texts. `ref` is what the
+    tap opens (payments.notices.data_for)."""
     try:
         from firebase_admin import messaging
 
         from payments import notices
 
-        notices.send_kind(uid, kind, db=store.db(), messaging=messaging)
+        notices.send_kind(uid, kind, db=store.db(), messaging=messaging, ref=ref)
     except Exception:
         logs.error("payments_push_failed")
 

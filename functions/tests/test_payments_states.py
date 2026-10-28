@@ -62,6 +62,42 @@ def test_every_notice_kind_has_both_languages_and_no_amount_or_em_dash():
             assert kind in notices.TEXT
 
 
+def test_a_tap_names_only_the_payment_or_the_statement_month():
+    assert notices.STATEMENT_KINDS <= set(notices.KINDS)
+    assert notices.data_for("instapayConfirmed", "pay-1") == {"kind": "instapayConfirmed", "paymentId": "pay-1"}
+    for kind in notices.STATEMENT_KINDS:
+        assert notices.data_for(kind, "2026-10") == {"kind": kind, "statementMonth": "2026-10"}
+    assert notices.data_for("instapaySuspended", None) == {"kind": "instapaySuspended"}
+
+
+def test_the_push_carries_the_ref_and_nothing_else():
+    from tests import fake_firestore
+    from tests.test_coaching_push import _Messaging, _device
+
+    db_ = fake_firestore.FakeFirestore()
+    _device(db_, CLIENT, "a", token="t1", locale="en", topics=["payments"])
+    messaging = _Messaging()
+    assert notices.send_kind(CLIENT, "instapayConfirmed", db=db_, messaging=messaging, ref="pay-1") == 1
+    assert messaging.sent[0].data == {"kind": "instapayConfirmed", "paymentId": "pay-1"}
+    messaging = _Messaging()
+    notices.send_kind(CLIENT, "instapayPaused", db=db_, messaging=messaging)
+    assert messaging.sent[0].data == {"kind": "instapayPaused"}
+
+
+def test_a_payment_push_reaches_only_phones_that_asked_for_payment_alerts():
+    from tests import fake_firestore
+    from tests.test_coaching_push import _Messaging, _device
+
+    db_ = fake_firestore.FakeFirestore()
+    _device(db_, CLIENT, "c14", token="t-c14", locale="en")
+    _device(db_, CLIENT, "approval", token="t-approval", locale="en", topics=["approval"])
+    _device(db_, CLIENT, "pay", token="t-pay", locale="en", topics=["payments"])
+    _device(db_, CLIENT, "both", token="t-both", locale="en", topics=["approval", "payments"])
+    messaging = _Messaging()
+    assert notices.send_kind(CLIENT, "instapayConfirmed", db=db_, messaging=messaging, ref="pay-1") == 2
+    assert {t for m in messaging.sent for t in m.tokens} == {"t-pay", "t-both"}
+
+
 def test_move_writes_the_status_and_one_event_and_returns_the_new_payment(db):
     make_payment(db, status="proof_submitted")
     ref = engine.payment_ref(db, PAY)

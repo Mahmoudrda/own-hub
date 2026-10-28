@@ -238,12 +238,14 @@ void main() {
       await tester.pumpWidget(_host(_sayIt(), locale: const Locale('en')));
       await tester.pumpAndSettle();
 
-      expect(find.text('We heard this'), findsOneWidget);
-      expect(find.text('Say it again'), findsOneWidget);
+      // Before she has said anything: an invitation, not a transcript.
+      expect(find.text('Say what you ate'), findsOneWidget);
+      expect(find.text('Tap to speak'), findsWidgets);
+      expect(find.text('We heard this'), findsNothing);
     });
   });
 
-  group('tier 2 is off, so refusal is a real path', () {
+  group('a phone with no speech service, so refusal is a real path', () {
     testWidgets('tapping the microphone refuses clearly and offers typing', (
       tester,
     ) async {
@@ -251,17 +253,17 @@ void main() {
       await tester.pumpWidget(_host(_sayIt()));
       await tester.pumpAndSettle();
 
-      expect(find.text('قوليها تاني'), findsOneWidget);
+      expect(find.text('دوسي وقولي'), findsWidgets);
 
-      await tester.tap(find.text('قوليها تاني'));
+      await tester.tap(find.byKey(const ValueKey('voice-mic')));
       await tester.pumpAndSettle();
 
       // No spinner. A reason, and the keyboard.
       expect(
-        find.text('محتاجين الميكروفون عشان نسمع أكلتي إيه.'),
+        find.text('الموبايل ده مش بيحوّل الكلام لنص. اكتبي أكلتك بدل كده.'),
         findsOneWidget,
       );
-      expect(find.text('قولي أو اكتبي أكلتي إيه'), findsOneWidget);
+      expect(find.text('اكتبي أكلتي إيه'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

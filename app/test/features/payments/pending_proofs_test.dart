@@ -61,6 +61,19 @@ void main() {
     },
   );
 
+  test('the folder of queued pictures is kept out of the backup', () async {
+    final kept = <String>[];
+    dir.deleteSync(recursive: true);
+    queue = PendingProofs(dir: dir, keepOutOfBackup: (p) async => kept.add(p));
+    await queue.add(proof(), [Uint8List(3)]);
+    await queue.add(proof(key: 'bbbbbbbbbbbbbbbbbbbbbbbb'), [Uint8List(3)]);
+    expect(kept, [dir.path], reason: 'marked once, when it is created');
+
+    await queue.clear();
+    await queue.add(proof(), [Uint8List(3)]);
+    expect(kept, [dir.path, dir.path], reason: 'and again when it is remade');
+  });
+
   test('no signal stops the flush and keeps everything', () async {
     await queue.add(proof(), [Uint8List(3)]);
     final fake = FakePaymentsRepository()

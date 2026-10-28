@@ -16,9 +16,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/coach_invite_state.dart';
 import 'package:own_hub/app_state/onboarding_state.dart';
+import 'package:own_hub/app_state/role_state.dart';
 import 'package:own_hub/domain/analytics/analytics_gateway.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/domain/identity/user_roles.dart';
 import 'package:own_hub/features/onboarding/domain/intake.dart';
 import 'package:own_hub/features/signup/domain/legal_acceptance.dart';
 import 'package:own_hub/features/signup/domain/verification.dart';
@@ -520,9 +523,11 @@ void main() {
       expect(find.text('I would rather not'), findsOneWidget);
     });
 
-    testWidgets('with the coach app on, she is still asked', (tester) async {
+    testWidgets('with the coach app on and the shortcut off, she is still '
+        'asked', (tester) async {
       AppRouter.featureFlags = _launch.with_(<Feature, bool>{
         Feature.coachApp: true,
+        Feature.skipRoleChoice: false,
       });
       final (stack, _) = await _open(tester, 'C07');
 
@@ -530,6 +535,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(stack.names.last, _name('C08'));
+    });
+
+    testWidgets('with the coach app on, a member never meets C08', (
+      tester,
+    ) async {
+      AppRouter.featureFlags = _launch.with_(<Feature, bool>{
+        Feature.coachApp: true,
+        Feature.skipRoleChoice: true,
+      });
+      CoachInviteState.instance.keepPending('ABCD-2345');
+      RoleState.instance.reset();
+      addTearDown(CoachInviteState.instance.reset);
+      addTearDown(RoleState.instance.reset);
+      final (stack, _) = await _open(tester, 'C07');
+
+      await tester.widget<CodeView>(find.byType(CodeView)).onConfirmed!.call();
+      await tester.pumpAndSettle();
+
+      expect(stack.names, isNot(contains(_name('C08'))));
+      expect(stack.names.last, _name('C09b'));
+      expect(AppRouter.lastSignupRole, SignupRole.trainee);
+      // She opens as a trainee on every later launch: nothing was kept, and
+      // with an account required the default is the trainee side alone.
+      expect(launchRoles(AppRouter.featureFlags).held, {AppRole.trainee});
+      // One count to the end: "2 of 3" on the number, "3 of 3" on the check,
+      // with no role screen between them to break it.
+      expect(find.text('3 of 3 · Quick check'), findsOneWidget);
+      // A coach's invite code, typed on the front door, is still kept for
+      // after her check: the shortcut does not touch it.
+      expect(CoachInviteState.instance.pendingCode, 'ABCD-2345');
     });
 
     testWidgets('the niqab path leaves C09b for a reviewer, no lens', (

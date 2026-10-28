@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../app_state/payments_switch.dart';
 import '../../../../app_state/private_coaching_state.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
@@ -27,7 +28,14 @@ class FindCoachView extends StatefulWidget {
     this.controller,
     this.onOpenCoach,
     this.onBack,
+    this.initialGoal,
+    this.initialPlace,
   });
+
+  /// Her answers from setup, when she gave them: the quiz starts on them and
+  /// she can change either. Null leaves the question open.
+  final String? initialGoal;
+  final String? initialPlace;
 
   /// Defaults to the repository the app started coaching with.
   final CoachingRepository? repository;
@@ -46,8 +54,8 @@ class FindCoachView extends StatefulWidget {
 class _FindCoachViewState extends State<FindCoachView> {
   late final CoachDirectoryController _directory;
   late final bool _ownsDirectory;
-  String? _goal;
-  String? _place;
+  late String? _goal = widget.initialGoal;
+  late String? _place = widget.initialPlace;
   String? _budget;
 
   @override
@@ -162,16 +170,26 @@ class _FindCoachViewState extends State<FindCoachView> {
         ),
       ];
     }
-    final answered = _goal != null && _place != null && _budget != null;
+    // A budget is asked only once money can move; until then the quiz is two
+    // questions and the coaches are matched on those.
+    final asksBudget = coachingPaymentsOn || PaymentsSwitch.live;
+    final answered =
+        _goal != null && _place != null && (!asksBudget || _budget != null);
     final matches = answered
         ? CoachMatch.rank(
-            MatchAnswers(goal: _goal!, place: _place!, budgetBand: _budget!),
+            MatchAnswers(
+              goal: _goal!,
+              place: _place!,
+              budgetBand: asksBudget ? _budget : null,
+            ),
             _directory.coaches,
           )
         : const <CoachMatchResult>[];
     return <Widget>[
       Text(
-        l10n.threeQuickQuestionsThenTheCoachesWho,
+        asksBudget
+            ? l10n.threeQuickQuestionsThenTheCoachesWho
+            : l10n.twoQuickQuestionsThenTheCoachesWho,
         style: AppText.body.copyWith(color: AppColors.textSecondary),
       ),
       _question(
@@ -188,13 +206,14 @@ class _FindCoachViewState extends State<FindCoachView> {
         _place,
         (k) => setState(() => _place = k),
       ),
-      _question(
-        l10n.yourBudgetForAMonth,
-        CoachingEnums.budgetBands,
-        (k) => budgetLabel(l10n, k),
-        _budget,
-        (k) => setState(() => _budget = k),
-      ),
+      if (asksBudget)
+        _question(
+          l10n.yourBudgetForAMonth,
+          CoachingEnums.budgetBands,
+          (k) => budgetLabel(l10n, k),
+          _budget,
+          (k) => setState(() => _budget = k),
+        ),
       if (answered) ...[
         Semantics(
           header: true,
@@ -206,7 +225,9 @@ class _FindCoachViewState extends State<FindCoachView> {
         Text(
           matches.isEmpty
               ? l10n.noCloseMatchYetBrowseAllThe
-              : l10n.matchedOnYourThreeAnswersOnlyThen,
+              : asksBudget
+              ? l10n.matchedOnYourThreeAnswersOnlyThen
+              : l10n.matchedOnYourTwoAnswersOnlyThen,
           style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
         ),
         ..._spaced(matches.map((m) => _cardFor(m.coach))),

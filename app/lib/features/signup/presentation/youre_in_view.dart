@@ -194,8 +194,13 @@ class YoureInView extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 20),
-            // The end of onboarding: a tick drawn on once.
-            const Moment(size: 64, delay: HandTiming.medium),
+            // The end of onboarding: a tick drawn on once, with its touch and
+            // its two-note sound (M10). The heading says it for a screen reader.
+            const Moment(
+              size: 64,
+              delay: HandTiming.medium,
+              id: MomentId.verified,
+            ),
           ],
         ),
         Text(

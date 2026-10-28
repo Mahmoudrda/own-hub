@@ -4,10 +4,16 @@ import 'dart:typed_data';
 import 'package:firebase_core/firebase_core.dart' show FirebaseException;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/app_state/payments_switch.dart';
+import 'package:own_hub/domain/flags/feature_flags.dart';
+import 'package:own_hub/routing/app_router.dart';
 import 'package:own_hub/features/private_coaching/data/coaching_repository.dart';
 import 'package:own_hub/features/private_coaching/domain/approved_media.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_profile.dart';
 import 'package:own_hub/features/private_coaching/domain/portfolio_media.dart';
+import 'package:own_hub/features/onboarding/domain/intake.dart'
+    show TrainingGoal, TrainingLevel, TrainingPlace;
+import 'package:own_hub/features/private_coaching/domain/setup_prefill.dart';
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
 import 'package:own_hub/features/private_coaching/presentation/member/coach_card.dart'
     show CoachPhoto;
@@ -318,9 +324,63 @@ void main() {
   setUp(() => CoachImageBytes.lookup = (path) async => null);
   tearDown(CoachImageBytes.reset);
 
+  // The budget question is asked once a payment can be started.
+  final savedFlags = AppRouter.featureFlags;
+  void moneyIsLive() {
+    AppRouter.featureFlags = savedFlags.with_(<Feature, bool>{
+      Feature.instapayPayments: true,
+      Feature.marketplace: true,
+    });
+    PaymentsSwitch.enabled = true;
+    addTearDown(() {
+      PaymentsSwitch.resetForTest();
+      AppRouter.featureFlags = savedFlags;
+    });
+  }
+
+  testWidgets('with nothing to pay, H01 asks two questions and no budget', (
+    tester,
+  ) async {
+    phone(tester);
+    await tester.pumpWidget(host(FindCoachView(repository: seeded())));
+    await tester.pump();
+    final l10n = AppL10n.of(tester.element(find.byType(FindCoachView)));
+    expect(find.text(l10n.twoQuickQuestionsThenTheCoachesWho), findsOneWidget);
+    expect(find.text(l10n.yourBudgetForAMonth), findsNothing);
+    await tester.tap(find.text('Get stronger'));
+    await tester.pump();
+    await tester.tap(find.text('At home'));
+    await tester.pump();
+    // Two answers are enough to match, with no budget chip in the way.
+    expect(find.text('Your best matches'), findsOneWidget);
+    expect(find.text(l10n.matchedOnYourTwoAnswersOnlyThen), findsOneWidget);
+  });
+
+  testWidgets('H01 starts on the goal and place she gave in setup', (
+    tester,
+  ) async {
+    phone(tester);
+    await tester.pumpWidget(
+      host(
+        FindCoachView(
+          repository: seeded(),
+          initialGoal: 'stronger',
+          initialPlace: 'home',
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Your best matches'), findsOneWidget);
+    // Still hers to change.
+    await tester.tap(find.text('At the gym'));
+    await tester.pump();
+    expect(find.text('Your best matches'), findsOneWidget);
+  });
+
   testWidgets('matches: best fit first, ties A to Z, never by clients', (
     tester,
   ) async {
+    moneyIsLive();
     phone(tester);
     await tester.pumpWidget(host(FindCoachView(repository: seeded())));
     await tester.pump();
@@ -632,6 +692,65 @@ void main() {
       expect(find.text('Request sent'), findsOneWidget);
       expect(find.text('You can see it under My coach.'), findsOneWidget);
       expect(find.text('Done'), findsOneWidget);
+    });
+
+    testWidgets('opens on the answers she gave in setup, never on health', (
+      tester,
+    ) async {
+      final intake = AppRouter.intakeRepository;
+      intake.reset();
+      await intake.merge(
+        goal: TrainingGoal.buildMuscle,
+        place: TrainingPlace.ladiesGym,
+        days: 4,
+        level: TrainingLevel.intermediate,
+      );
+      intake.markSetupDone();
+      addTearDown(intake.reset);
+      phone(tester);
+      final repo = MemberRepo();
+      await tester.pumpWidget(portfolio(repo));
+      await openJoin(tester);
+      final form = tester.widget<JoinCoachForm>(find.byType(JoinCoachForm));
+      expect(form.setupAnswers, (
+        goal: 'buildMuscle',
+        level: 'intermediate',
+        days: 4,
+        place: 'gym',
+      ));
+      final send = find.widgetWithText(AppButton, 'Send request');
+      // The four chips are already hers; the health questions, her life stage
+      // and her eating history are still empty, so nothing can be sent.
+      expect(tester.widget<AppButton>(send).onPressed, isNull);
+      for (var i = 0; i < CoachingEnums.healthQuestions.length + 2; i++) {
+        await tapText(tester, find.text('No').at(i));
+      }
+      await tickConsents(tester);
+      expect(tester.widget<AppButton>(send).onPressed, isNotNull);
+      await tapText(tester, find.text('Send request'));
+      await tester.pumpAndSettle();
+      expect(repo.callNames, <String>['requestCoaching']);
+      // She changed nothing and the request carries what setup said.
+      expect(repo.lastIntake?.goal, 'buildMuscle');
+      expect(repo.lastIntake?.place, 'gym');
+      expect(repo.lastIntake?.daysPerWeek, 4);
+      expect(repo.lastIntake?.level, 'intermediate');
+    });
+
+    testWidgets('with setup not finished, nothing is carried over', (
+      tester,
+    ) async {
+      final intake = AppRouter.intakeRepository;
+      intake.reset();
+      await intake.merge(goal: TrainingGoal.buildMuscle);
+      addTearDown(intake.reset);
+      phone(tester);
+      await tester.pumpWidget(portfolio(MemberRepo()));
+      await openJoin(tester);
+      expect(
+        tester.widget<JoinCoachForm>(find.byType(JoinCoachForm)).setupAnswers,
+        noSetupAnswers,
+      );
     });
 
     testWidgets('consents are required', (tester) async {
@@ -1107,6 +1226,7 @@ void main() {
 
   for (final lang in <String>['en', 'ar']) {
     testWidgets('screens fit at text scale 2.0 ($lang)', (tester) async {
+      moneyIsLive();
       phone(tester);
       final repo = seeded();
       await tester.pumpWidget(

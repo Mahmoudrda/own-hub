@@ -202,23 +202,26 @@ void main() {
     });
   });
 
-  group('M7: the microphone is for chat voice notes only', () {
+  group('M7: the microphone is for chat voice notes and for saying a meal', () {
     // The privacy policy says the microphone is used only while she holds the
-    // mic button in a coaching chat, and the release manifest declares
-    // RECORD_AUDIO for that. Saying a meal (E03) is behind
-    // Feature.voiceLogging, off in the shipped build.
+    // mic button in a coaching chat, or taps it on Eat to say a meal. Saying a
+    // meal (E03) is behind Feature.voiceLogging, on in the shipped build: the
+    // phone's own speech service turns her words into text, she checks them,
+    // and Own Hub keeps no audio.
     final saved = AppRouter.featureFlags;
     setUp(() => AppRouter.featureFlags = FeatureFlags.shipped);
     tearDown(() => AppRouter.featureFlags = saved);
 
-    test('voice logging is off in the shipped build, and E03 with it', () {
-      expect(FeatureFlags.shipped.isOn(Feature.voiceLogging), isFalse);
+    test('voice logging is on in the shipped build, and E03 with it', () {
+      expect(FeatureFlags.shipped.isOn(Feature.voiceLogging), isTrue);
       expect(Feature.voiceLogging.parent, Feature.eat);
-      expect(AppRouter.screenIsOn('E03'), isFalse);
+      expect(AppRouter.screenIsOn('E03'), isTrue);
       expect(AppRouter.screenIsOn('E02'), isTrue);
+      expect(Feature.voiceLogging.serverMayTurnOff, isTrue);
     });
 
-    test('the release manifest declares RECORD_AUDIO and strips external storage', () {
+    test('the release manifest declares RECORD_AUDIO and the recogniser query, '
+        'strips external storage and declares no Bluetooth', () {
       final manifest = File('android/app/src/main/AndroidManifest.xml')
           .readAsStringSync();
       expect(
@@ -227,6 +230,8 @@ void main() {
           '<uses-permission android:name="android.permission.RECORD_AUDIO" />',
         ),
       );
+      expect(manifest, contains('android.speech.RecognitionService'));
+      expect(manifest, isNot(contains('android.permission.BLUETOOTH')));
       expect(
         RegExp(
           r'android\.permission\.READ_EXTERNAL_STORAGE"\s+tools:node="remove"',
@@ -241,8 +246,34 @@ void main() {
       );
     });
 
+    test('every iOS file that holds a purpose string names both microphone '
+        'uses and says what speech recognition is for', () {
+      for (final path in const [
+        'ios/Runner/Info.plist',
+        'ios/Runner/en.lproj/InfoPlist.strings',
+        'ios/Runner/ar.lproj/InfoPlist.strings',
+      ]) {
+        final text = File(path).readAsStringSync();
+        expect(text, contains('NSMicrophoneUsageDescription'), reason: path);
+        expect(
+          text,
+          contains('NSSpeechRecognitionUsageDescription'),
+          reason: path,
+        );
+      }
+      final english = File('ios/Runner/en.lproj/InfoPlist.strings')
+          .readAsStringSync();
+      expect(english, contains('say what you ate'));
+      expect(english, contains('Apple may process what you say'));
+      expect(english, contains('Own Hub does not keep the audio'));
+    });
+
     for (final lang in const ['en', 'ar']) {
-      testWidgets('Eat and Type it draw no microphone ($lang)', (tester) async {
+      testWidgets('with the switch off, Eat and Type it draw no microphone '
+          '($lang)', (tester) async {
+        AppRouter.featureFlags = FeatureFlags.shipped.with_(const {
+          Feature.voiceLogging: false,
+        });
         final locale = Locale(lang);
         await tester.pumpWidget(
           _host(
@@ -284,12 +315,7 @@ void main() {
       });
     }
 
-    testWidgets('with voice logging on, the microphone comes back', (
-      tester,
-    ) async {
-      AppRouter.featureFlags = FeatureFlags.shipped.with_(const {
-        Feature.voiceLogging: true,
-      });
+    testWidgets('as shipped, Type it draws the microphone', (tester) async {
       await tester.pumpWidget(
         _host(
           TypeItView(

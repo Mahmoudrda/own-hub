@@ -111,15 +111,15 @@ def after_decision(db, payment_id: str, *, outcome: str, kind: Optional[str], pr
             at_limit = total >= LIMITS["strikesToSuspend"]
             transaction.set(profile.standing_ref(db, uid), _standing_changes(role, total, now, suspend=at_limit), merge=True)
             if at_limit and role == "client":
-                notices.append((uid, "instapayPaused"))
+                notices.append((uid, "instapayPaused", payment_id))
         if rate_flag(confirmed, lost, cfg["disputeRateMinPayments"], cfg["disputeRatePercent"]):
             transaction.set(profile.standing_ref(db, pay["coachUid"]),
                             {"coachFlagged": True, "flagReason": "disputeRate", "flaggedAt": now}, merge=True)
 
     common.run(db, body)
-    for target, kind_ in notices:
+    for target, kind_, ref in notices:
         try:
-            notify(target, kind_)
+            notify(target, kind_, ref)
         except Exception:  # noqa: BLE001
             pass
 

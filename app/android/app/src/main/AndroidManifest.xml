@@ -27,19 +27,25 @@
          each is a Data safety declaration for a capability we do not use.
          WRITE_EXTERNAL_STORAGE goes too: camerax writes only to the app's
          cache. -->
-    <!-- Voice notes in the coaching chat (hold to record). Asked at the
-         first hold, never at launch. The camera capture still records no
-         sound (enableAudio is false); video messages use the system camera
-         app through image_picker. Declared in play-data-safety.txt. -->
+    <!-- Voice notes in the coaching chat (hold to record) and saying a meal on
+         E03 (the phone's speech recogniser turns it into text; Own Hub keeps
+         no audio). Asked at the first hold or the first tap on the microphone,
+         never at launch. The camera capture still records no sound
+         (enableAudio is false); video messages use the system camera app
+         through image_picker. Bluetooth permissions are neither asked for nor
+         declared (speech_to_text is started with androidNoBluetooth).
+         Declared in play-data-safety.txt. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
 
-    <!-- One push: "your check is done", when a woman reviewer approves her.
-         Firebase Cloud Messaging brings the c2dm RECEIVE permission it needs
-         to deliver it, so that one is no longer stripped. Android 13 and
-         later ask her for POST_NOTIFICATIONS, and only when she taps "Tell me
-         when I'm in" on C14, never at launch. Declared as a device ID (the
+    <!-- Two pushes, each only when she taps its button: "your check is done",
+         when a woman reviewer approves her (C14), and payment alerts (the
+         coach's Payments inbox and a payment's status screen), which only a
+         phone that asked for them receives. Firebase Cloud Messaging brings
+         the c2dm RECEIVE permission it needs to deliver them, so that one is
+         no longer stripped. Android 13 and later ask her for
+         POST_NOTIFICATIONS, never at launch. Declared as a device ID (the
          push token) in android/play-data-safety.txt. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -213,6 +219,11 @@
         <intent>
             <action android:name="android.intent.action.SENDTO"/>
             <data android:scheme="mailto"/>
+        </intent>
+        <!-- Saying a meal on E03 (speech_to_text): without this Android 11
+             and up report that no speech recogniser is installed. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

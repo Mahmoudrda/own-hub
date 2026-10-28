@@ -142,7 +142,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
   final moves = [
     PlannedMove(
       exerciseId: 'donkey_kick',
-      name: englishMoveNames.donkeyKick,
+      name: l10n.donkeyKick,
       prescriptionLabel: l10n.n312Bodyweight,
       quiet: true,
       floorOnly: true,
@@ -154,7 +154,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
     ),
     PlannedMove(
       exerciseId: 'straight_leg_glute_kickback',
-      name: englishMoveNames.straightLegGluteKickback,
+      name: l10n.straightLegGluteKickback,
       prescriptionLabel: l10n.n310EachSide,
       // Quiet: a step back has no jump and no impact. Flagged rather than
       // left at the default, because R11's "quiet" filter reads these and a
@@ -180,7 +180,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
     ),
     PlannedMove(
       exerciseId: 'forearm_plank',
-      name: englishMoveNames.forearmPlank,
+      name: l10n.forearmPlank,
       prescriptionLabel: l10n.n330Seconds,
       quiet: true,
       floorOnly: true,
@@ -192,7 +192,7 @@ WorkoutDay sampleWorkoutDay(AppL10n l10n, {DateTime? now}) {
     ),
     PlannedMove(
       exerciseId: 'heel_touches',
-      name: englishMoveNames.heelTouches,
+      name: l10n.heelTouches,
       prescriptionLabel: l10n.n38EachSide,
       quiet: true,
       floorOnly: true,

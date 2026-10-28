@@ -86,6 +86,7 @@ def test_two_client_strikes_in_90_days_pause_her_payments_and_tell_her(db):
     assert first.sent == [] and not standing(db, CLIENT).get("clientSuspended")
     second = decide(db, "resolved_unpaid", "proof_red", proof_false=True, pay="pay-2", now=NOW + 5 * DAYS)
     assert standing(db, CLIENT)["clientSuspended"] is True and second.sent == [(CLIENT, "instapayPaused")]
+    assert second.refs == [(CLIENT, "instapayPaused", "pay-2")]
     db.document(f"subscriptions/{SUB}").update({"status": "awaiting_payment"})
     assert refusal(lambda: create.create(db, CLIENT, {"subId": SUB, "idempotencyKey": "key-0001-abcd"}, now=NOW + 6 * DAYS, on=True)) == (
         errors.PRECONDITION, errors.CLIENT_PAYMENTS_SUSPENDED)

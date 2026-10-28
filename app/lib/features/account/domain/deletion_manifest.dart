@@ -603,8 +603,9 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     owner: 'G12, called by G7',
     method: DeletionMethod.groupHook,
     note:
-        'a coaching she joined or gave, with the intake form and health '
-        'answers; an open one is ended first, so the coach\'s place is freed',
+        'a coaching she joined or gave, with the intake form, health '
+        'answers and any InBody numbers she added; an open one is ended '
+        'first, so the coach\'s place is freed',
   ),
   DeletionRow(
     number: 59,

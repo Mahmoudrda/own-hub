@@ -21,6 +21,9 @@ class FakePaymentsRepository implements PaymentsRepository {
   );
   bool? enabled = true;
 
+  /// What [partyImage] returns.
+  Uint8List partyImageBytes = Uint8List(0);
+
   /// When set, submitProof waits for it (an answer still on its way).
   Completer<void>? hold;
 
@@ -197,8 +200,12 @@ class FakePaymentsRepository implements PaymentsRepository {
     required String reasonCode,
     required String note,
     required List<Uint8List> images,
-  }) async =>
-      _status('coachNotReceived', {'id': paymentId, 'reason': reasonCode});
+  }) async => _status('coachNotReceived', {
+    'id': paymentId,
+    'reason': reasonCode,
+    'note': note,
+    'images': images.length,
+  });
 
   @override
   Future<PaymentStatus> coachDifferentAmount({
@@ -208,6 +215,7 @@ class FakePaymentsRepository implements PaymentsRepository {
   }) async => _status('coachDifferentAmount', {
     'id': paymentId,
     'received': receivedPiasters,
+    'acceptLower': acceptLower,
   });
 
   @override
@@ -242,13 +250,19 @@ class FakePaymentsRepository implements PaymentsRepository {
     required int amountPiasters,
     required String kind,
     DateTime? paidAt,
-  }) async => _status('recordRefund', {'id': paymentId, 'txn': txnNumber});
+  }) async => _status('recordRefund', {
+    'id': paymentId,
+    'txn': txnNumber,
+    'amount': amountPiasters,
+    'kind': kind,
+    'paidAt': paidAt,
+  });
 
   @override
   Future<PaymentStatus> openServiceDispute(
     String paymentId, {
     String? note,
-  }) async => _status('openServiceDispute', {'id': paymentId});
+  }) async => _status('openServiceDispute', {'id': paymentId, 'note': note});
 
   @override
   Future<void> recordFeePayment({
@@ -263,7 +277,7 @@ class FakePaymentsRepository implements PaymentsRepository {
     required String path,
   }) async {
     _record('partyImage', {'id': paymentId, 'path': path});
-    return Uint8List(0);
+    return partyImageBytes;
   }
 }
 
@@ -310,14 +324,33 @@ Payment payment({
   int differentAmountPiasters = 0,
   String coachReportTxn = '',
   bool coachReportAnswered = false,
+  String coachUid = 'coach',
+  int amountPiasters = 50037,
+  String reference = 'OH-4821',
+  String txnNumber = '',
+  DateTime? submittedAt,
+  DateTime? paidAtClaimed,
+  List<String> screenshotPaths = const <String>[],
+  bool autoConfirmed = false,
+  DateTime? confirmedAt,
+  DateTime? refundRequestedAt,
+  DateTime? refundCoachDueAt,
+  DateTime? refundRecordedAt,
+  int? receivedPiasters,
+  DateTime? statusAt,
+  DateTime? disputeDecidedAt,
+  List<String> disputeKinds = const <String>[],
+  String disputeStaffDecision = '',
+  int refundOwedPiasters = 0,
+  DateTime? refundOwedDueAt,
 }) => Payment(
   id: id,
   clientUid: clientUid,
-  coachUid: 'coach',
+  coachUid: coachUid,
   status: status,
   subId: subId,
-  amountPiasters: 50037,
-  reference: 'OH-4821',
+  amountPiasters: amountPiasters,
+  reference: reference,
   address: const CoachAddress(
     address: 'rahma.m@instapay',
     accountName: 'Rahma M.',
@@ -333,4 +366,20 @@ Payment payment({
   differentAmountPiasters: differentAmountPiasters,
   coachReportTxn: coachReportTxn,
   coachReportAnswered: coachReportAnswered,
+  txnNumber: txnNumber,
+  submittedAt: submittedAt,
+  paidAtClaimed: paidAtClaimed,
+  screenshotPaths: screenshotPaths,
+  autoConfirmed: autoConfirmed,
+  confirmedAt: confirmedAt,
+  refundRequestedAt: refundRequestedAt,
+  refundCoachDueAt: refundCoachDueAt,
+  refundRecordedAt: refundRecordedAt,
+  receivedPiasters: receivedPiasters,
+  statusAt: statusAt,
+  disputeDecidedAt: disputeDecidedAt,
+  disputeKinds: disputeKinds,
+  disputeStaffDecision: disputeStaffDecision,
+  refundOwedPiasters: refundOwedPiasters,
+  refundOwedDueAt: refundOwedDueAt,
 );

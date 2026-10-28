@@ -13,6 +13,7 @@ opens.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from typing import Callable, Optional
 
 from google.cloud import firestore
@@ -24,6 +25,7 @@ LIMITS = common.LIMITS
 PACKAGE_KEYS = tuple(common.CONTRACT["documents"]["subscription"]["packageSnapshot"])
 HEALTH_KEYS = tuple(common.ENUMS["healthQuestions"])
 FLAGGED_STAGES = ("pregnant", "postpartum")
+INBODY_RANGES = common.CONTRACT["documents"]["subscription"]["inbody"]
 
 
 def intake_flagged(intake: dict) -> bool:
@@ -48,6 +50,25 @@ def locale_of(value) -> str:
 
 def _id(value, reason: str = errors.BAD_REQUEST) -> str:
     return common.text(value, max_len=128, reason=reason)
+
+
+def inbody_of(raw) -> dict:
+    """The InBody numbers she confirmed, each inside the contract's range. Only
+    these numbers: never the picture, the text read from it or a date."""
+    if not isinstance(raw, dict) or not raw or set(raw) - set(INBODY_RANGES):
+        raise common.bad()
+    out = {}
+    for key, value in raw.items():
+        low, high = INBODY_RANGES[key]
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or not low <= value <= high
+        ):
+            raise common.bad()
+        out[key] = round(value) if key == "bmrKcal" else round(float(value), 1)
+    return out
 
 
 def intake_of(raw) -> dict:
@@ -75,7 +96,8 @@ def intake_of(raw) -> dict:
     flagged = any(health.values()) or life_stage in FLAGGED_STAGES or eating
     if flagged and not ack:
         raise common.bad()
-    return {
+    inbody = raw.get("inbody")
+    out = {
         "goal": common.one_of(raw.get("goal"), common.ENUMS["goals"]),
         "level": common.one_of(raw.get("level"), common.ENUMS["levels"]),
         "daysPerWeek": common.whole(raw.get("daysPerWeek"), low=1, high=7),
@@ -87,6 +109,9 @@ def intake_of(raw) -> dict:
         "doctorAck": ack,
         "note": common.optional_text(raw.get("note"), max_len=LIMITS["noteMax"]),
     }
+    if inbody is not None:
+        out["inbody"] = inbody_of(inbody)
+    return out
 
 
 def first_name(value) -> str:
@@ -112,19 +137,26 @@ def known_hashes(version_key: str, locale: str, part: str, name: str = "") -> se
     return {common.sha(text.replace("{name}", name)) for text in texts}
 
 
-def consent_of(raw, locale: str, coach_name: str) -> Optional[dict]:
+def consent_of(raw, locale: str, coach_name: str, with_inbody: bool = False) -> Optional[dict]:
     """Her ticks as the app sends them: the version, the hash of each text she
     saw and the app version. None when the app sent none: app 1.0.0 has no
     such field and its request is recorded with the version 1 ticks instead.
+    The InBody tick is required when the intake holds her numbers and refused
+    when it does not.
     shortcut: a modified app can skip the field and get the version 1 record,
     a weaker proof than none of it being possible; drop the legacy path once
     1.0.0 is no longer served. Anything else is refused: no ticks, no request."""
     if raw is None:
+        if with_inbody:
+            raise common.bad()
         return None
     if not isinstance(raw, dict) or raw.get("version") != CONSENT_VERSION or isinstance(raw.get("version"), bool):
         raise common.bad()
+    if not with_inbody and raw.get("inbodyHash") is not None:
+        raise common.bad()
     out = {"version": CONSENT_VERSION}
-    for key, part in (("shareHash", "share"), ("transferHash", "transfer")):
+    parts = (("shareHash", "share"), ("transferHash", "transfer"))
+    for key, part in parts + ((("inbodyHash", "inbody"),) if with_inbody else ()):
         value = raw.get(key)
         if not isinstance(value, str) or len(value) != 64 or not set(value) <= _HEX:
             raise common.bad()
@@ -319,7 +351,7 @@ def request(
             or blocked_coach.exists
         ):
             raise unavailable
-        consent = consent_of(raw_consent, locale, row.get("displayName") or "")
+        consent = consent_of(raw_consent, locale, row.get("displayName") or "", "inbody" in intake)
         cap = row.get("maxActiveClients", LIMITS["maxActiveClientsDefault"])
         if row.get("activeClients", 0) >= cap:
             raise unavailable

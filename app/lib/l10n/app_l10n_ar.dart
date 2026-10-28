@@ -14809,9 +14809,6 @@ class AppL10nAr extends AppL10n {
   String get shortVersion => 'نسخة قصيرة';
 
   @override
-  String get a10MinuteWalk => 'مشي 10 دقايق';
-
-  @override
   String get doMyOwnPlanInstead => 'هعمل خطتي أنا بدل كده';
 
   @override
@@ -15848,4 +15845,721 @@ class AppL10nAr extends AppL10n {
   String weNeverSetATargetBelowKcal(String kcal) {
     return 'مبنحطش أبدًا هدف أقل من $kcal سعرة.';
   }
+
+  @override
+  String get payments => 'المدفوعات';
+
+  @override
+  String get paymentsFromYourClients => 'مدفوعات عميلاتك';
+
+  @override
+  String get addYourInstapayAddressSoClientsCan =>
+      'ضيفي عنوان إنستا باي بتاعك عشان العميلات يعرفوا يدفعولك.';
+
+  @override
+  String get addAddress => 'ضيفي العنوان';
+
+  @override
+  String get waitingForYou => 'مستنية ردّك';
+
+  @override
+  String get nothingIsWaitingForYou => 'مفيش حاجة مستنياكي.';
+
+  @override
+  String get earlier => 'قبل كده';
+
+  @override
+  String get matches => 'مطابق';
+
+  @override
+  String get checkYourBank => 'اتشيكي على البنك';
+
+  @override
+  String referenceAmountProofSentTime(
+    String reference,
+    String amount,
+    String time,
+  ) {
+    return '$reference · $amount · الإثبات اتبعت $time';
+  }
+
+  @override
+  String paymentReference(String reference) {
+    return 'الدفع $reference';
+  }
+
+  @override
+  String lookForExactlyAmount(String amount) {
+    return 'دوّري على $amount بالظبط';
+  }
+
+  @override
+  String transactionNumberTxn(String txn) {
+    return 'رقم العملية $txn';
+  }
+
+  @override
+  String paidAtTime(String time) {
+    return 'اتدفع الساعة $time';
+  }
+
+  @override
+  String get herProofLooksRightStillCheckYour =>
+      'الإثبات شكله سليم. اتشيكي على البنك برضه قبل ما تأكدي.';
+
+  @override
+  String get partOfHerProofDidNotMatch =>
+      'جزء من الإثبات مش مطابق. اتشيكي على البنك كويس.';
+
+  @override
+  String get seeHerProof => 'شوفي الإثبات بتاعها';
+
+  @override
+  String get weCouldNotLoadThisPicture => 'ماقدرناش نحمّل الصورة دي.';
+
+  @override
+  String get iReceivedIt => 'وصلتني';
+
+  @override
+  String get notReceived => 'ماوصلتش';
+
+  @override
+  String get confirmedYourClientCanStart => 'اتأكد. عميلتك تقدر تبدأ.';
+
+  @override
+  String get whatDoYouSeeInYourBank => 'شايفة إيه في البنك؟';
+
+  @override
+  String get iDoNotSeeItInMy => 'مش لاقياه في حسابي';
+
+  @override
+  String get theAmountIsDifferent => 'المبلغ مختلف';
+
+  @override
+  String get theNameIsDifferent => 'الاسم مختلف';
+
+  @override
+  String get someoneElsePaid => 'حد تاني دفع';
+
+  @override
+  String iSearchedMyBankForAmount(String amount) {
+    return 'دوّرت في البنك على $amount.';
+  }
+
+  @override
+  String iSearchedMyBankForAmountAnd(String amount, String txn) {
+    return 'دوّرت في البنك على $amount ورقم العملية $txn.';
+  }
+
+  @override
+  String get tellUsWhatYouSaw => 'احكيلنا شفتي إيه';
+
+  @override
+  String get addYourBankListForThatDay => 'ضيفي كشف البنك لليوم ده';
+
+  @override
+  String get howMuchDidYouReceive => 'استلمتي كام؟';
+
+  @override
+  String get amountReceivedEgp => 'المبلغ اللي وصلك (بالجنيه)';
+
+  @override
+  String get acceptThisLowerAmountAndStartThe =>
+      'أقبل المبلغ الأقل وأبدأ التدريب';
+
+  @override
+  String get ifYouAcceptHerPackageStartsOtherwise =>
+      'لو قبلتي، باقتها بتبدأ. غير كده هي تقدر تدفع الباقي.';
+
+  @override
+  String get sentYourClientWillSeeIt => 'اتبعت. العميلة هتشوفه.';
+
+  @override
+  String get confirmMatchingPaymentsForMe => 'تأكيد الدفعات المطابقة تلقائيًا';
+
+  @override
+  String onlyPaymentsThatMatchYouCanStill(String hours) {
+    return 'الدفعات المطابقة بس. وتقدري تبلّغي عن أي واحدة خلال $hours ساعة.';
+  }
+
+  @override
+  String automaticConfirmingOpensAfterNPaymentsThat(String n) {
+    return 'التأكيد التلقائي بيتفتح بعد $n دفعات مطابقة.';
+  }
+
+  @override
+  String get automaticConfirmingIsNotAvailableToYou =>
+      'التأكيد التلقائي لسه مش متاح ليكي.';
+
+  @override
+  String get thisPaymentAppearsInYourStatementPlease =>
+      'الدفع ده ظاهر في كشفك. راجعي تاني.';
+
+  @override
+  String get pleaseTickThatYouSearchedYourBank =>
+      'علّمي إنك دوّرتي في البنك وضيفي كشف البنك.';
+
+  @override
+  String get pleaseTellUsWhatYouSawIn => 'احكيلنا اللي شفتيه بكلمتين.';
+
+  @override
+  String get thatIsTooFarBelowThePrice =>
+      'ده أقل من السعر بكتير ومينفعش تقبليه. اقفلي الزرار وهي تقدر تدفع الباقي.';
+
+  @override
+  String get aClientPaidMe => 'عميلة دفعتلي';
+
+  @override
+  String get pickThePaymentThenTypeTheTransaction =>
+      'اختاري الدفع، وبعدين اكتبي رقم العملية من البنك.';
+
+  @override
+  String get noClientHasAnOpenPaymentRight =>
+      'مفيش عميلة عندها دفع مفتوح دلوقتي.';
+
+  @override
+  String get sentYourClientWillBeAskedTo =>
+      'اتبعت. هنطلب من العميلة تأكيد الدفع.';
+
+  @override
+  String get waitingForHerPayment => 'مستنية دفعها';
+
+  @override
+  String get youSaidItHasNotArrived => 'قلتي إنها ماوصلتش';
+
+  @override
+  String get sheAskedForARefund => 'طلبت استرداد';
+
+  @override
+  String get askForARefund => 'اطلبي استرداد';
+
+  @override
+  String get iHaveAProblemWithTheService => 'عندي مشكلة في الخدمة';
+
+  @override
+  String get theRefundDidNotReachMe => 'الاسترداد ماوصلنيش';
+
+  @override
+  String get askOwnHubToLookAgain => 'اطلبي من Own Hub تبص تاني';
+
+  @override
+  String get cancelPayment => 'ألغي الدفعة';
+
+  @override
+  String get cancelThisPaymentOnlyDoThisIf =>
+      'تلغي الدفعة دي؟ اعملي كده بس لو ماحوّلتيش. لو حوّلتي الفلوس فعلًا، ابعتي إثبات الدفع بدل كده.';
+
+  @override
+  String youCanAskOnceInTheFirst(String days, String n) {
+    return 'تقدري تطلبي مرة واحدة في أول $days يوم. مدرّبتك عندها $n أيام تردّ، وبعدها Own Hub بتتدخل.';
+  }
+
+  @override
+  String get ownHubDoesNotMoveMoneyIf =>
+      'Own Hub مابتحركش فلوس. لو مدرّبتك وافقت، هتبعتلك الفلوس بإنستا باي وتسجّلها هنا.';
+
+  @override
+  String sentYourCoachHasNDaysTo(String n) {
+    return 'اتبعت. مدرّبتك عندها $n أيام تردّ.';
+  }
+
+  @override
+  String get serviceProblem => 'مشكلة في الخدمة';
+
+  @override
+  String get tellUsWhatWentWrongOwnHub =>
+      'احكيلنا إيه اللي حصل. Own Hub بتبص على جلساتك ورسايلك وتقرر.';
+
+  @override
+  String get refundProblem => 'مشكلة في الاسترداد';
+
+  @override
+  String get yourCoachSaysSheSentTheMoney =>
+      'مدرّبتك بتقول إنها رجّعت الفلوس. لو ماوصلتلكيش، احكيلنا وOwn Hub هتبص في الموضوع.';
+
+  @override
+  String get yourCoachDidNotAgreeToThe =>
+      'مدرّبتك ماوافقتش على الاسترداد. احكيلنا ليه شايفة إن Own Hub لازم تبص تاني.';
+
+  @override
+  String get tellUsMore => 'احكيلنا أكتر';
+
+  @override
+  String get yourCoachDidNotAgreeToThe_9dkzl =>
+      'مدرّبتك ماوافقتش على الاسترداد. لو مش موافقة، افتحي القائمة اللي فوق واطلبي من Own Hub تبص تاني.';
+
+  @override
+  String theFirstNDaysAreOverSo(String n) {
+    return 'أول $n يوم عدّوا، فمش هينفع تطلبي استرداد من هنا.';
+  }
+
+  @override
+  String get youAlreadyAskedForARefundOn =>
+      'إنتي طلبتي استرداد للدفعة دي قبل كده.';
+
+  @override
+  String get theTimeToReportAProblemOn =>
+      'الوقت اللي تقدري تبلّغي فيه عن مشكلة في الدفعة دي عدّى.';
+
+  @override
+  String get youAlreadyReportedThisOwnHubHas =>
+      'إنتي بلّغتي عن ده قبل كده. Own Hub معاها ملاحظتك.';
+
+  @override
+  String get youHaveReachedTheNumberOfReports =>
+      'وصلتي لأقصى عدد بلاغات في الشهر ده. جرّبي الشهر الجاي.';
+
+  @override
+  String get pleaseCheckTheTransactionNumberFromYour =>
+      'راجعي رقم العملية من البنك. بيتكوّن من أرقام بس.';
+
+  @override
+  String get theDateOrTimeOnYourPhone =>
+      'تاريخ أو وقت موبايلك شكله غلط. صلّحيه وجرّبي تاني.';
+
+  @override
+  String get pleaseCheckTheAmountItCannotBe =>
+      'راجعي المبلغ. مايزيدش عن مبلغ الدفعة.';
+
+  @override
+  String get refundRequests => 'طلبات الاسترداد';
+
+  @override
+  String askedTimeAnswerByDate(String time, String date) {
+    return 'طلبت $time. ردّي قبل $date.';
+  }
+
+  @override
+  String askedTimeTheAnswerWasDueDate(String time, String date) {
+    return 'طلبت $time. كان ميعاد الرد $date. Own Hub ممكن تتدخل.';
+  }
+
+  @override
+  String get recordRefund => 'سجّلي الاسترداد';
+
+  @override
+  String get sendTheMoneyBackToYourClient =>
+      'ابعتي الفلوس لعميلتك بإنستا باي، وبعدين سجّليها هنا. Own Hub مابتحركش فلوس.';
+
+  @override
+  String get amountSentBackEgp => 'المبلغ اللي رجّعتيه (جنيه)';
+
+  @override
+  String partOfThePaymentAmountOfTotal(String amount, String total) {
+    return 'جزء من الدفعة: $amount من $total.';
+  }
+
+  @override
+  String get iDoNotAgreeToThisRefund => 'مش موافقة على الاسترداد ده';
+
+  @override
+  String get whyDoYouNotAgree => 'ليه مش موافقة؟';
+
+  @override
+  String get yourClientCanThenAskOwnHub =>
+      'عميلتك ممكن تطلب من Own Hub تبص عليه.';
+
+  @override
+  String get iAlreadyGaveTheSessions => 'أنا قدّمت الجلسات فعلًا';
+
+  @override
+  String get itIsOutsideTheTerms => 'ده برّه الشروط';
+
+  @override
+  String get yourInbodySheet => 'ورقة الـ InBody بتاعتك';
+
+  @override
+  String get chooseAPhotoOrScreenshotOfYour =>
+      'اختاري صورة أو سكرينشوت لورقة النتيجة. بتتقرا على موبايلك. الصورة مبتتحفظش ومبتسيبش موبايلك أبدًا.';
+
+  @override
+  String get typeTheNumbersInstead => 'اكتبي الأرقام بنفسك';
+
+  @override
+  String get readingYourSheet => 'بنقرا ورقتك';
+
+  @override
+  String get checkYourNumbers => 'راجعي أرقامك';
+
+  @override
+  String get weReadTheseFromYourSheetCheck =>
+      'دي الأرقام اللي قريناها من ورقتك. راجعي كل رقم على الورقة وصلّحي أي غلط. مفيش حاجة بتتستخدم غير لما تأكّدي.';
+
+  @override
+  String get typeTheNumbersFromYourSheetLeave =>
+      'اكتبي الأرقام من ورقتك. سيبي فاضي اللي معندكيش. مفيش حاجة بتتستخدم غير لما تأكّدي.';
+
+  @override
+  String get weCouldNotReadNumbersFromThat =>
+      'معرفناش نقرا أرقام من الصورة دي. جرّبي صورة أوضح، أو اكتبيها بإيدك.';
+
+  @override
+  String get checkThisNumberItLooksOutsideThe =>
+      'راجعي الرقم ده، شكله برّه المعتاد.';
+
+  @override
+  String get weightHeightAndBmiOnYourSheet =>
+      'الوزن والطول والـ BMI في ورقتك مش متطابقين. راجعي التلاتة على الورقة.';
+
+  @override
+  String get weightFatAndLeanMassOnYour =>
+      'الوزن وكتلة الدهون وكتلة الجسم الخالية من الدهون في ورقتك مجموعهم مش مظبوط. راجعي الأرقام على الورقة.';
+
+  @override
+  String get yourSheetShowsPoundsSoTheWeight =>
+      'ورقتك بالرطل، فحوّلنا الوزن لكيلوجرام.';
+
+  @override
+  String get chooseAnotherPhoto => 'اختاري صورة تانية';
+
+  @override
+  String get confirmTheseNumbers => 'أكّدي الأرقام دي';
+
+  @override
+  String get yourWeightAndHeightStayOnThis => 'وزنك وطولك بيفضلوا على موبايلك.';
+
+  @override
+  String get yourCoachSeesTheseNumbersOnlyIf =>
+      'المدرّبة مش هتشوف الأرقام دي غير لو علّمتي على المربع في استمارة الطلب. والصورة عمرها ما بتتبعت.';
+
+  @override
+  String get inbodyNumbers => 'أرقام الـ InBody';
+
+  @override
+  String aPlaceToStartKcalKcalAnd(String kcal, String protein) {
+    return 'نقطة بداية: $kcal سعرة و$protein جم بروتين في اليوم';
+  }
+
+  @override
+  String useTheInbodySuggestionKcalKcalAnd(String kcal, String protein) {
+    return 'استخدمي اقتراح الـ InBody: $kcal سعرة و$protein جم بروتين';
+  }
+
+  @override
+  String get noTargetIsSuggestedWhileSheIs =>
+      'مفيش هدف مقترح وهي حامل أو بعد الولادة. حدّدي أكلها مع دكتورها.';
+
+  @override
+  String get noTargetIsSuggestedForHerHer =>
+      'مفيش هدف مقترح ليها. إجاباتها بتطلب إنك تتابعي أكلها بنفسك.';
+
+  @override
+  String get thereIsNotEnoughOnHerSheet =>
+      'الأرقام في ورقتها مش كفاية نقترح هدف. حدّديه بإيدك.';
+
+  @override
+  String get addYourInbodyNumbers => 'ضيفي أرقام الـ InBody بتاعتك';
+
+  @override
+  String get optionalYourCoachSeesTheNumbersNever =>
+      'اختياري. المدرّبة بتشوف الأرقام بس، وعمرها ما بتشوف الصورة.';
+
+  @override
+  String get inbodyNumbersAdded => 'أرقام الـ InBody اتضافت';
+
+  @override
+  String iShareMyInbodyNumbersWithName(String name) {
+    return 'أنا بشارك أرقام الـ InBody بتاعتي مع $name. دي قياسات جسم، وبتتخزّن مع باقي إجاباتي في فرانكفورت بألمانيا، يعني برّه مصر.';
+  }
+
+  @override
+  String get readMyInbodySheet => 'اقري ورقة الـ InBody بتاعتي';
+
+  @override
+  String get feeStatements => 'كشوف الرسوم';
+
+  @override
+  String get whatYouOweOwnHubEachMonth => 'اللي عليكي لـ Own Hub كل شهر';
+
+  @override
+  String get monthlyStatement => 'كشف الشهر';
+
+  @override
+  String feeForMonth(String month) {
+    return 'الرسوم عن شهر $month';
+  }
+
+  @override
+  String paymentsCount(String count) {
+    return 'الدفعات: $count';
+  }
+
+  @override
+  String feeFeeOnBase(String fee, String base) {
+    return 'رسوم $fee على $base';
+  }
+
+  @override
+  String get due => 'مستحقة';
+
+  @override
+  String get disputedPending => 'متنازع عليها، مستنية القرار';
+
+  @override
+  String get settled => 'اتسدّدت';
+
+  @override
+  String get waived => 'اتلغت';
+
+  @override
+  String get totalDue => 'الإجمالي المستحق';
+
+  @override
+  String get payOwnHubsFeeByInstapayTo => 'ادفعي رسوم Own Hub بإنستا باي على:';
+
+  @override
+  String accountNameName(String name) {
+    return 'اسم الحساب: $name';
+  }
+
+  @override
+  String get ownHubWillSendYouTheAddress =>
+      'Own Hub هتبعتلك العنوان اللي هتدفعي عليه.';
+
+  @override
+  String feesUnpaidForMoreThanNDays(String n) {
+    return 'الرسوم اللي عدّى عليها أكتر من $n يوم بتوقف العميلات الجداد. عميلاتك الحاليات عمرهم ما بيتقطعوا.';
+  }
+
+  @override
+  String get thisFeeIsLateNewClientsCannot =>
+      'الرسوم دي اتأخرت. العميلات الجداد مش هيقدروا ينضموا ليكي لحد ما تتدفع. عميلاتك الحاليات مش هيتأثروا.';
+
+  @override
+  String dueByDate(String date) {
+    return 'آخر ميعاد $date';
+  }
+
+  @override
+  String get markFeeAsPaid => 'سجّلي إن الرسوم اتدفعت';
+
+  @override
+  String get useTheTransactionNumberFromYourInstapay =>
+      'اكتبي رقم العملية من تحويلك لـ Own Hub على إنستا باي.';
+
+  @override
+  String get recordedOwnHubWillConfirmIt => 'اتسجّلت. Own Hub هتأكدها.';
+
+  @override
+  String get paidOwnHubWillConfirm => 'اتدفعت. Own Hub هتأكدها.';
+
+  @override
+  String get paidAndConfirmed => 'اتدفعت واتأكدت.';
+
+  @override
+  String get thisStatementChangedGoBackAndOpen =>
+      'الكشف ده اتغيّر. ارجعي وافتحيه تاني.';
+
+  @override
+  String get noStatementYetTheFirstOneComes =>
+      'لسه مفيش كشف. أول كشف بيجي أول الشهر الجاي.';
+
+  @override
+  String get otherMonths => 'شهور تانية';
+
+  @override
+  String get pleaseCheckTheTransactionNumberFromYour_653l2 =>
+      'راجعي رقم العملية بتاع تحويلك.';
+
+  @override
+  String get savePaymentRecord => 'احفظي سجل الدفع';
+
+  @override
+  String get paymentRecord => 'سجل الدفع';
+
+  @override
+  String get ownHubPaymentRecord => 'سجل دفع Own Hub';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get status => 'الحالة';
+
+  @override
+  String get client => 'العميلة';
+
+  @override
+  String get thisIsAPaymentRecordItIs => 'ده سجل دفع. مش فاتورة ضريبية.';
+
+  @override
+  String get saveOrShare => 'احفظي أو شاركي';
+
+  @override
+  String ownHubDecidedYouOweARefund(String date) {
+    return 'Own Hub قرّرت إن عليكي استرداد. ابعتيه قبل $date.';
+  }
+
+  @override
+  String ownHubDecidedYouOweARefund_c85m6(String date) {
+    return 'Own Hub قرّرت إن عليكي استرداد. كان مطلوب قبل $date.';
+  }
+
+  @override
+  String get ownHubSetThisAmount => 'Own Hub هي اللي حدّدت المبلغ ده.';
+
+  @override
+  String get sayWhatYouAte => 'قولي أكلتي إيه';
+
+  @override
+  String get tapToSpeak => 'دوسي وقولي';
+
+  @override
+  String get listeningTapWhenYouAreDone => 'بسمعك، دوسي لما تخلّصي';
+
+  @override
+  String get ownHubListensOnlyWhileYouSpeak =>
+      'Own Hub بتسمعك بس وإنتي بتتكلمي، عشان تكتب اللي قلتيه وتراجعيه. خدمة الكلام في موبايلك (آبل على الآيفون وجوجل على الأندرويد) ممكن تعالج كلامك، وOwn Hub مش بتحتفظ بالصوت أبدًا.';
+
+  @override
+  String get fixAnyWordAndWeWillAdd => 'صلّحي أي كلمة وإحنا هنحسبها تاني.';
+
+  @override
+  String get ownHubCantUseTheMicrophoneOr =>
+      'Own Hub مش قادرة تستخدم الميكروفون أو التعرّف على الكلام في موبايلك دلوقتي. شغّليهم من الإعدادات، أو اكتبي أكلتك.';
+
+  @override
+  String get weDidntCatchAnythingTryAgainA =>
+      'مسمعناش حاجة. جرّبي تاني وإنتي أقرب شوية للموبايل، أو اكتبي أكلتك.';
+
+  @override
+  String get sayingYourMealNeedsAnInternetConnection =>
+      'قول أكلتك محتاج إنترنت على موبايلك دلوقتي. اكتبيها بدل كده، أو جرّبي تاني لما النت يرجع.';
+
+  @override
+  String get thisPhoneCantTurnSpeechIntoText =>
+      'الموبايل ده مش بيحوّل الكلام لنص. اكتبي أكلتك بدل كده.';
+
+  @override
+  String get somethingWentWrongWhileListeningTryAgain =>
+      'حصلت مشكلة وإحنا بنسمعك. جرّبي تاني، أو اكتبي أكلتك.';
+
+  @override
+  String get weHeardYouButNoneOfIt =>
+      'سمعناكي، بس ولا كلمة اتطابقت مع أكلة. صلّحي الكلام فوق، أو اكتبي أكلتك.';
+
+  @override
+  String get speakIn => 'اتكلمي بـ';
+
+  @override
+  String get turnOnPaymentAlerts => 'فعّلي تنبيهات الدفع';
+
+  @override
+  String get tellMeWhenItChanges => 'قوليلي لما يتغيّر';
+
+  @override
+  String get ownHubCanTellYouOnThis =>
+      'Own Hub يقدر يبعتلك تنبيه على الموبايل ده لما عميلة تدفع أو تطلب استرداد، ولما كشف الرسوم يجهز. دي تنبيهات الدفع بس، ومفيش اسم ولا مبلغ بيظهر على شاشة القفل.';
+
+  @override
+  String get weWillSendANotificationToThis =>
+      'هنبعتلك تنبيه على الموبايل ده لما الدفع بتاعك يتأكد أو يحتاج منك حاجة. دي تنبيهات الدفع بس، ومفيش اسم ولا مبلغ بيظهر على شاشة القفل.';
+
+  @override
+  String get paymentAlertsAreOnForThisPhone =>
+      'تنبيهات الدفع اتفعّلت على الموبايل ده.';
+
+  @override
+  String nPluralOneSentToNClient(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'اتبعتت لـ $n عميلة',
+      many: 'اتبعتت لـ $n عميلة',
+      few: 'اتبعتت لـ $n عميلات',
+      two: 'اتبعتت لعميلتين',
+      one: 'اتبعتت لعميلة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get thatWasForYou => 'ده كان ليكي.';
+
+  @override
+  String get restWellYouEarnedIt => 'ارتاحي كويس، تستاهلي.';
+
+  @override
+  String get beProudOfThatOne => 'افتخري بنفسك.';
+
+  @override
+  String get strongWorkToday => 'شغل جامد النهاردة.';
+
+  @override
+  String get keepThisWorkout => 'احفظي التمرين ده';
+
+  @override
+  String get createYourAccountAndThisWorkoutCounts =>
+      'اعملي حسابك والتمرين ده يتحسب في أسبوعك.';
+
+  @override
+  String get goForAWalk => 'اطلعي تمشي';
+
+  @override
+  String get walkAsLongAsYouLikeLog =>
+      'امشي المدة اللي تحبيها. سجّليها بعد كده، وOwn Hub يحسب السعرات اللي حرقتيها.';
+
+  @override
+  String get theCaloriesAreAnEstimateTheyNever =>
+      'السعرات دي تقدير، ومش بتغيّر اللي بتاكليه.';
+
+  @override
+  String get startWalking => 'ابدئي المشي';
+
+  @override
+  String get finishWalk => 'خلّصي المشي';
+
+  @override
+  String get caloriesBurnedEstimate => 'السعرات المحروقة، تقدير';
+
+  @override
+  String get logThisWalk => 'سجّلي المشي ده';
+
+  @override
+  String get loggingCountsItInYourWeekAnd =>
+      'لما تسجّليه بيتحسب في أسبوعك، وبنحفظ السعرات اللي حرقتيها.';
+
+  @override
+  String get dontLogIt => 'من غير تسجيل';
+
+  @override
+  String get walkLogged => 'المشي اتسجّل';
+
+  @override
+  String get thatWasUnderAMinuteSoThere =>
+      'ده كان أقل من دقيقة، فمفيش حاجة تتسجّل.';
+
+  @override
+  String get workedOutWithATypicalWeightAdd =>
+      'محسوبة على وزن متوسط. ضيفي وزنك لرقم أقرب.';
+
+  @override
+  String get twoQuickQuestionsThenTheCoachesWho =>
+      'سؤالين سريعين، وبعدها المدرّبات الأنسب ليكي.';
+
+  @override
+  String get matchedOnYourTwoAnswersOnlyThen =>
+      'على حسب إجاباتك الاتنين بس، وبعدها بالترتيب الأبجدي.';
+
+  @override
+  String get logItToCountTheCaloriesYou => 'سجّليه وهنحسب السعرات اللي حرقتيها';
+
+  @override
+  String get soundsAndTouch => 'الصوت واللمس';
+
+  @override
+  String get chooseWhatYouHearAndFeel => 'اختاري اللي بتسمعيه وبتحسّي بيه';
+
+  @override
+  String get sounds => 'الأصوات';
+
+  @override
+  String get softSoundsWhenYouLogASet =>
+      'أصوات هادية لما تسجّلي مجموعة، أو تخلّصي تمرينك، أو تضيفي وجبة.';
+
+  @override
+  String get haptics => 'الاهتزاز';
+
+  @override
+  String get aLightTapYouCanFeelAt => 'لمسة خفيفة بتحسّيها في نفس اللحظات.';
 }

@@ -61,6 +61,7 @@ def test_the_first_of_the_month_makes_one_statement_per_coach_with_fees(db, note
     assert row["dueAt"] == row["generatedAt"] + dt.timedelta(days=30) and row["payTo"] == {"address": "ownhub@instapay", "holderName": "Own Hub"}
     assert [line["paymentId"] for line in row["lines"]] == ["p1", "p2", "p3"]
     assert sorted(notes.sent) == sorted([(COACH, "instapayStatementReady"), (COACH2, "instapayStatementReady")])
+    assert sorted(notes.refs) == sorted([(COACH, "instapayStatementReady", "2026-10"), (COACH2, "instapayStatementReady", "2026-10")])
     assert fees.generate(db, now=FIRST_NOV, notify=notes) == 0 and len(notes.sent) == 2
 
 
@@ -123,12 +124,13 @@ def test_30_days_late_means_no_new_clients_but_existing_ones_stay(db, notes):
     fee_payment(db, "p1")
     fees.generate(db, now=FIRST_NOV, notify=notes)
     notes.sent.clear()
+    notes.refs.clear()
     assert timers.hourly(db, FIRST_NOV + dt.timedelta(days=29), notes)["feesOverdue"] == 0
     assert timers.hourly(db, FIRST_NOV + dt.timedelta(days=31), notes)["feesOverdue"] == 1
     coach_row = db.document(f"coaches/{COACH}").get().to_dict()
     assert coach_row["acceptingClients"] is False and coach_row["acceptingBeforeOverdue"] is True
     assert db.document(f"paymentStanding/{COACH}").get().to_dict()["feeOverdue"] is True
-    assert notes.sent == [(COACH, "instapayFeeOverdue")]
+    assert notes.sent == [(COACH, "instapayFeeOverdue")] and notes.refs == [(COACH, "instapayFeeOverdue", "2026-10")]
     assert db.document(f"subscriptions/{SUB}").get().to_dict()["status"] == "active"
     timers.hourly(db, FIRST_NOV + dt.timedelta(days=32), notes)
     assert notes.sent == [(COACH, "instapayFeeOverdue")]

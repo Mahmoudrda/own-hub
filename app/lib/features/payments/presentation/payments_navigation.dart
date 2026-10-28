@@ -12,7 +12,10 @@ import '../../private_coaching/domain/coaching_contract.dart'
 import '../../private_coaching/domain/subscription.dart' show Subscription;
 import '../data/proof_images.dart';
 import '../domain/payment_models.dart';
+import 'coach_payments_view.dart';
+import 'fee_statement_view.dart';
 import 'pay_card.dart';
+import 'payment_address_view.dart';
 import 'payment_view.dart';
 import 'proof_flow.dart';
 import 'proof_view.dart';
@@ -126,6 +129,38 @@ abstract final class PaymentsNav {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  /// PAY4: the coach's payments inbox. PAY5 is pushed from inside it.
+  static void coachPayments(NavigatorState nav) {
+    unawaited(
+      nav.push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => CoachPaymentsView(picker: picker, prepare: prepare),
+        ),
+      ),
+    );
+  }
+
+  /// PAY9: what the coach owes Own Hub, month by month. [month] ("2026-10")
+  /// opens that statement first.
+  static void coachStatements(NavigatorState nav, {String? month}) {
+    unawaited(
+      nav.push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => FeeStatementView(initialMonth: month),
+        ),
+      ),
+    );
+  }
+
+  /// The coach's own payment details.
+  static void coachAddress(NavigatorState nav) {
+    unawaited(
+      nav.push<void>(
+        MaterialPageRoute<void>(builder: (_) => const PaymentAddressView()),
       ),
     );
   }

@@ -30,6 +30,7 @@ class Payment(dict):
     by another payment of the same coach and amount (WO-10m)."""
 
     lock_owned = False
+    ref_id: Optional[str] = None  # the document id, which `to_dict()` leaves out; a push needs it
 
 
 def read_payment(transaction, db, ref) -> Optional[Payment]:
@@ -39,6 +40,7 @@ def read_payment(transaction, db, ref) -> Optional[Payment]:
     if row is None:
         return None
     pay = Payment(row)
+    pay.ref_id = ref.id
     if row.get("lockId"):
         lock = db.collection("paymentAmountLocks").document(row["lockId"]).get(transaction=transaction)
         pay.lock_owned = lock.exists and (lock.to_dict() or {}).get("paymentId") == ref.id
@@ -96,6 +98,7 @@ def move(transaction, db, ref, payment: dict, to: str, role: str, actor_uid: Opt
     )
     out = Payment({**payment, **update})
     out.lock_owned = getattr(payment, "lock_owned", False)
+    out.ref_id = getattr(payment, "ref_id", None)
     return out
 
 
@@ -119,7 +122,7 @@ def notify_moves(notify, payment: dict, moves: list) -> None:
         for who, kind in states.notices_for(frm, to):
             uid = payment["clientUid"] if who == states.CLIENT else payment["coachUid"]
             try:
-                notify(uid, kind)
+                notify(uid, kind, getattr(payment, "ref_id", None))
             except Exception:  # noqa: BLE001
                 pass
 

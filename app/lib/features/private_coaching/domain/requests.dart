@@ -32,15 +32,19 @@ abstract final class CoachingRequests {
   static Json payoutChange(CoachPayoutAccount account) => account.toMap();
 
   /// What she ticked on the request form: the version and a hash of each text
-  /// as she read it, so the record shows which words she agreed to.
+  /// as she read it, so the record shows which words she agreed to. The
+  /// InBody tick exists only when she attached her numbers.
   static Json requestConsent({
     required String shareText,
     required String transferText,
+    String? inbodyText,
     required String appVersion,
   }) => <String, Object?>{
     'version': 2,
     'shareHash': sha256.convert(utf8.encode(shareText)).toString(),
     'transferHash': sha256.convert(utf8.encode(transferText)).toString(),
+    if (inbodyText != null)
+      'inbodyHash': sha256.convert(utf8.encode(inbodyText)).toString(),
     if (appVersion.isNotEmpty) 'appVersion': appVersion,
   };
 

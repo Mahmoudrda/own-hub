@@ -1,5 +1,4 @@
 {
-  "originHash" : "dd3dcbc9ef88ab6534331662b6c5ac7d1f1ddb9b1b41dae548c090a8b134a071",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -17,6 +16,15 @@
       "state" : {
         "revision" : "97f7d74dd0e8f3d0fe5fc75cc8957aa73bdc948a",
         "version" : "11.3.2"
+      }
+    },
+    {
+      "identity" : "cwlcatchexception",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattgallagher/CwlCatchException.git",
+      "state" : {
+        "revision" : "07b2ba21d361c223e25e3c1e924288742923f08c",
+        "version" : "2.2.1"
       }
     },
     {
@@ -137,5 +145,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }

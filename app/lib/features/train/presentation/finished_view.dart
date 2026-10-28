@@ -40,6 +40,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import '../../../app_state/haptics.dart';
+import '../../../app_state/sound.dart';
 import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/format/number_label.dart';
 import '../../../domain/logging/log_command_bus.dart' show LogHandle;
@@ -80,6 +81,21 @@ import 'train_widgets.dart' show TrainTopBar;
 const int _cheerStage = 5;
 const int _confettiStage = 6;
 
+/// The one warm line R10 ends on, picked from a small bank by the session's
+/// own id so a redraw never changes it. No figure, never what is left.
+String closingLineFor(AppL10n l10n, String? sessionId) {
+  final bank = [
+    l10n.gladYouShowedUpToday,
+    l10n.thatWasForYou,
+    l10n.restWellYouEarnedIt,
+    l10n.beProudOfThatOne,
+    l10n.strongWorkToday,
+  ];
+  if (sessionId == null) return bank.first;
+  final sum = sessionId.codeUnits.fold<int>(0, (a, b) => a + b);
+  return bank[sum % bank.length];
+}
+
 class FinishedView extends StatelessWidget {
   const FinishedView({
     super.key,
@@ -102,7 +118,14 @@ class FinishedView extends StatelessWidget {
     this.onOpenRecentSessions,
     this.lastLog,
     this.onUndoLastLog,
+    this.keepWorkout,
   });
+
+  /// For a woman with no account (D62): "Keep this workout", the one filled
+  /// button, which opens sign-up so this session becomes hers. "Later" takes
+  /// the place of Done, and nothing that needs an account (sharing) is drawn.
+  /// Null for everyone else.
+  final VoidCallback? keepWorkout;
 
   /// The last set (or move) of the workout, while its five seconds are open.
   /// The page offers Undo for it, and the session is only finished once the
@@ -227,13 +250,33 @@ class FinishedView extends StatelessWidget {
         ? summary?.trainingStreak
         : null;
 
-    // One firm touch, as the tick draws (stage 5): the reveal's single
-    // haptic, so what she feels lands with what she sees.
+    // One touch, as the tick draws (stage 5): the reveal's single haptic, so
+    // what she feels lands with what she sees. Heavier when she really beat
+    // a best (still one touch, D46).
     void stageShown(int stage) {
       if (stage == _cheerStage) {
-        unawaited(AppHaptics.play(HapticMoment.sessionFinished));
+        final beatABest = flags.isOn(Feature.warmFinish) && bests.isNotEmpty;
+        unawaited(
+          AppHaptics.play(
+            beatABest ? HapticMoment.bigMoment : HapticMoment.sessionFinished,
+          ),
+        );
+        // The one sound of the finish, with the touch and on the same branch,
+        // once for this session however many times the page redraws.
+        if (summary != null) {
+          unawaited(
+            AppSound.playOnce(
+              beatABest ? SoundCue.personalBest : SoundCue.sessionDone,
+              'r10:${summary.sessionId}',
+            ),
+          );
+        }
       }
     }
+
+    // Community's, and never for a guest, whose one free action is the workout.
+    final groupShare =
+        keepWorkout == null && (AppRouter.screenIsOn('M03') && onShare != null);
 
     final stats = <AppStat>[
       if (summary != null && summary.minutes > 0)
@@ -264,6 +307,7 @@ class FinishedView extends StatelessWidget {
           // The card she can screenshot or send: opened from here, so the peak
           // stays one picture and one button.
           if (!awaitingSummary &&
+              keepWorkout == null &&
               summary != null &&
               summary.isLive &&
               summary.sets > 0)
@@ -305,11 +349,10 @@ class FinishedView extends StatelessWidget {
           // A session logged by mistake comes off her week, after a
           // confirmation, with Undo. Only once its credit has landed. The
           // group link is Community's, and the first release ships without it.
-          if (onRemove != null ||
-              (AppRouter.screenIsOn('M03') && onShare != null))
+          if (onRemove != null || groupShare)
             AppOverflowMenu(
               items: [
-                if (AppRouter.screenIsOn('M03') && onShare != null)
+                if (groupShare)
                   AppOverflowItem(
                     icon: Icons.groups_outlined,
                     label: l10n.shareTheSquatWithYourGroup,
@@ -328,7 +371,22 @@ class FinishedView extends StatelessWidget {
         ],
       ),
       footer: [
-        AppButton(l10n.done_54ca1, onPressed: onBackToToday),
+        if (keepWorkout case final keep?) ...[
+          AppButton(
+            l10n.keepThisWorkout,
+            key: const ValueKey('r10-keep-workout'),
+            onPressed: keep,
+          ),
+          AppButton(
+            l10n.later,
+            key: const ValueKey('r10-later'),
+            variant: AppButtonVariant.text,
+            height: 44,
+            fontSize: 15,
+            onPressed: onBackToToday,
+          ),
+        ] else
+          AppButton(l10n.done_54ca1, onPressed: onBackToToday),
         if (!awaitingSummary)
           Builder(
             builder: (foot) => AppButton(
@@ -470,7 +528,9 @@ class FinishedView extends StatelessWidget {
                           ),
                         )
                       : Text(
-                          l10n.gladYouShowedUpToday,
+                          flags.isOn(Feature.warmFinish)
+                              ? closingLineFor(l10n, summary?.sessionId)
+                              : l10n.gladYouShowedUpToday,
                           key: const ValueKey('r10-kitten-caption'),
                           style: AppText.bodyM.copyWith(
                             color: AppColors.onSurfaceVariant,
@@ -486,6 +546,15 @@ class FinishedView extends StatelessWidget {
               ],
             ),
           ),
+          if (keepWorkout != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                l10n.createYourAccountAndThisWorkoutCounts,
+                key: const ValueKey('r10-keep-note'),
+                style: AppText.bodyM.copyWith(color: AppColors.onSurface),
+              ),
+            ),
         ],
       ],
     );

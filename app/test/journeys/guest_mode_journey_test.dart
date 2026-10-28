@@ -187,10 +187,15 @@ void main() {
     expect(_written, hasLength(1));
   });
 
-  testWidgets('a guest who taps Start on the workout meets Rahma first', (
+  // D62 lets a guest run her first workout (`guest_first_workout_test.dart`);
+  // with that switch off, Start meets Rahma first, as it did before.
+  testWidgets('with the first-workout switch off, Start meets Rahma first', (
     tester,
   ) async {
     _phone(tester);
+    AppRouter.featureFlags = AppRouter.featureFlags.with_(<Feature, bool>{
+      Feature.guestFirstWorkout: false,
+    });
     AppRouter.intakeRepository.markSetupDone();
     await tester.pumpWidget(OwnHubApp(key: UniqueKey()));
     await tester.pumpAndSettle();

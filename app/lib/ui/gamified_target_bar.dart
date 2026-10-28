@@ -19,6 +19,7 @@ class GamifiedTargetBar extends StatelessWidget {
     required this.unit,
     this.remainingLabel,
     this.targetMetLabel,
+    this.partial = false,
   });
 
   /// The name of the nutrient (e.g. Protein, Calories, Carbs).
@@ -39,6 +40,10 @@ class GamifiedTargetBar extends StatelessWidget {
   /// Custom label when target is reached or exceeded.
   final String? targetMetLabel;
 
+  /// Some of what [current] adds up has no figures, so the real total is
+  /// higher: the bar says so instead of "remaining" or "reached".
+  final bool partial;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
@@ -46,13 +51,17 @@ class GamifiedTargetBar extends StatelessWidget {
     final safeTarget = target > 0 ? target : 1;
     final progress = (current / safeTarget).clamp(0.0, 1.0);
     final remaining = (target - current).clamp(0, 9999);
-    final isMet = current >= target && target > 0;
-    final isOver = current > (target * 1.15).round() && target > 0;
+    final isMet = !partial && current >= target && target > 0;
+    final isOver = !partial && current > (target * 1.15).round() && target > 0;
 
     final remainingText =
         remainingLabel ?? l10n.amountUnitRemaining(countLabel(remaining), unit);
     final metText = targetMetLabel ?? l10n.targetReached;
-    final status = isMet ? metText : remainingText;
+    final status = partial
+        ? l10n.someItemsHaveNoFigures
+        : isMet
+        ? metText
+        : remainingText;
 
     // Color accents
     final Color barColor = isOver
@@ -67,7 +76,7 @@ class GamifiedTargetBar extends StatelessWidget {
         countLabel(current),
         countLabel(target),
         unit,
-        status,
+        status.endsWith('.') ? status.substring(0, status.length - 1) : status,
       ),
       excludeSemantics: true,
       child: Column(

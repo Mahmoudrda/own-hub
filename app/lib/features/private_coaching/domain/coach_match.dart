@@ -13,7 +13,7 @@ class MatchAnswers {
   const MatchAnswers({
     required this.goal,
     required this.place,
-    required this.budgetBand,
+    this.budgetBand,
   });
 
   /// One of `CoachingEnums.goals`.
@@ -22,8 +22,9 @@ class MatchAnswers {
   /// One of `CoachingEnums.places`.
   final String place;
 
-  /// One of `CoachingEnums.budgetBands`.
-  final String budgetBand;
+  /// One of `CoachingEnums.budgetBands`, or null while nothing can be paid and
+  /// the question is not asked: a coach then gets no budget points.
+  final String? budgetBand;
 }
 
 class CoachMatchResult {
@@ -98,9 +99,12 @@ abstract final class CoachMatch {
         score += 1;
       }
     }
+    final band = answers.budgetBand;
     final cheapest = coach.fromMonthlyEgp;
-    final ceiling = bandCeilingEgp[answers.budgetBand];
-    if (cheapest != null && (ceiling == null || cheapest <= ceiling)) {
+    final ceiling = band == null ? null : bandCeilingEgp[band];
+    if (band != null &&
+        cheapest != null &&
+        (ceiling == null || cheapest <= ceiling)) {
       score += budgetPoints;
     }
     return score;

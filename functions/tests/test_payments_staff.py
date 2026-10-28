@@ -133,6 +133,7 @@ def test_resolved_paid_starts_the_coaching_owes_the_fee_and_tells_both_women(db,
     assert pay["feeState"] == "owed" and pay["feePiasters"] == 7500 and pay["dispute"]["staffDecision"] == "resolved_paid"
     assert sub_of(db)["status"] == "active"
     assert {(CLIENT, "instapayReviewDecided"), (COACH, "instapayCoachReviewDecided")} <= set(notes.sent)
+    assert {(CLIENT, "instapayReviewDecided", PAY), (COACH, "instapayCoachReviewDecided", PAY)} <= set(notes.refs)
     assert ("in_review", "resolved_paid", "staff") in events(db)
     log = [d.to_dict() for d in db.collection(f"payments/{PAY}/staff/decisions/log").stream()]
     assert len(log) == 1 and log[0]["reasonText"] == REASON and REVIEWER not in str(log)

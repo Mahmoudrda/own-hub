@@ -21,6 +21,7 @@ import 'package:own_hub/features/private_coaching/domain/coach_application.dart'
 import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_profile.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
+import 'package:own_hub/features/private_coaching/domain/inbody_scan.dart';
 import 'package:own_hub/features/private_coaching/domain/payments.dart';
 import 'package:own_hub/features/private_coaching/domain/requests.dart';
 import 'package:own_hub/features/private_coaching/domain/session_link.dart';
@@ -381,6 +382,39 @@ void main() {
       expect(const CoachPayoutAccount().toMap().keys, _sameKeys(doc['payout']));
     });
 
+    test('the InBody numbers an intake may carry', () {
+      final doc = documents['subscription'] as Map<String, dynamic>;
+      const scan = InBodyScan(
+        weightKg: 64.5,
+        heightCm: 164,
+        bodyFatPercent: 26.6,
+        skeletalMuscleMassKg: 24.8,
+        bmrKcal: 1340,
+      );
+      expect(doc['intakeOptional'], ['inbody']);
+      expect(
+        const Intake(lifeStage: 'none', inbodyScan: scan).toRequest().keys,
+        _sameKeys([...doc['intake'] as List, ...doc['intakeOptional'] as List]),
+      );
+      final ranges = doc['inbody'] as Map<String, dynamic>;
+      expect(scan.toJson().keys, _sameKeys(ranges.keys));
+      for (final entry in <String, InBodyField>{
+        'weightKg': InBodyField.weight,
+        'heightCm': InBodyField.height,
+        'bodyFatPercent': InBodyField.bodyFat,
+        'skeletalMuscleMassKg': InBodyField.muscle,
+        'bmrKcal': InBodyField.bmr,
+      }.entries) {
+        final range = (ranges[entry.key] as List).cast<num>();
+        final mine = InBodyRanges.of[entry.value]!;
+        expect(
+          [mine.low, mine.high],
+          [range[0].toDouble(), range[1].toDouble()],
+          reason: entry.key,
+        );
+      }
+    });
+
     test('the intake the client sends', () {
       final doc = documents['subscription'] as Map<String, dynamic>;
       expect(
@@ -531,6 +565,12 @@ void _consentTextsMatchTheApp() {
         expect(
           hashes(request['transfer'] as Object),
           contains(hash(l10n.iAgreeThatMyAnswersAreSent)),
+        );
+      });
+      test('$lang InBody text', () {
+        expect(
+          hashes(request['inbody'] as Object, name: 'Rahma'),
+          contains(hash(l10n.iShareMyInbodyNumbersWithName('Rahma'))),
         );
       });
       test('$lang chat rules', () {

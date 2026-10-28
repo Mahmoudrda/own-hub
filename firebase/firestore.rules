@@ -871,8 +871,16 @@ service cloud.firestore {
                               && stampedIfTouched()
                               && request.resource.data.keys().hasOnly([
                                    'token', 'platform', 'appVersion',
-                                   'locale', 'updatedAt'
-                                 ]);
+                                   'locale', 'updatedAt', 'topics'
+                                 ])
+                              // What she said yes to: written only when she
+                              // asked for payment alerts, so the C14 yes is
+                              // still the same four fields.
+                              && (!('topics' in request.resource.data)
+                                  || (request.resource.data.topics is list
+                                      && request.resource.data.topics.size() <= 2
+                                      && request.resource.data.topics
+                                           .hasOnly(['approval', 'payments'])));
         allow delete: if isSelf(uid);      // sign-out retires the token
       }
 

@@ -61,6 +61,7 @@ import '../app_state/payments_switch.dart';
 import '../app_state/pledge.dart';
 import '../app_state/my_plan_state.dart';
 import '../app_state/notification_sync.dart';
+import '../app_state/payment_push_taps.dart';
 import '../app_state/push_registration.dart';
 import '../app_state/reminder_scheduler.dart';
 import '../app_state/role_state.dart';
@@ -183,6 +184,7 @@ import '../features/train/presentation/exercise_clip_player.dart'
 import '../features/train/presentation/exercise_video_view.dart';
 import '../features/train/domain/notification_plan.dart';
 import '../features/train/domain/training_reminders.dart';
+import '../features/onboarding/domain/body_data.dart' show BodyDataStore;
 import '../features/train/presentation/finished_view.dart';
 import '../features/train/presentation/notification_explainer.dart';
 import '../features/train/presentation/reminder_sheet.dart';
@@ -209,6 +211,7 @@ import '../features/cycle/presentation/symptom_labels.dart' show checkInSummary;
 import '../features/train/domain/session_summary.dart' show SessionSummary;
 import '../features/train/presentation/swap_move_view.dart';
 import '../features/train/presentation/train_view.dart';
+import '../features/train/presentation/walk_session_view.dart';
 import '../features/train/presentation/workout_day_view.dart';
 import '../features/train/presentation/exercise_demo_view.dart';
 import '../features/train/presentation/train_explore.dart' show ExploreFocus;
@@ -419,6 +422,8 @@ import '../features/private_coaching/presentation/apply/apply_widgets.dart'
     show ApplyTools;
 import '../features/private_coaching/presentation/chat/chat_sheets.dart'
     show ShareChoices;
+import '../features/payments/presentation/payment_alerts_card.dart'
+    show PaymentAlertsAccess;
 import '../features/payments/presentation/payments_navigation.dart';
 import '../features/private_coaching/presentation/client/my_coach_view.dart';
 import '../features/private_coaching/presentation/coach/coach_space_view.dart';
@@ -434,6 +439,7 @@ import '../features/private_coaching/domain/coach_plan.dart' show CoachPlan;
 import '../features/private_coaching/domain/coaching_contract.dart'
     as contract
     show PlanKind;
+import '../features/private_coaching/domain/setup_prefill.dart';
 import '../features/private_coaching/domain/subscription.dart' show LiveSession;
 import '../features/private_coaching/presentation/client/coach_home_card.dart';
 import '../features/private_coaching/presentation/client/coach_today.dart'
@@ -1285,6 +1291,7 @@ class AppRouter {
     verified: isVerified,
     waitingOnAReviewer: awaitingReviewer,
     guestBrowsing: GuestSession.isBrowsing,
+    guestWorkout: GuestSession.mayOpenForFirstWorkout(screenId),
   );
 
   /// The gate's decision, as a function of the four facts it turns on.
@@ -1305,6 +1312,7 @@ class AppRouter {
     required bool verified,
     required bool waitingOnAReviewer,
     bool guestBrowsing = false,
+    bool guestWorkout = false,
   }) {
     if (!gateClosed) return null;
     if (!behindVerification(screenId)) return null;
@@ -1313,6 +1321,13 @@ class AppRouter {
     // chose "Keep exploring", may open the browsing screens. Writes on them
     // go through `GuestSession.require`, so nothing here opens a save.
     if (guestBrowsing && GuestSession.screens.contains(screenId)) return null;
+    // Her first workout (D62): the live screens open while it is under way,
+    // and R10 once it has finished.
+    if (guestBrowsing &&
+        guestWorkout &&
+        GuestSession.workoutScreens.contains(screenId)) {
+      return null;
+    }
 
     // Where she goes instead. Not a wall: every one of these is a screen she
     // can act on.
@@ -1571,9 +1586,11 @@ class AppRouter {
       // is the case on a new phone with the health backup off (N2): her life
       // stage did not travel, so she is asked.
       //
-      // With the coach app off there is one role to choose, so `C08` is not
-      // asked: she is a trainee, the check begins here, and she goes straight
-      // to the one screen that explains it and asks for her agreement.
+      // With the coach app off, or `skipRoleChoice` on (a coach says so from
+      // her profile, "Become a coach"), there is one role to choose, so `C08`
+      // is not asked: she is a trainee, the check begins here, and she goes
+      // straight to the one screen that explains it and asks for her
+      // agreement.
       onConfirmed: () async {
         final navigator = Navigator.of(context);
         // She has an account now: the short setup is no longer "before".
@@ -1618,7 +1635,9 @@ class AppRouter {
           // Already in the queue (pending, retry or rejected): the screen
           // that says where her check stands, never the consent again.
           goTo(context, 'C14');
-        } else if (!isVerified && featureFlags.isOn(Feature.coachApp)) {
+        } else if (!isVerified &&
+            featureFlags.isOn(Feature.coachApp) &&
+            !featureFlags.isOn(Feature.skipRoleChoice)) {
           goTo(context, 'C08');
         } else if (!isVerified) {
           lastSignupRole = SignupRole.trainee;
@@ -2114,15 +2133,7 @@ class AppRouter {
       // One push, "your check is done", only if she asks for it here.
       onNotifyMe: signedInUid == null
           ? null
-          : () async {
-              final locale = Localizations.localeOf(context).languageCode;
-              final outcome = await pushRegistrar.optIn(
-                uid: signedInUid!,
-                locale: locale,
-              );
-              if (outcome == PushOptIn.on) unawaited(startPushWatch(locale));
-              return outcome;
-            },
+          : () => optInToPush(Localizations.localeOf(context).languageCode),
       onOpenSettings: () => unawaited(openAppSettings()),
       // A woman waiting with no week of hers yet builds it here: the short
       // "Your week" (O03, O05), which ends back on this screen.
@@ -2498,6 +2509,8 @@ class AppRouter {
             goToTab(context, 'R01');
           }
         },
+        // A walk of any length, logged to count the calories she burned.
+        onTenMinuteWalk: walkIsOffered ? () => openWalk(context) : null,
         // The ten minutes T04 offers, when the library has them.
         onShortVersion: _quietWeekSession == null
             ? null
@@ -3395,7 +3408,17 @@ class AppRouter {
           _finishNow();
           goTo(context, 'M03');
         },
-        onOpenRecentSessions: featureFlags.isOn(Feature.trainHistory)
+        // A guest's first workout (D62): the session is hers once she has an
+        // account. Finishes it now, then the same door as any save (Rahma's
+        // welcome, or her check if she has an account that is not verified).
+        keepWorkout: GuestSession.mayOpenForFirstWorkout('R10')
+            ? () {
+                _finishNow();
+                _guestDoor(context);
+              }
+            : null,
+        onOpenRecentSessions:
+            featureFlags.isOn(Feature.trainHistory) && !GuestSession.isBrowsing
             ? () => openRecentSessions(context)
             : null,
       );
@@ -5006,6 +5029,12 @@ class AppRouter {
       (repository) => CoachSpaceView(
         repository: repository,
         instapayOn: PaymentsSwitch.live,
+        onOpenPayments: AppRouter.featureFlags.isOn(Feature.instapayPayments)
+            ? () => PaymentsNav.coachPayments(Navigator.of(context))
+            : null,
+        onOpenStatements: AppRouter.featureFlags.isOn(Feature.instapayPayments)
+            ? () => PaymentsNav.coachStatements(Navigator.of(context))
+            : null,
         onPreviewPortfolio: (coachUid) => unawaited(
           Navigator.of(context).pushNamed(
             appRoutes['H02']!.name,
@@ -5159,6 +5188,8 @@ class AppRouter {
       context,
       (repository) => FindCoachView(
         repository: repository,
+        initialGoal: setupAnswersForCoaching().goal,
+        initialPlace: setupAnswersForCoaching().place,
         onOpenCoach: (coachUid) => unawaited(
           Navigator.of(context)
               .pushNamed(appRoutes['H02']!.name, arguments: coachUid),
@@ -6522,6 +6553,23 @@ class AppRouter {
     );
   }
 
+  /// Hands a payment record (PAY10) to the phone's share sheet under
+  /// [fileName]. The PNG goes from the screen to the app she picks; nothing is
+  /// uploaded anywhere.
+  static Future<void> sharePaymentRecord(
+    Uint8List png,
+    Rect origin,
+    String fileName,
+  ) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile.fromData(png, mimeType: 'image/png', name: fileName)],
+        fileNameOverrides: [fileName],
+        sharePositionOrigin: origin == Rect.zero ? null : origin,
+      ),
+    );
+  }
+
   /// The stop she was last on in the tour, so leaving it can say where.
   static int _lastTourStop = 0;
 
@@ -6914,7 +6962,10 @@ class AppRouter {
   /// gym guide once, and gate a guest the same way. [open] holds the `goTo`
   /// literals so the navigation graph can read them in each builder.
   static void _startToday(BuildContext context, {required VoidCallback open}) {
-    if (!GuestSession.require(context, const PendingAction.startWorkout())) {
+    // A guest's first workout needs no account (D62); from her second, and for
+    // anyone whose setup is not done, she is asked to sign in.
+    if (!GuestSession.mayStartFirstWorkout(context) &&
+        !GuestSession.require(context, const PendingAction.startWorkout())) {
       return;
     }
     void begin() {
@@ -7915,6 +7966,64 @@ class AppRouter {
     return reapplyTrainingReminders(l10n);
   }
 
+  /// Her goal, level, days and place from setup, in coaching's words, for the
+  /// join sheet and the coach quiz. None while the switch is off or setup is
+  /// not finished.
+  static SetupAnswers setupAnswersForCoaching() {
+    if (!featureFlags.isOn(Feature.prefillFromSetup)) return noSetupAnswers;
+    return setupAnswersFor(
+      intakeRepository.read(),
+      setupDone: intakeRepository.setupDone,
+      placeAnswered: intakeRepository.placeAnswered,
+    );
+  }
+
+  /// Whether the walk is offered: the switch is on and she has an account (a
+  /// guest's one free action is her first workout, D62, not a walk).
+  static bool get walkIsOffered =>
+      featureFlags.isOn(Feature.walkingSession) && !GuestSession.isBrowsing;
+
+  /// The walk page, pushed over where she is. Her clock lives in
+  /// [WalkSessionState], so leaving and coming back finds the same walk.
+  static void openWalk(BuildContext context) {
+    unawaited(
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          settings: const RouteSettings(name: '/train/walk'),
+          builder: (_) => WalkSessionView(
+            onLog: logWalk,
+            bodyWeightKg: BodyDataStore.instance.read().weightKg,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Logs a walk the way a session without the phone is logged: one unplanned
+  /// session a day, credited once (reduced points, counts toward the week,
+  /// never a personal best). A second walk on the same day adds its minutes to
+  /// the day's walk rather than replacing them. It touches nothing she eats
+  /// and pays nothing for calories.
+  static Future<CreditOutcome> logWalk(int durationSec) async {
+    final now = AppClock.now();
+    final day = dayKey(now);
+    final earlier = trainRepository.sessionById('recalled-$day-walk');
+    final session = await trainRepository.logUnplanned(
+      dateKey: day,
+      activity: 'walk',
+      durationSec: durationSec + (earlier?.durationSec ?? 0),
+    );
+    final credit = WorkoutSessionState.creditSession(
+      sessionId: session.id,
+      source: SessionSource.unplanned,
+      today: todayRepository,
+      progress: progressStore,
+    );
+    unawaited(noteSessionLogged());
+    AppChanges.bump();
+    return credit;
+  }
+
   /// She logged a session, trained or recalled: today's "Trained today?" is
   /// answered and the check-ins start counting from now.
   static Future<void> noteSessionLogged() {
@@ -7961,9 +8070,41 @@ class AppRouter {
   @visibleForTesting
   static set pushRegistrar(PushRegistrar? value) => _pushRegistrar = value;
 
+  /// The one way a "tell me" button turns a push on: `C14`'s, and the payment
+  /// alerts on the coach inbox and a payment's status. Asks the phone's
+  /// permission if it has not been answered, registers the phone for [topic],
+  /// then starts watching so a token refresh and a tap on a push are heard.
+  static Future<PushOptIn> optInToPush(
+    String locale, {
+    PushTopic topic = PushTopic.approval,
+  }) async {
+    final uid = signedInUid;
+    if (uid == null) return PushOptIn.unavailable;
+    final outcome = await pushRegistrar.optIn(
+      uid: uid,
+      locale: locale,
+      topic: topic,
+    );
+    if (outcome == PushOptIn.on) unawaited(startPushWatch(locale));
+    return outcome;
+  }
+
+  /// What the payment screens offer for "turn on payment alerts".
+  static final PaymentAlertsAccess paymentAlerts = PaymentAlertsAccess(
+    state: () async {
+      final uid = signedInUid;
+      return uid == null
+          ? PushAlertState.unavailable
+          : pushRegistrar.paymentAlerts(uid: uid);
+    },
+    turnOn: (locale) => optInToPush(locale, topic: PushTopic.payments),
+    openSettings: () => unawaited(openAppSettings()),
+  );
+
   /// Keeps this phone's push token current and listens for the approval push
   /// while the app is open. Quiet for a phone that never opted in.
   static Future<void> startPushWatch(String locale) async {
+    PaymentAlertsAccess.current ??= paymentAlerts;
     final uid = signedInUid;
     if (uid == null) return;
     await pushRegistrar.watch(
@@ -7972,8 +8113,22 @@ class AppRouter {
       // The system shows nothing while the app is open. A fresh token
       // carries the new claim, and the waiting screen moves on with it.
       onApproval: () => unawaited(refreshVerificationClaim()),
+      onTap: (data) => PaymentPushTaps.open(
+        navigatorKey?.currentState,
+        data,
+        allowed: _paymentScreenOpen,
+      ),
     );
   }
+
+  /// Whether a payment screen reached from a push may open: she is signed in,
+  /// payments are in this build, and [screenId] (her coach screen) passes the
+  /// router's own checks.
+  static bool _paymentScreenOpen(String screenId) =>
+      signedInUid != null &&
+      featureFlags.isOn(Feature.instapayPayments) &&
+      screenIsOn(screenId) &&
+      verificationGate(screenId) == null;
 
   /// Which way she reached `C15`, sent to `request_review`.
   ///
@@ -10902,7 +11057,8 @@ class AppRouter {
       GuestSession.isBrowsing &&
       screenIsOn(screenId) &&
       behindVerification(screenId) &&
-      !GuestSession.screens.contains(screenId);
+      !GuestSession.screens.contains(screenId) &&
+      !GuestSession.mayOpenForFirstWorkout(screenId);
 
   /// Where a guest goes when she reaches for something that needs an
   /// account: Rahma's welcome with no account, her check with one.

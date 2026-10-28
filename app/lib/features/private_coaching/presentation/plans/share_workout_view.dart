@@ -420,7 +420,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                 children: [
                   if (_progress.sent.isNotEmpty)
                     Text(
-                      l10n.sentToNClients(countLabel(_progress.sent.length)),
+                      l10n.nPluralOneSentToNClient(_progress.sent.length),
                       style: AppText.titleS,
                     ),
                   for (final e in _progress.failed.entries)
@@ -451,9 +451,7 @@ class _ShareWorkoutViewState extends State<ShareWorkoutView> {
                     liveRegion: true,
                     child: Text(
                       _progress.sent.length > 1
-                          ? l10n.sentToNClients(
-                              countLabel(_progress.sent.length),
-                            )
+                          ? l10n.nPluralOneSentToNClient(_progress.sent.length)
                           : l10n.publishedNameCanSeeItNow(first),
                       key: const ValueKey('workout-published'),
                       style: AppText.titleS,

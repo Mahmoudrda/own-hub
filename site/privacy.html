@@ -59,7 +59,7 @@
         <p class="meta">
           <b>Version:</b> 3.0<br>
           <b>Effective date:</b> 23 October 2026<br>
-          <b>Last updated:</b> 27 October 2026<br>
+          <b>Last updated:</b> 28 October 2026<br>
           <b>Applies to:</b> Own Hub for iPhone, bundle id <code>com.ownhub.fitness</code>,
           and Android, package <code>com.ownhub.app</code>, and this website.
         </p>
@@ -105,9 +105,7 @@
             postpartum stage and allergies stay on your phone,</b> unless you
             turn on health backup yourself. The one other exception: if you ask
             to join a coach, the answers you choose to send her, such as your
-            allergies, your life stage and your answers to seven health
-            questions, are stored on our server in Frankfurt and shown to that
-            coach (section 3.16).</li>
+            allergies, your life stage, your answers to seven health questions and, only if you tick a separate box, the numbers from your InBody sheet, are stored on our server in Frankfurt and shown to that coach (section 3.16).</li>
             <li>Once you are verified, your workouts and meals are copied to
             Google Cloud in Frankfurt, so a new phone does not mean starting
             again. No other member can see them, unless you choose to share a
@@ -356,9 +354,8 @@
         our server in Frankfurt, Germany, and shown to that coach: your goal,
         level, training days and where you train, your life stage, the
         allergies you keep on the form, your answers to the seven health
-        questions, whether you have spoken to your doctor, your note, and your
-        first name if you give it (section 3.16). This is separate from health
-        backup, and nothing else from your phone is sent with it.</p>
+        questions, whether you have spoken to your doctor, your note, your first name if you give it and, only if you tick a separate box for them, the numbers you confirmed from your InBody result sheet (section 3.16). This is separate from health backup, and nothing else from your phone is sent with it.</p>
+        <p><b>An InBody result sheet is read on your phone.</b> If you choose a photo or screenshot of your sheet in <b>Personalise</b> in Eat, the app reads it on the phone, and the picture is never uploaded and never kept. You check each number before it is used. The weight and height you confirm stay on your phone with your other body measurements.</p>
         <p><b>Your cycle and health information is never used for advertising
         or marketing, never sold, never sent to any analytics service, and
         never used to train AI.</b></p>
@@ -594,6 +591,40 @@
           meal photo.</li>
         </ul>
 
+      <h3 id="c-say-meal">Saying a meal<a class="anchor" href="#c-say-meal" aria-label="Link to this section">#</a></h3>
+        <p>On the Eat screen you can tap the microphone and say what you ate
+        instead of typing it. This is optional. You can always type your meal
+        instead.</p>
+        <ul>
+          <li><b>When your phone listens.</b> Only after you tap the
+          microphone on the Eat screen, or after you have tapped it once
+          before. Your phone asks for the microphone, and on iPhone for speech
+          recognition, the first time.
+          Nothing listens in the background, and it stops when you tap stop,
+          pause, or leave the screen.</li>
+          <li><b>Who turns your words into text.</b> Your phone&rsquo;s own speech
+          service, not Own Hub: Apple Speech on iPhone, and the speech
+          recogniser of your Android phone (usually Google&rsquo;s). Where your
+          phone has the language downloaded, this happens on the phone itself.
+          Where it does not, Apple or Google may process what you say on their
+          servers to turn it into text, under their own privacy terms. Own Hub
+          asks for the phone to do it on the phone first, and has no control
+          over what Apple or Google do when it cannot.</li>
+          <li><b>What Own Hub receives and keeps.</b> Only the text, on your
+          phone, to find the foods in it. Own Hub does not record, receive or
+          keep the audio, and does not send the text to its servers. What it
+          keeps is the foods you confirm, as for a meal you typed.</li>
+          <li><b>You check it first.</b> The words appear on the screen, you
+          can fix any word, and nothing is logged until you tap &ldquo;Add
+          it&rdquo;. What you log is kept with your meals (section 3.5), in the
+          same way as a meal you typed.</li>
+          <li><b>Without a connection.</b> If your phone cannot turn speech into
+          text without the internet, the app says so and you can type your meal
+          instead.</li>
+          <li><b>Basis:</b> your consent, given when you allow the microphone
+          and speech recognition on your phone.</li>
+        </ul>
+
       <h3 id="c-dish-sharing">3.13 Sharing a dish with other members (optional)<a class="anchor" href="#c-dish-sharing" aria-label="Link to this section">#</a></h3>
         <p>Under the meal check, and in Profile, then Privacy, there is a switch
         that lets you help other members find Egyptian dishes. It is <b>off</b>
@@ -729,9 +760,8 @@
           train, the allergies you choose to keep on it (they come filled in
           from your profile and you can remove them), your life stage, your
           answers to seven health questions, whether you have spoken to your
-          doctor, and a note if you write one. Your first name, if you give
-          it, goes to the coach you ask, together with your answers. Our server
-          stores it with the request, in Frankfurt, Germany.</li>
+          doctor, and a note if you write one. Your first name, if you give it, goes to the coach you ask, together with your answers. Our server stores it with the request, in Frankfurt, Germany.</li>
+          <li><b>Your InBody sheet (optional).</b> In the form you can choose a photo or screenshot of your InBody result sheet. The app reads it on your phone. The picture is not uploaded and not kept: the app deletes the copy it makes as soon as the reading ends. You check every number, and you can type the numbers instead. Only the numbers you confirm are sent, and only if you tick a separate box for them: weight, body fat percentage, skeletal muscle mass and metabolic rate. They are stored with your other answers in Frankfurt, Germany, shown to that coach under the same rules, deleted with the coaching, and included in your data export. Your coach&rsquo;s app can use them to suggest a calorie and protein starting point. It suggests none while you are pregnant or after a birth, or if your answers about food or weight ask her to guide your food herself.</li>
           <li><b>Who sees it.</b> Only that coach, and only while the coaching
           lasts. When it ends, she loses access to it. Nobody else sees it. You
           can still read it, and it is kept until you or the coach delete your
@@ -899,7 +929,7 @@
         <li>
           <h3>Google Cloud Firestore, Cloud Functions, Cloud Storage and Secret Manager</h3>
           <dl>
-            <div><dt>Handles</dt><dd>Your account, training and meals, health information if you turn on backup, verification results and the keyed ID code. If you apply to coach: your application and its files (section 3.15). If you join a coach: your form, chat, live session records and shared plans (section 3.16). Reports and blocks (section 3.17)</dd></div>
+            <div><dt>Handles</dt><dd>Your account, training and meals, health information if you turn on backup, verification results and the keyed ID code. If you apply to coach: your application and its files (section 3.15). If you join a coach: your form, any InBody numbers you add, chat, live session records and shared plans (section 3.16). Reports and blocks (section 3.17)</dd></div>
             <div><dt>Where</dt><dd>Frankfurt, Germany (europe-west3)</dd></div>
           </dl>
         </li>
@@ -922,6 +952,13 @@
           <dl>
             <div><dt>Handles</dt><dd>Confirmation that the app and the device are genuine</dd></div>
             <div><dt>Where</dt><dd>Google data centres worldwide, which include the United States, and Apple servers for App Attest</dd></div>
+          </dl>
+        </li>
+        <li>
+          <h3>Your phone&rsquo;s speech service (Apple Speech on iPhone, the speech recogniser on Android), only if you say a meal</h3>
+          <dl>
+            <div><dt>Handles</dt><dd>What you say after you tap the microphone on the Eat screen, turned into text. Own Hub receives only the text (Saying a meal)</dd></div>
+            <div><dt>Where</dt><dd>On your phone where it can; otherwise Apple&rsquo;s or Google&rsquo;s servers, which may be outside Egypt</dd></div>
           </dl>
         </li>
         <li>
@@ -1168,16 +1205,17 @@
           you press and hold the mic button in a coaching chat to record a
           voice note for your coach, which is sent when you let go (see
           <a href="#c-chat-media">Voice notes, photos and videos in coaching
-          chat</a>); it never listens in the background. The app has no video
+          chat</a>), and while you tap the microphone on the Eat screen to
+          say a meal, which your phone turns into text you check and Own Hub
+          never keeps as audio (see <a href="#c-say-meal">Saying a meal</a>);
+          it never listens in the background. The app has no video
           calls: there is no video review, and a live coaching session opens
           in the coach&rsquo;s video service, outside the app (section
           3.16).</li>
           <li>No access to your photo library. If you pick your profile photo
           from your photos, your phone&rsquo;s own picker hands Own Hub only
           the one picture you choose, and that picture stays on your
-          phone. The exception is a picture you choose for a coach
-          application: it is uploaded when you send the application (section
-          3.15).</li>
+          phone. A picture of an InBody result sheet works the same way: it is read on your phone and never uploaded or kept (section 3.16). The exception is a picture you choose for a coach application: it is uploaded when you send the application (section 3.15).</li>
           <li>For a payment proof, the same phone picker hands Own Hub only the
           pictures you choose. They are copied after you hide what you want to
           hide; the originals stay on your phone (section 3.18).</li>
@@ -1201,6 +1239,7 @@
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>28 October 2026, InBody sheets:</b> sections 3.6 and 3.16 now describe reading an InBody result sheet on your phone and, only if you tick a separate box, sending the numbers you confirm with a request to join a coach. The picture is never uploaded or kept. The summary and section 3.16 say that the numbers are stored with your other answers, deleted with the coaching and included in your export.</li>
           <li><b>27 October 2026, paying a coach:</b> section 3.18 is new and
           describes paying a coach by InstaPay: what is kept about a payment,
           the bank screenshots you may send as proof and how our server reads

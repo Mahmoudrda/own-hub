@@ -8146,7 +8146,6 @@
   "mealPhotosSentToGoogleToRead": "صور الوجبات اللي بتتبعت لـ Google عشان يتعرّف على الأكل",
   "editToday": "عدّلي تمرين النهارده",
   "shortVersion": "نسخة قصيرة",
-  "a10MinuteWalk": "مشي 10 دقايق",
   "doMyOwnPlanInstead": "هعمل خطتي أنا بدل كده",
   "eatenOfTargetKcal": "{eaten} من {target} سعرة",
   "@eatenOfTargetKcal": {
@@ -8732,5 +8731,483 @@
         "example": "1,200"
       }
     }
-  }
+  },
+  "payments": "المدفوعات",
+  "paymentsFromYourClients": "مدفوعات عميلاتك",
+  "addYourInstapayAddressSoClientsCan": "ضيفي عنوان إنستا باي بتاعك عشان العميلات يعرفوا يدفعولك.",
+  "addAddress": "ضيفي العنوان",
+  "waitingForYou": "مستنية ردّك",
+  "nothingIsWaitingForYou": "مفيش حاجة مستنياكي.",
+  "earlier": "قبل كده",
+  "matches": "مطابق",
+  "checkYourBank": "اتشيكي على البنك",
+  "referenceAmountProofSentTime": "{reference} · {amount} · الإثبات اتبعت {time}",
+  "@referenceAmountProofSentTime": {
+    "description": "A waiting payment in the coach's inbox: her reference, the amount and when the proof came.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "OH-4821"
+      },
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      },
+      "time": {
+        "type": "String",
+        "example": "14:32"
+      }
+    }
+  },
+  "paymentReference": "الدفع {reference}",
+  "@paymentReference": {
+    "description": "Title of the coach's decision sheet.",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "OH-4821"
+      }
+    }
+  },
+  "lookForExactlyAmount": "دوّري على {amount} بالظبط",
+  "@lookForExactlyAmount": {
+    "description": "What the coach looks for in her bank.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      }
+    }
+  },
+  "transactionNumberTxn": "رقم العملية {txn}",
+  "@transactionNumberTxn": {
+    "description": "The number read from the client's proof.",
+    "placeholders": {
+      "txn": {
+        "type": "String",
+        "example": "123456789012"
+      }
+    }
+  },
+  "paidAtTime": "اتدفع الساعة {time}",
+  "@paidAtTime": {
+    "description": "When the client says she paid.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "14:32"
+      }
+    }
+  },
+  "herProofLooksRightStillCheckYour": "الإثبات شكله سليم. اتشيكي على البنك برضه قبل ما تأكدي.",
+  "partOfHerProofDidNotMatch": "جزء من الإثبات مش مطابق. اتشيكي على البنك كويس.",
+  "seeHerProof": "شوفي الإثبات بتاعها",
+  "weCouldNotLoadThisPicture": "ماقدرناش نحمّل الصورة دي.",
+  "iReceivedIt": "وصلتني",
+  "notReceived": "ماوصلتش",
+  "confirmedYourClientCanStart": "اتأكد. عميلتك تقدر تبدأ.",
+  "whatDoYouSeeInYourBank": "شايفة إيه في البنك؟",
+  "iDoNotSeeItInMy": "مش لاقياه في حسابي",
+  "theAmountIsDifferent": "المبلغ مختلف",
+  "theNameIsDifferent": "الاسم مختلف",
+  "someoneElsePaid": "حد تاني دفع",
+  "iSearchedMyBankForAmount": "دوّرت في البنك على {amount}.",
+  "@iSearchedMyBankForAmount": {
+    "description": "The tick on Not received.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      }
+    }
+  },
+  "iSearchedMyBankForAmountAnd": "دوّرت في البنك على {amount} ورقم العملية {txn}.",
+  "@iSearchedMyBankForAmountAnd": {
+    "description": "The tick on Not received when the number was read.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "500.37 EGP"
+      },
+      "txn": {
+        "type": "String",
+        "example": "123456789012"
+      }
+    }
+  },
+  "tellUsWhatYouSaw": "احكيلنا شفتي إيه",
+  "addYourBankListForThatDay": "ضيفي كشف البنك لليوم ده",
+  "howMuchDidYouReceive": "استلمتي كام؟",
+  "amountReceivedEgp": "المبلغ اللي وصلك (بالجنيه)",
+  "acceptThisLowerAmountAndStartThe": "أقبل المبلغ الأقل وأبدأ التدريب",
+  "ifYouAcceptHerPackageStartsOtherwise": "لو قبلتي، باقتها بتبدأ. غير كده هي تقدر تدفع الباقي.",
+  "sentYourClientWillSeeIt": "اتبعت. العميلة هتشوفه.",
+  "confirmMatchingPaymentsForMe": "تأكيد الدفعات المطابقة تلقائيًا",
+  "onlyPaymentsThatMatchYouCanStill": "الدفعات المطابقة بس. وتقدري تبلّغي عن أي واحدة خلال {hours} ساعة.",
+  "@onlyPaymentsThatMatchYouCanStill": {
+    "description": "Under the auto-confirm switch. The hours are the server's window.",
+    "placeholders": {
+      "hours": {
+        "type": "String",
+        "example": "48"
+      }
+    }
+  },
+  "automaticConfirmingOpensAfterNPaymentsThat": "التأكيد التلقائي بيتفتح بعد {n} دفعات مطابقة.",
+  "@automaticConfirmingOpensAfterNPaymentsThat": {
+    "description": "Why the auto-confirm switch was refused.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "automaticConfirmingIsNotAvailableToYou": "التأكيد التلقائي لسه مش متاح ليكي.",
+  "thisPaymentAppearsInYourStatementPlease": "الدفع ده ظاهر في كشفك. راجعي تاني.",
+  "pleaseTickThatYouSearchedYourBank": "علّمي إنك دوّرتي في البنك وضيفي كشف البنك.",
+  "pleaseTellUsWhatYouSawIn": "احكيلنا اللي شفتيه بكلمتين.",
+  "thatIsTooFarBelowThePrice": "ده أقل من السعر بكتير ومينفعش تقبليه. اقفلي الزرار وهي تقدر تدفع الباقي.",
+  "aClientPaidMe": "عميلة دفعتلي",
+  "pickThePaymentThenTypeTheTransaction": "اختاري الدفع، وبعدين اكتبي رقم العملية من البنك.",
+  "noClientHasAnOpenPaymentRight": "مفيش عميلة عندها دفع مفتوح دلوقتي.",
+  "sentYourClientWillBeAskedTo": "اتبعت. هنطلب من العميلة تأكيد الدفع.",
+  "waitingForHerPayment": "مستنية دفعها",
+  "youSaidItHasNotArrived": "قلتي إنها ماوصلتش",
+  "sheAskedForARefund": "طلبت استرداد",
+  "askForARefund": "اطلبي استرداد",
+  "iHaveAProblemWithTheService": "عندي مشكلة في الخدمة",
+  "theRefundDidNotReachMe": "الاسترداد ماوصلنيش",
+  "askOwnHubToLookAgain": "اطلبي من Own Hub تبص تاني",
+  "cancelPayment": "ألغي الدفعة",
+  "cancelThisPaymentOnlyDoThisIf": "تلغي الدفعة دي؟ اعملي كده بس لو ماحوّلتيش. لو حوّلتي الفلوس فعلًا، ابعتي إثبات الدفع بدل كده.",
+  "youCanAskOnceInTheFirst": "تقدري تطلبي مرة واحدة في أول {days} يوم. مدرّبتك عندها {n} أيام تردّ، وبعدها Own Hub بتتدخل.",
+  "@youCanAskOnceInTheFirst": {
+    "description": "Refund screen. days is the refund window and n is the days the coach has to answer, both from payments_rules.dart.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "14"
+      },
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "ownHubDoesNotMoveMoneyIf": "Own Hub مابتحركش فلوس. لو مدرّبتك وافقت، هتبعتلك الفلوس بإنستا باي وتسجّلها هنا.",
+  "sentYourCoachHasNDaysTo": "اتبعت. مدرّبتك عندها {n} أيام تردّ.",
+  "@sentYourCoachHasNDaysTo": {
+    "description": "Snackbar after a refund request. n is the days the coach has.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "serviceProblem": "مشكلة في الخدمة",
+  "tellUsWhatWentWrongOwnHub": "احكيلنا إيه اللي حصل. Own Hub بتبص على جلساتك ورسايلك وتقرر.",
+  "refundProblem": "مشكلة في الاسترداد",
+  "yourCoachSaysSheSentTheMoney": "مدرّبتك بتقول إنها رجّعت الفلوس. لو ماوصلتلكيش، احكيلنا وOwn Hub هتبص في الموضوع.",
+  "yourCoachDidNotAgreeToThe": "مدرّبتك ماوافقتش على الاسترداد. احكيلنا ليه شايفة إن Own Hub لازم تبص تاني.",
+  "tellUsMore": "احكيلنا أكتر",
+  "yourCoachDidNotAgreeToThe_9dkzl": "مدرّبتك ماوافقتش على الاسترداد. لو مش موافقة، افتحي القائمة اللي فوق واطلبي من Own Hub تبص تاني.",
+  "theFirstNDaysAreOverSo": "أول {n} يوم عدّوا، فمش هينفع تطلبي استرداد من هنا.",
+  "@theFirstNDaysAreOverSo": {
+    "description": "The server refused a refund request after the window. n is the window in days.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "14"
+      }
+    }
+  },
+  "youAlreadyAskedForARefundOn": "إنتي طلبتي استرداد للدفعة دي قبل كده.",
+  "theTimeToReportAProblemOn": "الوقت اللي تقدري تبلّغي فيه عن مشكلة في الدفعة دي عدّى.",
+  "youAlreadyReportedThisOwnHubHas": "إنتي بلّغتي عن ده قبل كده. Own Hub معاها ملاحظتك.",
+  "youHaveReachedTheNumberOfReports": "وصلتي لأقصى عدد بلاغات في الشهر ده. جرّبي الشهر الجاي.",
+  "pleaseCheckTheTransactionNumberFromYour": "راجعي رقم العملية من البنك. بيتكوّن من أرقام بس.",
+  "theDateOrTimeOnYourPhone": "تاريخ أو وقت موبايلك شكله غلط. صلّحيه وجرّبي تاني.",
+  "pleaseCheckTheAmountItCannotBe": "راجعي المبلغ. مايزيدش عن مبلغ الدفعة.",
+  "refundRequests": "طلبات الاسترداد",
+  "askedTimeAnswerByDate": "طلبت {time}. ردّي قبل {date}.",
+  "@askedTimeAnswerByDate": {
+    "description": "Refund request row in the coach inbox. time is when it was asked, date is when the coach has to answer (Cairo time).",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "27/10 14:32"
+      },
+      "date": {
+        "type": "String",
+        "example": "30/10 14:32"
+      }
+    }
+  },
+  "askedTimeTheAnswerWasDueDate": "طلبت {time}. كان ميعاد الرد {date}. Own Hub ممكن تتدخل.",
+  "@askedTimeTheAnswerWasDueDate": {
+    "description": "Refund request row after its answer date has passed.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "27/10 14:32"
+      },
+      "date": {
+        "type": "String",
+        "example": "30/10 14:32"
+      }
+    }
+  },
+  "recordRefund": "سجّلي الاسترداد",
+  "sendTheMoneyBackToYourClient": "ابعتي الفلوس لعميلتك بإنستا باي، وبعدين سجّليها هنا. Own Hub مابتحركش فلوس.",
+  "amountSentBackEgp": "المبلغ اللي رجّعتيه (جنيه)",
+  "partOfThePaymentAmountOfTotal": "جزء من الدفعة: {amount} من {total}.",
+  "@partOfThePaymentAmountOfTotal": {
+    "description": "Coach records a refund smaller than the payment.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "250 EGP"
+      },
+      "total": {
+        "type": "String",
+        "example": "500 EGP"
+      }
+    }
+  },
+  "iDoNotAgreeToThisRefund": "مش موافقة على الاسترداد ده",
+  "whyDoYouNotAgree": "ليه مش موافقة؟",
+  "yourClientCanThenAskOwnHub": "عميلتك ممكن تطلب من Own Hub تبص عليه.",
+  "iAlreadyGaveTheSessions": "أنا قدّمت الجلسات فعلًا",
+  "itIsOutsideTheTerms": "ده برّه الشروط",
+  "yourInbodySheet": "ورقة الـ InBody بتاعتك",
+  "chooseAPhotoOrScreenshotOfYour": "اختاري صورة أو سكرينشوت لورقة النتيجة. بتتقرا على موبايلك. الصورة مبتتحفظش ومبتسيبش موبايلك أبدًا.",
+  "typeTheNumbersInstead": "اكتبي الأرقام بنفسك",
+  "readingYourSheet": "بنقرا ورقتك",
+  "checkYourNumbers": "راجعي أرقامك",
+  "weReadTheseFromYourSheetCheck": "دي الأرقام اللي قريناها من ورقتك. راجعي كل رقم على الورقة وصلّحي أي غلط. مفيش حاجة بتتستخدم غير لما تأكّدي.",
+  "typeTheNumbersFromYourSheetLeave": "اكتبي الأرقام من ورقتك. سيبي فاضي اللي معندكيش. مفيش حاجة بتتستخدم غير لما تأكّدي.",
+  "weCouldNotReadNumbersFromThat": "معرفناش نقرا أرقام من الصورة دي. جرّبي صورة أوضح، أو اكتبيها بإيدك.",
+  "checkThisNumberItLooksOutsideThe": "راجعي الرقم ده، شكله برّه المعتاد.",
+  "weightHeightAndBmiOnYourSheet": "الوزن والطول والـ BMI في ورقتك مش متطابقين. راجعي التلاتة على الورقة.",
+  "weightFatAndLeanMassOnYour": "الوزن وكتلة الدهون وكتلة الجسم الخالية من الدهون في ورقتك مجموعهم مش مظبوط. راجعي الأرقام على الورقة.",
+  "yourSheetShowsPoundsSoTheWeight": "ورقتك بالرطل، فحوّلنا الوزن لكيلوجرام.",
+  "chooseAnotherPhoto": "اختاري صورة تانية",
+  "confirmTheseNumbers": "أكّدي الأرقام دي",
+  "yourWeightAndHeightStayOnThis": "وزنك وطولك بيفضلوا على موبايلك.",
+  "yourCoachSeesTheseNumbersOnlyIf": "المدرّبة مش هتشوف الأرقام دي غير لو علّمتي على المربع في استمارة الطلب. والصورة عمرها ما بتتبعت.",
+  "inbodyNumbers": "أرقام الـ InBody",
+  "aPlaceToStartKcalKcalAnd": "نقطة بداية: {kcal} سعرة و{protein} جم بروتين في اليوم",
+  "@aPlaceToStartKcalKcalAnd": {
+    "description": "The coach's starting point for a client's day, from her InBody numbers. Both figures are whole numbers.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1600"
+      },
+      "protein": {
+        "type": "String",
+        "example": "110"
+      }
+    }
+  },
+  "useTheInbodySuggestionKcalKcalAnd": "استخدمي اقتراح الـ InBody: {kcal} سعرة و{protein} جم بروتين",
+  "@useTheInbodySuggestionKcalKcalAnd": {
+    "description": "The button on the coach's meal goal that fills both fields from the client's InBody numbers.",
+    "placeholders": {
+      "kcal": {
+        "type": "String",
+        "example": "1600"
+      },
+      "protein": {
+        "type": "String",
+        "example": "110"
+      }
+    }
+  },
+  "noTargetIsSuggestedWhileSheIs": "مفيش هدف مقترح وهي حامل أو بعد الولادة. حدّدي أكلها مع دكتورها.",
+  "noTargetIsSuggestedForHerHer": "مفيش هدف مقترح ليها. إجاباتها بتطلب إنك تتابعي أكلها بنفسك.",
+  "thereIsNotEnoughOnHerSheet": "الأرقام في ورقتها مش كفاية نقترح هدف. حدّديه بإيدك.",
+  "addYourInbodyNumbers": "ضيفي أرقام الـ InBody بتاعتك",
+  "optionalYourCoachSeesTheNumbersNever": "اختياري. المدرّبة بتشوف الأرقام بس، وعمرها ما بتشوف الصورة.",
+  "inbodyNumbersAdded": "أرقام الـ InBody اتضافت",
+  "iShareMyInbodyNumbersWithName": "أنا بشارك أرقام الـ InBody بتاعتي مع {name}. دي قياسات جسم، وبتتخزّن مع باقي إجاباتي في فرانكفورت بألمانيا، يعني برّه مصر.",
+  "@iShareMyInbodyNumbersWithName": {
+    "description": "The tick on the request form that lets the client send her InBody numbers to the coach. Its hash goes to the server with the request.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Rahma"
+      }
+    }
+  },
+  "readMyInbodySheet": "اقري ورقة الـ InBody بتاعتي",
+  "feeStatements": "كشوف الرسوم",
+  "whatYouOweOwnHubEachMonth": "اللي عليكي لـ Own Hub كل شهر",
+  "monthlyStatement": "كشف الشهر",
+  "feeForMonth": "الرسوم عن شهر {month}",
+  "@feeForMonth": {
+    "description": "Heading of a fee statement; month is YYYY-MM.",
+    "placeholders": {
+      "month": {
+        "type": "String",
+        "example": "2026-10"
+      }
+    }
+  },
+  "paymentsCount": "الدفعات: {count}",
+  "@paymentsCount": {
+    "description": "How many payments a fee statement lists.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "feeFeeOnBase": "رسوم {fee} على {base}",
+  "@feeFeeOnBase": {
+    "description": "One statement line: the fee and the package price it is on.",
+    "placeholders": {
+      "fee": {
+        "type": "String",
+        "example": "75 EGP"
+      },
+      "base": {
+        "type": "String",
+        "example": "500 EGP"
+      }
+    }
+  },
+  "due": "مستحقة",
+  "disputedPending": "متنازع عليها، مستنية القرار",
+  "settled": "اتسدّدت",
+  "waived": "اتلغت",
+  "totalDue": "الإجمالي المستحق",
+  "payOwnHubsFeeByInstapayTo": "ادفعي رسوم Own Hub بإنستا باي على:",
+  "accountNameName": "اسم الحساب: {name}",
+  "@accountNameName": {
+    "description": "The name on the InstaPay account the fee is paid to.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Own Hub"
+      }
+    }
+  },
+  "ownHubWillSendYouTheAddress": "Own Hub هتبعتلك العنوان اللي هتدفعي عليه.",
+  "feesUnpaidForMoreThanNDays": "الرسوم اللي عدّى عليها أكتر من {n} يوم بتوقف العميلات الجداد. عميلاتك الحاليات عمرهم ما بيتقطعوا.",
+  "@feesUnpaidForMoreThanNDays": {
+    "description": "The overdue rule, n from the server limit.",
+    "placeholders": {
+      "n": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "thisFeeIsLateNewClientsCannot": "الرسوم دي اتأخرت. العميلات الجداد مش هيقدروا ينضموا ليكي لحد ما تتدفع. عميلاتك الحاليات مش هيتأثروا.",
+  "dueByDate": "آخر ميعاد {date}",
+  "@dueByDate": {
+    "description": "The day a fee statement falls due, Cairo time.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "30/11/2026"
+      }
+    }
+  },
+  "markFeeAsPaid": "سجّلي إن الرسوم اتدفعت",
+  "useTheTransactionNumberFromYourInstapay": "اكتبي رقم العملية من تحويلك لـ Own Hub على إنستا باي.",
+  "recordedOwnHubWillConfirmIt": "اتسجّلت. Own Hub هتأكدها.",
+  "paidOwnHubWillConfirm": "اتدفعت. Own Hub هتأكدها.",
+  "paidAndConfirmed": "اتدفعت واتأكدت.",
+  "thisStatementChangedGoBackAndOpen": "الكشف ده اتغيّر. ارجعي وافتحيه تاني.",
+  "noStatementYetTheFirstOneComes": "لسه مفيش كشف. أول كشف بيجي أول الشهر الجاي.",
+  "otherMonths": "شهور تانية",
+  "pleaseCheckTheTransactionNumberFromYour_653l2": "راجعي رقم العملية بتاع تحويلك.",
+  "savePaymentRecord": "احفظي سجل الدفع",
+  "paymentRecord": "سجل الدفع",
+  "ownHubPaymentRecord": "سجل دفع Own Hub",
+  "date": "التاريخ",
+  "status": "الحالة",
+  "client": "العميلة",
+  "thisIsAPaymentRecordItIs": "ده سجل دفع. مش فاتورة ضريبية.",
+  "saveOrShare": "احفظي أو شاركي",
+  "ownHubDecidedYouOweARefund": "Own Hub قرّرت إن عليكي استرداد. ابعتيه قبل {date}.",
+  "@ownHubDecidedYouOweARefund": {
+    "description": "A refund staff ordered, with the day it is due.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "03/11"
+      }
+    }
+  },
+  "ownHubDecidedYouOweARefund_c85m6": "Own Hub قرّرت إن عليكي استرداد. كان مطلوب قبل {date}.",
+  "@ownHubDecidedYouOweARefund_c85m6": {
+    "description": "A refund staff ordered that is now late.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "03/11"
+      }
+    }
+  },
+  "ownHubSetThisAmount": "Own Hub هي اللي حدّدت المبلغ ده.",
+  "sayWhatYouAte": "قولي أكلتي إيه",
+  "tapToSpeak": "دوسي وقولي",
+  "listeningTapWhenYouAreDone": "بسمعك، دوسي لما تخلّصي",
+  "ownHubListensOnlyWhileYouSpeak": "Own Hub بتسمعك بس وإنتي بتتكلمي، عشان تكتب اللي قلتيه وتراجعيه. خدمة الكلام في موبايلك (آبل على الآيفون وجوجل على الأندرويد) ممكن تعالج كلامك، وOwn Hub مش بتحتفظ بالصوت أبدًا.",
+  "fixAnyWordAndWeWillAdd": "صلّحي أي كلمة وإحنا هنحسبها تاني.",
+  "ownHubCantUseTheMicrophoneOr": "Own Hub مش قادرة تستخدم الميكروفون أو التعرّف على الكلام في موبايلك دلوقتي. شغّليهم من الإعدادات، أو اكتبي أكلتك.",
+  "weDidntCatchAnythingTryAgainA": "مسمعناش حاجة. جرّبي تاني وإنتي أقرب شوية للموبايل، أو اكتبي أكلتك.",
+  "sayingYourMealNeedsAnInternetConnection": "قول أكلتك محتاج إنترنت على موبايلك دلوقتي. اكتبيها بدل كده، أو جرّبي تاني لما النت يرجع.",
+  "thisPhoneCantTurnSpeechIntoText": "الموبايل ده مش بيحوّل الكلام لنص. اكتبي أكلتك بدل كده.",
+  "somethingWentWrongWhileListeningTryAgain": "حصلت مشكلة وإحنا بنسمعك. جرّبي تاني، أو اكتبي أكلتك.",
+  "weHeardYouButNoneOfIt": "سمعناكي، بس ولا كلمة اتطابقت مع أكلة. صلّحي الكلام فوق، أو اكتبي أكلتك.",
+  "speakIn": "اتكلمي بـ",
+  "turnOnPaymentAlerts": "فعّلي تنبيهات الدفع",
+  "tellMeWhenItChanges": "قوليلي لما يتغيّر",
+  "ownHubCanTellYouOnThis": "Own Hub يقدر يبعتلك تنبيه على الموبايل ده لما عميلة تدفع أو تطلب استرداد، ولما كشف الرسوم يجهز. دي تنبيهات الدفع بس، ومفيش اسم ولا مبلغ بيظهر على شاشة القفل.",
+  "weWillSendANotificationToThis": "هنبعتلك تنبيه على الموبايل ده لما الدفع بتاعك يتأكد أو يحتاج منك حاجة. دي تنبيهات الدفع بس، ومفيش اسم ولا مبلغ بيظهر على شاشة القفل.",
+  "paymentAlertsAreOnForThisPhone": "تنبيهات الدفع اتفعّلت على الموبايل ده.",
+  "nPluralOneSentToNClient": "{n, plural, one{اتبعتت لعميلة واحدة} two{اتبعتت لعميلتين} few{اتبعتت لـ {n} عميلات} many{اتبعتت لـ {n} عميلة} other{اتبعتت لـ {n} عميلة}}",
+  "@nPluralOneSentToNClient": {
+    "description": "After a coach shares a plan with several clients at once: how many it reached. A plural message because Arabic counts agree differently at one, two, three to ten and eleven and up; the old sentence said 'Sent to 1 clients' when one got it and others did not.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "thatWasForYou": "ده كان ليكي.",
+  "restWellYouEarnedIt": "ارتاحي كويس، تستاهلي.",
+  "beProudOfThatOne": "افتخري بنفسك.",
+  "strongWorkToday": "شغل جامد النهاردة.",
+  "keepThisWorkout": "احفظي التمرين ده",
+  "createYourAccountAndThisWorkoutCounts": "اعملي حسابك والتمرين ده يتحسب في أسبوعك.",
+  "goForAWalk": "اطلعي تمشي",
+  "walkAsLongAsYouLikeLog": "امشي المدة اللي تحبيها. سجّليها بعد كده، وOwn Hub يحسب السعرات اللي حرقتيها.",
+  "theCaloriesAreAnEstimateTheyNever": "السعرات دي تقدير، ومش بتغيّر اللي بتاكليه.",
+  "startWalking": "ابدئي المشي",
+  "finishWalk": "خلّصي المشي",
+  "caloriesBurnedEstimate": "السعرات المحروقة، تقدير",
+  "logThisWalk": "سجّلي المشي ده",
+  "loggingCountsItInYourWeekAnd": "لما تسجّليه بيتحسب في أسبوعك، وبنحفظ السعرات اللي حرقتيها.",
+  "dontLogIt": "من غير تسجيل",
+  "walkLogged": "المشي اتسجّل",
+  "thatWasUnderAMinuteSoThere": "ده كان أقل من دقيقة، فمفيش حاجة تتسجّل.",
+  "workedOutWithATypicalWeightAdd": "محسوبة على وزن متوسط. ضيفي وزنك لرقم أقرب.",
+  "twoQuickQuestionsThenTheCoachesWho": "سؤالين سريعين، وبعدها المدرّبات الأنسب ليكي.",
+  "matchedOnYourTwoAnswersOnlyThen": "على حسب إجاباتك الاتنين بس، وبعدها بالترتيب الأبجدي.",
+  "logItToCountTheCaloriesYou": "سجّليه وهنحسب السعرات اللي حرقتيها",
+  "soundsAndTouch": "الصوت واللمس",
+  "chooseWhatYouHearAndFeel": "اختاري اللي بتسمعيه وبتحسّي بيه",
+  "sounds": "الأصوات",
+  "softSoundsWhenYouLogASet": "أصوات هادية لما تسجّلي مجموعة، أو تخلّصي تمرينك، أو تضيفي وجبة.",
+  "haptics": "الاهتزاز",
+  "aLightTapYouCanFeelAt": "لمسة خفيفة بتحسّيها في نفس اللحظات."
 }

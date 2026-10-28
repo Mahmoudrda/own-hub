@@ -30,6 +30,25 @@ String statusWord(AppL10n l, Payment p) => switch (p.status) {
   PaymentStatus.serviceDispute => l.problemReported,
 };
 
+/// The same states in the coach's voice (`statusWord` speaks to the client).
+String coachStatusWord(AppL10n l, Payment p) => switch (p.status) {
+  PaymentStatus.awaitingPayment => l.waitingForHerPayment,
+  PaymentStatus.coachNotReceived => l.youSaidItHasNotArrived,
+  PaymentStatus.inReview =>
+    p.disputeKind == 'not_received' ? l.youSaidItHasNotArrived : l.underReview,
+  PaymentStatus.refundRequested => l.sheAskedForARefund,
+  PaymentStatus.proofSubmitted ||
+  PaymentStatus.confirmed ||
+  PaymentStatus.resolvedPaid ||
+  PaymentStatus.resolvedUnpaid ||
+  PaymentStatus.differentAmount ||
+  PaymentStatus.expired ||
+  PaymentStatus.cancelled ||
+  PaymentStatus.refunded ||
+  PaymentStatus.refundDenied ||
+  PaymentStatus.serviceDispute => statusWord(l, p),
+};
+
 String nextLine(AppL10n l, Payment p) => switch (p.status) {
   PaymentStatus.awaitingPayment => l.payWithYourBankAppThenTap,
   PaymentStatus.proofSubmitted => l.yourCoachWillConfirmIfSheDoes,
@@ -55,7 +74,7 @@ String nextLine(AppL10n l, Payment p) => switch (p.status) {
   PaymentStatus.cancelled => l.nothingWasPaid,
   PaymentStatus.refundRequested => l.yourCoachHas3DaysToAnswer,
   PaymentStatus.refunded => l.yourCoachRecordedTheRefund,
-  PaymentStatus.refundDenied => l.ownHubWillLookAtIt,
+  PaymentStatus.refundDenied => l.yourCoachDidNotAgreeToThe_9dkzl,
   PaymentStatus.serviceDispute => l.ownHubIsLookingIntoIt,
 };
 

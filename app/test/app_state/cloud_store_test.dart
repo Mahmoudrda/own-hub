@@ -27,6 +27,7 @@ import 'package:own_hub/app_state/cloud_store.dart';
 import 'package:own_hub/app_state/cloud_transport.dart';
 import 'package:own_hub/app_state/cycle_state.dart';
 import 'package:own_hub/app_state/local_persistence.dart';
+import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/data/pending_answers.dart';
 import 'package:own_hub/domain/training/prescribed_set.dart';
 import 'package:own_hub/domain/week/week_key.dart';
@@ -344,6 +345,33 @@ void main() {
         reason:
             'and the whole of her week goes up, which is the point of '
             'signing in',
+      );
+    });
+
+    test('a guest\'s first workout stays hers and goes up', () async {
+      _giveHerAFinishedLiveSession();
+      WorkoutSessionState.creditSession(
+        sessionId: 'live-1',
+        source: SessionSource.live,
+        today: AppRouter.todayRepository,
+        progress: AppRouter.progressStore,
+      );
+      final before = _whatSheHas();
+      final week = AppRouter.progressStore.rewards.sessionsLogged;
+      final points = AppRouter.progressStore.rewards.points;
+      expect(week, 1);
+      final cloud = _FakeCloud(); // her first sign-in: nothing there yet
+
+      CloudStore.instance.transport = cloud;
+      await CloudStore.instance.linkFor(_uid);
+
+      expect(_whatSheHas(), before);
+      expect(AppRouter.progressStore.rewards.sessionsLogged, week);
+      expect(AppRouter.progressStore.rewards.points, points);
+      expect(
+        cloud.pushed.where((d) => d.collection == 'sessions').map((d) => d.id),
+        contains('live-1'),
+        reason: 'the session is written under her account once she is verified',
       );
     });
 
