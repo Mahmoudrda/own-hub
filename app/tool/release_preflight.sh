@@ -95,6 +95,9 @@ check "privacy manifest declares Health" "grep -q '<string>NSPrivacyCollectedDat
 check "privacy manifest declares SensitiveInfo" "grep -q NSPrivacyCollectedDataTypeSensitiveInfo ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares PhotosorVideos" "grep -q NSPrivacyCollectedDataTypePhotosorVideos ios/Runner/PrivacyInfo.xcprivacy"
 check "privacy manifest declares OtherDataTypes" "grep -q NSPrivacyCollectedDataTypeOtherDataTypes ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares PaymentInfo" "grep -q NSPrivacyCollectedDataTypePaymentInfo ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares OtherFinancialInfo" "grep -q NSPrivacyCollectedDataTypeOtherFinancialInfo ios/Runner/PrivacyInfo.xcprivacy"
+check "privacy manifest declares PurchaseHistory" "grep -q NSPrivacyCollectedDataTypePurchaseHistory ios/Runner/PrivacyInfo.xcprivacy"
 check "RECORD_AUDIO declared in the manifest" "grep -q '<uses-permission android:name=\"android.permission.RECORD_AUDIO\" />' android/app/src/main/AndroidManifest.xml"
 # Saying a meal (speech_to_text): iOS refuses a build whose binary can reach
 # speech recognition without its purpose string, and Android 11 and up see no

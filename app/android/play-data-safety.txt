@@ -9,6 +9,10 @@ Xcode privacy report and compare all four line by line before submitting.
 Updated 28 October 2026: saying a meal (the phone's own speech service turns
 her words into text; Own Hub receives and keeps no audio) and the InBody
 sheet reader (read on the phone, picture never sent or kept) are noted below.
+Updated 28 October 2026 (payments): InstaPay payment records are declared under
+Financial info, the payment screenshots under Photos and videos, and the dispute
+notes under Messages. The payments switch is off in this release; the app collects
+these records once the switch is on, so the answers are declared now.
 Updated 23 October 2026: the PostHog note is folded into the data types below,
 a member's first name for a coach is under Name, the meal photo is under
 Photos, coaching pushes are under Device or other IDs, and live sessions are
@@ -86,8 +90,11 @@ Messages
       the two of them; Own Hub staff read a thread only after one of them
       reports it. Optional (only if she joins a coach). Linked. Not shared.
       Purpose: App functionality. Deleted with either account.
+  - Dispute notes: the notes and reasons a member or coach writes in a payment
+      dispute, kept with the payment record. Linked. Shared: no. Purpose: App
+      functionality.
 
-Coaching (applications, portfolios, joining a coach; no payments yet)
+Coaching (applications, portfolios, joining a coach, InstaPay payments)
   - Coach application: full name (see Name), display name, governorate,
       languages, headline, education, certificates, specialties, years,
       qualifications, client feedback, before and after client photos with
@@ -117,8 +124,8 @@ Coaching (applications, portfolios, joining a coach; no payments yet)
       to that coach. They fall under Health info, already declared. The picture
       of the sheet is read on the phone (ML Kit text recognition) and is never
       sent or kept. Optional. Linked.
-  - No payments exist in this version: no payment info, purchase history or
-      financial info is collected.
+  - InstaPay payments between a member and her coach: see Financial info below.
+      Payment screenshots are under Photos and videos; dispute notes under Messages.
 
 Other user-generated content and app info (three flows to declare)
   - Scan cache: a fingerprint (hash) of a re-encoded meal photo plus the foods
@@ -133,6 +140,31 @@ Other user-generated content and app info (three flows to declare)
       opts in, without her name.
   - Event seats: her uid, time reserved and status under the event; readable
       by her and Own Hub admins; deleted on cancel or account deletion.
+
+Financial info
+  - User payment info
+      Collected: a coach's InstaPay address and account name, set in her payment
+      settings; a member's own InstaPay address, only if she saves one so her
+      receipts can be matched. Linked. Shared: no. Required for a coach who takes
+      payments; optional for a member. Purpose: App functionality; Fraud
+      prevention, security and compliance.
+  - Purchase history
+      A member's payments to her coaches: package, amount, reference, status and
+      times. Linked. Shared: no. Required for the payment feature. Purpose: App
+      functionality; Fraud prevention, security and compliance.
+  - Other financial info
+      The transaction number a member gives, the amounts and steps of a payment,
+      and a coach's monthly fee statement. Own Hub never holds the money: she pays
+      her coach directly by InstaPay from her own bank app. Linked. Shared: no.
+      Required for the payment feature. Purpose: App functionality; Fraud
+      prevention, security and compliance.
+      Google Cloud Vision reads a payment screenshot on our server, as a service
+      provider acting for us (not sharing). OWNER TO CONFIRM with counsel: this
+      reading, and the Cloud Vision processor and region.
+      Encrypted in transit: yes. Deletion: in the app (Profile > Your data >
+      Delete everything) or at https://own-hub.app/delete-account. OWNER TO
+      CONFIRM: how long the payment record is kept (code: 5 years, UNVERIFIED
+      with counsel; spec 12.4).
 
 Photos and videos
   - Photos
@@ -154,6 +186,13 @@ Photos and videos
       processed ephemerally, sent once to Google Cloud Vertex AI in Frankfurt
       for the estimate and never stored. Optional. Purpose: App
       functionality.
+  - Payment screenshots: a bank screenshot a member sends as payment proof, with
+      the lines she hides left hidden; the original never leaves her phone.
+      Stored privately. Optional (only for a payment). Linked. Shared: no.
+      Purpose: App functionality; Fraud prevention, security and compliance.
+      Deleted 90 days after the payment is finished (confirmed, resolved or
+      cancelled). OWNER TO CONFIRM: the 90 days (code: functions/payments/
+      retention.py, UNVERIFIED with counsel).
 Photos and videos: Collected = yes (chat photos and clips in addition to the coach photos already declared).
   Shared = no. Required = no. Purpose: App functionality. Encrypted in transit: yes.
 
@@ -227,7 +266,7 @@ Not collected
 -------------
 Precise location, contacts, messages (the SMS code is read by the SMS
 Retriever, not READ_SMS), audio, files and docs, calendar, web browsing,
-financial info, in-app search history and the Advertising ID. The app has no
+in-app search history and the Advertising ID. The app has no
 photo-library permission and cannot read the gallery. The one place she can
 pick an existing picture is her own profile photo, through the system photo
 picker, which hands the app only the single picture she chooses; the profile
@@ -266,7 +305,7 @@ under 18.
 Content rating
 --------------
 No community. Users can interact: a member and the coach she joined chat in
-text (no images or voice), with Report and Block in every chat. The
+text, with voice notes and photos or short clips, and Report and Block in every chat. The
 user-written content other members can see is an approved coach's public
 portfolio (reviewed before it is shown, reportable by members) and a dish a
 member opts to share without her name. Reports reach the Own Hub team.

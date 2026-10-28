@@ -2,54 +2,117 @@
 
 > Reference copy of the launch guide, saved 23 Oct 2026. Many steps below are already done (commit, Firebase deploy, dashboard, website, build 424738 uploaded). What is left, with dates, is in [OWNER-TODO.md](OWNER-TODO.md). The phase two plan for the coding agent is [docs/plan/RELEASE-2-PLAN.md](../plan/RELEASE-2-PLAN.md).
 
-## Release 1.1.0: what to run (27 Oct 2026)
+## Release 1.1.0: what to run (28 Oct 2026)
 
-Payments stay OFF in this release: `config/payments` is absent and the coach-side payment screens are not built, so do not switch payments on. Everything else below is live. Run each block from `~/ownhub`.
+Final state of 1.1.0, checked 28 Oct 2026. Run each block from `~/ownhub`. Each code block holds one command. Run the steps in order.
+
+**Payments stay OFF in 1.1.0.** The app has every payment screen: the coach Payments inbox, the three decisions (I received it, Not received, Different amount), refunds and service problems, cancel payment, the monthly fee statement with Mark fee as paid, the payment-record image, taps on payment notifications, and the "Turn on payment alerts" card. Payment notifications reach only the phones that turned that card on. While payments are off, members see "Free for now".
+
+Do not set `config/payments.enabled` until all four gates are met. The full list is in [OWNER-TODO.md](OWNER-TODO.md), section "Payments by InstaPay".
+- Counsel has signed off the payment texts (`docs/owner/INSTAPAY-TERMS-DRAFTS.md`).
+- A real two-phone InstaPay transfer has passed.
+- The Apple and Google payment-policy check is done.
+- `coachingConfig/receivingAccounts.instapay` has `address` and `holderName` filled in. Fill it before the first monthly statement, or the statement shows no pay-to address.
 
 **What's new (App Store Connect, English)**
 - Send photos, short videos and voice notes to your coach in chat.
 - Your coach can send a plan for several weeks and a meal plan, ready in Train and Eat.
 - A one-minute weekly check-in goes straight to your coach.
 - Safer calorie targets: no target is shown when you should check in with your coach or a doctor first.
+- Say what you ate, then check the words before you log them.
+- Read your InBody sheet with the camera for a macro suggestion. It is read on your phone, and the photo is not kept.
+- Try your first workout without making an account.
+- A walking session, for the days you want to move gently.
+- A warm finish after each workout.
+- Short sounds during your workout. You can turn them off in Profile.
+- Cooked lentils are now in the food list.
 
 **What's new (Arabic)**
 - ابعتي صور وفيديوهات ورسايل صوتية لمدربتك في الشات.
 - مدربتك تقدر تبعتلك برنامج تمرين لكذا أسبوع وخطة أكل، وتلاقيها جاهزة في تمرين وأكل.
 - تقييم أسبوعي سريع في دقيقة بيوصل لمدربتك.
 - أهداف سعرات أأمن، ومفيش هدف بيظهر لو محتاجة تتابعي مع مدربتك أو دكتورة الأول.
+- سجّلي أكلك بصوتك، وراجعي الكلام قبل ما يتسجّل.
+- صوّري ورقة الـ InBody واخدي اقتراح للماكروز. التطبيق بيقرا الورقة على موبايلك، والصورة مش بتتحفظ.
+- جرّبي أول تمرين من غير ما تعملي حساب.
+- جلسة مشي للأيام اللي تحبي تتحركي فيها براحة.
+- ختام دافي بعد كل تمرين.
+- أصوات خفيفة وإنتي بتتمرني، وتقدري تقفليها من البروفايل.
+- أضفنا العدس المطبوخ لقائمة الأكل.
 
-1. Disk: the iOS build needs about 8 GB free. `df -h /`
-2. Indexes (wait until the console shows all Enabled), then the expiry policies:
+1. Disk: the iOS build needs about 8 GB free.
+```bash
+df -h /
+```
+2. Listen to the sound preview before the build. Sounds are on by default, so you and Rahma should hear the mix first. A change means a new build. The file is `/private/tmp/claude-501/-Users-mahmoudreda-ownhub/d1ee3614-0346-4787-9e01-c3e33b801d7d/scratchpad/own_hub_sounds_preview.m4a`. It is a scratch file. If it has gone, ask the coding agent to make it again.
+3. Indexes. Wait until the console shows all of them as Enabled before step 4.
 ```bash
 firebase deploy --only firestore:indexes --project own-hub
+```
+4. Expiry policies.
+```bash
 bash firebase/ops/ttl-policies.sh
 ```
-3. Rules. The chat-media storage rule now reads Firestore, so the first deploy must let the Storage rules service read Firestore; answer yes if the CLI asks. If it does not ask, run the grant once:
+5. Rules and storage. The chat-media storage rules read Firestore, so answer yes if the CLI asks to let the Storage rules service read Firestore. The rules changed again for the payment-alert opt-in, so deploy them even if you did this earlier today.
 ```bash
 firebase deploy --only firestore:rules,storage --project own-hub
+```
+6. Storage service-agent grant. Run it after step 5. If the CLI asked and you answered yes, the grant is already in place and you can skip this. If you are not sure, check IAM first.
+```bash
 gcloud projects add-iam-policy-binding own-hub --member="serviceAccount:service-681714989950@gcp-sa-firebasestorage.iam.gserviceaccount.com" --role="roles/firebaserules.firestoreServiceAgent"
 ```
-4. Staff dashboard, then re-add pre-approved numbers with the 18+ tick:
+7. Staff dashboard. It has not changed since its first deploy on 23 Oct, so deploy it only if you have not deployed it since then. Then re-add the pre-approved numbers with the 18+ tick.
 ```bash
 npx wrangler pages deploy admin-web --project-name ownhub-reviewers
 ```
-5. Build the iPhone app (runs every check first and stops if one fails):
+8. Apple Developer: App ID `com.ownhub.fitness`, tick Associated Domains and regenerate the store profile. Do this before the build.
+9. Build the iPhone app. It runs every check first and stops if one fails.
 ```bash
 cd ~/ownhub/app && export PATH="$HOME/development/flutter/bin:$PATH" && RELEASE_BASE_URL=https://own-hub.app bash tool/release_preflight.sh && bash tool/build_ios.sh
 ```
-6. Upload `app/build/ios/ipa/own_hub.ipa` with Transporter, then run the Crashlytics symbols command the build script prints. Test on TestFlight. In Apple Developer, App ID `com.ownhub.fitness`: tick Associated Domains and regenerate the store profile before building.
-7. App Store Connect: new version 1.1.0, paste What's new, new screenshots, App Privacy (Audio Data and chat photos and videos, see docs/owner/PAYMENTS-STORE-ANSWERS.md), review notes (AI photo scan may be unavailable until Google approves the appeal). Submit with manual release.
-8. When Apple approves and BEFORE you press Release, deploy the functions (check-ins start the first Friday 09:00 Cairo after this deploy, and build 1.0.0 cannot show them):
+10. Upload `app/build/ios/ipa/own_hub.ipa` with Transporter. Then run the Crashlytics symbols command that the build script prints.
+11. TestFlight, on a real iPhone. Only a phone proves these:
+- Eat: say a meal, change one word, then log it. Note how long the words take to appear.
+- Sounds: run a workout with the Silent switch on, then off, and once with music playing in another app.
+- InBody: read a real sheet, not a sample.
+- Guest first workout: start one without signing in.
+- The 1.0 checks still apply: the screen stays on during a workout, and one buzz when the rest ends.
+12. App Store Connect, version 1.1.0, manual release.
+- **Build:** the one from step 10.
+- **What's new:** the two lists above.
+- **Screenshots:** upload the nine files in `docs/release/launch-pack/screenshots/apple-6.9/en`, then `/ar`, in name order (01-rahma to 09-coach-plan, dated 27 Oct, 1320 x 2868). Do not use the names in step 6 of the 1.0 section, because they do not match these files.
+- **Description:** not written for 1.1.0 yet. Do not paste `docs/release/appstore-listing.md` (it says no coaching). The 1.0 text in this guide is old. See OWNER-TODO.
+- **App Privacy:** nothing new to tick. Voice logging and the InBody reader add no data type, and the Audio Data answer stays. Follow `docs/release/launch-pack/app-store-privacy-answers.md` (28 Oct). Tick the payment rows only when payments switch on.
+- **Review notes:** not ready. `docs/release/review-notes.md` is still the 23 Oct text. It says there are no payments and that payments cannot be turned on remotely, and the box in the 1.0 section says the same. Ask the coding agent to update the notes for 1.1.0, within 4,000 characters, before you paste them.
+- **Version release:** manually. Submit only when the description and the review notes are ready.
+13. After Apple approves, and BEFORE you press Release, deploy the functions:
 ```bash
 firebase deploy --only functions --project own-hub
 ```
-9. Press Release in App Store Connect.
-10. Website (privacy, terms, coach terms with the microphone, chat media and payments text): only after counsel signs off.
+> The functions carry the new content id `lentils_cooked`, the payment push ids and topics, the InBody consent text and the payments code. Check-ins start the first Friday at 09:00 Cairo time after this deploy, and build 1.0.0 cannot show them. If the functions deploy earlier, build 1.0.0 users get check-in cards that their app hides.
+
+14. Press Release in App Store Connect.
+15. Website, in the same window as step 14. The privacy page must go live with this release, because it now describes voice logging and the InBody reader. The same site build also carries the payment sections, which counsel has not signed. Decide first (OWNER-TODO, "Website: a decision for you"). Run the dry run before you press Release, then the real deploy with step 14.
 ```bash
-~/ownhub/site/_build/deploy.sh https://own-hub.app --dry-run
-~/ownhub/site/_build/deploy.sh https://own-hub.app
+bash site/_build/deploy.sh https://own-hub.app --dry-run
 ```
-11. Not in 1.1.0: live payments (coach screens, refunds and statements in the app, the two-phone test, counsel and store-policy review), voice logging, walking session, guest first workout, sound. Fill the Android assetlinks fingerprints in `site/.well-known/assetlinks.json`.
+```bash
+bash site/_build/deploy.sh https://own-hub.app
+```
+16. Rahma's coach web app is a separate product and is not part of this release. Its steps are in OWNER-TODO.
+
+*Not in 1.1.0 / known*
+
+- Train is not week-aware yet: there is no week content.
+- Coaching intake has no breastfeeding or trimester question, and the server's flagged-stages list does not include breastfeeding.
+- Reviewers cannot open a reported chat file. The owner and counsel decide whether they may.
+- K07 is over the control budget. Reported only.
+- The 21 new Arabic strings for voice logging and the InBody reader need a native read.
+- Not yet checked on a real phone: voice speed, the Silent switch, sound mixing, the InBody reader on a real sheet, and receipt photo reading (payments).
+- The food golden table: only 1 of the 252 foods is independently verified against USDA. The dietitian check is pending.
+- An end-to-end test that uses `blob.patch()` fails on the emulator only.
+- Owner only, all listed in OWNER-TODO: the PDPC filing before 31 Oct 2026 (now with payment records), the Android assetlinks SHA-256 fingerprints, the Apple Associated Domains profile, the dietitian check of the pregnancy and lactation calories, and Rahma's allergen sign-off.
+- Payments: built, and off (see the top of this section).
 
 > Version 1.0.0, with coaching · updated 23 Oct 2026 · only what is left to do
 
@@ -69,9 +132,9 @@ New in this build: private coaching (free for now) and the gym improvements. Coa
 
 ## Before you submit
 
-- **Before 31 October 2026: file with the data protection regulator.** Egypt's data protection law grace period ends on 31 October. On the Personal Data Protection Center portal (log in through Digital Egypt with your national ID), file for a controller licence, a sensitive-data licence (health data and the face match) and a transfer-abroad permit (Frankfurt for Firebase and Vertex AI, the United States for PostHog). The regulator has 90 working days to decide, so filing on time is what counts. A lawyer can file for you. Details are in the release 2 plan, section 3.9.
+- **Before 31 October 2026: file with the data protection regulator.** Egypt's data protection law grace period ends on 31 October. On the Personal Data Protection Center portal (log in through Digital Egypt with your national ID), file for a controller licence, a sensitive-data licence (health data and the face match) and a transfer-abroad permit (Frankfurt for Firebase and Vertex AI, the United States for PostHog). Since 1.1.0, also file for the payment records and receipt screenshots, which Google Cloud Vision (European Union) reads (see OWNER-TODO, step 1). The regulator has 90 working days to decide, so filing on time is what counts. A lawyer can file for you. Details are in the release 2 plan, section 3.9.
 - **Form a company before paid coaching.** Apple asks that apps handling health data come from a legal entity, and payments and the consumer law need a commercial registration and tax card. Then move the Apple account and open Google Play as an organisation.
-- **Coaching is live and free.** Packages show their price as "when payments open" with a "Free for now" badge. Turning payments on later needs your legal steps (lawyer on the payment model, the data protection licence, tax) and one switch on the server and in the app.
+- **Coaching is live and free.** Packages show their price as "when payments open" with a "Free for now" badge. Turning payments on later needs your legal steps (lawyer on the payment model, the data protection licence, tax) and one switch on the server (`config/payments.enabled`). The payment screens are already in 1.1.0 and stay off until then.
 - **Rahma joins like every coach:** she applies in the app (Profile, Become a coach), and a woman reviewer approves her in the dashboard's Coaches tab. Then she builds her portfolio and packages, and her photos show after the reviewer checks them.
 - **Before-and-after photos** are shown to members only after a coach confirms her client agreed in writing and Own Hub's woman reviewer approves each one. The original is deleted; only a copy without location data stays.
 - **Chat carries text, photos, short videos (up to 30 seconds) and voice notes**, between a member and the coach she joined. Phone numbers, payment details and links are blocked in text. The first voice note or video with sound asks for the microphone (iPhone) or the record-audio permission (Android). Staff read a chat only after one of them reports it.
@@ -307,7 +370,7 @@ ls ~/.claude/jobs/ownhub-meal-images/meals/*.webp | wc -l
 
 > If the first line prints nothing, start it again: `nohup ~/ownhub/.claude/handoff-store-pass/meal-images-loop.sh >/dev/null 2>&1 &`. When 301 are done, install them with `cd ~/ownhub/app && python3 -I tool/install_meal_images.py --from ~/.claude/jobs/ownhub-meal-images/meals` and ship them in the next update.
 
-### [ ] Before payments can open (later)
+### [ ] Before payments can open
 
 *Where:* You and a lawyer
 
@@ -315,7 +378,7 @@ ls ~/.claude/jobs/ownhub-meal-images/meals/*.webp | wc -l
 - Data protection (PDPL): licence, data protection officer, cross-border transfer permit.
 - Tax: VAT, e-receipts and withholding with an accountant.
 - Apple: move the developer account to the company.
-- Then one switch on the server and in the app, and the payment screens are already built.
+- Then set `config/payments.enabled` on the server. The payment screens are already in 1.1.0. The order of these steps is in OWNER-TODO, section Payments by InstaPay.
 
 *Android*
 
@@ -405,7 +468,7 @@ cd ~/ownhub/app && export PATH="$HOME/development/flutter/bin:$PATH" && bash too
 
 - Countries: Egypt only. Create new release with the bundle and the English and Arabic "What's new".
 - Staged rollout, for example 20%, then widen it with Update rollout. Review takes up to 7 days.
-- Before submitting, the coding agent fixes the out-of-date Play files listed in the release 2 plan (section 3.8): the old `play-listing.md`, the reviewer notes that say coaching is off, and the Data safety notes.
+- Before submitting, check the Play files against 1.1.0. `docs/release/play-listing.md` is already updated (28 Oct). The reviewer notes in `docs/release/review-notes.md` are still the 23 Oct text, so ask the coding agent to update them for 1.1.0 first (see the 1.1.0 section, step 12).
 
 *Checked before this build*
 
@@ -436,7 +499,7 @@ cd ~/ownhub/app && export PATH="$HOME/development/flutter/bin:$PATH" && bash too
 
 ## App Store Connect inputs
 
-> The descriptions below are the ones submitted with 1.0. For the next version use the corrected wording in `docs/release/launch-pack/store-listing-copy.md` (fixed 23 Oct 2026: the women-only check can also be done by a woman reviewer, and the answers she sends to a coach do leave her phone). The App Privacy table below is current: it already includes a member's first name to her coach and PostHog.
+> The descriptions below are the ones submitted with 1.0. Do not use them for 1.1.0, and do not use `docs/release/launch-pack/store-listing-copy.md` either: both predate voice logging, the InBody reader and payments (see the 1.1.0 section, step 12). The 23 Oct corrections in that file (a woman reviewer can also do the women-only check; the answers a member sends to a coach do leave her phone) must be in the 1.1.0 description too. The App Privacy table below is current for 1.0: it already includes a member's first name to her coach and PostHog. For 1.1.0, follow `docs/release/launch-pack/app-store-privacy-answers.md`.
 
 Every field, in the order App Store Connect asks for it. Values in a grey box copy with the button. Short values are in the tables. Anything the docs cannot know is marked `[OWNER: ...]`. Counts show characters used against Apple's limit, recounted with Python on 22 Oct from the local release docs.
 
@@ -574,7 +637,7 @@ TRAIN
 
 EAT
 • 50 Egyptian recipes you already know, 39 by Rahma Mohsen and 11 from Own Hub, with calories, protein, carbs and fat per serving.
-• 251 Egyptian foods, with the allergens listed for each.
+• 252 Egyptian foods, with the allergens listed for each.
 • One place to log food and find recipes: Eat has Log, Recipes and Plan.
 • Log a meal by typing it in your own words, or in one tap from your usual plates.
 • Photograph your plate to get an estimate of what is on it. You check and change every item before anything is logged. The photo is sent once for the estimate and is not stored.
@@ -656,7 +719,7 @@ Own Hub تطبيق لياقة للستات في مصر، وللستات بس. ب
 
 الأكل
 • 50 وصفة من الأكل المصري اللي تعرفيه، 39 منها من رحمة محسن و11 من Own Hub، وقدام كل وصفة السعرات والبروتين والكربوهيدرات والدهون للحصة.
-• 251 أكلة مصرية، والحساسية مكتوبة قدام كل أكلة.
+• 252 أكلة مصرية، والحساسية مكتوبة قدام كل أكلة.
 • مكان واحد تسجّلي فيه أكلك وتلاقي وصفاتك: الأكل فيه سجل ووصفات وخطة.
 • سجّلي وجبتك بكلامك، أو بلمسة من أطباقك المعتادة.
 • صوّري طبقك وخدي تقدير للي فيه. إنتي بتراجعي وبتعدّلي كل عنصر قبل ما أي حاجة تتسجّل، والصورة بتتبعت مرة واحدة للتقدير ومابتتحفظش.
