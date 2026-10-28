@@ -2976,5 +2976,6 @@
  "Sounds": "الأصوات",
  "Soft sounds when you log a set, finish a workout or add a meal.": "أصوات هادية لما تسجّلي مجموعة، أو تخلّصي تمرينك، أو تضيفي وجبة.",
  "Haptics": "الاهتزاز",
- "A light tap you can feel at the same moments.": "لمسة خفيفة بتحسّيها في نفس اللحظات."
+ "A light tap you can feel at the same moments.": "لمسة خفيفة بتحسّيها في نفس اللحظات.",
+ "Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, a record that the deletion happened, and, if you paid a coach or a member paid you, the payment records, fee statements and strike records for {years} years, with your account replaced by a random code. Check attempts that did not pass and a scrambled code for this installation, linked to no account, are deleted {days} days after the last attempt, and the log of which reviewer opened your case after one year.": "حذف حسابك بيشيله من سيرفراتنا وبيمسح الموبايل ده. وفيه حاجات بنحتفظ بيها عن قصد: سجل مقفول إن بطاقتك اتستخدمت، عشان مايتفتحش بيها حساب تاني، والبلاغات بعد ما نشيل اسمك منها، وسجل إن الحذف حصل، ولو دفعتي لمدرّبة أو عضوة دفعتلك، سجلات الدفع وكشوف الرسوم وسجلات الإنذارات لمدة {years} سنين، ومعرّف حسابك متبدّل بكود عشوائي. أما محاولات التحقق اللي مانجحتش وكود متشفّر للتثبيت ده، ومش مربوطين بأي حساب، فبيتمسحوا بعد {days} يوم من آخر محاولة، وسجل مين من المراجِعات فتحت حالتك بيتمسح بعد سنة."
 }

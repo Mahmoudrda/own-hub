@@ -9209,5 +9209,19 @@
   "sounds": "الأصوات",
   "softSoundsWhenYouLogASet": "أصوات هادية لما تسجّلي مجموعة، أو تخلّصي تمرينك، أو تضيفي وجبة.",
   "haptics": "الاهتزاز",
-  "aLightTapYouCanFeelAt": "لمسة خفيفة بتحسّيها في نفس اللحظات."
+  "aLightTapYouCanFeelAt": "لمسة خفيفة بتحسّيها في نفس اللحظات.",
+  "deletingYourAccountRemovesItFromOur_6oxgn": "حذف حسابك بيشيله من سيرفراتنا وبيمسح الموبايل ده. وفيه حاجات بنحتفظ بيها عن قصد: سجل مقفول إن بطاقتك اتستخدمت، عشان مايتفتحش بيها حساب تاني، والبلاغات بعد ما نشيل اسمك منها، وسجل إن الحذف حصل، ولو دفعتي لمدرّبة أو عضوة دفعتلك، سجلات الدفع وكشوف الرسوم وسجلات الإنذارات لمدة {years} سنين، ومعرّف حسابك متبدّل بكود عشوائي. أما محاولات التحقق اللي مانجحتش وكود متشفّر للتثبيت ده، ومش مربوطين بأي حساب، فبيتمسحوا بعد {days} يوم من آخر محاولة، وسجل مين من المراجِعات فتحت حالتك بيتمسح بعد سنة.",
+  "@deletingYourAccountRemovesItFromOur_6oxgn": {
+    "description": "The Your data sheet, what a deletion keeps on purpose. years is the payment-record period (functions/payments/retention.py RECORD_RETENTION_YEARS) and days is the failed-attempt period; both come from constants next to the sheet, never from the dictionary.",
+    "placeholders": {
+      "years": {
+        "type": "String",
+        "example": "5"
+      },
+      "days": {
+        "type": "String",
+        "example": "180"
+      }
+    }
+  }
 }

@@ -92,7 +92,7 @@ firebase deploy --only functions --project own-hub
 > The functions carry the new content id `lentils_cooked`, the payment push ids and topics, the InBody consent text and the payments code. Check-ins start the first Friday at 09:00 Cairo time after this deploy, and build 1.0.0 cannot show them. If the functions deploy earlier, build 1.0.0 users get check-in cards that their app hides.
 
 14. Press Release in App Store Connect.
-15. Website, in the same window as step 14. The privacy page must go live with this release, because it now describes voice logging and the InBody reader. The same site build also carries the payment sections, which counsel has not signed. Decide first (OWNER-TODO, "Website: a decision for you"). Run the dry run before you press Release, then the real deploy with step 14.
+15. Website, in the same window as step 14. The privacy page must go live with this release, because it now describes voice logging and the InBody reader. The same site build also carries the payment sections, which counsel has not signed. Decide first (OWNER-TODO, "Website: a decision for you"). Run the dry run before you press Release, then the real deploy with step 14. **The website and the app release go out together, never one without the other:** the privacy page that is live today has no InstaPay text, so a store reviewer or a member would meet payment screens that the site does not describe. And never set `config/payments.enabled` to true until the corrected privacy page, terms and coach terms (English and Arabic) are live. The site text was checked against the code on 28 October; counsel's open points are in `docs/owner/INSTAPAY-TERMS-DRAFTS.md`.
 ```bash
 bash site/_build/deploy.sh https://own-hub.app --dry-run
 ```

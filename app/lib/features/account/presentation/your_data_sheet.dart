@@ -52,6 +52,12 @@ import '../../../ui/app_button.dart';
 import '../../../ui/app_sheet.dart';
 import '../domain/account_deletion_service.dart';
 
+/// The two periods the "kept on purpose" sentence names. Same as the server:
+/// functions/payments/retention.py RECORD_RETENTION_YEARS, and the 180 days of
+/// the failed-attempt record (privacy policy section 6).
+const String _paymentRecordYears = '5';
+const String _failedAttemptDays = '180';
+
 /// Shows the sheet. Returns what the deletion came to, or null when she
 /// cancelled. Never [AccountDeletionResult.offline] or
 /// [AccountDeletionResult.appCannotReach]: those keep the sheet open.
@@ -168,7 +174,10 @@ class _YourDataSheetState extends State<YourDataSheet> {
         const SizedBox(height: 10),
         Text(
           widget.hasAccount
-              ? l10n.deletingYourAccountRemovesItFromOur_1xldi
+              ? l10n.deletingYourAccountRemovesItFromOur_6oxgn(
+                  _paymentRecordYears,
+                  _failedAttemptDays,
+                )
               : l10n.youHaveNoAccountOnThisPhone,
           style: quiet,
         ),

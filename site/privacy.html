@@ -118,11 +118,12 @@
             are stored on our server in Frankfurt, readable by the two of you.
             Own Hub&rsquo;s team reads a chat only after one of you reports it
             (sections 3.16 and 3.17).</li>
-            <li><b>If you pay a coach, you pay her directly by InstaPay.</b>
-            Own Hub never holds or moves the money. We keep a record of each
-            payment, the transaction number you give and the screenshots you
-            send, so your coach can confirm it and our team can decide a
-            dispute (section 3.18).</li>
+            <li><b>If you pay a coach, you pay her directly by InstaPay, from
+            your own bank app.</b> Own Hub never holds, routes, initiates or
+            accesses that money. We keep a record of each payment, the
+            transaction number you give and the screenshots you send, so your
+            coach can confirm it and our team can decide a dispute (section
+            3.18).</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -144,7 +145,7 @@
         <div><dt>Address</dt><dd>Egypt</dd></div>
         <div><dt>Privacy contact</dt><dd><a href="mailto:info@own-hub.app">info@own-hub.app</a></dd></div>
         <div><dt>Personal Data Protection Centre permit</dt><dd>Not yet issued. We will publish the permit number and its expiry date here as soon as the Personal Data Protection Centre issues it.</dd></div>
-        <div><dt>Data protection officer</dt><dd>Mahmoud Reda acts as data protection officer himself, as the law requires of an individual who holds a permit. Contact: info@own-hub.app</dd></div>
+        <div><dt>Data protection officer</dt><dd>Mahmoud Reda acts as data protection officer himself. Contact: info@own-hub.app</dd></div>
       </dl>
         <p>Rahma Mohsen is Own Hub&rsquo;s founder and coach, and the face
         of the brand. She is not the controller of your data and has no access
@@ -198,8 +199,13 @@
         <p>When you sign up, we record which versions of the Terms of Use and
         this policy you accepted, in which language, from which app version,
         and when. We keep a similar record for each separate consent you give:
-        the identity check, health backup and a review by a woman.</p>
+        the identity check, health backup, a review by a woman, a meal photo,
+        usage statistics, crash reports, the Coach Terms when you apply to
+        coach, and the form you send when you ask to join a coach (with your
+        InBody numbers, if you choose to send them).</p>
         <ul>
+          <li><b>How long:</b> a consent record is kept while your account
+          exists and is deleted with it (sections 6 and 7).</li>
           <li><b>Basis:</b> a legal obligation. The Executive Regulations of the
           Personal Data Protection Law require us to keep a record of each
           consent, with its date and form.</li>
@@ -835,11 +841,15 @@
 
       <h3 id="c-pay">3.18 Paying a coach by InstaPay<a class="anchor" href="#c-pay" aria-label="Link to this section">#</a></h3>
         <p>This applies only if you pay a coach, or you are a coach and a
-        member pays you. <b>Own Hub never holds, receives or moves the money.</b>
-        The member sends it by InstaPay, from her bank app, to the coach&rsquo;s
-        own InstaPay address. Own Hub shows who to pay and how much, records
-        the payment, asks the coach to confirm that it arrived, and decides a
-        dispute if there is one.</p>
+        member pays you. <b>Own Hub never holds, routes, initiates or accesses
+        the money between a member and her coach.</b> The member pays from her
+        own bank app, by InstaPay, to the coach&rsquo;s own InstaPay address.
+        Own Hub shows who to pay and how much, records the payment, asks the
+        coach to confirm that it arrived, and a person at Own Hub decides a
+        dispute if there is one. The coach is the seller of the coaching and
+        is responsible for her service and for refunds. Own Hub is not a bank
+        or a payment provider. Separately, a coach pays Own Hub&rsquo;s own
+        monthly fee to Own Hub by InstaPay.</p>
         <ul>
           <li><b>What we keep about a payment.</b> The member and the coach, by
           account identifier; the package; the amount, which has a few extra
@@ -854,23 +864,35 @@
           You can hide lines (card numbers, balances) and crop before anything
           is sent: only that copy leaves your phone, never the original. Our
           server stores the copy privately, reads it again with Google Cloud
-          Vision in the European Union, keeps the text fields it found, and
-          keeps a fingerprint of the picture so that the same picture cannot be
-          used twice.</li>
+          Vision in the European Union, and keeps a fingerprint of the picture
+          so that the same picture cannot be used twice. The text it reads is
+          used for the checks and is not stored. What stays is the result of
+          each check, the transaction number, the fingerprints, and the short
+          reading your phone sent (whether it saw the amount, the recipient and
+          a success message, the transaction number, and your own InstaPay
+          address if you gave it).</li>
           <li><b>Checks.</b> To limit fraud, the app on your phone and then our
           server compare what your proof shows with the payment: the amount,
           who was paid, whether the bank says it succeeded, the time, whether
           the transaction number or the picture was used before, and signs that
-          the picture was edited. The result only decides whether short access
-          to the coaching starts while the coach checks her bank. It does not
-          prove a payment. When something does not match, a person at Own Hub
-          decides, with a written reason. When a coach says a payment did not
-          arrive, the bank list she attaches is checked the same way.</li>
+          the picture was edited. A check never proves a payment, and it has
+          three effects. A red result sends the payment to a person at Own Hub.
+          A green result gives short access to the coaching while the coach
+          checks her bank; it confirms the payment without the coach only if
+          the coach turned on automatic confirming and Own Hub allowed it,
+          which is off by default. An amber result gives short access after 24
+          hours if nobody has objected. When something does not match, a person
+          at Own Hub decides, with a written reason. When a coach says a
+          payment did not arrive, the bank list she attaches is checked the
+          same way, and a claim that her own list contradicts, because it shows
+          the exact amount or the transaction number, is rejected
+          automatically. These are automated decisions. If you want a person to
+          look at one again, write to <a href="mailto:support@own-hub.app">support@own-hub.app</a>.</li>
           <li><b>Who sees it.</b> The member and her coach. Own Hub&rsquo;s team
           opens a payment when it is in dispute or flagged, and looks at a
           coach&rsquo;s first few payments, her address changes and her fee
-          statements to keep payments safe. A woman reviews any case that holds
-          a woman&rsquo;s private data. Another coach
+          statements to keep payments safe. Only a woman reviewer opens or
+          decides a payment dispute. Another coach
           never sees it. A coach does not see your phone number. Your own
           InstaPay address, if you use one, is shown on the receipt your bank
           makes, so we suggest an address with an @ rather than your phone
@@ -884,19 +906,41 @@
           members safe and the service working, which the law allows (Law
           151/2020, Article 6, point 4).</li>
           <li><b>Refunds and disputes.</b> A member can ask for a refund once
-          in the first 14 days. The request, the coach&rsquo;s answer, and the
-          notes and decision in any dispute are kept with the payment.</li>
+          for a payment, in the app, within 14 days of when her access began
+          (when the coach confirmed the payment, or Own Hub decided it). The
+          coach has 3 days to answer. She can send the money back by InstaPay
+          and record it, or decline and give a reason. If she declines, the
+          member can ask Own Hub to decide. If the coach is silent for 3 days,
+          the request goes to Own Hub to decide. Own Hub does not send refund
+          money: the coach does. A person at Own Hub decides, with a written
+          reason, and can decide that a refund is owed. A member can also open
+          a service problem, up to 14 days after her package ended, at most
+          three a month. The request, the coach&rsquo;s answer, the notes and
+          the decision are kept with the payment.</li>
           <li><b>If you are a coach.</b> Your InstaPay address and account name,
           your payments and your monthly fee statement (what you owe Own Hub,
-          and when you say you paid it) are kept. A new address takes effect
-          after 24 hours, and the members with a payment waiting are told.</li>
+          and when you say you paid it) are kept. You pay Own Hub&rsquo;s fee
+          to Own Hub by InstaPay; it is the only money you pay Own Hub, and
+          Own Hub never touches the member&rsquo;s payment to you. A new
+          address takes effect after 24 hours, and the members with a payment
+          waiting are told.</li>
           <li><b>Not in statistics.</b> No amount, reference, transaction number
           or screenshot is ever sent to usage statistics or crash reports.</li>
-          <li><b>Strikes.</b> A payment proof that staff find false is recorded
-          as a strike on the account, and so is a false claim by a coach that
-          she was not paid. Two strikes in 90 days remove the ability to pay or
-          to take payments by this method. A decision is made by a person, with a
-          written reason.</li>
+          <li><b>Strikes.</b> A member gets a strike when a person at Own Hub
+          decides, with a written reason, that a payment proof she sent was
+          false. A coach gets a strike when a person at Own Hub decides that a
+          payment she said had not arrived was paid. A claim that the
+          coach&rsquo;s own bank list contradicts is refused automatically and
+          is not a strike. Two strikes within 90 days pause paying by InstaPay
+          on a member&rsquo;s account at once, and she is told by a
+          notification afterwards (if she allowed payment alerts). For a coach,
+          two strikes flag her account, and two people at Own Hub must agree
+          before she can no longer take new payments. A coach whose lost
+          disputes are currently 10 percent or more of at least 10 payments is
+          flagged in the same way. There is no step to reply before a pause,
+          and no appeal procedure. You can write to
+          <a href="mailto:support@own-hub.app">support@own-hub.app</a> and ask a person to look at a decision
+          again, and a second member of the team can reopen it.</li>
           <li><b>InstaPay and your bank</b> handle the transfer under their own
           terms. Own Hub cannot undo a transfer. If you sent money to the wrong
           account, contact your bank at once.</li>
@@ -929,7 +973,7 @@
         <li>
           <h3>Google Cloud Firestore, Cloud Functions, Cloud Storage and Secret Manager</h3>
           <dl>
-            <div><dt>Handles</dt><dd>Your account, training and meals, health information if you turn on backup, verification results and the keyed ID code. If you apply to coach: your application and its files (section 3.15). If you join a coach: your form, any InBody numbers you add, chat, live session records and shared plans (section 3.16). Reports and blocks (section 3.17)</dd></div>
+            <div><dt>Handles</dt><dd>Your account, training and meals, health information if you turn on backup, verification results and the keyed ID code. If you apply to coach: your application and its files (section 3.15). If you join a coach: your form, any InBody numbers you add, chat, live session records and shared plans (section 3.16). Reports and blocks (section 3.17). If you pay a coach: payment records, fee statements, strikes and the screenshots you send as proof (section 3.18)</dd></div>
             <div><dt>Where</dt><dd>Frankfurt, Germany (europe-west3)</dd></div>
           </dl>
         </li>
@@ -945,6 +989,13 @@
           <dl>
             <div><dt>Handles</dt><dd>The meal photo, during the estimate only (section 3.12)</dd></div>
             <div><dt>Where</dt><dd>Frankfurt, Germany (europe-west3)</dd></div>
+          </dl>
+        </li>
+        <li>
+          <h3>Firebase Cloud Messaging (Google) and the Apple Push Notification service (APNs)</h3>
+          <dl>
+            <div><dt>Handles</dt><dd>A device token for your phone and the one general line of each notification our server sends (sections 3.11 and 3.18). A notification never carries a message, a name or an amount</dd></div>
+            <div><dt>Where</dt><dd>Google data centres worldwide, which include the United States, and Apple servers</dd></div>
           </dl>
         </li>
         <li>
@@ -1010,6 +1061,13 @@
             <div><dt>Where</dt><dd>Cloudflare&#x27;s global network of data centres, which includes the United States</dd></div>
           </dl>
         </li>
+        <li>
+          <h3>Cloudflare Pages (Cloudflare, Inc.), for the Own Hub team&rsquo;s review dashboard</h3>
+          <dl>
+            <div><dt>Handles</dt><dd>The dashboard&rsquo;s pages and the standard request data of the people at Own Hub who open it. The cases it shows are read from our server in Frankfurt</dd></div>
+            <div><dt>Where</dt><dd>Cloudflare&rsquo;s global network of data centres, which includes the United States</dd></div>
+          </dl>
+        </li>
       </ul>
         <p>We may also disclose data where Egyptian law requires it, for
         example in answer to a lawful order from a court or a competent
@@ -1025,13 +1083,18 @@
           and meals, any health backup, your verification, any meal photo you
           choose to analyse (and the 30-day repeat answer from it), any dish you
           choose to share, your event seats, and, if you apply to coach, your
-          application and portfolio, and, if you join a coach, your form and chat.</li>
+          application and portfolio, and, if you join a coach, your form and
+          chat, and, if you pay a coach, your payment records and the
+          screenshots you send as proof (read in the European Union by Google
+          Cloud Vision).</li>
           <li><b>The United States:</b> your phone number, for sign-in; and, if
           you allow usage statistics, what PostHog receives (section 3.7).</li>
           <li><b>Google data centres worldwide, which include the United
-          States:</b> the device checks, ML Kit performance data, crash reports
-          if you allow them, and usage statistics if you allow them. Google
-          does not let us choose one country for these.</li>
+          States:</b> the device checks, ML Kit performance data, the delivery
+          of push notifications (Firebase Cloud Messaging, and Apple servers
+          for an iPhone), crash reports if you allow them, and usage statistics
+          if you allow them. Google does not let us choose one country for
+          these.</li>
         </ul>
         <p>Egypt&rsquo;s Personal Data Protection Law No. 151 of 2020 allows
         transfers abroad only under a permit from the Personal Data Protection
@@ -1043,7 +1106,7 @@
         the data goes outside Egypt, including to the United States. Nothing
         is sent before you turn it on.</p>
         <p>Permit: Not yet issued. We will publish the permit number and its expiry date here as soon as the Personal Data Protection Centre issues it.</p>
-        <p>Safeguards: Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, Firebase Crashlytics if you allow it, and Google Analytics for Firebase if you allow it. Google does not let us choose one country for these. Also outside Egypt: Zoho Mail keeps the emails you send to info@own-hub.app or support@own-hub.app in Zoho data centres, and Cloudflare serves this website from its global network, which includes the United States. Each transfer needs your consent, which we ask for before it happens, and our transfer permit from the Personal Data Protection Centre. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.</p>
+        <p>Safeguards: Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, Firebase Cloud Messaging for push notifications, Firebase Crashlytics if you allow it, and Google Analytics for Firebase if you allow it. Google does not let us choose one country for these. Also outside Egypt: Apple servers deliver push notifications to an iPhone, Zoho Mail keeps the emails you send to info@own-hub.app or support@own-hub.app in Zoho data centres, and Cloudflare serves this website and the Own Hub team&#x27;s review dashboard from its global network, which includes the United States. Each transfer needs your consent, which we ask for before it happens, and a transfer permit from the Personal Data Protection Centre. That permit has not been issued yet, and we will tell you when it is. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.</p>
 
       <h2 id="retention">6. How long we keep it<a class="anchor" href="#retention" aria-label="Link to this section">#</a></h2>
       <dl class="kv">
@@ -1073,7 +1136,8 @@
         <div><dt>How you were approved (the route, the reviewer and the date), and the reviewer you said you know</dt><dd>Until you delete your account</dd></div>
         <div><dt>A time you booked for a review call (reviewer, time, when booked)</dt><dd>Until you are approved or delete your account, and at most 30 days after the booked time, then deleted automatically</dd></div>
         <div><dt>A phone number on the pre-approved list (section 3.4)</dt><dd>Until it is used when that number signs in, or a reviewer removes it. It is also removed if the approval is revoked or the account with that number is deleted.</dd></div>
-        <div><dt>Your account, settings, training, meals, any health backup and your consent records</dt><dd>Until you delete them or delete your account</dd></div>
+        <div><dt>Your account, settings, training, meals and any health backup</dt><dd>Until you delete them or delete your account</dd></div>
+        <div><dt>Your consent records (section 3.2)</dt><dd>While your account exists. They are deleted with your account.</dd></div>
         <div><dt>The record that a deletion was carried out (status and dates only)</dt><dd>3 years, as proof that your request was honoured</dd></div>
         <div><dt>Daily totals of verifications, with no link to any person</dt><dd>Kept</dd></div>
         <div><dt>Our server logs</dt><dd>30 days</dd></div>
@@ -1082,9 +1146,10 @@
         <div><dt>Usage statistics sent to PostHog, if you allow them</dt><dd>Kept by PostHog under its retention settings, which on its free plan are one year for milestones and 14 days for the technical line. Not linked to your account, so turning statistics off or deleting your account does not remove what PostHog already received.</dd></div>
         <div><dt>Messages you send us</dt><dd>1 year</dd></div>
         <div><dt>Waitlist contact</dt><dd>180 days at most. The proof that you agreed is kept for 3 years after the last message we send you (section 3.10).</dd></div>
-        <div><dt>Payment records (amount, reference, transaction number, status, steps, notes, and a coach's fee statements)</dt><dd>For the period the law requires. When you delete your account the record is kept without your name for that period, then deleted (section 3.18).</dd></div>
-        <div><dt>Payment screenshots and the text read from them</dt><dd>Deleted 90 days after the payment is settled or its dispute is closed. A screenshot is deleted with your account at once.</dd></div>
-        <div><dt>Strikes</dt><dd>For 90 days from the decision for the two-strike rule; the decision itself stays with the payment record.</dd></div>
+        <div><dt>Payment records (amount, reference, transaction number, status, steps, notes), a coach's fee statements and strike records</dt><dd>5 years. When you delete your account the record stays, with your account identifier replaced by a random code and the names you typed removed, and the words you or the coach wrote in a dispute deleted. Nothing deletes a record automatically when the 5 years end yet (section 3.18).</dd></div>
+        <div><dt>Payment screenshots</dt><dd>Deleted 90 days after the payment is settled or the dispute about it is closed, and at once with your account. A payment whose refund was refused, with no later dispute, is not covered by that clean-up yet: its pictures stay until you delete your account. The text read from a picture is never stored.</dd></div>
+        <div><dt>The results of the receipt checks, the fingerprints of the pictures and the transaction numbers read from them</dt><dd>Kept with the payment record, and not removed when you delete your account. They hold no picture and no name: they are tied to the random code, not to you (section 3.18).</dd></div>
+        <div><dt>Strikes</dt><dd>Counted for 90 days for the two-strike rule. The strike record stays with the payment record (5 years, as above).</dd></div>
         <div><dt>Backups held by Google</dt><dd>Removed within about 6 months (180 days) of deletion</dd></div>
       </dl>
 
@@ -1117,6 +1182,12 @@
           <li>reports you made or that are about you, as section 3.17
           describes (the copy of what was reported is deleted if you made the
           report, and kept without your name if it is about you);</li>
+          <li>payment records, a coach&rsquo;s fee statements and strike
+          records, if you paid a coach or a member paid you, for 5 years, with
+          your account identifier replaced by a random code, together with the
+          results of the receipt checks, the fingerprints of the pictures and
+          the transaction numbers (sections 3.18 and 6). Your payment
+          screenshots are deleted at once;</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
         <p>If you joined a coach, deleting everything also deletes the
@@ -1164,9 +1235,12 @@
         </ul>
         <p><b>Response time:</b> we answer every request within
         6 working days. Requests are free.</p>
-        <p><b>Complaints:</b> if you are not satisfied with our answer, you can
-        complain to Egypt&rsquo;s Personal Data Protection Centre:
-        Website portal.pdpc.gov.eg · email info@pdpc.gov.eg · hotline 17372.</p>
+        <p><b>Complaints:</b> if you have a complaint about Own Hub, a payment
+        decision or the way we handled your data, write to
+        <a href="mailto:support@own-hub.app">support@own-hub.app</a> or <a href="mailto:info@own-hub.app">info@own-hub.app</a>. We answer
+        within 6 working days. If you are not satisfied with our
+        answer about your data, you can complain to Egypt&rsquo;s Personal Data
+        Protection Centre: Website portal.pdpc.gov.eg · email info@pdpc.gov.eg · hotline 17372.</p>
 
       <h2 id="security">9. Security<a class="anchor" href="#security" aria-label="Link to this section">#</a></h2>
         <ul>
@@ -1239,6 +1313,15 @@
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>28 October 2026, payments, corrected:</b> section 3.18 now
+          says exactly how paying a coach works: what the checks do and when
+          they confirm or send a payment to a person, how refunds, service
+          problems and strikes work, and that there is no step to reply before
+          a pause and no appeal procedure. It names the 5-year period for
+          payment records and what stays after you delete your account.
+          Sections 3.2, 4, 5, 6, 7 and 8 and the deletion page now name push
+          notification services, the team&rsquo;s review dashboard, consent
+          records and the complaint route.</li>
           <li><b>28 October 2026, InBody sheets:</b> sections 3.6 and 3.16 now describe reading an InBody result sheet on your phone and, only if you tick a separate box, sending the numbers you confirm with a request to join a coach. The picture is never uploaded or kept. The summary and section 3.16 say that the numbers are stored with your other answers, deleted with the coaching and included in your export.</li>
           <li><b>27 October 2026, paying a coach:</b> section 3.18 is new and
           describes paying a coach by InstaPay: what is kept about a payment,

@@ -108,8 +108,8 @@
     },
     "dataProtectionOfficer": {
       "value": {
-        "en": "Mahmoud Reda acts as data protection officer himself, as the law requires of an individual who holds a permit. Contact: info@own-hub.app",
-        "ar": "محمود رضا بنفسه هو مسؤول حماية البيانات، زي ما القانون بيشترط على الشخص الطبيعي اللي معاه تصريح. للتواصل: info@own-hub.app"
+        "en": "Mahmoud Reda acts as data protection officer himself. Contact: info@own-hub.app",
+        "ar": "محمود رضا بنفسه هو مسؤول حماية البيانات. للتواصل: info@own-hub.app"
       },
       "label": {
         "en": "data protection officer",
@@ -154,7 +154,7 @@
     "liabilityCap": {
       "value": {
         "en": "the amount of damage Egyptian law obliges us to make good. Because Own Hub is free, we set no other cap",
-        "ar": "مقدار الضرر اللي القانون المصري بيلزمنا نعوّضه. ولأن Own Hub مجاني، مبنحطش أي حد تاني"
+        "ar": "مقدار الضرر اللي القانون المصري بيلزمنا نعوّضه. ولأن Own Hub مجانية، مبنحطش أي حد تاني"
       },
       "label": {
         "en": "the cap on liability",
@@ -183,8 +183,8 @@
     },
     "transferCountries": {
       "value": {
-        "en": "Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, Firebase Crashlytics if you allow it, and Google Analytics for Firebase if you allow it. Google does not let us choose one country for these. Also outside Egypt: Zoho Mail keeps the emails you send to info@own-hub.app or support@own-hub.app in Zoho data centres, and Cloudflare serves this website from its global network, which includes the United States. Each transfer needs your consent, which we ask for before it happens, and our transfer permit from the Personal Data Protection Centre. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.",
-        "ar": "ألمانيا والاتحاد الأوروبي: خدمات Google Cloud في فرانكفورت (europe-west3)، ونقطة الاتصال الأوروبية لخدمة Cloud Vision، واللي Google بتخزّن فيها البيانات وبتعالجها جوه الاتحاد الأوروبي بس. الولايات المتحدة: خدمة Firebase Authentication، اللي Google بتشغّلها من مراكز بيانات أمريكية بس. مراكز بيانات Google حوالين العالم، ومنها الولايات المتحدة: Firebase App Check، وبيانات الأداء الخاصة بـ Google ML Kit، وFirebase Crashlytics لو سمحتي بيها، وGoogle Analytics for Firebase لو سمحتي بيها، وGoogle مش بتتيح اختيار دولة واحدة للخدمات دي. وبرّه مصر كمان: Zoho Mail بيحفظ الرسايل اللي بتبعتيها لـ info@own-hub.app أو support@own-hub.app في مراكز بيانات Zoho، وCloudflare بتقدّم الموقع ده من شبكتها العالمية، ومنها الولايات المتحدة. مفيش أي نقل بيحصل إلا بموافقتك اللي بنطلبها قبل ما يحصل، وبموجب تصريح النقل اللي مركز حماية البيانات الشخصية أصدره لنا. وGoogle بتعالج البيانات حسب تعليماتنا بس بموجب شروط معالجة البيانات عندها، وبتشفّرها وقت النقل والتخزين، ومش مسموح لها تستخدمها في تدريب نماذج الذكاء الاصطناعي. والمركز لسه ماصدرش قايمة بالدول اللي بيعتبرها بتوفر مستوى حماية كافي."
+        "en": "Germany and the European Union: Google Cloud in Frankfurt (europe-west3) and the Cloud Vision EU endpoint, where Google stores and processes data only in the EU. The United States: Firebase Authentication, which Google runs only from US data centres. Google data centres worldwide, which include the United States: Firebase App Check, Google ML Kit performance data, Firebase Cloud Messaging for push notifications, Firebase Crashlytics if you allow it, and Google Analytics for Firebase if you allow it. Google does not let us choose one country for these. Also outside Egypt: Apple servers deliver push notifications to an iPhone, Zoho Mail keeps the emails you send to info@own-hub.app or support@own-hub.app in Zoho data centres, and Cloudflare serves this website and the Own Hub team's review dashboard from its global network, which includes the United States. Each transfer needs your consent, which we ask for before it happens, and a transfer permit from the Personal Data Protection Centre. That permit has not been issued yet, and we will tell you when it is. Google acts only on our instructions under its data processing terms, encrypts the data in transit and at rest, and may not use it to train AI models. The Centre has not yet published a list of countries it considers adequate.",
+        "ar": "ألمانيا والاتحاد الأوروبي: خدمات Google Cloud في فرانكفورت (europe-west3)، ونقطة الاتصال الأوروبية لخدمة Cloud Vision، واللي Google بتخزّن فيها البيانات وبتعالجها جوه الاتحاد الأوروبي بس. الولايات المتحدة: خدمة Firebase Authentication، اللي Google بتشغّلها من مراكز بيانات أمريكية بس. مراكز بيانات Google حوالين العالم، ومنها الولايات المتحدة: Firebase App Check، وبيانات الأداء الخاصة بـ Google ML Kit، وFirebase Cloud Messaging للإشعارات، وFirebase Crashlytics لو سمحتي بيها، وGoogle Analytics for Firebase لو سمحتي بيها، وGoogle مش بتتيح اختيار دولة واحدة للخدمات دي. وبرّه مصر كمان: سيرفرات Apple بتوصّل الإشعارات للآيفون، وZoho Mail بيحفظ الرسايل اللي بتبعتيها لـ info@own-hub.app أو support@own-hub.app في مراكز بيانات Zoho، وCloudflare بتقدّم الموقع ده ولوحة مراجعة فريق Own Hub من شبكتها العالمية، ومنها الولايات المتحدة. أي نقل محتاج موافقتك اللي بنطلبها قبل ما يحصل، ومحتاج كمان تصريح نقل من مركز حماية البيانات الشخصية. والتصريح ده لسه ماصدرش، وهنقولك لما يصدر. وGoogle بتعالج البيانات حسب تعليماتنا بس بموجب شروط معالجة البيانات عندها، وبتشفّرها وقت النقل والتخزين، ومش مسموح لها تستخدمها في تدريب نماذج الذكاء الاصطناعي. والمركز لسه ماصدرش قايمة بالدول اللي بيعتبرها بتوفر مستوى حماية كافي."
       },
       "label": {
         "en": "the countries data would reach, and the transfer mechanism",

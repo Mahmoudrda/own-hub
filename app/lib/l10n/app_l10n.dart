@@ -28411,6 +28411,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'A light tap you can feel at the same moments.'**
   String get aLightTapYouCanFeelAt;
+
+  /// The Your data sheet, what a deletion keeps on purpose. years is the payment-record period (functions/payments/retention.py RECORD_RETENTION_YEARS) and days is the failed-attempt period; both come from constants next to the sheet, never from the dictionary.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, a record that the deletion happened, and, if you paid a coach or a member paid you, the payment records, fee statements and strike records for {years} years, with your account replaced by a random code. Check attempts that did not pass and a scrambled code for this installation, linked to no account, are deleted {days} days after the last attempt, and the log of which reviewer opened your case after one year.'**
+  String deletingYourAccountRemovesItFromOur_6oxgn(String years, String days);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

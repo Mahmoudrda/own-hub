@@ -148,7 +148,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         eyebrow = "Opening soon, for women in Egypt"
         hero_cta = """
           <div class="offer" id="download">
-            <p class="offer-t"><b>Free, all of it.</b>
+            <p class="offer-t"><b>The app is free.</b>
             The first 100 women on the list try Own Hub before it opens to
             everyone.</p>
             <div class="form-card">""" + FORM + """
@@ -201,9 +201,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><figure>""" + shot(lang, "06-progress", "Her progress card: workouts done, meals added and personal bests, ready to share. Her weight is on it only if she adds it.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Progress.</b> One card with everything you&rsquo;ve done. Share it if you like.</figcaption></figure></li>
           <li><figure>""" + shot(lang, "07-tour-dinners", "A week of dinners: five sample dinners, planned for you.", sizes="(min-width: 62rem) 280px, 200px") + """<figcaption><b>Eat.</b> A week of dinners planned for you, gentler on harder days.</figcaption></figure></li>
         </ul>
-        <p class="small">Coaching with Own Hub-reviewed coaches is available, free for
-        now. This version has no community or assistant, and nothing in the app
-        connects you to another member except a coach you choose.</p>
+        <p class="small">Coaching with Own Hub-reviewed coaches is available.
+        Asking to join is free; a coach may charge for her own package, which
+        you pay her directly. This version has no community or assistant, and
+        nothing in the app connects you to another member except a coach you
+        choose.</p>
       </div>
     </section>
 
@@ -339,11 +341,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             are stored on our server in Frankfurt, readable by the two of you.
             Own Hub&rsquo;s team reads a chat only after one of you reports it
             (sections 3.16 and 3.17).</li>
-            <li><b>If you pay a coach, you pay her directly by InstaPay.</b>
-            Own Hub never holds or moves the money. We keep a record of each
-            payment, the transaction number you give and the screenshots you
-            send, so your coach can confirm it and our team can decide a
-            dispute (section 3.18).</li>
+            <li><b>If you pay a coach, you pay her directly by InstaPay, from
+            your own bank app.</b> Own Hub never holds, routes, initiates or
+            accesses that money. We keep a record of each payment, the
+            transaction number you give and the screenshots you send, so your
+            coach can confirm it and our team can decide a dispute (section
+            3.18).</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -413,8 +416,13 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         <p>When you sign up, we record which versions of the Terms of Use and
         this policy you accepted, in which language, from which app version,
         and when. We keep a similar record for each separate consent you give:
-        the identity check, health backup and a review by a woman.</p>
+        the identity check, health backup, a review by a woman, a meal photo,
+        usage statistics, crash reports, the Coach Terms when you apply to
+        coach, and the form you send when you ask to join a coach (with your
+        InBody numbers, if you choose to send them).</p>
         <ul>
+          <li><b>How long:</b> a consent record is kept while your account
+          exists and is deleted with it (sections 6 and 7).</li>
           <li><b>Basis:</b> a legal obligation. The Executive Regulations of the
           Personal Data Protection Law require us to keep a record of each
           consent, with its date and form.</li>
@@ -1050,11 +1058,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 
 """ + h3("c-pay", "3.18 Paying a coach by InstaPay") + """
         <p>This applies only if you pay a coach, or you are a coach and a
-        member pays you. <b>Own Hub never holds, receives or moves the money.</b>
-        The member sends it by InstaPay, from her bank app, to the coach&rsquo;s
-        own InstaPay address. Own Hub shows who to pay and how much, records
-        the payment, asks the coach to confirm that it arrived, and decides a
-        dispute if there is one.</p>
+        member pays you. <b>Own Hub never holds, routes, initiates or accesses
+        the money between a member and her coach.</b> The member pays from her
+        own bank app, by InstaPay, to the coach&rsquo;s own InstaPay address.
+        Own Hub shows who to pay and how much, records the payment, asks the
+        coach to confirm that it arrived, and a person at Own Hub decides a
+        dispute if there is one. The coach is the seller of the coaching and
+        is responsible for her service and for refunds. Own Hub is not a bank
+        or a payment provider. Separately, a coach pays Own Hub&rsquo;s own
+        monthly fee to Own Hub by InstaPay.</p>
         <ul>
           <li><b>What we keep about a payment.</b> The member and the coach, by
           account identifier; the package; the amount, which has a few extra
@@ -1069,23 +1081,35 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           You can hide lines (card numbers, balances) and crop before anything
           is sent: only that copy leaves your phone, never the original. Our
           server stores the copy privately, reads it again with Google Cloud
-          Vision in the European Union, keeps the text fields it found, and
-          keeps a fingerprint of the picture so that the same picture cannot be
-          used twice.</li>
+          Vision in the European Union, and keeps a fingerprint of the picture
+          so that the same picture cannot be used twice. The text it reads is
+          used for the checks and is not stored. What stays is the result of
+          each check, the transaction number, the fingerprints, and the short
+          reading your phone sent (whether it saw the amount, the recipient and
+          a success message, the transaction number, and your own InstaPay
+          address if you gave it).</li>
           <li><b>Checks.</b> To limit fraud, the app on your phone and then our
           server compare what your proof shows with the payment: the amount,
           who was paid, whether the bank says it succeeded, the time, whether
           the transaction number or the picture was used before, and signs that
-          the picture was edited. The result only decides whether short access
-          to the coaching starts while the coach checks her bank. It does not
-          prove a payment. When something does not match, a person at Own Hub
-          decides, with a written reason. When a coach says a payment did not
-          arrive, the bank list she attaches is checked the same way.</li>
+          the picture was edited. A check never proves a payment, and it has
+          three effects. A red result sends the payment to a person at Own Hub.
+          A green result gives short access to the coaching while the coach
+          checks her bank; it confirms the payment without the coach only if
+          the coach turned on automatic confirming and Own Hub allowed it,
+          which is off by default. An amber result gives short access after 24
+          hours if nobody has objected. When something does not match, a person
+          at Own Hub decides, with a written reason. When a coach says a
+          payment did not arrive, the bank list she attaches is checked the
+          same way, and a claim that her own list contradicts, because it shows
+          the exact amount or the transaction number, is rejected
+          automatically. These are automated decisions. If you want a person to
+          look at one again, write to {{mailto:contactSupport}}.</li>
           <li><b>Who sees it.</b> The member and her coach. Own Hub&rsquo;s team
           opens a payment when it is in dispute or flagged, and looks at a
           coach&rsquo;s first few payments, her address changes and her fee
-          statements to keep payments safe. A woman reviews any case that holds
-          a woman&rsquo;s private data. Another coach
+          statements to keep payments safe. Only a woman reviewer opens or
+          decides a payment dispute. Another coach
           never sees it. A coach does not see your phone number. Your own
           InstaPay address, if you use one, is shown on the receipt your bank
           makes, so we suggest an address with an @ rather than your phone
@@ -1099,19 +1123,41 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           members safe and the service working, which the law allows (Law
           151/2020, Article 6, point 4).</li>
           <li><b>Refunds and disputes.</b> A member can ask for a refund once
-          in the first 14 days. The request, the coach&rsquo;s answer, and the
-          notes and decision in any dispute are kept with the payment.</li>
+          for a payment, in the app, within 14 days of when her access began
+          (when the coach confirmed the payment, or Own Hub decided it). The
+          coach has 3 days to answer. She can send the money back by InstaPay
+          and record it, or decline and give a reason. If she declines, the
+          member can ask Own Hub to decide. If the coach is silent for 3 days,
+          the request goes to Own Hub to decide. Own Hub does not send refund
+          money: the coach does. A person at Own Hub decides, with a written
+          reason, and can decide that a refund is owed. A member can also open
+          a service problem, up to 14 days after her package ended, at most
+          three a month. The request, the coach&rsquo;s answer, the notes and
+          the decision are kept with the payment.</li>
           <li><b>If you are a coach.</b> Your InstaPay address and account name,
           your payments and your monthly fee statement (what you owe Own Hub,
-          and when you say you paid it) are kept. A new address takes effect
-          after 24 hours, and the members with a payment waiting are told.</li>
+          and when you say you paid it) are kept. You pay Own Hub&rsquo;s fee
+          to Own Hub by InstaPay; it is the only money you pay Own Hub, and
+          Own Hub never touches the member&rsquo;s payment to you. A new
+          address takes effect after 24 hours, and the members with a payment
+          waiting are told.</li>
           <li><b>Not in statistics.</b> No amount, reference, transaction number
           or screenshot is ever sent to usage statistics or crash reports.</li>
-          <li><b>Strikes.</b> A payment proof that staff find false is recorded
-          as a strike on the account, and so is a false claim by a coach that
-          she was not paid. Two strikes in 90 days remove the ability to pay or
-          to take payments by this method. A decision is made by a person, with a
-          written reason.</li>
+          <li><b>Strikes.</b> A member gets a strike when a person at Own Hub
+          decides, with a written reason, that a payment proof she sent was
+          false. A coach gets a strike when a person at Own Hub decides that a
+          payment she said had not arrived was paid. A claim that the
+          coach&rsquo;s own bank list contradicts is refused automatically and
+          is not a strike. Two strikes within 90 days pause paying by InstaPay
+          on a member&rsquo;s account at once, and she is told by a
+          notification afterwards (if she allowed payment alerts). For a coach,
+          two strikes flag her account, and two people at Own Hub must agree
+          before she can no longer take new payments. A coach whose lost
+          disputes are currently 10 percent or more of at least 10 payments is
+          flagged in the same way. There is no step to reply before a pause,
+          and no appeal procedure. You can write to
+          {{mailto:contactSupport}} and ask a person to look at a decision
+          again, and a second member of the team can reopen it.</li>
           <li><b>InstaPay and your bank</b> handle the transfer under their own
           terms. Own Hub cannot undo a transfer. If you sent money to the wrong
           account, contact your bank at once.</li>
@@ -1144,7 +1190,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                             "form, any InBody numbers you add, chat, live "
                             "session records and shared "
                             "plans (section 3.16). Reports and blocks "
-                            "(section 3.17)"),
+                            "(section 3.17). If you pay a coach: payment "
+                            "records, fee statements, strikes and the "
+                            "screenshots you send as proof (section 3.18)"),
                 ("Where", "Frankfurt, Germany (europe-west3)"),
             ]),
             ("Google Cloud Vision", [
@@ -1157,6 +1205,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                 ("Handles", "The meal photo, during the estimate only "
                             "(section 3.12)"),
                 ("Where", "Frankfurt, Germany (europe-west3)"),
+            ]),
+            ("Firebase Cloud Messaging (Google) and the Apple Push Notification service (APNs)", [
+                ("Handles", "A device token for your phone and the one general "
+                            "line of each notification our server sends "
+                            "(sections 3.11 and 3.18). A notification never "
+                            "carries a message, a name or an amount"),
+                ("Where", "Google data centres worldwide, which include the "
+                          "United States, and Apple servers"),
             ]),
             ("Google Play Integrity, Apple App Attest, reCAPTCHA, Firebase App Check", [
                 ("Handles", "Confirmation that the app and the device are genuine"),
@@ -1203,6 +1259,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                 ("Handles", "Standard website request data"),
                 ("Where", "{{hostingProviderRegion}}"),
             ]),
+            ("Cloudflare Pages (Cloudflare, Inc.), for the Own Hub team&rsquo;s review dashboard", [
+                ("Handles", "The dashboard&rsquo;s pages and the standard request "
+                            "data of the people at Own Hub who open it. The "
+                            "cases it shows are read from our server in "
+                            "Frankfurt"),
+                ("Where", "Cloudflare&rsquo;s global network of data centres, "
+                          "which includes the United States"),
+            ]),
         ]) + """
         <p>We may also disclose data where Egyptian law requires it, for
         example in answer to a lawful order from a court or a competent
@@ -1218,13 +1282,18 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           and meals, any health backup, your verification, any meal photo you
           choose to analyse (and the 30-day repeat answer from it), any dish you
           choose to share, your event seats, and, if you apply to coach, your
-          application and portfolio, and, if you join a coach, your form and chat.</li>
+          application and portfolio, and, if you join a coach, your form and
+          chat, and, if you pay a coach, your payment records and the
+          screenshots you send as proof (read in the European Union by Google
+          Cloud Vision).</li>
           <li><b>The United States:</b> your phone number, for sign-in; and, if
           you allow usage statistics, what PostHog receives (section 3.7).</li>
           <li><b>Google data centres worldwide, which include the United
-          States:</b> the device checks, ML Kit performance data, crash reports
-          if you allow them, and usage statistics if you allow them. Google
-          does not let us choose one country for these.</li>
+          States:</b> the device checks, ML Kit performance data, the delivery
+          of push notifications (Firebase Cloud Messaging, and Apple servers
+          for an iPhone), crash reports if you allow them, and usage statistics
+          if you allow them. Google does not let us choose one country for
+          these.</li>
         </ul>
         <p>Egypt&rsquo;s Personal Data Protection Law No. 151 of 2020 allows
         transfers abroad only under a permit from the Personal Data Protection
@@ -1296,8 +1365,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
              "Until you are approved or delete your account, and at most 30 days after the booked time, then deleted automatically"),
             ("A phone number on the pre-approved list (section 3.4)",
              "Until it is used when that number signs in, or a reviewer removes it. It is also removed if the approval is revoked or the account with that number is deleted."),
-            ("Your account, settings, training, meals, any health backup and your consent records",
+            ("Your account, settings, training, meals and any health backup",
              "Until you delete them or delete your account"),
+            ("Your consent records (section 3.2)",
+             "While your account exists. They are deleted with your account."),
             ("The record that a deletion was carried out (status and dates only)",
              "{{deletionRecordRetention}}, as proof that your request was honoured"),
             ("Daily totals of verifications, with no link to any person", "Kept"),
@@ -1318,11 +1389,13 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("Waitlist contact",
              "180 days at most. The proof that you agreed is kept for 3 years "
              "after the last message we send you (section 3.10)."),
-            ("Payment records (amount, reference, transaction number, status, steps, notes, and a coach's fee statements)",
-             "For the period the law requires. When you delete your account the record is kept without your name for that period, then deleted (section 3.18)."),
-            ("Payment screenshots and the text read from them",
-             "Deleted 90 days after the payment is settled or its dispute is closed. A screenshot is deleted with your account at once."),
-            ("Strikes", "For 90 days from the decision for the two-strike rule; the decision itself stays with the payment record."),
+            ("Payment records (amount, reference, transaction number, status, steps, notes), a coach's fee statements and strike records",
+             "5 years. When you delete your account the record stays, with your account identifier replaced by a random code and the names you typed removed, and the words you or the coach wrote in a dispute deleted. Nothing deletes a record automatically when the 5 years end yet (section 3.18)."),
+            ("Payment screenshots",
+             "Deleted 90 days after the payment is settled or the dispute about it is closed, and at once with your account. A payment whose refund was refused, with no later dispute, is not covered by that clean-up yet: its pictures stay until you delete your account. The text read from a picture is never stored."),
+            ("The results of the receipt checks, the fingerprints of the pictures and the transaction numbers read from them",
+             "Kept with the payment record, and not removed when you delete your account. They hold no picture and no name: they are tied to the random code, not to you (section 3.18)."),
+            ("Strikes", "Counted for 90 days for the two-strike rule. The strike record stays with the payment record (5 years, as above)."),
             ("Backups held by Google", "Removed within about 6 months (180 days) of deletion"),
         ]) + """
 
@@ -1355,6 +1428,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>reports you made or that are about you, as section 3.17
           describes (the copy of what was reported is deleted if you made the
           report, and kept without your name if it is about you);</li>
+          <li>payment records, a coach&rsquo;s fee statements and strike
+          records, if you paid a coach or a member paid you, for 5 years, with
+          your account identifier replaced by a random code, together with the
+          results of the receipt checks, the fingerprints of the pictures and
+          the transaction numbers (sections 3.18 and 6). Your payment
+          screenshots are deleted at once;</li>
           <li>the record that the deletion was carried out.</li>
         </ul>
         <p>If you joined a coach, deleting everything also deletes the
@@ -1402,9 +1481,12 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p><b>Response time:</b> we answer every request within
         {{rightsResponseWindow}}. Requests are free.</p>
-        <p><b>Complaints:</b> if you are not satisfied with our answer, you can
-        complain to Egypt&rsquo;s Personal Data Protection Centre:
-        {{pdpcContact}}</p>
+        <p><b>Complaints:</b> if you have a complaint about Own Hub, a payment
+        decision or the way we handled your data, write to
+        {{mailto:contactSupport}} or {{mailto:contactPrivacy}}. We answer
+        within {{rightsResponseWindow}}. If you are not satisfied with our
+        answer about your data, you can complain to Egypt&rsquo;s Personal Data
+        Protection Centre: {{pdpcContact}}</p>
 
 """ + h2("security", "9. Security") + """
         <ul>
@@ -1477,6 +1559,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>28 October 2026, payments, corrected:</b> section 3.18 now
+          says exactly how paying a coach works: what the checks do and when
+          they confirm or send a payment to a person, how refunds, service
+          problems and strikes work, and that there is no step to reply before
+          a pause and no appeal procedure. It names the 5-year period for
+          payment records and what stays after you delete your account.
+          Sections 3.2, 4, 5, 6, 7 and 8 and the deletion page now name push
+          notification services, the team&rsquo;s review dashboard, consent
+          records and the complaint route.</li>
           <li><b>28 October 2026, InBody sheets:</b> sections 3.6 and 3.16 now describe reading an InBody result sheet on your phone and, only if you tick a separate box, sending the numbers you confirm with a request to join a coach. The picture is never uploaded or kept. The summary and section 3.16 say that the numbers are stored with your other answers, deleted with the coaching and included in your export.</li>
           <li><b>27 October 2026, paying a coach:</b> section 3.18 is new and
           describes paying a coach by InstaPay: what is kept about a payment,
@@ -1746,7 +1837,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>sexual or hateful content;</li>
           <li>sharing anyone else&rsquo;s photos or personal data without her
           consent;</li>
-          <li>asking anyone to pay, or offering to pay, outside the app.</li>
+          <li>asking or offering to move a coaching or a payment away from Own
+          Hub to avoid its rules. (A payment made through the app&rsquo;s
+          InstaPay steps is how coaching is paid for, and is not this.)</li>
         </ul>
         <p>Own Hub can remove such content and suspend or close an account that
         does any of this, as section 12 describes. Every coaching chat has
@@ -1773,17 +1866,61 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li><b>Live sessions</b> open in the video service the coach chooses
           (Google Meet, Zoom or Microsoft Teams), outside the app, under that
           service&rsquo;s own terms.</li>
+          <li><b>Own Hub&rsquo;s position.</b> Own Hub is not a bank or a
+          payment provider, and it is not a party to the coaching agreement
+          between you and your coach. Your coach is an independent supplier,
+          and she is responsible for her own service and for refunds. Own Hub
+          does not promise results and does not give medical advice
+          (section 4).</li>
           <li><b>Paying a coach.</b> Asking to join is free. If your coach
           accepts you and charges for her package, you pay her directly by
-          InstaPay from your bank app. Own Hub never holds the money: it shows
-          you who to pay and how much, records the payment, asks the coach to
-          confirm it and helps decide a dispute. Check that the name your bank
-          shows is your coach&rsquo;s before you send: Own Hub cannot undo an
-          InstaPay transfer, and no check can prove a payment. You can ask for
-          a refund once in the first 14 days. Sending a false proof is a breach
-          of these Terms: it is recorded, and two proven false proofs in 90 days
-          end your ability to pay this way. The Privacy Policy, section 3.18,
-          says what is kept.</li>
+          InstaPay from your own bank app. Own Hub never holds, routes,
+          initiates or accesses the money: it shows you who to pay and how
+          much, records the payment, asks the coach to confirm it, and a person
+          at Own Hub decides a dispute. Check that the name your bank shows is
+          your coach&rsquo;s before you send: Own Hub cannot undo an InstaPay
+          transfer, and no check can prove a payment. The payment record you
+          can download is not a tax invoice.</li>
+          <li><b>Short access.</b> While your proof is checked, you may be given
+          short access to the coaching: at most 7 days, or the length of the
+          package if that is shorter. It ends when it runs out if the payment
+          has still not been confirmed.</li>
+          <li><b>False proofs.</b> Sending a false proof is a breach of these
+          Terms. When a person at Own Hub decides, with a written reason, that
+          a proof was false, it is recorded as a strike. Two strikes within 90
+          days pause paying by InstaPay on your account at once. You are told by
+          a notification afterwards. There is no step to reply before the
+          pause, and no appeal procedure. You can write to
+          {{mailto:contactSupport}} and ask a person to look at a decision
+          again, and a second member of the team can reopen it.</li>
+          <li><b>Refunds.</b> You can ask for a refund in the app, once for a
+          payment, within 14 days of when your access began (when your coach
+          confirmed the payment, or Own Hub decided it). Your coach has 3 days
+          to answer. She can send the money back by InstaPay and record it, or
+          decline and give a reason. If she declines, you can ask Own Hub to
+          decide. If she is silent for 3 days, the request goes to Own Hub to
+          decide. A person at Own Hub decides, with a written reason, and can
+          decide that a refund is owed. Own Hub does not send refund money: the
+          coach does. Nothing in these Terms reduces a right the Consumer
+          Protection Law gives you (section 15).</li>
+          <li><b>Service problems.</b> If your coach does not deliver, you can
+          open a service problem in the app, up to 14 days after your package
+          ended, at most three a month. A person at Own Hub decides, from how
+          many sessions were used and how many the package included, and from
+          the note you write. Own Hub does not read your coaching chat for
+          this: the Privacy Policy, section 3.16, says when staff read a
+          chat.</li>
+          <li><b>What the labels mean.</b> A coach shown as &ldquo;Verified
+          coach&rdquo; with &ldquo;Certificates checked&rdquo; has been
+          approved by a woman reviewer at Own Hub, who read her application and
+          opened the certificates she marked as checked, to see that each is
+          readable and belongs to the coach. That is a look at the documents
+          the coach uploaded, and the label is not a promise of any result.
+          &ldquo;Checked by Own Hub&rdquo; on a recipe means that Own
+          Hub&rsquo;s automated check verified the recipe&rsquo;s allergen
+          list. It is not a medical review, and section 5 still applies.</li>
+          <li>The Privacy Policy, section 3.18, says what is kept about a
+          payment.</li>
         </ul>
 
 """ + h2("t8", "10. What you make is yours") + """
@@ -1794,8 +1931,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         us.</p>
 
 """ + h2("t9", "11. Cost") + """
-        <p>The app is free. Coaching is paid for directly to your coach
-        (section 9). If a future version adds anything paid to Own Hub itself,
+        <p>The app is free. Asking to join a coach is free; a coach may charge
+        for her own package, which you pay her directly (section 9). If a future version adds anything paid to Own Hub itself,
         it will come with its own terms, shown before anything is charged, and
         nothing will renew without your clear agreement.</p>
 
@@ -1807,6 +1944,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           section 7 or section 8. Before we do, we tell you why and give you a chance to
           reply, unless the law, an order from an authority or someone&rsquo;s
           safety prevents it. You keep your right to a copy of your data.</li>
+          <li>Pausing paying by InstaPay after two strikes (section 9) is
+          different: it takes effect at once, without that step.</li>
         </ul>
 
 """ + h2("t11", "13. The app is provided as it is") + """
@@ -1849,6 +1988,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>These Terms are governed by the laws of the Arab Republic of
           Egypt.</li>
           <li>Disputes go to {{courtVenue}}.</li>
+          <li><b>Complaints:</b> write to {{mailto:contactSupport}}. We answer
+          within {{rightsResponseWindow}}. For your personal data you can also
+          complain to the Personal Data Protection Centre (Privacy Policy,
+          section 8).</li>
           <li>These Terms are published in Arabic and English, and the Arabic
           version applies if they differ.</li>
           <li>Own Hub is made for, and offered in, Egypt.</li>
@@ -1922,6 +2065,16 @@ def build(cfg, lang, mailto_link, store_badges, shot):
              "pay a coach directly by InstaPay and that Own Hub never holds the "
              "money. Section 9 says what Own Hub does, what a false proof "
              "means, and how refunds work."),
+            ("28 October 2026",
+             "Corrections to section 9: it now says that Own Hub is not a bank "
+             "or a payment provider and not a party to the coaching agreement, "
+             "that the coach is the seller and sends any refund, how short "
+             "access, strikes, refunds and service problems work as built, and "
+             "what the labels Verified coach and Checked by Own Hub mean. "
+             "Section 8 no longer bans payments through the app&rsquo;s "
+             "InstaPay steps. Section 12 says that pausing paying by InstaPay "
+             "is different from suspending an account. Section 17 gives the "
+             "complaint route."),
         ]) + """
       </div>
     </div>
@@ -2009,8 +2162,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>Do not put ways to reach you outside Own Hub (a phone number, a
           messaging account, a social media page) in your portfolio. Your
           InstaPay address is set only in the payments setting of the app.</li>
-          <li>Do not ask a member to pay you or to talk to you outside Own
-          Hub.</li>
+          <li>Do not move a member you met through Own Hub away from it, to
+          coach her or to take payment from her outside Own Hub&rsquo;s
+          InstaPay steps, to avoid Own Hub&rsquo;s rules or its fee. A client
+          you brought with your own invite code is covered by section 9, Stay
+          on Own Hub, in the same way: it does not apply to her.</li>
         </ul>
 
 """ + h2("k6", "6. What members see, and prices") + """
@@ -2023,10 +2179,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>The price you set is the price members see and pay, with nothing
           added on top except a few piasters that make the amount match only
           that payment; those go to you. Members pay you directly by InstaPay.
-          Own Hub keeps a fee of 15 percent of the price for a client who found
-          you in the app, and 8 percent for a client you brought with your own
-          invite code. The fee is fixed when the coaching first starts between
-          you and that client.</li>
+          Own Hub charges you a fee, currently 15 percent of the package price
+          for a client who found you in the app, and 8 percent for a client you
+          brought with your own invite code. The rate in force when a
+          payment&rsquo;s access starts is the rate for that payment (section
+          9).</li>
           <li>When a member joins you, you can read the form she filled in only
           while the coaching lasts, and you may use it only to coach her.
           Keep her answers, including her health answers, confidential, and
@@ -2054,36 +2211,68 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 
 """ + h2("k9", "9. Payments by InstaPay") + """
         <ul>
-          <li><b>You are paid directly.</b> A member pays your own InstaPay
-          address. Own Hub never holds or moves the money. Keep your address
-          and account name exactly as your bank shows them. A new address takes
-          effect after 24 hours, needs a fresh sign-in and a code sent to your
-          phone, and the members with a payment waiting are told.</li>
+          <li><b>You are paid directly, and you are the seller.</b> A member
+          pays your own InstaPay address from her own bank app. Own Hub never
+          holds, routes, initiates or accesses that money. Own Hub is not a
+          bank or a payment provider and is not a party to your agreement with
+          the member. You are responsible for your own service and for refunds.
+          Keep your address and account name exactly as your bank shows them. A
+          new address takes effect after 24 hours, needs a recent sign-in (a
+          code sent to your phone), and the members with a payment waiting are
+          told.</li>
           <li><b>Confirm honestly.</b> When a member sends proof, check your own
           bank for the exact amount and the transaction number, then confirm, or
           say it has not arrived and attach your bank&rsquo;s list for that day.
-          No check can prove a payment; you are the check. If you do not answer
-          in 3 days, Own Hub reviews it and the member may be given short access
-          meanwhile.</li>
-          <li><b>Strikes.</b> A claim that you were not paid, when your own
-          statement shows the payment, is a strike. Two strikes in 90 days
-          suspend your ability to take payments. Staff decide, with a written
-          reason, and two staff agree before a suspension. Your current clients
-          are not cut off.</li>
-          <li><b>The fee.</b> It is owed when a client&rsquo;s package becomes
-          active, not when you tap confirm. You get a monthly statement and pay
-          Own Hub&rsquo;s fee by InstaPay and record it. More than 30 days late,
-          you cannot take new clients; current clients are never cut off.</li>
-          <li><b>Refunds.</b> A member may ask for a refund once in the first
-          14 days. You have 3 days to answer; you send the money back by
-          InstaPay and record it. After that Own Hub decides. Ignoring a staff
-          decision on a refund ends your ability to take payments.</li>
+          No check can prove a payment; you are the check. You get a reminder
+          after 48 hours. If you do not answer in 3 days, the payment goes to
+          Own Hub staff to decide. A member whose proof passed the automatic
+          checks may already have short access while you check.</li>
+          <li><b>Strikes and suspension.</b> If the bank list you attach shows
+          the exact amount or the transaction number, your claim that you were
+          not paid is refused at once. That is not a strike. A strike comes
+          only when a person at Own Hub decides, with a written reason, that a
+          payment you said had not arrived was paid. Two strikes within 90 days
+          flag your account. So does a dispute rate: at least 10 payments, of
+          which 10 percent or more are disputes you lost (the numbers can be
+          changed by Own Hub). A flagged account is reviewed by two different
+          people at Own Hub, each with a written reason, and only then can your
+          ability to take new payments be suspended. A suspension stops new
+          payments. It does not by itself end coachings that are already
+          running. There is no step to reply before you are flagged and no
+          appeal procedure; you can write to {{mailto:contactSupport}} and ask
+          a person to look again.</li>
+          <li><b>The fee.</b> The rate is read when a payment&rsquo;s access
+          starts and then kept on that payment: currently 15 percent for a
+          client who found you in the app and 8 percent for a client you
+          brought with your own invite code. It is worked out on the package
+          price, not on the extra piasters, and rounded down. It is lowered if
+          you accept a lower amount in writing in the app (at most 20 percent
+          lower) and after a refund, and it is waived if the payment turns out
+          not to have been paid. It is owed from the moment the client&rsquo;s
+          access starts, which can be short access before you confirm, not when
+          you tap confirm. You get a monthly statement for the month before. If
+          a statement is still unpaid 30 days after it is made, you cannot take
+          new clients; current clients are not touched. You pay Own Hub by
+          InstaPay and record the transfer; nothing is debited automatically.
+          Own Hub keeps the statements for 5 years.</li>
+          <li><b>Refunds.</b> A member can ask for a refund in the app, once
+          for a payment, within 14 days of when her access began (when you
+          confirmed the payment, or Own Hub decided it). You have 3 days to
+          answer. You can send the money back by InstaPay and record it in the
+          app (the transfer number, the amount and the time), or decline and
+          give a reason: sessions delivered, outside the terms, or other. If
+          you decline, or you are silent for 3 days, a person at Own Hub
+          decides, and can decide that a refund is owed. Then you must send it
+          back and record it. Own Hub does not send refund money. If you ignore
+          a staff decision on a refund, staff may suspend your ability to take
+          payments, and two people must agree.</li>
           <li><b>Stay on Own Hub.</b> While you coach a client you met through
           Own Hub, and for 12 months after the last coaching on Own Hub ends,
           you may not coach her or take payment from her outside Own Hub. This
-          does not apply to clients you brought with your own invite code. A
-          confirmed breach is a warning and a charge of 3 months of Own
-          Hub&rsquo;s share; a second is a suspension.</li>
+          does not apply to clients you brought with your own invite code. For
+          a confirmed breach Own Hub may warn you and charge 3 months of Own
+          Hub&rsquo;s share, a fair estimate of the fee it lost; for a second
+          breach it may suspend you.</li>
           <li><b>Tax.</b> You are responsible for your own tax status and for
           any invoice you need to issue. A payment record from Own Hub is not a
           tax invoice.</li>
@@ -2116,6 +2305,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
              "Own Hub&rsquo;s fee; section 9 is new and covers how you are paid, "
              "confirming a payment, strikes, the monthly fee, refunds, staying "
              "on Own Hub, tax and records."),
+            ("28 October 2026",
+             "Corrections to sections 5, 6 and 9: the ban in section 5 is on "
+             "moving a client away from Own Hub to avoid its rules; section 6 "
+             "says the fee rate is the one in force when a payment&rsquo;s "
+             "access starts; section 9 now says you are the seller and send any "
+             "refund, how a claim your own bank list contradicts is refused, "
+             "that a strike comes only from a staff decision, how the fee is "
+             "worked out and owed, and what the 12-month rule may lead to."),
         ]) + """
       </div>
     </div>
@@ -2151,6 +2348,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           and your women-only check does not wait on this mailbox: if your
           check needs a person, a woman reviewer phones you.</p>
         </div>
+        <p><b>Complaints.</b> A complaint about the app, a payment decision or
+        the way we handled your data gets a full answer within
+        {{rightsResponseWindow}}. If it is about your personal data and you are
+        not satisfied, you can complain to the Personal Data Protection Centre:
+        {{pdpcContact}}</p>
         <p>If something in the app is hurting you or frightening you, do not wait
         for an email. Stop, and if you think it is an emergency contact emergency
         services or go to a hospital.</p>
@@ -2231,6 +2433,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           measurements, life stage, allergies and weight only if you turn on
           health backup yourself, and the answers you choose to send a coach if
           you ask to join one.</p>
+          <p>If you pay a coach by InstaPay, we also keep a record of each
+          payment, the transaction number and the screenshots you send as
+          proof, and a coach&rsquo;s fee statements. Own Hub never holds the
+          money (section 3.18 of the Privacy Policy).</p>
           <p>If you allow crash reports, Firebase Crashlytics receives a report
           when the app crashes, with no account identifier, name or phone
           number. They are off until you allow them. If you turn on
@@ -2353,7 +2559,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           personal bests and your milestones.</li>
           <li>Any health information you backed up: cycle, periods, check-ins,
           measurements and weight, life stage and allergies.</li>
-          <li>Your consent records.</li>
+          <li>Your consent records. They are kept while your account exists,
+          and deleted with it.</li>
           <li>Your verification results, your review case and your selfie
           session records. (The photographs themselves were never stored.)</li>
           <li>Your safety-report list, blocks, notifications and anything you
@@ -2373,10 +2580,14 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           reported is deleted if you made the report. If the report is about
           you, the copy is kept with your name, picture and account links
           removed, and the words that were reported stay.</li>
-          <li><b>Payment records</b>, if you paid a coach or a member paid you,
-          are kept without your name for the period the law requires, then
-          deleted (Privacy Policy, section 3.18). Payment screenshots are
-          deleted with your account.</li>
+          <li><b>Payment records, a coach&rsquo;s fee statements and strike
+          records</b>, if you paid a coach or a member paid you, are kept for 5
+          years with your account identifier replaced by a random code and the
+          names you typed removed. Nothing deletes them automatically when the
+          5 years end yet. The results of the receipt checks, the fingerprints
+          of the pictures and the transaction numbers stay with them (Privacy
+          Policy, sections 3.18 and 6). Payment screenshots are deleted with
+          your account.</li>
           <li><b>A record that your deletion was carried out</b>, reduced to its
           status and dates, as proof that your request was honoured.</li>
         </ul>
@@ -2432,7 +2643,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
     <div class="wrap">
       <div class="prose">
         <h1>Join the waitlist</h1>
-        <p class="lede">Own Hub isn&rsquo;t open yet, and all of it is free.
+        <p class="lede">Own Hub isn&rsquo;t open yet, and the app is free.
         Leave your Egyptian mobile number or your email address. The first
         100 women on the list try it before it opens to everyone. Everyone
         else hears from us once, the day it opens.</p>

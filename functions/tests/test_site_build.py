@@ -599,7 +599,8 @@ def test_the_home_pages_promise_only_what_this_version_does():
                   "join the community", "book a coach", "chat with"):
         assert claim not in en, claim
     flat = " ".join(en.split())
-    assert "coaching with own hub-reviewed coaches is available, free for now" in flat
+    assert ("coaching with own hub-reviewed coaches is available. asking to join is free; "
+            "a coach may charge for her own package, which you pay her directly") in flat
     assert "no community or assistant" in flat
 
 
@@ -620,8 +621,8 @@ def test_the_launch_is_free_and_nothing_promises_a_paid_plan():
             with open(os.path.join(folder, page), encoding="utf-8") as f:
                 text = " ".join(f.read().split())
             assert not re.search(r"\bPro\b", text), (lang, page)
-    assert "Free, all of it." in _home(_SITE, "en")
-    assert "مجاني بالكامل" in _home(_SITE, "ar")
+    assert "The app is free." in _home(_SITE, "en")
+    assert "التطبيق مجاني." in _home(_SITE, "ar")
 
 
 def test_the_policy_does_not_promise_a_phone_backup_forgets_the_profile_photo():
