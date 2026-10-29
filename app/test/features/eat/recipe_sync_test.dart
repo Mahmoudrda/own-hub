@@ -192,7 +192,7 @@ void main() {
       final cache = _MemoryStorage()..value = '{not json';
       final book = await _sync(cache: cache).load();
       expect(book.contentVersion, 1);
-      expect(book.recipes, hasLength(50));
+      expect(book.recipes, hasLength(70));
     });
   });
 
@@ -206,7 +206,7 @@ void main() {
       expect(result.outcome, RecipeRefreshOutcome.updated);
       final book = result.book!;
       expect(book.contentVersion, 2);
-      expect(book.recipes, hasLength(51));
+      expect(book.recipes, hasLength(71));
       expect(book.byId('rahma_lazy_cake')!.titleEn, 'Lazy Cake, second print');
       // Her letter is not in the remote set and stays.
       expect(book.letterAr, RecipeBook.fromJson(_raw).letterAr);

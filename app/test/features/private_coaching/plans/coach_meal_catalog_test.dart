@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/eat_state.dart';
 import 'package:own_hub/features/eat/data/egyptian_food_pack.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
+import 'package:own_hub/features/eat/domain/recipe.dart';
 import 'package:own_hub/l10n/app_l10n.dart';
 import 'package:own_hub/routing/coaching_wiring.dart';
 
@@ -45,8 +46,14 @@ void main() {
     final book = await SeededRecipeLibrary(
       readAsset: (key) async => File(key).readAsStringSync(),
     ).load();
-    expect({for (final r in book.recipes) r.recipeId}, _allowed('recipes'));
-    expect(SeededRecipeLibrary.seededIds, _allowed('recipes'));
+    // Held recipes (review, no record) are not offered to coaches, so the
+    // server's list is the published ones only.
+    final held = {
+      for (final r in book.recipes)
+        if (r.status == RecipeStatus.review) r.recipeId,
+    };
+    expect({for (final r in book.recipes) if (!held.contains(r.recipeId)) r.recipeId}, _allowed('recipes'));
+    expect(SeededRecipeLibrary.seededIds!.difference(held), _allowed('recipes'));
   });
 
   test('all 11 kitchen recipes stay', () async {

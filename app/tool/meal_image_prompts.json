@@ -184,7 +184,7 @@
     "vessel": "plate"
   },
   "kofta": {
-    "description": "three grilled elongated kofta skewers of minced meat with char marks, a grilled tomato and onion",
+    "description": "three long finger-shaped grilled minced-meat kofta, each like a short thick sausage, browned with char lines, lying side by side on the plate with a grilled tomato and onion slices, no skewers",
     "vessel": "plate"
   },
   "kebab": {
@@ -232,7 +232,7 @@
     "vessel": "plate"
   },
   "bamya": {
-    "description": "small green okra pods stewed in rich red tomato sauce with chunks of meat",
+    "description": "okra stew: many small short ridged green okra pods with pointed tips in a thick red tomato sauce with a few pieces of beef",
     "vessel": "bowl"
   },
   "torly": {
@@ -1206,5 +1206,85 @@
   "tuna_in_oil": {
     "description": "flaked golden canned tuna, drained of its oil, in a small heap",
     "vessel": "bowl"
+  },
+  "ownhub_light_koshari": {
+    "description": "a bowl of brown lentils, white rice, chickpeas and small pasta, topped with dark tomato sauce and a heap of crisp dark baked onion",
+    "vessel": "bowl"
+  },
+  "ownhub_lentil_rice_mujaddara": {
+    "description": "a bowl of brown lentils and white rice, topped with a generous pile of golden crisp fried onion strips",
+    "vessel": "bowl"
+  },
+  "ownhub_chicken_molokhia_bowl": {
+    "description": "a bowl of white rice topped with dark green molokhia, with golden chicken cubes beside it",
+    "vessel": "bowl"
+  },
+  "ownhub_grilled_chicken_shawarma_plate": {
+    "description": "a plate of golden grilled chicken strips with dark char marks, white rice, crisp green lettuce, tomato slices and cucumber rounds",
+    "vessel": "plate"
+  },
+  "ownhub_grilled_shrimp_rice_salad": {
+    "description": "a plate of pink grilled shrimp with char marks, white rice, shredded green lettuce, red tomato cubes and cucumber",
+    "vessel": "plate"
+  },
+  "ownhub_fasolia_with_beef": {
+    "description": "a bowl of bright green green beans in a red-brown tomato sauce with chunks of beef, beside white rice",
+    "vessel": "bowl"
+  },
+  "ownhub_bisella_chicken": {
+    "description": "a bowl of green peas and orange carrot pieces with chicken in a light red tomato sauce, beside white rice",
+    "vessel": "bowl"
+  },
+  "ownhub_light_kousa_mahshi": {
+    "description": "two pale green zucchini stuffed with brown minced meat and rice, sitting in red tomato sauce",
+    "vessel": "plate"
+  },
+  "ownhub_baked_fish_sayadeya": {
+    "description": "a plate of rice mixed with dark brown fried onion, topped with a baked white tilapia fillet and red tomato slices",
+    "vessel": "plate"
+  },
+  "ownhub_shrimp_tomato_sauce": {
+    "description": "pink shrimp in a red tomato sauce with onion, beside white rice",
+    "vessel": "plate"
+  },
+  "ownhub_baladi_salad_chickpeas_tahini": {
+    "description": "a bowl of diced red tomato, green cucumber and white onion with yellow chickpeas, topped with pale tahini sauce",
+    "vessel": "bowl"
+  },
+  "ownhub_baked_torly_chicken": {
+    "description": "golden baked potato, zucchini and carrot slices with chicken pieces on top and roasted tomato slices with crisp edges, served on a plate",
+    "vessel": "plate"
+  },
+  "ownhub_lean_beef_vegetable_stew": {
+    "description": "a bowl of beef and vegetable stew with potato, carrot and zucchini cubes in a red tomato sauce, beside white rice",
+    "vessel": "bowl"
+  },
+  "ownhub_chicken_vegetable_soup": {
+    "description": "a bowl of clear golden chicken broth with shredded chicken, carrot coins, zucchini and potato cubes",
+    "vessel": "bowl"
+  },
+  "ownhub_freekeh_chicken_soup": {
+    "description": "a bowl of golden soup with green-brown freekeh grains, pieces of chicken and orange carrot cubes",
+    "vessel": "bowl"
+  },
+  "ownhub_foul_medames_olive_oil": {
+    "description": "a bowl of mashed brown fava beans topped with olive oil, diced red tomato, cucumber and onion",
+    "vessel": "bowl"
+  },
+  "ownhub_spinach_eggah": {
+    "description": "a round golden spinach eggah wedge with dark green spinach flecks and red tomato bits, on a plate",
+    "vessel": "plate"
+  },
+  "ownhub_light_rice_pudding": {
+    "description": "a glass of creamy white rice pudding dusted with cinnamon and topped with chopped almonds",
+    "vessel": "glass"
+  },
+  "ownhub_light_om_ali": {
+    "description": "a bowl of golden baked bread pudding with a browned top, raisins, chopped almonds and shredded coconut",
+    "vessel": "bowl"
+  },
+  "ownhub_light_oat_basbousa": {
+    "description": "a square of golden oat cake with a whole almond on top, on a plate",
+    "vessel": "plate"
   }
 }

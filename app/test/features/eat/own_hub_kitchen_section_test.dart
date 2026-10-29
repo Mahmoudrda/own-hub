@@ -91,7 +91,7 @@ void main() {
   }
 
   testWidgets(
-    'before she has answered, all eleven are shown with what is in them',
+    'before she has answered, all thirty-one are shown with what is in them',
     (tester) async {
       tester.view.physicalSize = const Size(1170, 36000);
       tester.view.devicePixelRatio = 3.0;
@@ -160,13 +160,13 @@ void main() {
       final holdsNuts = recipe.allergensFinal.contains('tree_nuts');
       expect(
         find.text(recipe.titleEn),
-        holdsNuts ? findsNothing : findsOneWidget,
+        holdsNuts || recipe.status == RecipeStatus.review ? findsNothing : findsOneWidget,
         reason: recipe.recipeId,
       );
     }
     expect(
       ours.where((r) => r.allergensFinal.contains('tree_nuts')),
-      hasLength(2),
+      hasLength(5),
     );
     expect(find.text('From the Own Hub kitchen'), findsWidgets);
   });

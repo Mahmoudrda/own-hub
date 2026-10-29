@@ -89,11 +89,11 @@ void main() {
   });
 
   group('the library', () {
-    test('holds fifty recipes', () {
-      expect(_book.recipes, hasLength(50));
+    test('holds seventy recipes', () {
+      expect(_book.recipes, hasLength(70));
       expect(
         {for (final r in _book.recipes) r.recipeId},
-        hasLength(50),
+        hasLength(70),
         reason: 'every id is its own',
       );
     });
@@ -349,6 +349,12 @@ void main() {
         );
         // Signed or not, every recipe is published, and the ones nobody signed
         // are published on the automated check and nothing else.
+        if (recipe.status == RecipeStatus.review) {
+          // Held until Rahma checks it: no record, allergens not trusted.
+          expect(recipe.verification, isNull, reason: recipe.recipeId);
+          expect(recipe.allergensKnown, isFalse, reason: recipe.recipeId);
+          continue;
+        }
         expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
         expect(recipe.allergensKnown, isTrue, reason: recipe.recipeId);
         if (!recipe.allergensReviewed) {
@@ -361,12 +367,13 @@ void main() {
 
     test('Own Hub\'s recipes are never drawn as hers, signed or not', () {
       final ours = _book.recipes.where((r) => r.isOwnHub).toList();
-      expect(ours, hasLength(11));
+      expect(ours, hasLength(31));
       for (final recipe in ours) {
         final signed = _signoff.containsKey(recipe.recipeId);
-        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
+        final held = recipe.status == RecipeStatus.review;
+        expect(recipe.status, held ? RecipeStatus.review : RecipeStatus.published, reason: recipe.recipeId);
         expect(recipe.allergensReviewed, signed, reason: recipe.recipeId);
-        expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+        expect(recipe.autoChecked, !held, reason: recipe.recipeId);
         expect(recipe.source, RecipeSource.authored);
         expect(recipe.authoredBy, 'ownhub_kitchen');
         expect(recipe.sourcePage, isNull);
@@ -378,8 +385,8 @@ void main() {
           reason: recipe.recipeId,
         );
         if (!signed) {
-          expect(recipe.reviewNotes.first, contains('automated check'));
           expect(recipe.reviewNotes.first, contains('no person has cooked'));
+          if (!held) expect(recipe.reviewNotes.first, contains('automated check'));
         }
       }
     });

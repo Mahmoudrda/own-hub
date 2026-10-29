@@ -5,16 +5,58 @@
       "areesh_tomato.webp"
     ]
   },
+  "arnabeet_maqli": {
+    "prompt_hash": "3c356e4771b56bba25801339182df124322b50bcdbfdd5a12d9a1966fbc17635",
+    "files": [
+      "arnabeet_maqli.webp"
+    ]
+  },
   "baba_ghanoug": {
     "prompt_hash": "766c66b97b686bcdab9de5086a2661294658d8371408382aa2657420285329d7",
     "files": [
       "baba_ghanoug.webp"
     ]
   },
+  "batates_lahma": {
+    "prompt_hash": "97e435107396e59e76ab9620ff7c952798de48afcffe33f546b80d392cbad242",
+    "files": [
+      "batates_lahma.webp"
+    ]
+  },
+  "batates_maqlia": {
+    "prompt_hash": "271e5c0066757a8b0304564e63b3a230df8b18f49ecf3123565f086b18e549a0",
+    "files": [
+      "batates_maqlia.webp"
+    ]
+  },
   "besara": {
     "prompt_hash": "11b85a788a24b2535033bf12734d2f783d82d937a9f06f7e68a091c0fef98ce7",
     "files": [
       "besara.webp"
+    ]
+  },
+  "betingan_maqli": {
+    "prompt_hash": "906060ac39cd54ac12fb9d15096d7a4f27a18c5de2b814367894ed9baf227c3b",
+    "files": [
+      "betingan_maqli.webp"
+    ]
+  },
+  "bisella": {
+    "prompt_hash": "241eadd1c59ee26d636c3533683b6b8f438d6390de6a043e9137f1b9a913e724",
+    "files": [
+      "bisella.webp"
+    ]
+  },
+  "bouri": {
+    "prompt_hash": "3623a74b9e3f01573bfd7721d78ce6a51b186beccca2d960a943e8008f2d95bf",
+    "files": [
+      "bouri.webp"
+    ]
+  },
+  "colcas": {
+    "prompt_hash": "d0c63d4214b0e9b0e3dcf989de645fe63fd61eb2e651b18c9356d5a906427c56",
+    "files": [
+      "colcas.webp"
     ]
   },
   "egg_fried_olive": {
@@ -47,6 +89,18 @@
       "eggs_pastirma.webp"
     ]
   },
+  "fasolia": {
+    "prompt_hash": "d040db400696872c1ed9b70617b31bed28b404c5abc5df8dc158e501ed4534d0",
+    "files": [
+      "fasolia.webp"
+    ]
+  },
+  "fasolia_beida": {
+    "prompt_hash": "d9b21d4e9d219d1b88b84e95c875a9db3f5895780b59c7b4cc4afa678e9f1331",
+    "files": [
+      "fasolia_beida.webp"
+    ]
+  },
   "fattah": {
     "prompt_hash": "f8af12b1b6ab5f01a3dff52a4f4c8722dd26380f9f2d90c17553a9ecdcd70c8e",
     "files": [
@@ -75,6 +129,18 @@
     "prompt_hash": "fa815b4b4795d8fe479a6db3a6ee2c14a57cfff61be8a7adab3860889078a5fd",
     "files": [
       "feteer_honey.webp"
+    ]
+  },
+  "frakh_batates": {
+    "prompt_hash": "4d3c6e5e99b67fe203b773c31645288b2fd3884c793182149e1df88c3c378299",
+    "files": [
+      "frakh_batates.webp"
+    ]
+  },
+  "frakh_pane": {
+    "prompt_hash": "e946fab103de5d9d89d595833d63d4577bb23eec8e7566c7eb51054b5d47c0ea",
+    "files": [
+      "frakh_pane.webp"
     ]
   },
   "ful_bel_beid": {
@@ -119,6 +185,12 @@
       "ful_taameya_breakfast.webp"
     ]
   },
+  "gambari": {
+    "prompt_hash": "92f031cdbc707630464b1c2a298e99b0a6c1c8961401099186c7c21b8cbd8c49",
+    "files": [
+      "gambari.webp"
+    ]
+  },
   "gebna_areesh": {
     "prompt_hash": "f54cffc50727d4688cfd525add7e17793fb98f9fd000d43f0d8af1f1232ffc2e",
     "files": [
@@ -137,10 +209,40 @@
       "gebna_rumi.webp"
     ]
   },
+  "hamam_mahshi": {
+    "prompt_hash": "4fad261c872fc9e9f509ec98d23b156dfaa3aa9fc962df5a989d7cf4fdfc3061",
+    "files": [
+      "hamam_mahshi.webp"
+    ]
+  },
   "hawawshi": {
     "prompt_hash": "568fe7011ff02bf64061d540fe3b29deb4c0358dc2bf2216bbd56ba78b1acfbe",
     "files": [
       "hawawshi.webp"
+    ]
+  },
+  "kebab": {
+    "prompt_hash": "2aa2ded6a8dafebd5a781f7eaacfcfe367f4c7ee6e4e5076f68fbcbf6dcd10d3",
+    "files": [
+      "kebab.webp"
+    ]
+  },
+  "kebab_kofta": {
+    "prompt_hash": "164bd1bcf4481b006124a65ec3caedb3c921744cab49a9a7244bc1120c00eb98",
+    "files": [
+      "kebab_kofta.webp"
+    ]
+  },
+  "kebda_iskandarani": {
+    "prompt_hash": "49b5df87be50df338982992af52ccb380cdb38e761e7ee0e86644e21ea32e82e",
+    "files": [
+      "kebda_iskandarani.webp"
+    ]
+  },
+  "kebda_sandwich": {
+    "prompt_hash": "e92aaffa6eae47cbf3969fd68dc5248984602e330561cd28386f232cdc7b90bb",
+    "files": [
+      "kebda_sandwich.webp"
     ]
   },
   "kesk": {
@@ -153,6 +255,30 @@
     "prompt_hash": "67f3abb0bc034d2f3f537f0b84adc9eb5ba36b5cc62db7dfbd3f7609db7623f0",
     "files": [
       "koshary.webp"
+    ]
+  },
+  "lahma_basal": {
+    "prompt_hash": "77fcfe477ddf0941a9fed07732b7cd0412aaa55f49b80339b353d96f80098a43",
+    "files": [
+      "lahma_basal.webp"
+    ]
+  },
+  "lesan_asfour": {
+    "prompt_hash": "7b3fe87c740c9d38cef03a680a7a88f73878fd8ea7812f99e54127b71befe87c",
+    "files": [
+      "lesan_asfour.webp"
+    ]
+  },
+  "macarona_bechamel": {
+    "prompt_hash": "4829cc22f6e7c418dc2343906411b914967770e530dc3f790c96268f2ee086c7",
+    "files": [
+      "macarona_bechamel.webp"
+    ]
+  },
+  "macarona_salsa": {
+    "prompt_hash": "7f579dba4d1dcf0615bbc94595b37a417340667c0a88165f69b53849eaabc296",
+    "files": [
+      "macarona_salsa.webp"
     ]
   },
   "mahshi_cabbage": {
@@ -191,6 +317,12 @@
       "mahshi_zucchini.webp"
     ]
   },
+  "mesaqaa": {
+    "prompt_hash": "44ef06dd06d206aa3235982e048b5f57cc0aefda3a06f738336b9793161273ce",
+    "files": [
+      "mesaqaa.webp"
+    ]
+  },
   "mesh": {
     "prompt_hash": "da378d620feac32e34ed244d9d40638a16a6ac4ea73ca4fa5013da3eacce245a",
     "files": [
@@ -213,6 +345,12 @@
     "prompt_hash": "9d70f39586846df4cbffb0b6f4ac4323f41f1d8c82ecd0c6da887ca352c451a8",
     "files": [
       "molokhia_rabbit.webp"
+    ]
+  },
+  "mombar": {
+    "prompt_hash": "02a5cd856e965d0d707bd8a60d1ca3af610860e94cbdf58f69a74c426483f8f2",
+    "files": [
+      "mombar.webp"
     ]
   },
   "omelette": {
@@ -621,6 +759,12 @@
       "3.0x/rahma_yummy_egg_sandwich.webp"
     ]
   },
+  "renga": {
+    "prompt_hash": "930b3a792adb4e0c34fc0e9c06133725f149c0bc2ad1dac64070bb6e67377dc0",
+    "files": [
+      "renga.webp"
+    ]
+  },
   "roz_abyad": {
     "prompt_hash": "050824411fa6632ec80d644064d448b5e56336cefeb6022d87ed8bc38336d08f",
     "files": [
@@ -645,6 +789,12 @@
       "roz_shareya.webp"
     ]
   },
+  "sabanekh": {
+    "prompt_hash": "f362c0f8fd4aac6e5b444173b122a1a4eb55d280b37329921c1c624a595ecfc7",
+    "files": [
+      "sabanekh.webp"
+    ]
+  },
   "salata_baladi": {
     "prompt_hash": "024f2d4c9b36260d844904c9b2738f0766d4a85ac0c55c755a6457b3972a801d",
     "files": [
@@ -657,10 +807,52 @@
       "salata_zabadi.webp"
     ]
   },
+  "samak_maqli": {
+    "prompt_hash": "1b36f747ae348a4691a206a5be49b0f9570d43f5e4c9129db4654966e1b10aa8",
+    "files": [
+      "samak_maqli.webp"
+    ]
+  },
+  "samak_mashwi": {
+    "prompt_hash": "31970571d242be43a365e87bad141599a63f567b77c1d6a20b2950ac6e6455fd",
+    "files": [
+      "samak_mashwi.webp"
+    ]
+  },
+  "sayadeya": {
+    "prompt_hash": "aafb0785fb5add13cd49dc389e9ee2032c669e39676310aff10a88aca70d4597",
+    "files": [
+      "sayadeya.webp"
+    ]
+  },
   "shakshuka": {
     "prompt_hash": "53ebad6b8f6e0c1d0b71eb61a87593affb9d4373504dc60d25bc9af520b1999a",
     "files": [
       "shakshuka.webp"
+    ]
+  },
+  "shish_tawook": {
+    "prompt_hash": "118bc51d5cbded0fe02a1031c21a1bb153dfb17410b3e2be9ea892701ce54449",
+    "files": [
+      "shish_tawook.webp"
+    ]
+  },
+  "shorbet_ads": {
+    "prompt_hash": "585787d7fe269486bffa67d2e20d56adba8b857898464fdb6a2ccbcdee94747d",
+    "files": [
+      "shorbet_ads.webp"
+    ]
+  },
+  "shorbet_frakh": {
+    "prompt_hash": "b7c1f415169e8bac41be5f33e7171d5668a294c5a14785201574360d102345cb",
+    "files": [
+      "shorbet_frakh.webp"
+    ]
+  },
+  "shorbet_freekeh": {
+    "prompt_hash": "05ea63e908ccabf4fd851d7b0a9bc988ff53fbfcbf9d782f40afe41b6ce2cfde",
+    "files": [
+      "shorbet_freekeh.webp"
     ]
   },
   "taameya": {
@@ -679,6 +871,12 @@
     "prompt_hash": "3897d6048a4a45309e8fbadc5f91143c965b85d6ec6acfa2a620a2ba007cd3b5",
     "files": [
       "tahina.webp"
+    ]
+  },
+  "torly": {
+    "prompt_hash": "15c4867b473cd7b6dbda0726a3115744aa77f9d9dc2b683442915ceaf412d2c6",
+    "files": [
+      "torly.webp"
     ]
   }
 }

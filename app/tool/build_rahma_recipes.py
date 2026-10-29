@@ -60,7 +60,7 @@ not say (freekeh is wheat and nobody writes "wheat"). `allergensRemoved` is
 empty on every recipe: removing a tag is a person's job and needs a written
 reason.
 
-## The eleven recipes of Own Hub's kitchen
+## The recipes of Own Hub's kitchen
 
 `ownhub_recipes.py` holds recipes written by Own Hub, not by Rahma
 (`source: authored`). They carry English and Egyptian Arabic and are never drawn
@@ -75,7 +75,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from allergen_tripwire import scan  # noqa: E402
-from ownhub_recipes import RECIPES as OWNHUB  # noqa: E402
+from ownhub_recipes import HOLD_FOR_SIGNOFF, RECIPES as OWNHUB  # noqa: E402
 from recipe_links import LAHMA_ROWS, LINKS  # noqa: E402
 import verify_recipes  # noqa: E402
 
@@ -1024,6 +1024,10 @@ def _ownhub_recipe(data, section, order_in_section, pack, signed):
     entry = signed.get(rid)
     if entry is None:
         first = (
+            "Written by the Own Hub kitchen, not by Rahma. Held for Rahma's "
+            "check: no automated record, and no person has cooked it or "
+            "signed its allergens."
+        ) if rid in HOLD_FOR_SIGNOFF else (
             "Written by the Own Hub kitchen, not by Rahma. Checked by the "
             "Own Hub automated check (ingredients, allergens, figures); no "
             "person has cooked it or signed its allergens."

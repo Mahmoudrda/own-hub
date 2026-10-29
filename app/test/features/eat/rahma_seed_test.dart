@@ -45,7 +45,7 @@ void main() {
   });
 
   group('the book is the book', () {
-    test('thirty-nine of hers and eleven of Own Hub\'s kitchen', () {
+    test('thirty-nine of hers and thirty-one of Own Hub\'s kitchen', () {
       // 41 cards are printed; pages 20 and 21 are the same two recipes with one
       // illustration moved, which is a production error in the book.
       final hers = _book.recipes.where((r) => r.source == RecipeSource.book);
@@ -56,21 +56,28 @@ void main() {
       final ours = _book.recipes
           .where((r) => r.source == RecipeSource.authored)
           .toList();
-      expect(ours, hasLength(11));
+      expect(ours, hasLength(31));
       for (final recipe in ours) {
         expect(recipe.isOwnHub, isTrue, reason: recipe.recipeId);
         expect(recipe.authoredBy, kOwnHubKitchen, reason: recipe.recipeId);
         expect(recipe.recipeId, startsWith('ownhub_'));
-        expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
-        expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
-        expect(recipe.verifiedLabel, 'Checked by Own Hub');
+        if (recipe.status == RecipeStatus.review) {
+          // Held for Rahma's check: no record, so no automated claim either.
+          expect(recipe.verification, isNull, reason: recipe.recipeId);
+          expect(recipe.autoChecked, isFalse, reason: recipe.recipeId);
+          expect(recipe.allergensKnown, isFalse, reason: recipe.recipeId);
+        } else {
+          expect(recipe.status, RecipeStatus.published, reason: recipe.recipeId);
+          expect(recipe.autoChecked, isTrue, reason: recipe.recipeId);
+          expect(recipe.verifiedLabel, 'Checked by Own Hub');
+        }
         // The check is a script, never a person: no name, ever.
         expect(recipe.allergenReviewedBy, isNull, reason: recipe.recipeId);
         expect(recipe.allergenReviewedAt, isNull, reason: recipe.recipeId);
         expect(recipe.cookedBy, isNull, reason: recipe.recipeId);
         expect(recipe.cookedAt, isNull, reason: recipe.recipeId);
       }
-      expect(_book.recipes, hasLength(50));
+      expect(_book.recipes, hasLength(70));
     });
 
     test('no recipe claims page 21, because page 21 is page 20 again', () {

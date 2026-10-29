@@ -61,6 +61,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 from allergen_tripwire import scan as scan_arabic  # noqa: E402
+from ownhub_recipes import HOLD_FOR_SIGNOFF  # noqa: E402
 
 METHOD = "ownhub-auto-check-v1"
 SEED = os.path.join(HERE, "..", "assets", "content", "rahma_recipes.json")
@@ -501,6 +502,12 @@ def apply_all(recipes, foods, now=None):
         if recipe.get("status") == "draft":
             # Somebody is still writing it. Not this script's to publish.
             res.skipped = True
+            results.append(res)
+            continue
+        if recipe.get("recipeId") in HOLD_FOR_SIGNOFF:
+            # Written this release and not yet signed by Rahma: review, no record.
+            recipe["status"] = "review"
+            recipe.pop("verification", None)
             results.append(res)
             continue
         previous = recipe.get("verification")

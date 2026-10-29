@@ -152,7 +152,7 @@ void main() {
 
     test('the whole book shows before she answers', () {
       expect(AppRouter.dietaryRepository.read().asked, isFalse);
-      expect(AppRouter.rahmaRecipes(), hasLength(50));
+      expect(AppRouter.rahmaRecipes(), hasLength(70));
     });
 
     test(
@@ -164,7 +164,7 @@ void main() {
         );
         final shown = AppRouter.rahmaRecipes();
         expect(shown, isNotEmpty);
-        expect(shown.length, lessThan(50));
+        expect(shown.length, lessThan(70));
         for (final recipe in shown) {
           expect(recipe.allergensKnown, isTrue, reason: recipe.recipeId);
           expect(

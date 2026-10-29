@@ -633,15 +633,19 @@ void main() {
       );
     });
 
-    test('verifies all eleven of Own Hub\'s recipes', () {
+    test('verifies the eleven signed-off-by-check recipes and holds the twenty', () {
       final seed = jsonDecode(
         File('assets/content/rahma_recipes.json').readAsStringSync(),
       ) as Map<String, Object?>;
       final ours = (seed['recipes'] as List).cast<Map<String, Object?>>().where(
         (r) => (r['recipeId'] as String).startsWith('ownhub_'),
       );
-      expect(ours, hasLength(11));
+      expect(ours, hasLength(31));
       for (final r in ours) {
+        if (r['status'] == 'review') {
+          expect(r.containsKey('verification'), isFalse, reason: '${r['recipeId']}');
+          continue;
+        }
         expect(r['status'], 'published', reason: '${r['recipeId']}');
         expect((r['verification'] as Map)['method'], 'ownhub-auto-check-v1');
         expect(r['allergenReviewedBy'], isNull);

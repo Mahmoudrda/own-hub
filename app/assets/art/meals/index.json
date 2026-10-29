@@ -5,12 +5,47 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "arnabeet_maqli",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "baba_ghanoug",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "batates_lahma",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "batates_maqlia",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "besara",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "betingan_maqli",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "bisella",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "bouri",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "colcas",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
@@ -40,6 +75,16 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "fasolia",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "fasolia_beida",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "fattah",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
@@ -61,6 +106,16 @@
   },
   {
     "id": "feteer_honey",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "frakh_batates",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "frakh_pane",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
@@ -100,6 +155,11 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "gambari",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "gebna_areesh",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
@@ -115,7 +175,32 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "hamam_mahshi",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "hawawshi",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "kebab",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "kebab_kofta",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "kebda_iskandarani",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "kebda_sandwich",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
@@ -126,6 +211,26 @@
   },
   {
     "id": "koshary",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "lahma_basal",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "lesan_asfour",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "macarona_bechamel",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "macarona_salsa",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
@@ -160,6 +265,11 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "mesaqaa",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "mesh",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
@@ -176,6 +286,11 @@
   },
   {
     "id": "molokhia_rabbit",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "mombar",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
@@ -435,6 +550,11 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "renga",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "roz_abyad",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
@@ -455,6 +575,11 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "sabanekh",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "salata_baladi",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
@@ -465,7 +590,42 @@
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
   {
+    "id": "samak_maqli",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "samak_mashwi",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "sayadeya",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
     "id": "shakshuka",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "shish_tawook",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "shorbet_ads",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "shorbet_frakh",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "shorbet_freekeh",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   },
@@ -481,6 +641,11 @@
   },
   {
     "id": "tahina",
+    "kind": "food",
+    "source": "flux-1-schnell via Cloudflare Workers AI"
+  },
+  {
+    "id": "torly",
     "kind": "food",
     "source": "flux-1-schnell via Cloudflare Workers AI"
   }
