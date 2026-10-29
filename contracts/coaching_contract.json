@@ -391,6 +391,7 @@
       "impersonation",
       "self_harm",
       "off_platform_payment",
+      "contact_sharing",
       "unsafe_advice",
       "other"
     ],
@@ -407,6 +408,7 @@
       "coachingRequest",
       "requestAnswered",
       "requestExpired",
+      "updateToContinue",
       "paymentApproved",
       "paymentRejected",
       "coachingStarted",
@@ -417,8 +419,15 @@
       "checkInDue",
       "checkInFollowUp",
       "coachingEnded",
+      "coachBack",
       "payoutRecorded",
-      "portfolioDecision"
+      "portfolioDecision",
+      "agreementDecision",
+      "coachEndsSoon",
+      "checkInAnswered",
+      "checkInReply",
+      "promoDecision",
+      "promoReminder"
     ],
     "reportDecision": [
       "dismiss",
@@ -491,7 +500,7 @@
     }
   },
   "consents": {
-    "coachTerms": "users/{uid}/consents/coach-terms-v1",
+    "coachTerms": "users/{uid}/consents/coach-terms-v2",
     "coachingShare": "users/{uid}/consents/coaching-share-v1",
     "transferAbroad": "users/{uid}/consents/transfer-abroad-v1",
     "coachingRequest": "users/{uid}/consents/coaching-request-v2-{subId}",
@@ -664,7 +673,8 @@
         "suspendReason",
         "suspendedAt",
         "suspended",
-        "claimPending"
+        "claimPending",
+        "agreement"
       ]
     },
     "coachPrice": {
@@ -716,7 +726,9 @@
         "lastMessage",
         "unreadFor",
         "lastPushAt",
-        "createdAt"
+        "createdAt",
+        "source",
+        "coachAway"
       ],
       "lastMessage": [
         "text",
@@ -789,6 +801,9 @@
         "declineReason",
         "free",
         "clientName",
+        "source",
+        "appBuild",
+        "holdCreditSeconds",
         "nextSessionAt"
       ],
       "packageSnapshot": [
@@ -1123,6 +1138,51 @@
       ],
       "note": "The coach claim is minted after the decision commits; a failed mint leaves coachPrivate.claimPending for the sweeper to retry."
     },
+    "accept_coach_terms": {
+      "who": "coach",
+      "module": "coaching.agreement.accept",
+      "requestKeys": [
+        "version",
+        "locale"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "Writes users/{uid}/consents/coach-terms-v2 {version, at, locale, textHash} and coachPrivate.agreement {version, acceptedAt, status: accepted}. The hash is of the published agreement page in her language."
+    },
+    "submit_coach_agreement": {
+      "who": "coach",
+      "module": "coaching.agreement.submit",
+      "requestKeys": [
+        "mediaRef"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "mediaRef is coach-docs/{uid}/agreement/{name}.jpg|jpeg|png|pdf. Moves coachPrivate.agreement to uploaded; refused once verified."
+    },
+    "list_coach_agreements": {
+      "who": "womanReviewer or admin",
+      "module": "coaching.agreement.list_waiting",
+      "requestKeys": [],
+      "responseKeys": [
+        "items"
+      ],
+      "note": "Signed copies waiting for a decision: {uid, fullName, path, uploadedAt, acceptedAt}."
+    },
+    "decide_coach_agreement": {
+      "who": "womanReviewer or admin",
+      "module": "coaching.agreement.decide",
+      "requestKeys": [
+        "uid",
+        "decision",
+        "reason"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "decision is verify or reject; a reject needs a reason. Pushes the coach (agreementDecision). subscriptions.respond refuses accept with agreement_needed until the agreement is verified."
+    },
     "suspend_coach": {
       "who": "admin",
       "module": "coaching.claims.suspend",
@@ -1203,7 +1263,9 @@
         "intake",
         "consent",
         "locale",
-        "clientName"
+        "clientName",
+        "inviteCode",
+        "appBuild"
       ],
       "responseKeys": [
         "subId",
@@ -1599,7 +1661,8 @@
       ],
       "responseKeys": [
         "ok"
-      ]
+      ],
+      "note": "answers: training, energy, food, pain, note, and only when she chose to share them weightKg (30 to 300, one decimal, refused without weightConsent true, her tick, kept as consent.weight on the check-in) and workoutsDone (0 to 14, the coach-plan workouts she finished that week). Pushes the coach (checkInAnswered)."
     },
     "review_client_health": {
       "who": "coach of the subscription (active)",
@@ -1619,11 +1682,90 @@
       "responseKeys": [
         "clients"
       ]
+    },
+    "add_promo_video": {
+      "who": "coach (active or on hold)",
+      "module": "coaching.promo.add",
+      "requestKeys": [
+        "mediaRef",
+        "topic",
+        "durationSeconds"
+      ],
+      "responseKeys": [
+        "videoId",
+        "status"
+      ],
+      "note": "mediaRef is coach-docs/{uid}/promo/{name}.mp4|mov, topic one of workout_tip, eating_idea, training_myth, how_coaching_works, introduction, durationSeconds 30 to 180. Kept at coachPrivate/{uid}/promoVideos/{id} as waiting, for the Cairo month it was sent in; never on her public page."
+    },
+    "my_promo_videos": {
+      "who": "coach (active or on hold)",
+      "module": "coaching.promo.mine",
+      "requestKeys": [],
+      "responseKeys": [
+        "month",
+        "target",
+        "approved",
+        "items"
+      ],
+      "note": "This month's videos: {id, topic, status waiting|approved|changes, reason, durationSeconds, createdAt}."
+    },
+    "list_promo_videos": {
+      "who": "womanReviewer (not admin)",
+      "module": "coaching.promo.list_for_staff",
+      "requestKeys": [
+        "month"
+      ],
+      "responseKeys": [
+        "month",
+        "target",
+        "coaches",
+        "waiting"
+      ],
+      "note": "month is optional (YYYY-MM, default this Cairo month). coaches: {uid, name, approved, waiting, changes, target}; waiting: every video waiting, oldest first."
+    },
+    "decide_promo_video": {
+      "who": "womanReviewer (not admin)",
+      "module": "coaching.promo.decide",
+      "requestKeys": [
+        "coachUid",
+        "videoId",
+        "decision",
+        "reason"
+      ],
+      "responseKeys": [
+        "status"
+      ],
+      "note": "decision is approve or changes; changes needs a reason. Pushes the coach (promoDecision)."
+    },
+    "list_check_ins": {
+      "who": "client or coach of the relationship",
+      "module": "coaching.checkins.list_cards",
+      "requestKeys": [
+        "relId"
+      ],
+      "responseKeys": [
+        "checkIns"
+      ],
+      "note": "The last 8 answered weeks, newest first: {weekKey, answers, answeredAt, reply, repliedAt}. The coach reads them only while the coaching is active."
+    },
+    "reply_check_in": {
+      "who": "coach of the relationship (active, not on hold)",
+      "module": "coaching.checkins.reply",
+      "requestKeys": [
+        "relId",
+        "weekKey",
+        "text"
+      ],
+      "responseKeys": [
+        "ok"
+      ],
+      "note": "One reply to an answered check-in; screened for contact details. Pushes the client (checkInReply)."
     }
   },
   "triggers": {
     "on_coaching_message": "relationships/{relId}/messages/{messageId} created: screen the text, hide it when the screen fails, set lastMessageAt, lastMessage and the other party's unreadFor, push the other party at most once per pushThrottleMinutes",
-    "coaching_sweeper": "every 1 hours: expire requests, end finished ones and send the endsSoon push (clients switch); expire unpaid subscriptions, ledger pending to eligible and alert on proof images older than proofImageAlertDays (payments switch); retry missed coach claims always"
+    "coaching_sweeper": "every 1 hours: expire requests, end finished ones and send the endsSoon push to the client and coachEndsSoon to her coach (clients switch); expire unpaid subscriptions, ledger pending to eligible and alert on proof images older than proofImageAlertDays (payments switch); retry missed coach claims always",
+    "remind_promo_videos": "20th of each month, 10:00 Cairo: one promoReminder push to each coach with fewer than 2 approved (not suspended, with a coach page) marketing videos that month, once a month (portfolio switch)"
   },
   "reasons": [
     "coach_app_closed",
@@ -1632,6 +1774,8 @@
     "bad_request",
     "certificate_not_uploaded",
     "too_many_certificates",
+    "agreement_needed",
+    "agreement_not_uploaded",
     "invite_invalid",
     "invite_expired",
     "invite_own",
@@ -1641,6 +1785,8 @@
     "file_not_uploaded",
     "application_not_found",
     "coach_suspended",
+    "app_update_needed",
+    "client_update_needed",
     "coach_unavailable",
     "package_not_found",
     "too_many_packages",
@@ -1668,12 +1814,22 @@
     "report_not_found",
     "staff_is_subject",
     "media_not_found",
-    "too_many_media"
+    "too_many_media",
+    "contains_contact",
+    "staff_account",
+    "coach_on_hold"
   ],
   "reasonNotes": {
+    "agreement_needed": "She has not accepted the Coach Agreement or its signed copy is not verified yet, so she cannot take a new client. Clients she already has are unaffected.",
+    "agreement_not_uploaded": "The signed copy she named is not in the bucket under her own prefix.",
+    "app_update_needed": "Payments are live and the app that asked is too old to show them: appBuild missing or below the server minimum. Nothing was written; the app says to update Own Hub.",
+    "client_update_needed": "Coach side: payments are live and the member's app is too old to pay (appBuild missing or below the server minimum). The request stays requested and she is pushed to update.",
     "coach_unavailable": "One reason for every case where she cannot request this coach: not published, not accepting, full, or a block either way. A block is never signalled.",
     "wrong_status": "The subscription, proof or session is not in a status that allows this call. Refresh and try again.",
     "reference_used": "That transfer reference is already attached to another payment.",
-    "staff_is_subject": "Staff cannot decide their own application, payment, refund, payout or report."
+    "staff_is_subject": "Staff cannot decide their own application, payment, refund, payout or report.",
+    "contains_contact": "A free-text field holds a phone number, email, handle, link or an outside app. Nothing was written; the app shows the reason next to the field.",
+    "staff_account": "A staff account cannot apply to coach; staff and coaches stay on separate accounts.",
+    "coach_on_hold": "Her account is on hold because an Own Hub fee is unpaid past its hold date. She can read everything and record a fee payment; every other write is refused until staff confirm the payment."
   }
 }

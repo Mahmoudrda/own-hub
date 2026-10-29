@@ -68,10 +68,11 @@ def test_ends_soon_is_pushed_once(db, pushes, blobs):
     pushes.clear()
     assert subscriptions.sweep(db, now=later(days=24), notify=pushes, payments=True)["endsSoon"] == 0
     assert subscriptions.sweep(db, now=later(days=25, hours=1), notify=pushes, payments=True)["endsSoon"] == 1
-    assert pushes == [(CLIENT, "endsSoon")]
+    both = [(CLIENT, "endsSoon"), (COACH, "coachEndsSoon")]
+    assert pushes == both
     assert sub_of(db, sub_id)["endsSoonSent"] is True
     assert subscriptions.sweep(db, now=later(days=26), notify=pushes, payments=True)["endsSoon"] == 0
-    assert pushes == [(CLIENT, "endsSoon")]
+    assert pushes == both
 
 
 def test_ledger_turns_eligible_after_the_wait(db, pushes, blobs):
@@ -172,6 +173,6 @@ def test_a_subscription_ending_within_three_days_is_warned_once(db, pushes, blob
     pushes.clear()
     near = later(days=26)
     assert subscriptions.sweep(db, now=near, notify=pushes, payments=True)["endsSoon"] == 1
-    assert pushes == [(CLIENT, "endsSoon")]
+    assert pushes == [(CLIENT, "endsSoon"), (COACH, "coachEndsSoon")]
     assert subscriptions.sweep(db, now=near, notify=pushes, payments=True)["endsSoon"] == 0
     assert sub_of(db, sub_id)["status"] == "active"

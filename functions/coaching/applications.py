@@ -18,13 +18,14 @@ import logging
 import re
 from typing import Optional
 
-from . import common, errors
+from . import agreement, chat, common, errors
 
 COLLECTION = "coachApplications"
 
-COACH_TERMS = "coach-terms-v1"
+COACH_TERMS = "coach-terms-v2"
+"""v1 records stay as they are, for history. Version 2 is the Coach Agreement."""
 
-TERMS_VERSION = 1
+TERMS_VERSION = 2
 
 PAGE_SIZE = 25
 
@@ -241,6 +242,15 @@ def _validate(data: dict, now: dt.datetime) -> dict:
     if not isinstance(rules, list) or sorted(map(str, rules)) != sorted(wanted) or len(rules) != len(wanted):
         raise common.bad()
 
+    # Everything a client may read on her page; never the legal name or payout.
+    chat.refuse_contact(
+        personal["displayName"], personal["headline"], approach["text"], data.get("qualifications"),
+        [r["degree"] for r in education] + [r["institution"] for r in education],
+        [r["title"] for r in certificates] + [r["issuer"] for r in certificates],
+        [r["text"] for r in testimonials] + [r["from"] for r in testimonials],
+        [r["note"] for r in transformations if r["note"]],
+    )
+
     return {
         "personal": personal,
         "education": education,
@@ -313,9 +323,12 @@ def submit(
     blobs,
     now: dt.datetime,
     payments_live: bool = False,
+    staff: bool = False,
 ) -> dict:
     common.require_portfolio_live(live)
     common.require_verified(verified)
+    if staff:
+        raise common.refuse(errors.PERMISSION, errors.STAFF_ACCOUNT)
     if coach_v == "active":
         raise common.refuse(errors.PRECONDITION, errors.ALREADY_A_COACH)
     ref = db.collection(COLLECTION).document(uid)
@@ -348,7 +361,7 @@ def submit(
         }
         assert set(record) == set(APPLICATION_KEYS)
         transaction.set(ref, record)
-        transaction.set(consent, {"version": TERMS_VERSION, "at": now, "locale": locale})
+        transaction.set(consent, agreement.consent_record(now, locale))
         return round_no
 
     return {"status": "submitted", "round": common.run(db, body)}
@@ -462,6 +475,7 @@ def decide(
     notify,
     reencode,
     now: dt.datetime,
+    is_staff=None,
 ) -> dict:
     uid = common.text(data.get("uid"), max_len=128)
     common.refuse_if_subject(actor_uid, uid)
@@ -477,6 +491,8 @@ def decide(
     if app.get("status") != "submitted":
         raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
     checked = _checked(data.get("checkedCertificates"), app, decision)
+    if decision == "approve" and is_staff is not None and is_staff(uid):
+        raise common.refuse(errors.PERMISSION, errors.STAFF_ACCOUNT)
 
     decided = common.decided_stamp(actor_uid, now)
     common.log_access(db, actor_uid, f"application_{decision}", uid, now)
@@ -524,6 +540,10 @@ def decide(
         for key in ("owedEgp", "paidEgp"):
             if isinstance(before_private.get(key), int):
                 private[key] = before_private[key]
+        if before_private.get("agreement"):
+            private["agreement"] = before_private["agreement"]
+        elif app.get("termsVersion") == agreement.VERSION:  # accepted in the apply flow; the signed copy is still to come
+            private["agreement"] = {"version": agreement.VERSION, "acceptedAt": app.get("submittedAt"), "status": "accepted"}
         roles = (user.to_dict() or {}).get("roles") or {}
         held = list(roles.get("held") or [])
         if "coach" not in held:

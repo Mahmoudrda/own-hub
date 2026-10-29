@@ -355,3 +355,10 @@ def test_a_system_line_adds_no_unread(db):
     seed_thread(db)
     run_message(db, "m1", {"senderUid": "system", "type": "system", "systemKind": "started", "createdAt": NOW})
     assert "unreadFor" not in thread(db)
+
+
+def test_a_first_name_with_contact_details_is_refused(db, pushes):
+    seed(db)
+    with pytest.raises(errors.CoachingError) as caught:
+        ask(db, pushes, clientName="mona.com")
+    assert caught.value.reason == errors.CONTAINS_CONTACT

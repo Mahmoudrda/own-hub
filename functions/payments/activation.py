@@ -23,6 +23,7 @@ def read_for_start(transaction, db, sub_id: str) -> dict:
     rel_ref = db.collection("relationships").document(sub.get("relId", "none"))
     seen = {"subRef": sub_ref, "sub": sub, "coachRef": coach_ref, "coach": coach_ref.get(transaction=transaction),
             "rel": rel_ref.get(transaction=transaction)}
+    seen["held"] = bool((common.read(db.collection("coachPrivate").document(sub.get("coachUid", "none")), transaction) or {}).get("hold"))
     if lapsed(sub):
         seen["restartable"] = _restartable(transaction, db, sub_id, sub, seen)
     return seen
@@ -69,7 +70,8 @@ def grant(transaction, db, seen: dict, now: dt.datetime, *, provisional_until: O
     if sub.get("status") == "active":
         if provisional_until is None and sub.get("provisionalUntil"):
             began = common.as_utc(sub.get("startsAt")) or now
-            transaction.update(sub_ref, {"provisionalUntil": None, "endsAt": began + common.days(package["durationDays"]),
+            credit = dt.timedelta(seconds=int(sub.get("holdCreditSeconds") or 0))  # days given back after a fee hold
+            transaction.update(sub_ref, {"provisionalUntil": None, "endsAt": began + common.days(package["durationDays"]) + credit,
                                          "payment": {**payment, "state": "approved"}})
             return "upgraded"
         return "unchanged"
@@ -90,7 +92,7 @@ def grant(transaction, db, seen: dict, now: dt.datetime, *, provisional_until: O
     )
     subscriptions.begin(
         transaction, db, sub_id=sub_ref.id, coach_uid=sub["coachUid"], client_uid=sub["clientUid"],
-        rel_id=sub["relId"], rel=seen["rel"], coach_ref=seen["coachRef"], coach=seen["coach"], now=now,
+        rel_id=sub["relId"], rel=seen["rel"], coach_ref=seen["coachRef"], coach=seen["coach"], now=now, source=sub.get("source"), held=seen.get("held", False),
     )
     return "started"
 

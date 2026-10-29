@@ -30,6 +30,16 @@ test('the old coach portfolio, offers and results are unreadable by a verified m
   await assertFails(getDoc(doc(own, `coaches/${COACH}/results/r1`)));
 });
 
+test('legal holds (a deleted coach\'s signed agreement) are closed to every client', async () => {
+  await seed(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), `legalHolds/${COACH}`), { retainUntil: new Date('2032-01-01') });
+  });
+  for (const db of [await verifiedCoach(COACH), await verified(HER)]) {
+    await assertFails(getDoc(doc(db, `legalHolds/${COACH}`)));
+    await assertFails(setDoc(doc(db, `legalHolds/${COACH}`), { retainUntil: new Date('2020-01-01') }));
+  }
+});
+
 test('assessments are closed to read and write, even for the coach they name', async () => {
   await seed(async (ctx) => {
     await setDoc(doc(ctx.firestore(), 'assessments/a1'), { coachUid: COACH, clientUid: HER });

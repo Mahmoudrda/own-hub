@@ -246,3 +246,13 @@ def test_a_payout_change_needs_the_payments_switch(db):
     before = copy.deepcopy(db.docs)
     assert refusal(lambda: request_change(db, ACCOUNT, live=False))[1] == errors.COACH_APP_CLOSED
     assert db.docs == before
+
+
+@pytest.mark.parametrize("data", [
+    {"headline": "Strength coach, insta: mona_fit"},
+    {"approachText": "Write to me on telegram @monafit " + "y" * 60},
+])
+def test_profile_edits_with_contact_details_are_refused(db, blobs, data):
+    before = dict(db.docs[f"coaches/{UID}"])
+    assert refusal(lambda: update(db, blobs, data)) == (errors.INVALID, errors.CONTAINS_CONTACT)
+    assert db.docs[f"coaches/{UID}"] == before

@@ -102,6 +102,26 @@ export function mountCoaching(ctx) {
       load();
       return box;
     }
+    if (kind === "video") {
+      // A video is large: it loads when staff ask for it, and plays from a blob: URL.
+      const box = h("figure", { class: "proof-fig big" });
+      const askFor = () => {
+        const go = h("button", { class: "btn ctl", type: "button" }, "Load the video");
+        go.addEventListener("click", () => busy(go, async () => {
+          box.replaceChildren(h("p", { class: "muted", text: "Loading the video. It can be large..." }));
+          try {
+            const bytes = await getBytes(storageRef(personal(), path), L.PROMO_MAX_BYTES);
+            const type = mime || (path.toLowerCase().endsWith(".mov") ? "video/quicktime" : "video/mp4");
+            box.replaceChildren(h("video", { class: "proof-img", controls: true, preload: "metadata", "aria-label": label, src: URL.createObjectURL(new Blob([bytes], { type })) }));
+          } catch (e) {
+            box.replaceChildren(h("p", { class: "field-error", text: fileProblem(e) }), askFor());
+          }
+        }));
+        return go;
+      };
+      box.append(askFor());
+      return box;
+    }
     const status = h("span", { class: "muted", role: "status", "aria-live": "polite" });
     const open = h("button", { class: "btn ctl", type: "button" }, "Open");
     const download = h("button", { class: "btn ctl", type: "button" }, "Download");
@@ -165,7 +185,7 @@ export function mountCoaching(ctx) {
 
   /* ============== Coaches ============== */
 
-  const co = { status: "submitted", items: [], loaded: false, failed: false, next: null, paging: false, section: "applications", openUid: null, reasons: {}, ticked: new Set(), note: "", counts: 0, suspendOpen: false };
+  const co = { status: "submitted", items: [], loaded: false, failed: false, next: null, paging: false, section: "applications", ag: { items: [], loaded: false, failed: false, reasons: {} }, openUid: null, reasons: {}, ticked: new Set(), note: "", counts: 0, suspendOpen: false, pv: { data: null, month: "", loaded: false, failed: false, reasons: {} } };
 
   async function loadCoaches({ quiet = false } = {}) {
     const root = $("coaches-root");
@@ -186,10 +206,25 @@ export function mountCoaching(ctx) {
     }
     refreshCoachesBadge();
     if (L.canDecidePortfolio(claims()) && !ph.loaded) loadPhotos({ quiet: true });
+    if (L.canDecideAgreement(claims()) && !co.ag.loaded && !co.ag.failed) loadAgreements({ quiet: true });
+    if (L.canDecidePromo(claims()) && !co.pv.loaded && !co.pv.failed) loadPromo({ quiet: true });
     if (!quiet || getState().tab === "coaches") renderCoaches();
   }
 
-  const refreshCoachesBadge = () => setBadge("coaches", L.coachesBadgeCount(co.counts, ph.items.length), "waiting");
+  const refreshCoachesBadge = () => setBadge("coaches", L.coachesBadgeCount(co.counts, ph.items.length, co.ag.items.length, co.pv.data?.waiting?.length ?? 0), "waiting");
+
+  async function loadAgreements({ quiet = false } = {}) {
+    try {
+      co.ag.items = (await call("list_coach_agreements", {})).items ?? [];
+      co.ag.loaded = true;
+      co.ag.failed = false;
+    } catch (e) {
+      if (!quiet) fail(e);
+      if (!co.ag.loaded) co.ag.failed = true;
+    }
+    refreshCoachesBadge();
+    if (!quiet || getState().tab === "coaches") renderCoaches();
+  }
 
   function renderCoaches() {
     const root = $("coaches-root");
@@ -197,6 +232,8 @@ export function mountCoaching(ctx) {
     if (!co.loaded) { mountLoading(root); return; }
     if (co.openUid) { renderApplication(root); return; }
     if (co.section === "photos") { renderPhotos(root); return; }
+    if (co.section === "agreements") { renderAgreements(root); return; }
+    if (co.section === "videos") { renderPromo(root); return; }
     const chips = h("div", { class: "chips", role: "group", "aria-label": "Show" },
       L.APPLICATION_STATUSES.map((s) => h("button", {
         class: "chip", type: "button", "aria-pressed": String(co.status === s),
@@ -214,13 +251,129 @@ export function mountCoaching(ctx) {
 
   // Applications or Portfolio photos, for accounts that may check photos.
   function sectionSwitch() {
-    if (!L.canDecidePortfolio(claims())) return null;
+    if (!L.canDecidePortfolio(claims()) && !L.canDecideAgreement(claims()) && !L.canDecidePromo(claims())) return null;
     const tab = (id, label) => h("button", {
       class: "chip", type: "button", "aria-pressed": String(co.section === id), "data-k": `section:${id}`,
       onclick: () => { co.section = id; renderCoaches(); refocus($("coaches-root"), `section:${id}`); },
     }, label);
     return h("div", { class: "chips", role: "group", "aria-label": "Coaches sections" },
-      tab("applications", "Applications"), tab("photos", ph.items.length ? `Portfolio photos (${ph.items.length}${ph.next ? "+" : ""})` : "Portfolio photos"));
+      tab("applications", "Applications"),
+      L.canDecidePortfolio(claims()) ? tab("photos", ph.items.length ? `Portfolio photos (${ph.items.length}${ph.next ? "+" : ""})` : "Portfolio photos") : null,
+      L.canDecideAgreement(claims()) ? tab("agreements", co.ag.items.length ? `Signed agreements (${co.ag.items.length})` : "Signed agreements") : null,
+      L.canDecidePromo(claims()) ? tab("videos", co.pv.data?.waiting?.length ? `Marketing videos (${co.pv.data.waiting.length})` : "Marketing videos") : null);
+  }
+
+  /* ---- Signed Coach Agreements ---- */
+
+  function renderAgreements(root) {
+    if (co.ag.failed && !co.ag.loaded) { loadFailed(root, () => { co.ag.failed = false; loadAgreements(); }, "The signed agreements"); return; }
+    const head = h("div", { class: "panel-head" }, h("h2", { text: "Signed agreements" }),
+      h("p", { class: "about", text: "A coach cannot take a new client until her signed copy is verified. Check the name, the signature, the date and the national ID number on the paper, then verify it or ask for a new copy." }));
+    if (!co.ag.items.length) {
+      const empty = h("div", { class: "empty-state" });
+      setEmpty(empty, { title: "No signed copies are waiting.", hint: "A coach's upload appears here as soon as she sends it.", art: "sieve" });
+      root.replaceChildren(sectionSwitch(), head, empty);
+      return;
+    }
+    root.replaceChildren(sectionSwitch(), head, h("ul", { class: "list" }, co.ag.items.map((item) => agreementCard(item))));
+  }
+
+  function agreementCard(item) {
+    const problems = h("div", { class: "problems", role: "alert", hidden: true });
+    const reason = h("input", { class: "input", type: "text", maxlength: String(L.AGREEMENT_REASON_MAX), "aria-label": "Reason, if you ask for a new copy", value: co.ag.reasons[item.uid] ?? "" });
+    reason.addEventListener("input", () => { co.ag.reasons[item.uid] = reason.value; });
+    return h("li", { class: "item" }, h("section", { class: "card" },
+      h("h3", { text: item.fullName || "Unnamed coach" }),
+      h("p", { class: "meta", text: item.uploadedAt ? `Uploaded ${when(item.uploadedAt)}` : "Uploaded" }),
+      fileView(item.path, { label: "Signed agreement", big: true }),
+      h("div", { class: "reason-box" }, h("span", { class: "flabel", text: "Reason, if you ask for a new copy" }), reason),
+      problems,
+      h("div", { class: "actions" },
+        h("button", { class: "btn primary big", type: "button", onclick: (ev) => decideAgreement(ev.currentTarget, item, "verify", problems) }, "Verify"),
+        h("button", { class: "btn quiet-danger", type: "button", onclick: (ev) => decideAgreement(ev.currentTarget, item, "reject", problems) }, "Ask for a new copy"))));
+  }
+
+  async function decideAgreement(btn, item, decision, problemsBox) {
+    const problems = L.agreementRejectProblems(decision, co.ag.reasons[item.uid]);
+    problemsBox.replaceChildren(...(problems.length ? [h("ul", {}, problems.map((p) => h("li", { text: p })))] : []));
+    problemsBox.hidden = problems.length === 0;
+    if (problems.length) return;
+    await busy(btn, async () => {
+      await call("decide_coach_agreement", L.agreementPayload(item, decision, co.ag.reasons[item.uid]));
+      notice(decision === "verify" ? "Verified. She can take new clients." : "She is told to send a new copy.", true);
+      co.ag.items = co.ag.items.filter((x) => x.uid !== item.uid);
+      delete co.ag.reasons[item.uid];
+      refreshCoachesBadge();
+      renderCoaches();
+    });
+  }
+
+  /* ---- Marketing videos: two a month from each coach ---- */
+
+  async function loadPromo({ quiet = false, month = co.pv.month } = {}) {
+    try {
+      co.pv.data = await call("list_promo_videos", month ? { month } : {});
+      co.pv.month = co.pv.data.month;
+      co.pv.loaded = true;
+      co.pv.failed = false;
+    } catch (e) {
+      if (!quiet) fail(e);
+      if (!co.pv.loaded) co.pv.failed = true;
+    }
+    refreshCoachesBadge();
+    if (!quiet || getState().tab === "coaches") renderCoaches();
+  }
+
+  function renderPromo(root) {
+    if (co.pv.failed && !co.pv.loaded) { loadFailed(root, () => { co.pv.failed = false; loadPromo(); }, "The marketing videos"); return; }
+    if (!co.pv.loaded) { mountLoading(root); return; }
+    const data = co.pv.data;
+    const months = L.promoMonths(data.month);
+    const picker = h("div", { class: "chips", role: "group", "aria-label": "Month" },
+      months.map((m) => h("button", {
+        class: "chip", type: "button", "aria-pressed": String(m === data.month), "data-k": `month:${m}`,
+        onclick: () => loadPromo({ month: m }),
+      }, m)));
+    const head = h("div", { class: "panel-head" }, h("h2", { text: "Marketing videos" }),
+      h("p", { class: "about", text: `Each coach owes ${data.target} approved videos a month (30 seconds to 3 minutes, no client in them, women only). Watch each one, then approve it or tell her what to change. Only approved videos count.` }));
+    const counts = h("ul", { class: "list" }, data.coaches.map((c) => h("li", { class: "item" }, h("section", { class: "card" },
+      h("h3", { text: c.name || "Unnamed coach" }),
+      h("p", { class: L.promoShort(c) ? "badge known" : "meta", text: L.promoCountLine(c) })))));
+    const waiting = data.waiting.length
+      ? h("ul", { class: "list" }, data.waiting.map((item) => promoCard(item)))
+      : (() => { const empty = h("div", { class: "empty-state" }); setEmpty(empty, { title: "No videos are waiting.", hint: "A coach's upload appears here as soon as she sends it.", art: "sieve" }); return empty; })();
+    root.replaceChildren(sectionSwitch(), head, picker,
+      h("h3", { text: "Waiting for a decision" }), waiting,
+      h("h3", { text: `This month, by coach (${data.month})` }), counts);
+  }
+
+  function promoCard(item) {
+    const problems = h("div", { class: "problems", role: "alert", hidden: true });
+    const key = `${item.coachUid}/${item.id}`;
+    const reason = h("input", { class: "input", type: "text", maxlength: String(L.PROMO_REASON_MAX), "aria-label": "What she should change", value: co.pv.reasons[key] ?? "" });
+    reason.addEventListener("input", () => { co.pv.reasons[key] = reason.value; });
+    return h("li", { class: "item" }, h("section", { class: "card" },
+      h("h3", { text: item.coachName || "Unnamed coach" }),
+      h("p", { class: "meta", text: `${L.PROMO_TOPIC_LABELS[item.topic] ?? item.topic}, ${item.durationSeconds ?? "?"} seconds, sent ${when(item.createdAt)}` }),
+      fileView(item.path, { label: "Marketing video", big: true }),
+      h("div", { class: "reason-box" }, h("span", { class: "flabel", text: "What she should change, if you ask for changes" }), reason),
+      problems,
+      h("div", { class: "actions" },
+        h("button", { class: "btn primary big", type: "button", onclick: (ev) => decidePromo(ev.currentTarget, item, key, "approve", problems) }, "Approve"),
+        h("button", { class: "btn quiet-danger", type: "button", onclick: (ev) => decidePromo(ev.currentTarget, item, key, "changes", problems) }, "Ask for changes"))));
+  }
+
+  async function decidePromo(btn, item, key, decision, problemsBox) {
+    const problems = L.promoChangesProblems(decision, co.pv.reasons[key]);
+    problemsBox.replaceChildren(...(problems.length ? [h("ul", {}, problems.map((p) => h("li", { text: p })))] : []));
+    problemsBox.hidden = problems.length === 0;
+    if (problems.length) return;
+    await busy(btn, async () => {
+      await call("decide_promo_video", L.promoPayload(item, decision, co.pv.reasons[key]));
+      notice(decision === "approve" ? "Approved. It counts for her month." : "She is told what to change.", true);
+      delete co.pv.reasons[key];
+      await loadPromo({ quiet: true });
+    });
   }
 
   /* ---- Portfolio photos ---- */

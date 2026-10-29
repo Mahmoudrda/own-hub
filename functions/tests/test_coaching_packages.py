@@ -211,3 +211,12 @@ def test_a_suspension_that_lands_during_the_save_still_publishes_nothing(db, mon
     monkeypatch.setattr(packages.common, "require_active_coach", late)
     assert refusal(lambda: save(db, body()))[1] == errors.COACH_SUSPENDED
     assert db.docs[f"coaches/{UID}"]["published"] is False and stored_packages(db) == {}
+
+
+@pytest.mark.parametrize("field,value", [
+    ("title", "Call me 01012345678"),
+    ("description", "Message me on whatsapp for the full plan details."),
+    ("includes", ["Workout plan", "email mona@gmail.com"]),
+])
+def test_package_text_with_contact_details_is_refused(db, field, value):
+    assert refusal(lambda: save(db, body(**{field: value}))) == (errors.INVALID, errors.CONTAINS_CONTACT)

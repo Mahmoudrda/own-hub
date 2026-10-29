@@ -18,7 +18,7 @@ import sys
 import urllib.error
 import urllib.request
 
-PROJECT = "own-hub"
+PROJECT = os.environ.get("E2E_PROJECT", "demo-own-hub")
 AUTH = os.environ.get("E2E_AUTH_HOST", "127.0.0.1:9299")
 IDT = f"http://{AUTH}/identitytoolkit.googleapis.com/v1"
 

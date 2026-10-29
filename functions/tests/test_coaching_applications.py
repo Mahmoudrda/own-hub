@@ -55,7 +55,7 @@ def valid(uid=UID, **overrides):
             "trainsWhere": ["home", "online"],
         },
         "payout": {"rail": "instapay", "account": "mona.h@instapay", "holderName": "Mona Hassan Ali"},
-        "termsVersion": 1,
+        "termsVersion": 2,
         "rules": ["accurateInfo", "clientPhotoConsent", "noOffPlatformPayment"],
         "locale": "en",
     }
@@ -124,14 +124,18 @@ def test_a_payout_account_that_is_given_is_still_checked(db, blobs):
 
 def test_the_coach_terms_consent_is_recorded(db, blobs):
     submit(db, blobs)
-    assert db.docs[f"users/{UID}/consents/coach-terms-v1"] == {"version": 1, "at": NOW, "locale": "en"}
+    from coaching import agreement
+
+    assert db.docs[f"users/{UID}/consents/coach-terms-v2"] == {
+        "version": 2, "at": NOW, "locale": "en", "textHash": agreement.HASHES["en"],
+    }
 
 
 def test_the_consent_locale_defaults_to_arabic(db, blobs):
     data = valid()
     data["locale"] = "fr"
     submit(db, blobs, data)
-    assert db.docs[f"users/{UID}/consents/coach-terms-v1"]["locale"] == "ar"
+    assert db.docs[f"users/{UID}/consents/coach-terms-v2"]["locale"] == "ar"
 
 
 def test_refused_while_closed(db, blobs):
@@ -231,7 +235,7 @@ BAD = {
     "bad instapay": lambda d: d["payout"].update(account="mona"),
     "bad wallet": lambda d: d["payout"].update(rail="vodafoneCash", account="0121234567"),
     "short holder": lambda d: d["payout"].update(holderName="Mo"),
-    "terms version": lambda d: d.update(termsVersion=2),
+    "terms version": lambda d: d.update(termsVersion=1),
     "terms as true": lambda d: d.update(termsVersion=True),
     "missing a rule": lambda d: d.update(rules=["accurateInfo", "clientPhotoConsent"]),
     "extra rule": lambda d: d.update(rules=["accurateInfo", "clientPhotoConsent", "noOffPlatformPayment", "x"]),
@@ -550,9 +554,30 @@ class FakeAuth:
 
 
 def test_merge_claims_keeps_the_others():
-    auth = FakeAuth({"verified": True, "womanReviewer": True})
+    auth = FakeAuth({"verified": True, "locale": "ar"})
     claims.merge_claims(auth, "u1", {"coachV": "active"})
-    assert auth.writes == [("u1", {"verified": True, "womanReviewer": True, "coachV": "active"})]
+    assert auth.writes == [("u1", {"verified": True, "locale": "ar", "coachV": "active"})]
+
+
+@pytest.mark.parametrize("staff", ["admin", "womanReviewer", "finance"])
+def test_the_coach_claim_is_never_minted_for_staff(staff):
+    auth = FakeAuth({"verified": True, staff: True})
+    with pytest.raises(errors.CoachingError) as caught:
+        claims.merge_claims(auth, "u1", {"coachV": "active"})
+    assert caught.value.reason == errors.STAFF_ACCOUNT and auth.writes == []
+    claims.merge_claims(auth, "u1", {"coachV": "suspended"})  # taking rights away stays possible
+
+
+def test_approving_a_staff_account_is_refused_before_anything_is_written(submitted, blobs):
+    db = submitted
+    with pytest.raises(errors.CoachingError) as caught:
+        applications.decide(
+            db, STAFF, approve_data(), merge_claims=Recorder().merge, blobs=blobs, notify=Recorder().notify,
+            reencode=lambda raw, long_side=None: raw, now=NOW, is_staff=lambda uid: True,
+        )
+    assert caught.value.reason == errors.STAFF_ACCOUNT
+    assert db.docs[f"coachApplications/{UID}"]["status"] == "submitted"
+    assert f"coaches/{UID}" not in db.docs
 
 
 def test_merge_claims_on_an_account_with_no_claims():
@@ -728,3 +753,20 @@ def test_a_webp_certificate_is_accepted(db, blobs):
 def test_while_payments_are_off_a_payout_account_is_dropped_and_never_kept(db, blobs):
     submit(db, blobs, payments_live=False)
     assert db.docs[f"coachApplications/{UID}"]["payout"] is None
+
+
+def test_an_application_with_contact_details_on_her_page_is_refused(db, blobs):
+    data = valid()
+    data["personal"]["headline"] = "Strength coach, call 01012345678"
+    assert refusal(lambda: submit(db, blobs, data)) == (errors.INVALID, errors.CONTAINS_CONTACT)
+    assert f"coachApplications/{UID}" not in db.docs
+
+
+def test_a_staff_account_cannot_apply(db, blobs):
+    with pytest.raises(errors.CoachingError) as caught:
+        applications.submit(
+            db, UID, valid(), live=True, verified=True, coach_v=None, blobs=blobs, now=NOW,
+            payments_live=True, staff=True,
+        )
+    assert caught.value.reason == errors.STAFF_ACCOUNT
+    assert f"coachApplications/{UID}" not in db.docs

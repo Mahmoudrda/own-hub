@@ -86,3 +86,19 @@ class _NoVertex:
         @staticmethod
         def generate_content(**kwargs):
             raise ReachedVertex("a test reached Vertex AI: inject a fake client")
+
+
+@pytest.fixture(autouse=True)
+def _requests_come_from_a_current_app(monkeypatch):
+    """With payments on, `subscriptions.request` refuses an app that sends no
+    appBuild (a 1.0.0 app cannot show payments). Tests ask as the current app;
+    the tests of that refusal call `subscriptions.request.raw`."""
+    from coaching import common, subscriptions
+
+    raw = subscriptions.request
+
+    def current(db, uid, data, **kw):
+        return raw(db, uid, {"appBuild": common.MIN_APP_BUILD, **data}, **kw)
+
+    current.raw = raw
+    monkeypatch.setattr(subscriptions, "request", current)

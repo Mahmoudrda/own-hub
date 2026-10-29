@@ -23,8 +23,8 @@ def grant_provisional(transaction, db, ref, pay: dict, seen: dict, cfg: dict, no
     to. Returns the payment as it now stands. All reads done by the caller."""
     days = min(model.LIMITS["provisionalMaxDays"], (seen["sub"].get("package") or {}).get("durationDays", 7))
     until = now + model.days(days)
-    rel_source = (seen["rel"].to_dict() or {}).get("source") if seen["rel"].exists else None
-    changes = {"access": {"state": "provisional", "until": until}, **fees.at_activation(pay, cfg, rel_source, now)}
+    rel_source = fees.source_of(seen)
+    changes = {"access": {"state": "provisional", "until": until}, **fees.start(transaction, db, ref, pay, cfg, rel_source, now)}
     transaction.update(ref, changes)
     if can_grant(seen):
         activation.grant(transaction, db, seen, now, provisional_until=until)
@@ -35,14 +35,14 @@ def apply_confirmation(transaction, db, ref, cur: dict, seen: dict, prof_ref, pr
                        now: dt.datetime, role: str, actor_uid: Optional[str], received: Optional[int]) -> dict:
     """proof_submitted -> confirmed, full access, fee owed (if not already),
     the coach's counters. All reads were done by the caller. Returns the payment."""
-    rel_source = (seen["rel"].to_dict() or {}).get("source") if seen["rel"].exists else None
+    rel_source = fees.source_of(seen)
     got = received if received is not None else cur["amountPiasters"]
     starts = can_grant(seen)  # false when the acceptance is gone: the money is confirmed, the coaching is for staff to restore
     changes = {
         "coachDecision": {**(cur.get("coachDecision") or {}), "confirmedAt": now, "receivedPiasters": got, "autoConfirmed": role == states.SYSTEM},
         "overpaidPiasters": max(0, got - cur["amountPiasters"]),
         "access": {"state": "full" if starts else "none", "until": None},
-        **fees.at_activation(cur, cfg, rel_source, now),
+        **fees.start(transaction, db, ref, cur, cfg, rel_source, now),
     }
     out = engine.move(transaction, db, ref, cur, "confirmed", role, actor_uid, now, changes=changes,
                       code="auto_confirmed" if role == states.SYSTEM else "coach_confirmed")
@@ -54,7 +54,7 @@ def apply_confirmation(transaction, db, ref, cur: dict, seen: dict, prof_ref, pr
 
 
 def confirm(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> dict:
-    common.require_active_coach(db, uid, coach_v)
+    common.require_active_coach(db, uid, coach_v, allow_hold=True)  # protects her clients, so it works on hold
     payment_id = common.text(data.get("paymentId"), max_len=128)
     received = data.get("receivedPiasters")
     if received is not None:

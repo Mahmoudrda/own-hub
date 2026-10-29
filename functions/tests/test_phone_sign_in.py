@@ -28,6 +28,8 @@ USER_CALLABLES = (
     "request_review",
     "record_signup_role",
     "submit_coach_certificate",
+    "accept_coach_terms",
+    "submit_coach_agreement",
     "create_coach_invite",
     "accept_coach_invite",
     "record_meal_photo_consent",

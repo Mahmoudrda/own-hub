@@ -110,6 +110,8 @@ describe('nobody writes a check-in from a client', () => {
       await assertFails(updateDoc(doc(who, path), { answers: { training: 'all', energy: 5, food: 5, pain: false, note: '' } }));
       await assertFails(updateDoc(doc(who, path), { followUpAt: new Date() }));
       await assertFails(updateDoc(doc(who, path), { answeredAt: new Date(), clientUid: OTHER }));
+      await assertFails(updateDoc(doc(who, path), { 'answers.weightKg': 50, 'answers.workoutsDone': 9 }));
+      await assertFails(updateDoc(doc(who, path), { reply: 'Well done', repliedAt: new Date() }));
       await assertFails(deleteDoc(doc(who, path)));
     }
   });
@@ -118,6 +120,25 @@ describe('nobody writes a check-in from a client', () => {
     const ad = await admin(uid.admin);
     await assertFails(setDoc(doc(ad, `relationships/${REL}/checkIns/2026-W46`), answered(HER, COACH)));
     await assertFails(deleteDoc(doc(ad, `relationships/${REL}/checkIns/${WEEK}`)));
+  });
+});
+
+describe('marketing videos of a coach', () => {
+  const VIDEO = `coachPrivate/${COACH}/promoVideos/v1`;
+
+  test('only the coach reads her own, and nobody writes one from a client', async () => {
+    await seed(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), VIDEO), { coachUid: COACH, month: '2026-10', status: 'waiting' });
+    });
+    const coach = await verifiedCoach(COACH);
+    await assertSucceeds(getDoc(doc(coach, VIDEO)));
+    await assertSucceeds(getDocs(collection(coach, `coachPrivate/${COACH}/promoVideos`)));
+    for (const who of [await verifiedCoach(COACH2), await verified(HER), await admin(uid.admin), await anon()]) {
+      await assertFails(getDoc(doc(who, VIDEO)));
+    }
+    await assertFails(updateDoc(doc(coach, VIDEO), { status: 'approved' }));
+    await assertFails(setDoc(doc(coach, `coachPrivate/${COACH}/promoVideos/v2`), { status: 'approved', month: '2026-10' }));
+    await assertFails(deleteDoc(doc(coach, VIDEO)));
   });
 });
 

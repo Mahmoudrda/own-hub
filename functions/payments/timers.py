@@ -242,5 +242,7 @@ def hourly(db, now: dt.datetime, notify) -> dict:
             _notify(notify, row["clientUid"], "instapayAccessEndsSoon", payment_id)
             counts["accessWarned"] += 1
     counts["addresses"] = promote_addresses(db, now)
+    counts["feeReminders"] = fees.remind(db, now=now, notify=notify)
     counts["feesOverdue"] = fees.mark_overdue(db, now=now, notify=notify)
+    counts["holdsReleased"] = sum(bool(fees.release(db, uid, now, notify=notify)) for uid in common.coaches_on_hold(db))
     return counts

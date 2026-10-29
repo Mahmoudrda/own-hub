@@ -23,7 +23,7 @@ import datetime as dt
 import secrets
 from typing import Callable, Optional
 
-from . import errors
+from . import common, errors
 
 COLLECTION = "coachInvites"
 
@@ -79,6 +79,7 @@ def create(
         raise errors.CoachingError(errors.PERMISSION, errors.NOT_VERIFIED)
     if not is_coach:
         raise errors.CoachingError(errors.PERMISSION, errors.NOT_A_COACH)
+    common.require_not_on_hold(db, uid)
 
     invites = db.collection(COLLECTION)
     for snapshot in invites.where("coachUid", "==", uid).stream():
@@ -99,23 +100,11 @@ def create(
     raise errors.CoachingError(errors.EXHAUSTED, errors.INVITE_INVALID)
 
 
-def accept(
-    db,
-    uid: str,
-    data: dict,
-    *,
-    verified: bool,
-    live: bool,
-    now: dt.datetime,
-    timestamp,
-) -> dict:
-    """The coach a code is for: `{ok, relId, coachUid}`. Writes nothing
-    (`timestamp` stays in the signature for the callable and is not used)."""
-    if not live:
-        raise errors.CoachingError(errors.PRECONDITION, errors.COACH_APP_CLOSED)
-    if not verified:
-        raise errors.CoachingError(errors.PERMISSION, errors.NOT_VERIFIED)
-    code = normalise(data.get("code"))
+def coach_for_code(db, uid: str, raw, now: dt.datetime) -> str:
+    """The coach a live code is for, or a refusal (invalid, expired, her own,
+    a coach page that is gone, a block either way: all as a code that never
+    existed). Reads only."""
+    code = normalise(raw)
     if code is None:
         raise errors.CoachingError(errors.INVALID, errors.INVITE_INVALID)
 
@@ -132,8 +121,6 @@ def accept(
         raise errors.CoachingError(errors.PRECONDITION, errors.INVITE_OWN)
 
     users = db.collection("users")
-    # A coach page that no longer exists, or a block in either direction, is
-    # answered exactly like a code that never existed.
     if not db.collection("coaches").document(coach_uid).get().exists:
         raise errors.CoachingError(errors.NOT_FOUND, errors.INVITE_INVALID)
     if (
@@ -141,7 +128,26 @@ def accept(
         or users.document(uid).collection("blocks").document(coach_uid).get().exists
     ):
         raise errors.CoachingError(errors.NOT_FOUND, errors.INVITE_INVALID)
+    return coach_uid
 
+
+def accept(
+    db,
+    uid: str,
+    data: dict,
+    *,
+    verified: bool,
+    live: bool,
+    now: dt.datetime,
+    timestamp,
+) -> dict:
+    """The coach a code is for: `{ok, relId, coachUid}`. Writes nothing
+    (`timestamp` stays in the signature for the callable and is not used)."""
+    if not live:
+        raise errors.CoachingError(errors.PRECONDITION, errors.COACH_APP_CLOSED)
+    if not verified:
+        raise errors.CoachingError(errors.PERMISSION, errors.NOT_VERIFIED)
+    coach_uid = coach_for_code(db, uid, data.get("code"), now)
     return {"ok": True, "relId": f"{coach_uid}__{uid}", "coachUid": coach_uid}
 
 

@@ -1141,7 +1141,7 @@ export const REPORT_DECISION_LABELS = { dismiss: "Dismiss", hide_message: "Hide 
 export const REPORT_KIND_LABELS = { coachMessage: "Chat message", coachProfile: "Coach profile", coachPlan: "Plan" };
 export const REPORT_REASON_LABELS = {
   harassment: "Harassment", man_account: "Looks like a man's account", nudity: "Nudity", spam: "Spam", impersonation: "Impersonation",
-  self_harm: "Self harm", off_platform_payment: "Asked to pay outside the app", unsafe_advice: "Unsafe advice", other: "Other",
+  self_harm: "Self harm", off_platform_payment: "Asked to pay outside the app", contact_sharing: "Shared contact details or an outside app", unsafe_advice: "Unsafe advice", other: "Other",
 };
 export const reportDecisionsFor = (kind) => REPORT_DECISIONS.filter((d) => d !== "hide_message" || kind === "coachMessage");
 
@@ -1162,6 +1162,9 @@ export const COACHING_REASON_TEXT = {
   report_not_found: "That report is gone. Refresh the list.",
   media_not_found: "That photo is gone. Refresh the list.",
   too_many_media: "That coach already has the most items she can have.",
+  agreement_not_uploaded: "That copy is not in storage.",
+  file_not_uploaded: "That video is not in storage.",
+  contains_contact: "The reply has a phone number, link or handle. Take it out.",
 };
 
 export function coachingMessage(e) {
@@ -1290,6 +1293,7 @@ export function fileKind(path, mime = "") {
   const m = String(mime ?? "").toLowerCase();
   const ext = String(path ?? "").toLowerCase().split("?")[0].split(".").pop();
   if (m === "application/pdf" || ext === "pdf") return "pdf";
+  if (m.startsWith("video/") || ["mp4", "mov"].includes(ext)) return "video";
   if (m.startsWith("image/") || ["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return "image";
   return "other";
 }
@@ -1330,4 +1334,62 @@ export function portfolioDecisionPayload(item, decision, reason = "") {
 }
 
 // What the Coaches tab badge counts: applications plus photos waiting.
-export const coachesBadgeCount = (applications, photos) => (Number(applications) || 0) + (Number(photos) || 0);
+export const coachesBadgeCount = (applications, photos, agreements = 0, videos = 0) =>
+  (Number(applications) || 0) + (Number(photos) || 0) + (Number(agreements) || 0) + (Number(videos) || 0);
+
+/* signed Coach Agreement copies: staff verify or reject, a rejection needs a reason */
+
+export const AGREEMENT_REASON_MAX = 200;
+export const canDecideAgreement = (claims) => !!(claims?.womanReviewer || claims?.admin);
+
+export const agreementRejectProblems = (decision, reason) => {
+  if (decision !== "reject") return [];
+  const text = String(reason ?? "").trim();
+  if (!text) return ["Write the reason. She reads it."];
+  return text.length > AGREEMENT_REASON_MAX ? [`Keep the reason under ${AGREEMENT_REASON_MAX} letters.`] : [];
+};
+
+export const agreementPayload = (item, decision, reason = "") =>
+  ({ uid: item.uid, decision, reason: decision === "reject" ? String(reason ?? "").trim() : "" });
+
+/* marketing videos: two a month from each coach, a woman reviewer approves them */
+
+export const PROMO_TARGET = 2;
+export const PROMO_REASON_MAX = 200;
+export const PROMO_MAX_BYTES = 200 * 1024 * 1024;
+export const canDecidePromo = (claims) => !!claims?.womanReviewer;
+
+export const PROMO_TOPIC_LABELS = {
+  workout_tip: "A workout or movement tip",
+  eating_idea: "A healthy eating idea",
+  training_myth: "A training myth",
+  how_coaching_works: "How coaching with her works",
+  introduction: "An introduction of herself",
+};
+
+export const promoChangesProblems = (decision, reason) => {
+  if (decision !== "changes") return [];
+  const text = String(reason ?? "").trim();
+  if (!text) return ["Write what she should change. She reads it."];
+  return text.length > PROMO_REASON_MAX ? [`Keep the reason under ${PROMO_REASON_MAX} letters.`] : [];
+};
+
+export const promoPayload = (item, decision, reason = "") =>
+  ({ coachUid: item.coachUid, videoId: item.id, decision, reason: decision === "changes" ? String(reason ?? "").trim() : "" });
+
+// "2026-10" and the five months before it, newest first, for the month picker.
+export function promoMonths(current, count = 6) {
+  const [y, m] = String(current).split("-").map(Number);
+  if (!y || !m) return [];
+  return Array.from({ length: count }, (_, i) => {
+    const total = y * 12 + (m - 1) - i;
+    return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, "0")}`;
+  });
+}
+
+// A coach is short when fewer than the target are approved in the month.
+export const promoShort = (coach) => (Number(coach?.approved) || 0) < (Number(coach?.target) || PROMO_TARGET);
+
+export const promoCountLine = (coach) =>
+  `${Number(coach?.approved) || 0} of ${Number(coach?.target) || PROMO_TARGET} approved`
+  + (coach?.waiting ? `, ${coach.waiting} waiting` : "") + (coach?.changes ? `, ${coach.changes} to change` : "");

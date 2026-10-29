@@ -11,7 +11,7 @@ export function mountPaymentsDesk(ctx) {
   const freshQueue = () => ({ items: [], next: null, loaded: false, failed: false, paging: false, openId: null, row: null, detail: null, images: null, pick: "", reason: "", proofFalse: false });
   const freshFlags = () => ({ data: null, loaded: false, failed: false, reasons: {} });
   const desk = { section: "", q: freshQueue(), fl: freshFlags(), sw: { enabled: undefined, loaded: false, reason: "" } };
-  const fees = { items: [], next: null, status: "paid_claimed", loaded: false, failed: false, paging: false, seq: 0 };
+  const fees = { items: [], next: null, status: "attention", loaded: false, failed: false, paging: false, seq: 0, reasons: {} };
   let picsBox = null;
   // Suspension requests this person made, by her account and then by coach: { [account]: { [coachUid]: proposal.at } }.
   // It outlives release(): leaving the tab must not turn her own request into one she may approve.
@@ -382,7 +382,7 @@ export function mountPaymentsDesk(ctx) {
     try {
       const data = await call("list_fee_statements", { ...(status ? { status } : {}), ...(more && fees.next ? { after: fees.next } : {}) });
       if (seq !== fees.seq) return;
-      fees.items = more ? appendPage(fees.items, data.items ?? [], (x) => x.statementId) : (data.items ?? []);
+      fees.items = D.holdFirst(more ? appendPage(fees.items, data.items ?? [], (x) => x.statementId) : (data.items ?? []));
       fees.next = data.next ?? null;
       fees.loaded = true;
       fees.failed = false;
@@ -391,7 +391,7 @@ export function mountPaymentsDesk(ctx) {
       if (!quiet) fail(e);
       if (!fees.loaded) fees.failed = true;
     } finally { if (seq === fees.seq) fees.paging = false; }
-    if (status === "paid_claimed") setBadge("fees", D.feeBadge(fees.items), "to confirm");
+    if (status === "attention") setBadge("fees", D.feeBadge(fees.items), "to confirm");
     if (quiet && getState().tab !== "fees") return;
     renderFees();
   }
@@ -401,7 +401,7 @@ export function mountPaymentsDesk(ctx) {
     if (!D.canSeeFees(claims())) { root.replaceChildren(); return; }
     root.replaceChildren(
       h("div", { class: "panel-head" }, h("h2", { text: "Coach fee statements" }),
-        h("p", { class: "about", text: "Each month a coach owes Own Hub a fee on her confirmed payments. Confirm it once the money is in the Own Hub InstaPay account." })),
+        h("p", { class: "about", text: "A coach owes Own Hub a fee on each confirmed payment, due in 3 days. Not confirmed by you after 7 days, her account is put on hold (listed first). Confirm the fee once the money is in the Own Hub InstaPay account and the hold ends by itself. If her I-paid claim did not check out, reject it with a reason." })),
       h("div", { class: "chips", role: "group", "aria-label": "Status" },
         D.FEE_FILTERS.map((s) => h("button", { class: "chip", type: "button", "aria-pressed": String(fees.status === s), onclick: () => filterFees(s) }, D.FEE_FILTER_LABELS[s]))),
       feesBody());
@@ -418,7 +418,7 @@ export function mountPaymentsDesk(ctx) {
   function feesBody() {
     if (fees.failed && !fees.loaded) return failedBox("The fee statements", () => loadFees());
     if (!fees.loaded) return h("ul", { class: "list", "aria-busy": "true" }, skeletons(3));
-    if (!fees.items.length) return emptyBox({ title: "No statements here.", hint: "Statements are made on the 1st of each month.", art: "settle" });
+    if (!fees.items.length) return emptyBox({ title: "No statements here.", hint: "A bill is made when a payment is confirmed.", art: "settle" });
     return h("div", {},
       h("ul", { class: "list" }, fees.items.map((s, i) => {
         const r = D.feeRow(s);
@@ -428,11 +428,30 @@ export function mountPaymentsDesk(ctx) {
             h("div", { class: "meta" }, h("span", { class: r.late ? "badge flag" : r.claimed ? "badge known" : "badge", text: r.status })),
             kv("Coach account", r.coach),
             r.lines.map(([k, v]) => kv(k, v)))),
+          r.canReject
+            ? reasonBox({ id: `fee-reason-${i}`, label: "If it did not arrive: the reason (required, at least 10 characters)", value: fees.reasons[s.statementId], onInput: (v) => { fees.reasons[s.statementId] = v; } })
+            : null,
           r.canConfirm
-            ? h("div", { class: "actions" }, h("button", { class: r.claimed ? "btn primary" : "btn", type: "button", onclick: (ev) => confirmFee(ev.currentTarget, s, r) }, "Confirm the fee arrived"))
+            ? h("div", { class: "actions" },
+                h("button", { class: r.claimed ? "btn primary" : "btn", type: "button", onclick: (ev) => confirmFee(ev.currentTarget, s, r) }, "Confirm the fee arrived"),
+                r.canReject ? h("button", { class: "btn quiet-danger", type: "button", onclick: (ev) => rejectFee(ev.currentTarget, s) }, "Reject the claim") : null)
             : null);
       })),
       fees.next ? h("div", { class: "actions" }, h("button", { class: "btn", type: "button", "aria-busy": String(fees.paging), disabled: fees.paging, onclick: () => loadFees({ more: true }) }, fees.paging ? "Loading..." : "Load more")) : null);
+  }
+
+  async function rejectFee(btn, s) {
+    let body;
+    try { body = D.rejectFeePayload(s.statementId, fees.reasons[s.statementId]); } catch (e) { notice(e.message); return; }
+    await busy(btn, async () => {
+      await call("reject_fee_claim", body);
+      notice("Claim rejected. She has been asked to check her bill.", true);
+      delete fees.reasons[s.statementId];
+      fees.items = fees.items.filter((x) => x.statementId !== s.statementId);
+      if (fees.status === "attention") setBadge("fees", D.feeBadge(fees.items), "to confirm");
+      renderFees();
+      loadFees({ quiet: true });
+    });
   }
 
   async function confirmFee(btn, s, r) {
@@ -448,7 +467,7 @@ export function mountPaymentsDesk(ctx) {
       await call("confirm_fee_payment", body);
       notice("Fee confirmed.", true);
       fees.items = fees.items.filter((x) => x.statementId !== s.statementId);
-      if (fees.status === "paid_claimed") setBadge("fees", D.feeBadge(fees.items), "to confirm");
+      if (fees.status === "attention") setBadge("fees", D.feeBadge(fees.items), "to confirm");
       renderFees();
       loadFees({ quiet: true });
     });
@@ -467,7 +486,7 @@ export function mountPaymentsDesk(ctx) {
     desk.q = freshQueue();
     desk.fl = freshFlags();
     desk.sw = { enabled: undefined, loaded: false, reason: "" };
-    Object.assign(fees, { items: [], next: null, loaded: false, failed: false, paging: false, seq: fees.seq + 1 });
+    Object.assign(fees, { items: [], next: null, loaded: false, failed: false, paging: false, reasons: {}, seq: fees.seq + 1 });
     picsBox = null;
   }
 

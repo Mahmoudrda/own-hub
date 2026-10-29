@@ -57,7 +57,7 @@ ACTIONS: dict[int, str] = {
     1: USERS_RECURSIVE, 2: USERS_RECURSIVE, 3: USERS_RECURSIVE, 4: USERS_RECURSIVE,
     5: USERS_RECURSIVE, 6: USERS_RECURSIVE, 7: USERS_RECURSIVE, 8: USERS_RECURSIVE,
     9: HANDSET,
-    10: USERS_RECURSIVE,  # consents live under users/{uid}
+    10: USERS_RECURSIVE,  # consents live under users/{uid}; a coach's coach-terms records are copied to legalHolds/{uid} first (account/legal_hold.py)
     11: USERS_RECURSIVE, 12: USERS_RECURSIVE, 13: USERS_RECURSIVE, 14: USERS_RECURSIVE,
     15: USERS_RECURSIVE, 16: USERS_RECURSIVE,
     17: REVERSE_BLOCKED_BY,
@@ -65,7 +65,8 @@ ACTIONS: dict[int, str] = {
     20: PLANS_RECURSIVE, 21: PLANS_RECURSIVE,
     22: JOBS,
     23: REGISTRY,
-    24: STORAGE, 25: STORAGE,
+    24: STORAGE,  # a coach's signed agreement is copied to legal-hold/{uid}/ first (account/legal_hold.py)
+    25: STORAGE,
     26: GROUP_HOOK,
     27: THIRD_PARTY, 28: THIRD_PARTY,
     29: AUTH,
@@ -90,7 +91,7 @@ ACTIONS: dict[int, str] = {
     55: GROUP_HOOK, 56: GROUP_HOOK, 57: GROUP_HOOK, 58: GROUP_HOOK,
     59: GROUP_HOOK,  # receipts, paymentProofs: pseudonymised inside purge_group_hook
     60: REPORTS,     # the copy of what was reported: deleted when the reporter deletes hers; kept pseudonymised when the reported side does, until the reporter deletes hers or the retention period set with counsel
-    61: GROUP_HOOK,  # coachPrivate/{uid}/** is recursively deleted inside purge_group_hook
+    61: GROUP_HOOK,  # coachPrivate/{uid}/** is recursively deleted inside purge_group_hook; its agreement state is copied to legalHolds/{uid} first
     62: GROUP_HOOK,  # relationships/{relId}/checkIns goes with the relationship in purge_group_hook
 }
 

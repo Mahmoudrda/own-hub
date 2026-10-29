@@ -12,7 +12,7 @@ OPEN = ("awaiting_payment", "expired")
 
 
 def coach_report(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> dict:
-    common.require_active_coach(db, uid, coach_v)
+    common.require_active_coach(db, uid, coach_v, allow_hold=True)  # a client's payment, so it works on hold
     txn = common.text(data.get("txnNumber"), max_len=40)
     key = proof.txn_key(txn)
     if len(key) < 6:

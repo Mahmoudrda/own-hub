@@ -51,6 +51,8 @@ CALLABLES = {
     "record_pledge",
     "record_signup_role",
     "submit_coach_certificate",
+    "accept_coach_terms",
+    "submit_coach_agreement",
     "create_coach_invite",
     "accept_coach_invite",
     "admin_dashboard",
@@ -79,9 +81,13 @@ CALLABLES = {
     "submit_coach_application",
     "list_coach_applications",
     "decide_coach_application",
+    "decide_coach_agreement",
+    "list_coach_agreements",
     "add_portfolio_media", "remove_portfolio_media", "confirm_portfolio_consent",
     "list_portfolio_media", "decide_portfolio_media",
     "submit_check_in", "coach_needs_attention", "review_client_health",
+    "add_promo_video", "my_promo_videos", "list_promo_videos", "decide_promo_video",
+    "list_check_ins", "reply_check_in",
     "suspend_coach",
     "update_coach_profile",
     "request_payout_account_change",
@@ -113,6 +119,7 @@ CALLABLES = {
     "record_fee_payment",
     "list_fee_statements",
     "confirm_fee_payment",
+    "reject_fee_claim",
     "staff_set_coach_payment_status",
     "staff_list_payment_flags",
     "set_payments_enabled",
@@ -720,7 +727,7 @@ def test_the_payment_flag_callables_refuse_a_member_but_open_to_a_reviewer_or_an
         assert main._require_woman_reviewer(request({}, token=claim), allow_admin=True) == "uid-1"
 
 
-@pytest.mark.parametrize("name", ["list_fee_statements", "confirm_fee_payment"])
+@pytest.mark.parametrize("name", ["list_fee_statements", "confirm_fee_payment", "reject_fee_claim"])
 def test_the_fee_callables_for_the_owner_refuse_a_member_and_a_reviewer(name, stubbed):
     fn = inner(name)
     raises(lambda: fn(request({})), https_fn.FunctionsErrorCode.PERMISSION_DENIED)

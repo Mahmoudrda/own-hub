@@ -284,7 +284,7 @@ class CollectionRef:
                 if self._matches(data):
                     rows.append(Snapshot(DocumentRef(self.db, path), data))
         if self._order and self._order != "__name__":
-            rows.sort(key=lambda s: str(s.get(self._order)), reverse=self._descending)
+            rows.sort(key=lambda s: str(_get_path(s.to_dict() or {}, self._order.split("."))), reverse=self._descending)
         if isinstance(self._after, tuple):
             rows = [r for r in rows if (str(r.get(self._order)), r.reference.path) > self._after]
         if self._limit is not None:

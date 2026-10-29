@@ -104,7 +104,8 @@ def test_every_entry_says_why_and_every_override_exempts():
         # Every override exempts a field, except the ones that switch on a
         # collection-group index a query needs; those hold nothing sensitive.
         if override["indexes"]:
-            assert override["collectionGroup"] == "ledger"
+            # ledger: the payout run; promoVideos: the staff month view and the 20th reminder.
+            assert override["collectionGroup"] in ("ledger", "promoVideos")
             assert {"queryScope": "COLLECTION_GROUP", "order": "ASCENDING"} in override["indexes"]
 
 

@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from coaching import applications, chat, common, errors, packages, payouts, profiles, proofs, refunds
+from coaching import agreement, applications, chat, common, errors, packages, payouts, profiles, proofs, refunds
 from coaching import plans, sessions, subscriptions
 from tests import fake_firestore
 from tests.coaching_helpers import Pushes, _txn  # noqa: F401
@@ -87,6 +87,11 @@ class World:
             merge_claims=self.claims, blobs=self.blobs, notify=self.pushes, reencode=lambda raw, long_side=None: raw, now=T0,
         )
         profiles.confirm_payout(self.db, FINANCE, {"uid": COACH, "decision": "confirm"}, now=T0)
+        agreement.submit(
+            self.db, COACH, {"mediaRef": f"coach-docs/{COACH}/agreement/signed.pdf"},
+            live=True, coach_v="active", object_exists=lambda path: True, now=T0,
+        )
+        agreement.decide(self.db, REVIEWER, {"uid": COACH, "decision": "verify"}, notify=self.pushes, now=T0)
         return packages.save(
             self.db, COACH,
             {
@@ -318,3 +323,39 @@ def test_every_price_vector_runs_through_the_whole_pipeline(world, row):
     assert ledger["coachAmountEgp"] == row["coach"]
     refund = refunds.request(world.db, CLIENT, {"subId": sub_id}, live=True, now=at(days=1))["refundEgp"]
     assert refund == common.refund_amount(row["final"], 0, 4) == row["final"]
+
+
+def test_a_client_she_already_has_keeps_working_with_the_agreement_missing(world):
+    w, db = world, world.db
+    package = w.become_a_coach()
+    sub_id = w.request(CLIENT, package["packageId"])["subId"]
+    assert w.doc(f"subscriptions/{sub_id}")["status"] == "awaiting_payment"
+    # The agreement falls away (a coach still on version 1, or a copy rejected).
+    db.document(f"coachPrivate/{COACH}").update({"agreement": None})
+
+    # Payment activation for the existing pair still works.
+    proof = w.pay(CLIENT, sub_id, reference="TRANSFER-B2", image=make_jpeg(2), amount=1150)
+    assert w.decide(proof["proofId"]) == {"status": "approved"}
+    assert w.doc(f"subscriptions/{sub_id}")["status"] == "active"
+
+    # So do plans and live sessions.
+    out = plans.publish(
+        db, COACH, {"subId": sub_id, "kind": "workout", "name": "My plan", "body": workout()},
+        live=True, coach_v="active", now=at(hours=1), notify=w.pushes, content_ids=IDS,
+    )
+    assert out["revision"] == 1
+    session = sessions.schedule(
+        db, COACH, {"subId": sub_id, "startsAt": at(days=2).isoformat(), "minutes": 45, "link": "https://meet.google.com/abc-defg-hij"},
+        live=True, coach_v="active", now=at(hours=2), notify=w.pushes,
+    )
+    assert session["sessionId"]
+
+    # A new request does not start by itself, and cannot be accepted.
+    second = w.request("client-uid-2", package["packageId"])
+    assert second["status"] == "requested"
+    with pytest.raises(errors.CoachingError) as caught:
+        subscriptions.respond(
+            db, COACH, {"subId": second["subId"], "decision": "accept"}, live=True, payments_live=True,
+        coach_v="active", now=at(hours=3), notify=w.pushes,
+        )
+    assert (caught.value.code, caught.value.reason) == (errors.PRECONDITION, errors.AGREEMENT_NEEDED)

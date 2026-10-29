@@ -129,6 +129,7 @@ class Backend(Protocol):
     def lock_auth(self, uid: str) -> None: ...
     def blocked_uids(self, uid: str) -> list[str]: ...
     def delete_blocked_by(self, other: str, uid: str) -> None: ...
+    def retain_legal_hold(self, uid: str) -> None: ...
     def delete_user_tree(self, uid: str) -> None: ...
     def delete_plans_tree(self, uid: str) -> None: ...
     def delete_storage_prefix(self, bucket: str | None, prefix: str) -> None: ...
@@ -166,6 +167,9 @@ def run(uid: str, backend: Backend, deadline: Optional[float] = None) -> dict:
         backend.lock_auth(uid)
 
         backend.set_state(uid, "purgingFirestore")
+        # A coach's signed agreement is kept for the policy's period, in a
+        # server-only place, before anything of hers is deleted.
+        backend.retain_legal_hold(uid)
         if manifest.REVERSE_BLOCKED_BY in actions:
             for other in backend.blocked_uids(uid):
                 backend.delete_blocked_by(other, uid)
@@ -313,6 +317,32 @@ class FirebaseBackend:
             .document(uid)
             .delete()
         )
+
+    def retain_legal_hold(self, uid):
+        import datetime as dt
+
+        from firebase_admin import storage
+        from google.api_core import exceptions
+
+        from . import legal_hold
+
+        def copy_files(source, target):
+            try:
+                bucket = storage.bucket(legal_hold.PERSONAL_BUCKET)
+                blobs = list(bucket.list_blobs(prefix=source))
+            except (ValueError, exceptions.NotFound):
+                agreement = (self.db.collection("coachPrivate").document(uid).get().to_dict() or {}).get("agreement") or {}
+                if agreement.get("path"):
+                    raise  # the signed copy exists but its bucket cannot be read: do not delete her until it is kept
+                return []
+            moved = []
+            for blob in blobs:
+                name = target + blob.name[len(source):]
+                bucket.copy_blob(blob, bucket, name)
+                moved.append(name)
+            return moved
+
+        legal_hold.retain(self.db, uid, copy_files, dt.datetime.now(dt.timezone.utc))
 
     def delete_user_tree(self, uid):
         self.db.recursive_delete(self.db.collection(config.COL_USERS).document(uid))

@@ -43,12 +43,13 @@ LIMITS = {
     "strikesToSuspend": 2,        # 4.1, 4.2, 13.5
     "disputeRateMinPayments": 10, # 13.5 (owner tunable in coachingConfig/instapay)
     "disputeRatePercent": 10,
-    "feeOverdueDays": 30,         # 4.13
+    "feeDueDays": 3,              # owner 28 Oct: the coach pays Own Hub within 3 days of the fee becoming owed
+    "feeHoldDays": 7,             # owner 28 Oct: unpaid 7 days after it became owed, the account goes on hold
     "idempotencyDays": 30,
     "firstPaymentsStaffVisible": 3,   # 13.1
     "cleanPaymentsForAutoConfirm": 3, # 13.4
     "feeBpsMarketplace": 1500,    # D63 default; the owner overrides in coachingConfig/instapay
-    "feeBpsInvite": 800,          # D63 default
+    "feeBpsInvite": 750,          # owner 28 Oct: 7.5 percent for a client the coach brought with her own code
     "maxAmountEgp": 20000,        # UNVERIFIED placeholder, see WO-10m step 1
     "nearImageHamming": 1,        # score only: bits apart for a "similar picture" flag (honest receipts of one bank template land 1 to 4 apart)
     "acceptLowerMinPercent": 80,  # 4.3: a coach may accept at most a 20 percent discount in writing; the fee base follows what she took

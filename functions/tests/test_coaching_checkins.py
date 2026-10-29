@@ -359,3 +359,155 @@ def test_the_coach_gets_the_latest_answers_and_a_note_alone_is_listed(db, pushes
     assert pain["checkIn"]["answers"]["pain"] is True
     assert note["reasons"] == []
     assert note["checkIn"]["answers"]["note"] == "loved the new plan"
+
+
+def test_a_check_in_note_with_contact_details_is_refused(db, pushes):
+    seed(db)
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    bad = {"training": "most", "energy": 4, "food": 3, "pain": False, "note": "whatsapp me"}
+    assert refusal(
+        lambda: checkins.submit(
+            db, "c1", {"relId": rel_id, "weekKey": "2026-W44", "answers": bad},
+            live=True, now=FRIDAY + dt.timedelta(hours=1),
+        )
+    ) == (errors.INVALID, errors.CONTAINS_CONTACT)
+
+
+# ----------------------------------------------- weight, workouts, reply, history
+
+
+def _answer(db, rel_id, answers, week="2026-W44", notify=None):
+    return checkins.submit(
+        db,
+        "c1",
+        {"relId": rel_id, "weekKey": week, "answers": answers},
+        live=True,
+        now=FRIDAY + dt.timedelta(hours=1),
+        **({} if notify is None else {"notify": notify}),
+    )
+
+
+def test_weight_and_workouts_are_stored_only_when_sent_and_checked(db, pushes):
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    pushes.clear()
+    shared = {**GOOD, "weightKg": 61.46, "weightConsent": True, "workoutsDone": 3}
+    assert _answer(db, rel_id, shared, notify=pushes) == {"ok": True}
+    answers = db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()["answers"]
+    assert answers["weightKg"] == 61.5 and answers["workoutsDone"] == 3
+    assert pushes == [(COACH, "checkInAnswered")]
+    card = db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()
+    assert card["consent"] == {"weight": {"at": FRIDAY + dt.timedelta(hours=1)}}
+    assert "weightConsent" not in answers
+
+    r2 = _sub(db, "s2", "c2", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    checkins.submit(db, "c2", {"relId": r2, "weekKey": "2026-W44", "answers": GOOD}, live=True, now=FRIDAY)
+    plain = db.document(f"relationships/{r2}/checkIns/2026-W44").get().to_dict()["answers"]
+    assert "weightKg" not in plain and "workoutsDone" not in plain
+
+
+def test_weight_and_workouts_outside_their_bounds_are_refused(db, pushes):
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    for bad in (
+        {"weightKg": 29.9}, {"weightKg": 300.1}, {"weightKg": "61"}, {"weightKg": True},
+        {"weightKg": float("nan")}, {"weightKg": float("inf")},
+        {"workoutsDone": -1}, {"workoutsDone": 15}, {"workoutsDone": 2.5}, {"workoutsDone": True},
+    ):
+        assert refusal(lambda b=bad: _answer(db, rel_id, {**GOOD, "weightConsent": True, **b})) == (errors.INVALID, errors.BAD_REQUEST), bad
+    assert db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()["state"] == "open"
+    assert _answer(db, rel_id, {**GOOD, "weightKg": 30, "weightConsent": True, "workoutsDone": 0}) == {"ok": True}
+
+
+def _answered(db, pushes):
+    db.document(f"coachPrivate/{COACH}").set({"suspended": False})
+    db.document("coachPrivate/other-coach").set({"suspended": False})
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    _answer(db, rel_id, {**GOOD, "weightKg": 70.0, "weightConsent": True, "workoutsDone": 2})
+    pushes.clear()
+    return rel_id
+
+
+def _reply(db, uid, rel_id, text="Well done, rest the knee.", week="2026-W44", notify=None):
+    return checkins.reply(
+        db, uid, {"relId": rel_id, "weekKey": week, "text": text}, live=True, coach_v="active",
+        now=FRIDAY + dt.timedelta(days=1), notify=(lambda *_: None) if notify is None else notify,
+    )
+
+
+def test_the_coach_replies_once_and_the_client_is_pushed(db, pushes):
+    rel_id = _answered(db, pushes)
+    assert _reply(db, COACH, rel_id, notify=pushes) == {"ok": True}
+    card = db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()
+    assert card["reply"] == "Well done, rest the knee." and card["repliedAt"]
+    assert pushes == [("c1", "checkInReply")]
+    assert refusal(lambda: _reply(db, COACH, rel_id)) == (errors.PRECONDITION, errors.WRONG_STATUS)
+
+
+def test_only_the_coach_of_an_active_answered_card_may_reply(db, pushes):
+    rel_id = _answered(db, pushes)
+    assert refusal(lambda: _reply(db, "other-coach", rel_id)) == (errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+    for who in ("c1", "stranger"):  # not coaches at all
+        assert refusal(lambda w=who: _reply(db, w, rel_id)) == (errors.PERMISSION, errors.NOT_A_COACH)
+    r2 = _sub(db, "s2", "c2", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    assert refusal(lambda: _reply(db, COACH, r2)) == (errors.PRECONDITION, errors.WRONG_STATUS)  # still open
+    db.document(f"relationships/{rel_id}").update({"status": "ended"})
+    assert refusal(lambda: _reply(db, COACH, rel_id)) == (errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+
+
+def test_a_reply_with_contact_details_or_no_text_is_refused(db, pushes):
+    rel_id = _answered(db, pushes)
+    assert refusal(lambda: _reply(db, COACH, rel_id, "Call me on 01012345678")) == (errors.INVALID, errors.CONTAINS_CONTACT)
+    assert refusal(lambda: _reply(db, COACH, rel_id, "  ")) == (errors.INVALID, errors.BAD_REQUEST)
+    assert refusal(lambda: _reply(db, COACH, rel_id, "x" * 401)) == (errors.INVALID, errors.BAD_REQUEST)
+    assert "reply" not in db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()
+
+
+def test_history_lists_answered_weeks_newest_first_capped_at_eight(db, pushes):
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    for week in range(30, 42):  # twelve answered weeks
+        key = f"2026-W{week}"
+        db.document(f"relationships/{rel_id}/checkIns/{key}").set(
+            {"clientUid": "c1", "coachUid": COACH, "weekKey": key, "state": "answered", "answers": {"energy": 3}}
+        )
+    db.document(f"relationships/{rel_id}/checkIns/2026-W50").set(
+        {"clientUid": "c1", "coachUid": COACH, "weekKey": "2026-W50", "state": "open"}
+    )
+    out = checkins.list_cards(db, COACH, {"relId": rel_id}, live=True)["checkIns"]
+    assert [c["weekKey"] for c in out] == [f"2026-W{w}" for w in range(41, 33, -1)]
+    assert checkins.list_cards(db, "c1", {"relId": rel_id}, live=True)["checkIns"] == out
+
+
+def test_history_is_for_the_two_people_and_the_coach_stops_when_it_ends(db, pushes):
+    rel_id = _answered(db, pushes)
+    assert refusal(lambda: checkins.list_cards(db, "stranger", {"relId": rel_id}, live=True)) == (
+        errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+    db.document(f"relationships/{rel_id}").update({"status": "ended"})
+    assert refusal(lambda: checkins.list_cards(db, COACH, {"relId": rel_id}, live=True)) == (
+        errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+    mine = checkins.list_cards(db, "c1", {"relId": rel_id}, live=True)["checkIns"]
+    assert mine[0]["answers"]["weightKg"] == 70.0
+
+
+def test_a_coach_on_hold_or_suspended_cannot_reply(db, pushes):
+    rel_id = _answered(db, pushes)
+    db.document(f"coachPrivate/{COACH}").set({"suspended": False, "hold": {"reason": "fee"}})
+    assert refusal(lambda: _reply(db, COACH, rel_id)) == (errors.PERMISSION, errors.COACH_ON_HOLD)
+    db.document(f"coachPrivate/{COACH}").set({"suspended": True})
+    assert refusal(lambda: _reply(db, COACH, rel_id)) == (errors.PERMISSION, errors.COACH_SUSPENDED)
+    db.document(f"coachPrivate/{COACH}").set({"suspended": False})
+    assert _reply(db, COACH, rel_id) == {"ok": True}
+
+
+def test_a_weight_without_her_tick_is_refused_and_a_tick_alone_stores_nothing(db, pushes):
+    rel_id = _sub(db, "s1", "c1", per_week=1)
+    checkins.send_cards(db, FRIDAY, pushes)
+    for extra in ({"weightKg": 61.5}, {"weightKg": 61.5, "weightConsent": False}):
+        assert refusal(lambda e=extra: _answer(db, rel_id, {**GOOD, **e})) == (errors.INVALID, errors.BAD_REQUEST)
+    assert _answer(db, rel_id, {**GOOD, "weightConsent": True}) == {"ok": True}
+    card = db.document(f"relationships/{rel_id}/checkIns/2026-W44").get().to_dict()
+    assert "weightKg" not in card["answers"] and "consent" not in card

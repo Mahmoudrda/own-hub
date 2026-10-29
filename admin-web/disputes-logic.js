@@ -71,6 +71,7 @@ export const REASON_RULES = {
   decision: [10, 500],
   suspend: [10, 500],
   switch: [5, 300],
+  rejectClaim: [10, 500],
 };
 
 export function reasonOk(reason, [min, max] = REASON_RULES.decision) {
@@ -143,6 +144,12 @@ export function suspendPayload(coachUid, action, reason) {
 export function switchPayload(enabled, reason) {
   if (typeof enabled !== "boolean") throw new Error("Pick on or off.");
   return { enabled, reason: needReason(reason, REASON_RULES.switch) };
+}
+
+// The body of reject_fee_claim: the bill goes back to open and the coach is asked to check it.
+export function rejectFeePayload(statementId, reason) {
+  if (!statementId) throw new Error("No statement is open.");
+  return { statementId, reason: needReason(reason, REASON_RULES.rejectClaim) };
 }
 
 export function confirmFeePayload(statementId) {
@@ -395,21 +402,30 @@ export function addressRows(data) {
 
 /* fee statements */
 
-export const FEE_FILTERS = ["", "paid_claimed", "open", "paid"];
-export const FEE_FILTER_LABELS = { "": "All", paid_claimed: "Coach says she paid", open: "Not paid yet", paid: "Paid" };
+export const FEE_FILTERS = ["attention", "", "paid_claimed", "open", "paid"];
+export const FEE_FILTER_LABELS = { attention: "Needs you", "": "All", paid_claimed: "Coach says she paid", open: "Not paid yet", paid: "Paid" };
+
+// The server sets overdueNotified when it puts her account on hold; it ends when staff confirm the fee.
+export const feeOnHold = (s) => s?.status !== "paid" && s?.overdueNotified === true && (s?.totalDuePiasters ?? 1) > 0;
+
+// Coaches on hold first, the rest in the order they came.
+export const holdFirst = (items) => [...items.filter(feeOnHold), ...items.filter((s) => !feeOnHold(s))];
 
 export function feeRow(s, now = Date.now()) {
   const due = Date.parse(s?.dueAt);
   const late = s?.status !== "paid" && !Number.isNaN(due) && due < now;
-  const status = s?.status === "paid" ? "Paid" : s?.status === "paid_claimed" ? "Coach says she paid" : late ? "Late" : "Open";
+  const onHold = feeOnHold(s);
+  const status = s?.status === "paid" ? "Paid" : s?.status === "paid_claimed" ? "Coach says she paid" : onHold ? "Account on hold" : late ? "Late" : "Open";
   const month = MONTHS[(Number(s?.month) || 0) - 1];
   return {
     id: s?.statementId,
-    title: `${month ?? ""} ${s?.year ?? ""}`.trim(),
+    title: s?.generatedAt ? `Fee bill of ${cairoStamp(s.generatedAt)}` : `${month ?? ""} ${s?.year ?? ""}`.trim(),
     coach: show(s?.coachUid),
     status,
-    late,
+    late: late || onHold,
+    onHold,
     canConfirm: s?.status === "paid_claimed" || s?.status === "open",
+    canReject: s?.status === "paid_claimed",
     claimed: s?.status === "paid_claimed",
     lines: [
       ["Fee due", pounds(s?.totalDuePiasters)],
@@ -417,13 +433,14 @@ export function feeRow(s, now = Date.now()) {
       ["Settled", Number(s?.settledPiasters) ? pounds(s.settledPiasters) : ""],
       ["Waived", Number(s?.waivedPiasters) ? pounds(s.waivedPiasters) : ""],
       ["Due by", cairoStamp(s?.dueAt)],
+      ["Her account", onHold ? "On hold until this is confirmed" : ""],
       ["Her transfer number", show(s?.claimedTxn)],
       ["Paid on", cairoStamp(s?.paidAt)],
     ].filter(([, v]) => v),
   };
 }
 
-export const feeBadge = (items) => items.filter((s) => s?.status === "paid_claimed").length;
+export const feeBadge = (items) => items.filter((s) => s?.status === "paid_claimed" || feeOnHold(s)).length;
 
 /* the payments switch */
 

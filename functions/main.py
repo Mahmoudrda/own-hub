@@ -1626,6 +1626,21 @@ def resume_account_deletions(event: scheduler_fn.ScheduledEvent) -> None:
         logs.error("account_deletion_failed", state=deletion.FAILED_RETRYABLE, count=failed)
 
 
+@scheduler_fn.on_schedule(schedule="every day 03:30", region=config.REGION)
+def purge_legal_holds(event: scheduler_fn.ScheduledEvent) -> None:
+    """Deletes the signed agreements kept after an account deletion once their
+    5 years are up (account/legal_hold.py)."""
+    import datetime as dt
+
+    from account import deletion, legal_hold
+
+    def delete_prefix(prefix: str) -> None:
+        deletion.FirebaseBackend().delete_storage_prefix(legal_hold.PERSONAL_BUCKET, prefix)
+
+    count = legal_hold.purge_due(store.db(), delete_prefix, dt.datetime.now(dt.timezone.utc))
+    logs.decision("purge_legal_holds", state="done", count=count)
+
+
 # ------------------------------------------------------------- post counters
 
 
@@ -1881,6 +1896,38 @@ def submit_check_in(request: https_fn.CallableRequest) -> dict:
         data,
         live=coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE,
         now=dt.datetime.now(dt.timezone.utc),
+        notify=_coaching_notify,
+    )
+
+
+@https_fn.on_call()
+def list_check_ins(request: https_fn.CallableRequest) -> dict:
+    """The last weeks of check-ins of one coaching, for either person: `{relId}`."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    import coaching
+    from coaching import checkins
+
+    return _coaching_call(
+        checkins.list_cards, store.db(), uid, data,
+        live=coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE,
+    )
+
+
+@https_fn.on_call()
+def reply_check_in(request: https_fn.CallableRequest) -> dict:
+    """Her coach replies to an answered check-in: `{relId, weekKey, text}`."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    import coaching
+    from coaching import checkins
+
+    return _coaching_call(
+        checkins.reply, store.db(), uid, data,
+        live=coaching.COACH_CLIENTS_LIVE and coaching.CHECK_INS_LIVE,
+        coach_v=_claim(request, "coachV"), now=_coaching_now(), notify=_coaching_notify,
     )
 
 
@@ -1969,7 +2016,10 @@ def _coaching_notify(uid: str, kind: str) -> None:
 
 def _payments_notify(uid: str, kind: str, ref: Optional[str] = None) -> None:
     """Push for payments using the payments notice texts. `ref` is what the
-    tap opens (payments.notices.data_for)."""
+    tap opens (payments.notices.data_for). The clients' "coachBack" is a
+    coaching push, so it goes the coaching way."""
+    if kind == "coachBack":
+        return _coaching_notify(uid, kind)
     try:
         from firebase_admin import messaging
 
@@ -2009,6 +2059,15 @@ def _coaching_merge_claims(uid: str, changes: dict) -> None:
     from coaching import claims
 
     claims.merge_claims(auth, uid, changes)
+
+
+def _holds_staff_claim(uid: str) -> bool:
+    from firebase_admin import auth
+
+    from coaching import claims
+
+    held = auth.get_user(uid).custom_claims or {}
+    return any(held.get(c) for c in claims.STAFF_CLAIMS)
 
 
 def _reencode(raw: bytes, **kwargs) -> bytes:
@@ -2070,6 +2129,7 @@ def submit_coach_application(request: https_fn.CallableRequest) -> dict:
         applications.submit, store.db(), uid, data,
         live=_portfolio_live(), verified=_verified(request), coach_v=_claim(request, "coachV"),
         blobs=_PersonalBlobs(), now=_coaching_now(), payments_live=_payments_live(),
+        staff=any((request.auth.token or {}).get(c) for c in ("admin", "womanReviewer", "finance")),
     )
 
 
@@ -2095,7 +2155,60 @@ def decide_coach_application(request: https_fn.CallableRequest) -> dict:
         applications.decide, store.db(), actor, data,
         merge_claims=_coaching_merge_claims, blobs=_PersonalBlobs(),
         notify=_coaching_notify, reencode=_reencode, now=_coaching_now(),
+        is_staff=_holds_staff_claim,
     )
+
+
+@https_fn.on_call()
+def accept_coach_terms(request: https_fn.CallableRequest) -> dict:
+    """An approved coach accepts Coach Agreement v2: `{version, locale}`."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import agreement
+
+    return _coaching_call(
+        agreement.accept, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def submit_coach_agreement(request: https_fn.CallableRequest) -> dict:
+    """Her signed copy is in the bucket: `{mediaRef}`. Waits for Own Hub."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import agreement
+
+    return _coaching_call(
+        agreement.submit, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"),
+        object_exists=_coach_object_exists, now=_coaching_now(), blobs=_PersonalBlobs(),
+    )
+
+
+@https_fn.on_call()
+def decide_coach_agreement(request: https_fn.CallableRequest) -> dict:
+    """Staff verify or reject a signed copy: `{uid, decision, reason}`."""
+    actor = _require_woman_reviewer(request, allow_admin=True)
+    data = _body(request)
+    from coaching import agreement
+
+    return _coaching_call(
+        agreement.decide, store.db(), actor, data, notify=_coaching_notify, now=_coaching_now(),
+        blobs=_PersonalBlobs(),
+    )
+
+
+@https_fn.on_call()
+def list_coach_agreements(request: https_fn.CallableRequest) -> dict:
+    """Signed copies waiting for staff: `{}` in, `{items}` out."""
+    _require_woman_reviewer(request, allow_admin=True)
+    _body(request)
+    from coaching import agreement
+
+    return _coaching_call(agreement.list_waiting, store.db())
 
 
 @https_fn.on_call()
@@ -2159,6 +2272,70 @@ def decide_portfolio_media(request: https_fn.CallableRequest) -> dict:
         blobs=_PersonalBlobs(), reencode=_reencode,
         notify=_coaching_notify, now=_coaching_now(),
     )
+
+
+@https_fn.on_call()
+def add_promo_video(request: https_fn.CallableRequest) -> dict:
+    """Her marketing video is in the bucket: `{mediaRef, topic, durationSeconds}`."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    data = _body(request)
+    from coaching import promo
+
+    return _coaching_call(
+        promo.add, store.db(), uid, data,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"),
+        blobs=_PersonalBlobs(), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def my_promo_videos(request: https_fn.CallableRequest) -> dict:
+    """This month's marketing videos and where the month stands: `{}` in."""
+    uid = _require_auth(request)
+    _require_verified(request)
+    _body(request)
+    from coaching import promo
+
+    return _coaching_call(
+        promo.mine, store.db(), uid,
+        live=_portfolio_live(), coach_v=_claim(request, "coachV"), now=_coaching_now(),
+    )
+
+
+@https_fn.on_call()
+def list_promo_videos(request: https_fn.CallableRequest) -> dict:
+    """Staff: the videos waiting and the month's counts per coach: `{month}`."""
+    actor = _require_woman_reviewer(request)  # no admin: the videos show the coach herself
+    data = _body(request)
+    from coaching import promo
+
+    return _coaching_call(promo.list_for_staff, store.db(), actor, data, now=_coaching_now())
+
+
+@https_fn.on_call()
+def decide_promo_video(request: https_fn.CallableRequest) -> dict:
+    """Staff approve a video or ask for changes: `{coachUid, videoId, decision, reason}`."""
+    actor = _require_woman_reviewer(request)
+    data = _body(request)
+    from coaching import promo
+
+    return _coaching_call(
+        promo.decide, store.db(), actor, data, notify=_coaching_notify, now=_coaching_now(),
+    )
+
+
+@scheduler_fn.on_schedule(schedule="0 10 20 * *", timezone="Africa/Cairo", region=config.REGION)
+def remind_promo_videos(event: scheduler_fn.ScheduledEvent) -> None:
+    """The 20th, 10:00 Cairo: one kind reminder to each coach with fewer than 2
+    approved marketing videos this month. Safe to run twice."""
+    import coaching
+    from coaching import promo
+
+    if not coaching.COACH_PORTFOLIO_LIVE:
+        return
+    count = promo.remind(store.db(), _coaching_now(), _coaching_notify)
+    logs.decision("remind_promo_videos", outcome="sent", count=count)
 
 
 @https_fn.on_call()
@@ -2551,7 +2728,18 @@ def confirm_fee_payment(request: https_fn.CallableRequest) -> dict:
     data = _body(request)
     from payments import fees
 
-    return _coaching_call(fees.confirm_payment, store.db(), actor, data, now=_coaching_now())
+    return _coaching_call(fees.confirm_payment, store.db(), actor, data, now=_coaching_now(),
+                          notify=_payments_notify, notify_client=_coaching_notify)
+
+
+@https_fn.on_call()
+def reject_fee_claim(request: https_fn.CallableRequest) -> dict:
+    """Finance or admin says a coach's "I paid" on a fee did not check out: {statementId, reason}."""
+    actor = _require_finance(request)
+    data = _body(request)
+    from payments import fees
+
+    return _coaching_call(fees.reject_claim, store.db(), actor, data, now=_coaching_now(), notify=_payments_notify)
 
 
 @https_fn.on_call()

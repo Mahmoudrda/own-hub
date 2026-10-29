@@ -185,8 +185,8 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
                 changes["feeState"] = "waived"
             pay = engine.move(transaction, db, ref, cur, target, states.STAFF, actor, now, changes=changes, code=f"staff_{outcome}")
             if target == "resolved_paid" and activation_ok(seen_start):
-                rel_source = (seen_start["rel"].to_dict() or {}).get("source") if seen_start["rel"].exists else None
-                fee = {} if cur.get("feeOwedAt") else fees.at_activation(pay, cfg, rel_source, now)
+                rel_source = fees.source_of(seen_start)
+                fee = {} if cur.get("feeOwedAt") else fees.start(transaction, db, ref, pay, cfg, rel_source, now)
                 if fee:
                     transaction.update(ref, fee)
                 activation.grant(transaction, db, seen_start, now)
@@ -200,6 +200,7 @@ def resolve(db, actor: str, data: dict, *, now: dt.datetime, notify, on_decision
         return {"status": final, "outcome": outcome}
 
     result = common.run(db, body)
+    fees.refresh(db, payment_id, now, notify=notify)  # waived or settled by this decision: the bill follows
     engine.notify_moves(notify, held["payment"], held["moves"])
     for who, kind in held["notices"]:
         try:
@@ -216,14 +217,19 @@ def activation_ok(seen: dict) -> bool:
 
 
 def party_image(db, uid: str, data: dict, *, blobs) -> dict:
-    """Either party reads a screenshot of her own payment through here, never from storage."""
+    """A party reads her own screenshot through here, never from storage: the
+    client her proof, the coach her bank statement. Neither sees the other's
+    (the client's bank app shows her name and number); staff use the evidence call."""
     payment_id = common.text(data.get("paymentId"), max_len=128)
     path = common.text(data.get("path"), max_len=200)
     snap = engine.payment_ref(db, payment_id).get()
     p = snap.to_dict() if snap.exists else None
     if p is None or uid not in (p.get("clientUid"), p.get("coachUid")):
         raise common.refuse(errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
-    allowed = list((p.get("proof") or {}).get("screenshotPaths") or []) + list((p.get("coachDecision") or {}).get("statementPaths") or [])
+    if uid == p.get("clientUid"):
+        allowed = list((p.get("proof") or {}).get("screenshotPaths") or [])
+    else:
+        allowed = list((p.get("coachDecision") or {}).get("statementPaths") or [])
     if path not in allowed or not blobs.exists(path):
         raise common.refuse(errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
     return {"imageB64": base64.b64encode(blobs.read(path)).decode()}

@@ -123,7 +123,7 @@ describe('the consent document itself', () => {
 
   test('she cannot write it, granted or withdrawn', async () => {
     const db = await verified(HER);
-    await assertFails(setDoc(doc(db, CONSENT(HER)), { version: 1, state: 'granted', at: new Date() }));
+    await assertFails(setDoc(doc(db, CONSENT(HER)), { version: 1, state: 'granted', at: new Date(Date.now() - 60000) }));
     await consent('granted');
     await assertFails(setDoc(doc(db, CONSENT(HER)), { version: 1, state: 'withdrawn' }));
     await assertFails(deleteDoc(doc(db, CONSENT(HER))));

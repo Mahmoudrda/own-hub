@@ -426,3 +426,22 @@ def test_a_block_either_way_stops_a_proposal(blocker, blocked):
     db = make_db()
     db.collection("users").document(blocker).collection("blocks").document(blocked).set({})
     refuses(lambda: schedule(db), "coach_unavailable", db)
+
+
+@pytest.mark.parametrize("link", [
+    "https://zoom.us/j/81234567890",
+    "https://meet.google.com/abc-defg-hij?authuser=1",
+])
+def test_a_meeting_id_of_many_digits_is_still_fine(link):
+    assert sessions.check_link(link) == link
+
+
+@pytest.mark.parametrize("link", [
+    "https://zoom.us/j/123?phone=01012345678",
+    "https://meet.google.com/abc?contact=mona@gmail.com",
+    "https://zoom.us/j/123?wa=whatsapp",
+])
+def test_a_meeting_link_carrying_contact_details_is_refused(link):
+    with pytest.raises(errors.CoachingError) as caught:
+        sessions.check_link(link)
+    assert caught.value.reason == errors.CONTAINS_CONTACT

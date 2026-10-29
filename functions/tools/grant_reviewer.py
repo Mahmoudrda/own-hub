@@ -47,6 +47,14 @@ def grant_reviewer(uid: str) -> None:
         firebase_admin.initialize_app()
     user = auth.get_user(uid)
     claims = dict(user.custom_claims or {})
+    from firebase_admin import firestore
+
+    db = firestore.client()
+    has_record = any(db.collection(c).document(uid).get().exists for c in ("coaches", "coachApplications"))
+    if claims.get("coachV") or has_record:
+        raise SystemExit(
+            "refused: this account is a coach. Staff and coaches stay on separate accounts."
+        )
     claims["womanReviewer"] = True
     auth.set_custom_user_claims(uid, claims)
 

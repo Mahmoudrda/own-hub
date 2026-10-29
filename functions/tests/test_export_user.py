@@ -214,9 +214,12 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
             f"relationships/{HER}__{OTHER}/messages/m2": {"senderUid": OTHER, "text": "hers"},
             f"relationships/{HER}__{OTHER}/checkIns/2026-W44": {"clientUid": OTHER, "answers": {"note": "not hers"}},
             f"relationships/coach-9__{HER}": {"coachUid": "coach-9", "clientUid": HER},
-            f"relationships/coach-9__{HER}/checkIns/2026-W44": {"clientUid": HER, "answers": {"note": "my knee"}},
+            f"relationships/coach-9__{HER}/checkIns/2026-W44": {
+                "clientUid": HER, "answers": {"note": "my knee", "weightKg": 61.5, "workoutsDone": 3}, "reply": "Rest it.",
+            },
             f"coachPrivate/{HER}": {"payoutState": "none"},
             f"coachPrivate/{HER}/prices/p1": {"coachPriceEgp": 500},
+            f"coachPrivate/{HER}/promoVideos/v1": {"status": "approved", "month": "2026-10"},
             f"coachApplications/{HER}": {"status": "approved"},
             f"coaches/{HER}": {"displayName": "H"},
             f"coaches/{HER}/packages/p1": {"title": "T"},
@@ -228,7 +231,12 @@ def test_the_live_reader_keeps_a_clients_form_out_of_the_coachs_copy():
     assert got["asCoach"]["s2"] == {"coachUid": HER, "status": "active"}
     assert "inbody" not in repr(got["asCoach"])  # her client's InBody numbers are the client's, not hers
     assert got["messages"] == {f"{HER}__{OTHER}/m1": {"senderUid": HER, "text": "mine"}}
-    assert got["checkIns"] == {f"coach-9__{HER}/2026-W44": {"clientUid": HER, "answers": {"note": "my knee"}}}
+    assert got["checkIns"] == {
+        f"coach-9__{HER}/2026-W44": {
+            "clientUid": HER, "answers": {"note": "my knee", "weightKg": 61.5, "workoutsDone": 3}, "reply": "Rest it.",
+        }
+    }
+    assert got["private"]["promoVideos/v1"] == {"status": "approved", "month": "2026-10"}
     assert got["private"]["prices/p1"] == {"coachPriceEgp": 500}
     assert got["application"] == {"status": "approved"}
     assert got["packages"] == {"p1": {"title": "T"}}

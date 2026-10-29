@@ -836,6 +836,21 @@ test("portfolio decisions need a reason only to reject, and carry the coach", ()
   assert.equal(L.portfolioKey(item), "c1/m1");
 });
 
+test("signed agreement: who may decide, the reason, the payload and the badge", () => {
+  assert.equal(L.canDecideAgreement({ womanReviewer: true }), true);
+  assert.equal(L.canDecideAgreement({ admin: true }), true);
+  assert.equal(L.canDecideAgreement({ finance: true }), false);
+  assert.equal(L.canDecideAgreement(undefined), false);
+  assert.deepEqual(L.agreementRejectProblems("verify", ""), []);
+  assert.deepEqual(L.agreementRejectProblems("reject", "  "), ["Write the reason. She reads it."]);
+  assert.equal(L.agreementRejectProblems("reject", "x".repeat(201)).length, 1);
+  assert.deepEqual(L.agreementRejectProblems("reject", "The signature is cut off."), []);
+  assert.deepEqual(L.agreementPayload({ uid: "c1" }, "verify", "ignored"), { uid: "c1", decision: "verify", reason: "" });
+  assert.deepEqual(L.agreementPayload({ uid: "c1" }, "reject", " Blurry. "), { uid: "c1", decision: "reject", reason: "Blurry." });
+  assert.equal(L.coachesBadgeCount(2, 3, 4), 9);
+  assert.equal(L.coachesBadgeCount(2, 3, 4, 5), 14);
+});
+
 test("badge adds applications and photos; portfolio refusals are worded", () => {
   assert.equal(L.coachesBadgeCount(2, 3), 5);
   assert.equal(L.coachesBadgeCount(0, undefined), 0);
@@ -855,4 +870,27 @@ test("an old number with no recorded 18+ tick is marked, a confirmed one is not"
   assert.match(L.phoneAgeNote("+201001234567", ["+201001234567"]), /18\+ tick again/);
   assert.equal(L.phoneAgeNote("+201009999999", ["+201001234567"]), "");
   assert.equal(L.phoneAgeNote("+201001234567", undefined), "");
+});
+
+test("marketing videos: who decides, the reason, the payload, the month list and who is short", () => {
+  assert.equal(L.canDecidePromo({ womanReviewer: true }), true);
+  assert.equal(L.canDecidePromo({ admin: true }), false);
+  assert.equal(L.canDecidePromo(undefined), false);
+  assert.deepEqual(L.promoChangesProblems("approve", ""), []);
+  assert.deepEqual(L.promoChangesProblems("changes", "  "), ["Write what she should change. She reads it."]);
+  assert.equal(L.promoChangesProblems("changes", "x".repeat(201)).length, 1);
+  assert.deepEqual(L.promoChangesProblems("changes", "The sound is low."), []);
+  const item = { id: "v1", coachUid: "c1" };
+  assert.deepEqual(L.promoPayload(item, "approve", "ignored"), { coachUid: "c1", videoId: "v1", decision: "approve", reason: "" });
+  assert.deepEqual(L.promoPayload(item, "changes", "  Dark  "), { coachUid: "c1", videoId: "v1", decision: "changes", reason: "Dark" });
+  assert.deepEqual(L.promoMonths("2026-02", 4), ["2026-02", "2026-01", "2025-12", "2025-11"]);
+  assert.deepEqual(L.promoMonths("bad"), []);
+  assert.equal(L.promoShort({ approved: 1, target: 2 }), true);
+  assert.equal(L.promoShort({ approved: 2, target: 2 }), false);
+  assert.equal(L.promoShort({}), true);
+  assert.equal(L.promoCountLine({ approved: 1, target: 2, waiting: 1, changes: 0 }), "1 of 2 approved, 1 waiting");
+  assert.equal(L.promoCountLine({ approved: 0, target: 2, waiting: 0, changes: 2 }), "0 of 2 approved, 2 to change");
+  assert.equal(L.fileKind("coach-docs/c/promo/a.mp4"), "video");
+  assert.equal(L.fileKind("x", "video/quicktime"), "video");
+  assert.equal(L.coachingMessage({ details: { reason: "file_not_uploaded" } }), "That video is not in storage.");
 });

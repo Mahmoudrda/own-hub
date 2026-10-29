@@ -7,6 +7,7 @@ phone that only said yes on C14."""
 
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 from identity import push as identity_push
@@ -52,28 +53,39 @@ TEXT: dict[str, dict[str, tuple[str, str]]] = {
                         "ar": (TITLE, "عميلة طلبت استرداد. افتحي Own Hub وردّي خلال 3 أيام.")},
     "instapayAddressChangedCoach": {"en": (TITLE, "Your payment details were changed. If it was not you, contact us now."),
                        "ar": (TITLE, "بيانات الدفع بتاعتك اتغيّرت. لو مش انتي اللي غيّرتيها كلمينا حالًا.")},
-    "instapayStatementReady": {"en": (TITLE, "Your fee statement for last month is ready."),
-                       "ar": (TITLE, "كشف الرسوم عن الشهر اللي فات جاهز.")},
-    "instapayFeeOverdue": {"en": (TITLE, "Your Own Hub fee is late. Open Own Hub to see the statement."),
-                   "ar": (TITLE, "رسوم Own Hub متأخرة. افتحي Own Hub وشوفي الكشف.")},
+    "instapayStatementReady": {"en": (TITLE, "You have a new Own Hub fee to pay. Open Own Hub to see it."),
+                       "ar": (TITLE, "عندك رسوم جديدة لـ Own Hub. افتحي Own Hub وشوفيها.")},
+    "instapayFeeDueSoon": {"en": (TITLE, "An Own Hub fee is due tomorrow. Open Own Hub to pay it."),
+                   "ar": (TITLE, "رسوم Own Hub مستحقة بكرة. افتحي Own Hub وادفعيها.")},
+    "instapayFeeDueToday": {"en": (TITLE, "An Own Hub fee is due today. Open Own Hub to pay it."),
+                    "ar": (TITLE, "رسوم Own Hub مستحقة النهارده. افتحي Own Hub وادفعيها.")},
+    "instapayFeeOverdue": {"en": (TITLE, "Your account is on hold until an Own Hub fee is paid. Open Own Hub to pay it."),
+                   "ar": (TITLE, "حسابك واقف لحد ما رسوم Own Hub تتدفع. افتحي Own Hub وادفعيها.")},
+    "instapayFeeClaimRejected": {"en": (TITLE, "Please check your Own Hub fee. Open Own Hub to see it."),
+                         "ar": (TITLE, "راجعي رسوم Own Hub. افتحي Own Hub وشوفيها.")},
+    "instapayAccountActive": {"en": (TITLE, "Your account is active again."),
+                      "ar": (TITLE, "حسابك رجع شغال تاني.")},
     "instapaySuspended": {"en": (TITLE, "Taking payments is paused on your account. Open Own Hub for details."),
                           "ar": (TITLE, "استلام الدفع موقوف على حسابك. افتحي Own Hub للتفاصيل.")},
 }
 
 KINDS = tuple(TEXT)
 
-STATEMENT_KINDS = frozenset({"instapayStatementReady", "instapayFeeOverdue"})
+STATEMENT_KINDS = frozenset({"instapayStatementReady", "instapayFeeDueSoon", "instapayFeeDueToday", "instapayFeeOverdue", "instapayFeeClaimRejected"})
 """Their tap opens a fee statement, named by its month: the statement's own id
 holds the coach's uid, and no uid goes in a payload."""
 
 
 def data_for(kind: str, ref: Optional[str]) -> dict:
     """What a tap needs to open the right screen: the kind, plus `paymentId`
-    (an auto id) or, for a fee statement, `statementMonth` ("2026-10"). No name,
-    no amount."""
+    (an auto id) or, for a fee bill, `statementMonth` ("2026-10") or, for one
+    made for a payment, `billId` (that payment's auto id). No name, no amount."""
     data = {"kind": kind}
     if ref:
-        data["statementMonth" if kind in STATEMENT_KINDS else "paymentId"] = ref
+        if kind not in STATEMENT_KINDS:
+            data["paymentId"] = ref
+        else:
+            data["statementMonth" if re.fullmatch(r"\d{4}-\d{2}", ref) else "billId"] = ref
     return data
 
 

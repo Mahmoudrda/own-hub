@@ -14,7 +14,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Optional
 
-from . import common, errors, pricing
+from . import chat, common, errors, pricing
 
 PACKAGE_KEYS = (
     "title",
@@ -41,13 +41,15 @@ def _validate(data: dict) -> dict:
     if not isinstance(data.get("active"), bool):
         raise common.bad()
     order = data.get("order", 0)
+    title = common.text(data.get("title"), min_len=3, max_len=limits["packageTitleMax"])
+    description = common.text(data.get("description"), min_len=20, max_len=limits["packageDescriptionMax"])
+    rows = [common.text(row, min_len=2, max_len=limits["includeTextMax"]) for row in includes]
+    chat.refuse_contact(title, description, rows)
     return {
-        "title": common.text(data.get("title"), min_len=3, max_len=limits["packageTitleMax"]),
-        "description": common.text(
-            data.get("description"), min_len=20, max_len=limits["packageDescriptionMax"]
-        ),
+        "title": title,
+        "description": description,
         "durationDays": common.whole_of(data.get("durationDays"), limits["durationDays"]),
-        "includes": [common.text(row, min_len=2, max_len=limits["includeTextMax"]) for row in includes],
+        "includes": rows,
         "liveSessionsPerMonth": common.whole(
             data.get("liveSessionsPerMonth"),
             low=limits["liveSessionsPerMonthMin"],

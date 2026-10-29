@@ -90,6 +90,7 @@ def seed(db, *, auto=True, active=0, cap=15, published=True, accepting=True, acc
             "payout": {"rail": "instapay", "account": "coach@instapay", "holderName": "Coach One"},
             "owedEgp": 0,
             "paidEgp": 0,
+            "agreement": {"version": 2, "status": "verified"},
         }
     )
     if accounts:
@@ -408,6 +409,34 @@ def test_closed_app_and_unverified_are_refused(db, pushes):
     )
 
 
+@pytest.mark.parametrize("build", [None, 0, 424738, common.MIN_APP_BUILD - 1, True, "433440"])
+def test_an_app_too_old_to_pay_is_refused_before_anything_is_written(db, pushes, build):
+    seed(db)
+    data = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "en", "consent": consent()}
+    if build is not None:
+        data["appBuild"] = build
+    for live in ({"payments_live": True}, {"instapay": True}):
+        refuse(
+            lambda: subscriptions.request.raw(db, CLIENT, data, live=True, verified=True, now=NOW, notify=pushes, **live),
+            errors.PRECONDITION,
+            errors.APP_UPDATE_NEEDED,
+        )
+    assert not list(db.collection("subscriptions").stream()) and not pushes
+
+
+def test_the_minimum_build_may_ask_with_payments_on_and_any_app_may_ask_while_free(db, pushes):
+    seed(db)
+    data = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "en", "consent": consent()}
+    out = subscriptions.request.raw(
+        db, CLIENT, {**data, "appBuild": common.MIN_APP_BUILD}, live=True, payments_live=True, verified=True,
+        now=NOW, notify=pushes,
+    )
+    assert out["status"] in ("requested", "awaiting_payment")
+    seed(db)
+    free = subscriptions.request.raw(db, "c9", data, live=True, verified=True, now=NOW, notify=pushes)
+    assert free["status"] in ("requested", "active")
+
+
 def _health(**yes):
     return {key: yes.get(key, False) for key in common.ENUMS["healthQuestions"]}
 
@@ -478,6 +507,77 @@ def test_the_coach_accepts(db, pushes):
     assert sub["acceptedAt"] == later(hours=5) and sub["payBy"] == later(hours=5 + 72)
     assert sub["paymentCode"] == CODE and "instapay" in sub["payTo"] and "vodafoneCash" not in sub["payTo"]
     assert pushes == [(CLIENT, "requestAnswered")]
+
+
+def _old_app_request(db, pushes, *, build=None, **live):
+    """A request as 1.0.0 sent it, made while payments were off."""
+    seed(db, auto=False)
+    data = {"coachUid": COACH, "packageId": PACKAGE, "intake": intake(), "locale": "en", "consent": consent()}
+    if build is not None:
+        data["appBuild"] = build
+    return subscriptions.request.raw(db, CLIENT, data, live=True, verified=True, now=NOW, notify=pushes)["subId"]
+
+
+def test_an_old_app_request_starts_free_while_payments_are_off(db, pushes):
+    sub_id = _old_app_request(db, pushes)
+    out = subscriptions.respond(db, COACH, {"subId": sub_id, "decision": "accept"}, live=True, coach_v="active", now=NOW, notify=pushes)
+    assert out == {"status": "active"} and sub_of(db, sub_id)["free"] is True
+
+
+@pytest.mark.parametrize("live", [{"payments_live": True}, {"instapay": True}])
+@pytest.mark.parametrize("build", [None, 424738])
+def test_an_old_app_request_is_not_accepted_into_a_payment_it_cannot_make(db, pushes, build, live):
+    sub_id = _old_app_request(db, pushes, build=build)
+    pushes.clear()
+    refuse(
+        lambda: subscriptions.respond(
+            db, COACH, {"subId": sub_id, "decision": "accept"}, live=True, coach_v="active", now=NOW, notify=pushes, **live
+        ),
+        errors.PRECONDITION,
+        errors.CLIENT_UPDATE_NEEDED,
+    )
+    assert sub_of(db, sub_id)["status"] == "requested" and pushes == [(CLIENT, "updateToContinue")]
+    # she can still be declined, and the request lapses as usual
+    assert subscriptions.respond(
+        db, COACH, {"subId": sub_id, "decision": "decline", "reason": "not_a_fit"}, live=True, coach_v="active",
+        now=NOW, notify=pushes, **live,
+    ) == {"status": "declined"}
+
+
+def test_the_update_push_goes_once_per_request(db, pushes):
+    sub_id = _old_app_request(db, pushes)
+    pushes.clear()
+    for _ in range(3):
+        refuse(
+            lambda: subscriptions.respond(
+                db, COACH, {"subId": sub_id, "decision": "accept"}, live=True, payments_live=True, coach_v="active",
+                now=NOW, notify=pushes,
+            ),
+            errors.PRECONDITION,
+            errors.CLIENT_UPDATE_NEEDED,
+        )
+    assert pushes == [(CLIENT, "updateToContinue")]
+
+
+def test_a_request_from_an_updated_app_replaces_her_old_one(db, pushes):
+    old_id = _old_app_request(db, pushes)
+    new_id = ask(db, pushes)["subId"]
+    assert new_id != old_id
+    assert sub_of(db, old_id)["status"] == "cancelled" and sub_of(db, new_id)["status"] in ("requested", "awaiting_payment")
+
+
+def test_an_old_app_cannot_replace_a_request_and_a_current_one_is_never_replaced(db, pushes):
+    seed(db, auto=False)
+    first = ask(db, pushes)["subId"]
+    refuse(lambda: ask(db, pushes), errors.PRECONDITION, errors.ALREADY_REQUESTED)
+    assert sub_of(db, first)["status"] == "requested"
+
+
+def test_a_current_app_request_is_accepted_when_payments_are_on(db, pushes):
+    seed(db, auto=False)
+    sub_id = ask(db, pushes)["subId"]
+    assert sub_of(db, sub_id)["appBuild"] == common.MIN_APP_BUILD
+    assert answer(db, pushes, sub_id) == {"status": "awaiting_payment"}
 
 
 def test_the_coach_declines_with_a_reason(db, pushes):
@@ -894,3 +994,14 @@ def test_the_inbody_text_has_the_coachs_name_in_its_hash(db, pushes):
     body = with_scan()
     body["consent"] = consent("en", inbodyHash=hash_of("en", "inbody", name="Someone Else"))
     refuse(lambda: ask(db, pushes, **body), errors.INVALID, errors.BAD_REQUEST)
+
+
+@pytest.mark.parametrize("over", [
+    {"note": "my number is 01012345678"},
+    {"allergies": ["peanut", "insta: mona_fit"]},
+    {"lifeStage": "mona@gmail.com"},
+])
+def test_intake_free_text_with_contact_details_is_refused(over):
+    with pytest.raises(errors.CoachingError) as caught:
+        subscriptions.intake_of(intake(**over))
+    assert caught.value.reason == errors.CONTAINS_CONTACT

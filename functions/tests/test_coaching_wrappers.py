@@ -49,7 +49,7 @@ KINDS = {name: kind_of(row["who"]) for name, row in CALLABLES.items()}
 MEMBER_SIDE = sorted(
     name for name, kind in KINDS.items() if kind in ("member", "coach") and name != "record_signup_role"
 )
-REVIEWER_ONLY = {"list_portfolio_media", "decide_portfolio_media"}  # admins never see these photos
+REVIEWER_ONLY = {"list_portfolio_media", "decide_portfolio_media", "list_promo_videos", "decide_promo_video"}  # admins never see these photos
 COACH_SIDE = sorted(name for name, kind in KINDS.items() if kind == "coach")
 STAFF_SIDE = sorted(name for name, kind in KINDS.items() if kind in ("finance", "admin", "reviewer"))
 
@@ -58,10 +58,12 @@ PORTFOLIO = {
     "record_signup_role", "submit_coach_application", "update_coach_profile",
     "save_coach_package",
     "add_portfolio_media", "remove_portfolio_media", "confirm_portfolio_consent",
+    "accept_coach_terms", "submit_coach_agreement",
+    "add_promo_video", "my_promo_videos",
 }
 PAYMENTS = {"submit_payment_proof", "request_cancellation", "request_payout_account_change"}
 # The weekly check-in has a second switch (CHECK_INS_LIVE) on top of the clients one.
-CHECK_INS = {"submit_check_in", "coach_needs_attention"}
+CHECK_INS = {"submit_check_in", "coach_needs_attention", "list_check_ins", "reply_check_in"}
 CLIENTS = set(MEMBER_SIDE) - PORTFOLIO - PAYMENTS - CHECK_INS | {"request_coaching"}
 SWITCHES = {
     "COACH_PORTFOLIO_LIVE": PORTFOLIO,
@@ -109,10 +111,11 @@ def test_every_member_or_coach_callable_belongs_to_one_switch():
 def test_the_contract_lists_every_callable_this_file_maps():
     assert set(KINDS.values()) == {"finance", "admin", "reviewer", "coach", "member"}
     assert COACH_SIDE == [
-        "add_portfolio_media", "coach_needs_attention", "confirm_portfolio_consent",
-        "publish_coach_plan", "remove_portfolio_media", "request_payout_account_change",
+        "accept_coach_terms", "add_portfolio_media", "add_promo_video", "coach_needs_attention",
+        "confirm_portfolio_consent", "my_promo_videos", "publish_coach_plan", "remove_portfolio_media",
+        "reply_check_in", "request_payout_account_change",
         "respond_coaching_request", "review_client_health", "save_coach_package",
-        "schedule_live_session", "update_coach_profile",
+        "schedule_live_session", "submit_coach_agreement", "update_coach_profile",
     ]
     for name in CALLABLES:
         assert callable(getattr(main, name)), name

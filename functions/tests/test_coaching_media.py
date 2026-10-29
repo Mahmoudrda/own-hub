@@ -646,3 +646,13 @@ def test_attaching_a_release_to_a_pending_item_keeps_its_consent_stamp_and_needs
     assert doc(db, mid)["consent"] == stamp
     assert doc(db, mid)["consentPath"] == BASE + "transformations/r1.jpg"
     assert BASE + "transformations/r1.jpg" in blobs.locked
+
+
+@pytest.mark.parametrize("data", [
+    transformation(note="call me 01012345678"),
+    feedback(**{"from": "Salma insta: salma_fit"}),
+    feedback(text="She was great, write to me on whatsapp for more"),
+    photo(caption="mona@gmail.com"),
+])
+def test_portfolio_text_with_contact_details_is_refused(db, blobs, data):
+    assert refusal(lambda: add(db, blobs, data)) == (errors.INVALID, errors.CONTAINS_CONTACT)

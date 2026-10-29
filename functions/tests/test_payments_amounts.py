@@ -129,7 +129,7 @@ def test_pay_the_rest_makes_a_new_reference_cancels_the_old_one_and_fees_the_who
         seen = activation.read_for_start(txn, db, new_pay["subId"])
         return coach.apply_confirmation(
             txn, db, db.document(f"payments/{new_pid}"), new_pay,
-            seen, profile.profile_ref(db, COACH), {}, {"feeBpsMarketplace": 1500, "feeBpsInvite": 800},
+            seen, profile.profile_ref(db, COACH), {}, {"feeBpsMarketplace": 1500, "feeBpsInvite": 750},
             NOW, "client", CLIENT, None,
         )
     common.run(db, _do_confirm)

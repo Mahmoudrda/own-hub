@@ -58,7 +58,7 @@ def test_the_first_of_the_month_makes_one_statement_per_coach_with_fees(db, note
     assert fees.generate(db, now=FIRST_NOV, notify=notes) == 2
     row = db.document(f"feeStatements/{ID}").get().to_dict()
     assert (row["totalDuePiasters"], row["disputedPiasters"], row["status"]) == (9000, 3000, "open")
-    assert row["dueAt"] == row["generatedAt"] + dt.timedelta(days=30) and row["payTo"] == {"address": "ownhub@instapay", "holderName": "Own Hub"}
+    assert row["dueAt"] == row["generatedAt"] + dt.timedelta(days=3) and row["holdAt"] == row["generatedAt"] + dt.timedelta(days=7) and row["payTo"] == {"address": "ownhub@instapay", "holderName": "Own Hub"}
     assert [line["paymentId"] for line in row["lines"]] == ["p1", "p2", "p3"]
     assert sorted(notes.sent) == sorted([(COACH, "instapayStatementReady"), (COACH2, "instapayStatementReady")])
     assert sorted(notes.refs) == sorted([(COACH, "instapayStatementReady", "2026-10"), (COACH2, "instapayStatementReady", "2026-10")])
@@ -118,33 +118,37 @@ def test_the_owner_confirms_and_the_owed_lines_settle(db, notes):
     assert refusal(lambda: fees.confirm_payment(db, FINANCE, {"statementId": "nope"}, now=FIRST_NOV)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
 
 
-def test_30_days_late_means_no_new_clients_but_existing_ones_stay(db, notes):
+def test_7_days_unpaid_puts_the_account_on_hold_but_existing_clients_stay(db, notes):
     seed_world(db)
     db.document(f"subscriptions/{SUB}").update({"status": "active"})
     fee_payment(db, "p1")
     fees.generate(db, now=FIRST_NOV, notify=notes)
     notes.sent.clear()
     notes.refs.clear()
-    assert timers.hourly(db, FIRST_NOV + dt.timedelta(days=29), notes)["feesOverdue"] == 0
-    assert timers.hourly(db, FIRST_NOV + dt.timedelta(days=31), notes)["feesOverdue"] == 1
+    assert timers.hourly(db, FIRST_NOV + dt.timedelta(days=6), notes)["feesOverdue"] == 0
+    assert timers.hourly(db, FIRST_NOV + dt.timedelta(days=8), notes)["feesOverdue"] == 1
     coach_row = db.document(f"coaches/{COACH}").get().to_dict()
-    assert coach_row["acceptingClients"] is False and coach_row["acceptingBeforeOverdue"] is True
+    private = db.document(f"coachPrivate/{COACH}").get().to_dict()
+    assert coach_row["acceptingClients"] is False and private["acceptingBeforeOverdue"] is True
+    assert private["hold"] == {"reason": "fee", "since": FIRST_NOV + dt.timedelta(days=8)}
+    assert "hold" not in coach_row and "acceptingBeforeOverdue" not in coach_row     # members can read this document
     assert db.document(f"paymentStanding/{COACH}").get().to_dict()["feeOverdue"] is True
-    assert notes.sent == [(COACH, "instapayFeeOverdue")] and notes.refs == [(COACH, "instapayFeeOverdue", "2026-10")]
+    assert (COACH, "instapayFeeOverdue", "2026-10") in notes.refs
     assert db.document(f"subscriptions/{SUB}").get().to_dict()["status"] == "active"
-    timers.hourly(db, FIRST_NOV + dt.timedelta(days=32), notes)
-    assert notes.sent == [(COACH, "instapayFeeOverdue")]
+    notes.sent.clear()
+    timers.hourly(db, FIRST_NOV + dt.timedelta(days=9), notes)
+    assert notes.sent == []
 
 
 def test_paying_restores_what_she_had_chosen(db, notes):
     seed_world(db)
     fee_payment(db, "p1")
     fees.generate(db, now=FIRST_NOV, notify=notes)
-    timers.hourly(db, FIRST_NOV + dt.timedelta(days=31), notes)
+    timers.hourly(db, FIRST_NOV + dt.timedelta(days=8), notes)
     assert db.document(f"coaches/{COACH}").get().to_dict()["acceptingClients"] is False
-    fees.confirm_payment(db, FINANCE, {"statementId": ID}, now=FIRST_NOV + dt.timedelta(days=33))
+    fees.confirm_payment(db, FINANCE, {"statementId": ID}, now=FIRST_NOV + dt.timedelta(days=10))
     row = db.document(f"coaches/{COACH}").get().to_dict()
-    assert row["acceptingClients"] is True and row["acceptingBeforeOverdue"] is None
+    assert row["acceptingClients"] is True and db.document(f"coachPrivate/{COACH}").get().to_dict()["acceptingBeforeOverdue"] is None
     assert db.document(f"paymentStanding/{COACH}").get().to_dict()["feeOverdue"] is False
 
 
@@ -153,9 +157,9 @@ def test_a_coach_who_had_stopped_taking_clients_herself_stays_stopped_after_payi
     db.document(f"coaches/{COACH}").update({"acceptingClients": False})
     fee_payment(db, "p1")
     fees.generate(db, now=FIRST_NOV, notify=notes)
-    timers.hourly(db, FIRST_NOV + dt.timedelta(days=31), notes)
-    assert db.document(f"coaches/{COACH}").get().to_dict()["acceptingBeforeOverdue"] is False
-    fees.confirm_payment(db, FINANCE, {"statementId": ID}, now=FIRST_NOV + dt.timedelta(days=33))
+    timers.hourly(db, FIRST_NOV + dt.timedelta(days=8), notes)
+    assert db.document(f"coachPrivate/{COACH}").get().to_dict()["acceptingBeforeOverdue"] is False
+    fees.confirm_payment(db, FINANCE, {"statementId": ID}, now=FIRST_NOV + dt.timedelta(days=10))
     assert db.document(f"coaches/{COACH}").get().to_dict()["acceptingClients"] is False
 
 

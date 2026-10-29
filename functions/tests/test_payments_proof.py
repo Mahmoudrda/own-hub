@@ -484,7 +484,7 @@ def test_received_less_is_refused_here_and_more_is_recorded_as_overpaid(db, blob
     assert pay["overpaidPiasters"] == 51000 - AMOUNT
 
 
-def test_the_invite_fee_tier_is_eight_percent(db, blobs, notes):
+def test_the_invite_fee_tier_is_seven_and_a_half_percent(db, blobs, notes):
     seed_world(db)
     make_payment(db)
     db.document(f"relationships/{COACH}__{CLIENT}").update({"source": "invite"})
@@ -492,5 +492,5 @@ def test_the_invite_fee_tier_is_eight_percent(db, blobs, notes):
     send(db, blobs, notes, reader)
 
     pay = payment_of(db)
-    assert pay["feePiasters"] == 4000
-    assert pay["feeBps"] == 800
+    assert pay["feePiasters"] == 3750
+    assert pay["feeBps"] == 750

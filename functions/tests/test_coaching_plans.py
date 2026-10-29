@@ -686,3 +686,16 @@ def test_nutrition_keys_are_still_refused():
     body = meal()
     body["days"][0]["slots"]["lunch"][0]["kcal"] = 5
     refused(db, req(kind="meal", body=body), errors.PLAN_INVALID)
+
+
+@pytest.mark.parametrize("over", [
+    {"name": "Plan, call 01012345678"},
+])
+def test_a_plan_name_with_contact_details_is_refused(over):
+    refused(make_db(), req(**over), errors.CONTAINS_CONTACT)
+
+
+def test_workout_notes_with_contact_details_are_refused():
+    body = workout()
+    body["days"][0]["session"]["moves"][0]["notesEn"] = "add me on snap mona.fit"
+    refused(make_db(), req(body=body), errors.CONTAINS_CONTACT)

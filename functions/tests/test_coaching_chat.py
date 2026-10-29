@@ -418,3 +418,155 @@ def test_first_name_mode_names_only_the_coach(monkeypatch):
     _, client_notes = _run(db, "m2", _add(db, "m2", senderUid="client1", type="text", text="Hi"))
     assert client_notes.sent == [("coach1", "newMessage")]
 
+
+
+# ---------------------------------------------- contact privacy: split numbers, attempts
+
+def _msg(db, mid, text, at, sender="client1"):
+    return _add(db, mid, senderUid=sender, type="text", text=text, createdAt=at)
+
+
+def test_a_number_split_over_two_messages_is_hidden_on_the_second():
+    db = _db()
+    _run(db, "m1", _msg(db, "m1", "my number is 0101 234", NOW), now=NOW)
+    assert "hidden" not in db.docs[f"relationships/{REL}/messages/m1"]
+    at = NOW + dt.timedelta(minutes=2)
+    result, _ = _run(db, "m2", _msg(db, "m2", "5678", at), now=at)
+    assert result["hidden"] and result["reason"] == "contact"
+
+
+def test_halves_more_than_ten_minutes_apart_or_from_two_senders_are_not_joined():
+    db = _db()
+    _run(db, "m1", _msg(db, "m1", "0101 234", NOW), now=NOW)
+    late = NOW + dt.timedelta(minutes=11)
+    assert _run(db, "m2", _msg(db, "m2", "5678", late), now=late)[0]["hidden"] is False
+    db = _db()
+    _run(db, "m1", _msg(db, "m1", "0101 234", NOW), now=NOW)
+    at = NOW + dt.timedelta(minutes=1)
+    assert _run(db, "m2", _msg(db, "m2", "5678", at, sender="coach1"), now=at)[0]["hidden"] is False
+
+
+def _private(db):
+    return db.docs[f"relationships/{REL}/private/contact"]
+
+
+def _reports(db):
+    return [v for k, v in db.docs.items() if k.startswith("reports/")]
+
+
+def test_each_hidden_attempt_is_counted_and_the_third_in_30_days_opens_one_report():
+    db = _db()
+    for i in range(3):
+        at = NOW + dt.timedelta(days=i)
+        _run(db, f"m{i}", _msg(db, f"m{i}", "call 01012345678", at), now=at)
+        assert _private(db)["client1"]["count"] == i + 1
+        assert len(_reports(db)) == (1 if i == 2 else 0)
+    report = _reports(db)[0]
+    assert report["reason"] == "contact_sharing" and report["state"] == "submitted"
+    assert report["reporterUid"] == chat.AUTO_REPORTER and report["subjectUid"] == "client1"
+    assert report["subjectRef"] == f"relationships/{REL}/messages/m2"
+    at = NOW + dt.timedelta(days=3)
+    _run(db, "m3", _msg(db, "m3", "call 01012345678", at), now=at)
+    assert len(_reports(db)) == 1, "one report per 30 days"
+
+
+def test_attempts_older_than_30_days_do_not_count_and_the_other_sender_has_her_own_count():
+    db = _db()
+    for i, who in enumerate(["client1", "client1", "coach1", "client1"]):
+        at = NOW + dt.timedelta(days=i * 20 if i < 2 else 41)
+        _run(db, f"m{i}", _msg(db, f"m{i}", "t.me/x", at, sender=who), now=at)
+    assert _reports(db) == []
+    assert _private(db)["coach1"]["count"] == 1 and _private(db)["client1"]["count"] == 3
+
+
+def test_a_trigger_run_twice_counts_once_and_other_hides_are_not_counted():
+    db = _db()
+    row = _msg(db, "m1", "call 01012345678", NOW)
+    _run(db, "m1", row)
+    _run(db, "m1", row)
+    assert _private(db)["client1"]["count"] == 1
+    db = _db()
+    _run(db, "m2", _msg(db, "m2", "you idiot", NOW))
+    assert f"relationships/{REL}/private/contact" not in db.docs
+
+
+def test_a_stranger_leaves_no_counter():
+    db = _db()
+    _run(db, "m1", _msg(db, "m1", "call 01012345678", NOW, sender="stranger"))
+    assert f"relationships/{REL}/private/contact" not in db.docs
+
+
+def test_an_automatic_report_is_visible_to_staff_with_no_words():
+    from coaching import moderation
+
+    db = _db()
+    for i in range(3):
+        at = NOW + dt.timedelta(minutes=i)
+        _run(db, f"m{i}", _msg(db, f"m{i}", "call 01012345678", at), now=at)
+    rid = next(k.split("/")[1] for k in db.docs if k.startswith("reports/") and k.count("/") == 1)
+    assert moderation.on_report(db, rid, db.docs[f"reports/{rid}"], now=NOW, per_day=5) is True
+    page = moderation.list_for_staff(db, "staff1", {}, now=NOW)
+    item = page["items"][0]
+    assert item["reason"] == "contact_sharing" and item["subject"].get("hidden") is True
+    assert "text" not in item["subject"] or item["subject"]["text"] == ""
+
+
+def test_a_number_in_three_pieces_hides_all_three():
+    db = _db()
+    for i, (mid, text) in enumerate([("m1", "010"), ("m2", "1234"), ("m3", "5678")]):
+        at = NOW + dt.timedelta(minutes=i)
+        result, _ = _run(db, mid, _msg(db, mid, text, at), now=at)
+    assert result["hidden"] and result["reason"] == "contact"
+    for mid in ("m1", "m2", "m3"):
+        row = db.docs[f"relationships/{REL}/messages/{mid}"]
+        assert row["hidden"] is True and row["text"] == ""
+
+
+def test_only_the_pieces_of_the_number_are_hidden():
+    db = _db()
+    for i, (mid, text) in enumerate([("m1", "see you tomorrow"), ("m2", "0101 234"), ("m3", "5678")]):
+        at = NOW + dt.timedelta(minutes=i)
+        _run(db, mid, _msg(db, mid, text, at), now=at)
+    assert "hidden" not in db.docs[f"relationships/{REL}/messages/m1"]
+    assert db.docs[f"relationships/{REL}/messages/m2"]["hidden"] is True
+
+
+@pytest.mark.parametrize("text", [
+    "Day 5 01012345678", "5 10 1234 5678", "my id 2 20 1012345678", "٥ ١٠ ١٢٣٤ ٥٦٧٨",
+    "r a h m a @ gmail . com", "w h a t s a p p", "tele gram",
+])
+def test_a_short_number_in_front_does_not_hide_a_contact(text):
+    assert chat.screen(text) == "contact"
+
+
+@pytest.mark.parametrize("text", [
+    "بقبل انستاباي", "We accept InstaPay", "انستا باي", "insta pay is fine", "Pay with Vodafone Cash",
+])
+def test_payment_names_are_fine_in_free_text(text):
+    assert chat.has_contact_detail(text) is False
+
+
+def test_naming_instapay_is_hidden_but_never_counts_toward_a_report():
+    db = _db()
+    for i in range(4):
+        at = NOW + dt.timedelta(minutes=i)
+        result, _ = _run(db, f"m{i}", _msg(db, f"m{i}", "pay me on instapay", at), now=at)
+        assert result["reason"] == "payment"
+    assert f"relationships/{REL}/private/contact" not in db.docs and _reports(db) == []
+
+
+@pytest.mark.parametrize("sender,role", [("client1", "client"), ("coach1", "coach")])
+def test_the_automatic_report_names_who_it_is_about(sender, role):
+    db = _db()
+    for i in range(3):
+        at = NOW + dt.timedelta(minutes=i)
+        _run(db, f"m{i}", _msg(db, f"m{i}", "call 01012345678", at, sender=sender), now=at)
+    report = _reports(db)[0]
+    assert report["subjectUid"] == sender and report["subjectRole"] == role and role in report["note"]
+
+
+@pytest.mark.parametrize("text", [
+    "Thanks.To be honest", "Done.Me too", "Good.Fit is fine", "Ok.Page 2", "Yes.Bio class today",
+])
+def test_a_sentence_without_a_space_after_the_full_stop_is_not_a_link_anywhere(text):
+    assert chat.screen(text) is None and chat.has_contact_detail(text) is False

@@ -48,7 +48,7 @@ def request(db, uid: str, data: dict, *, now: dt.datetime, notify) -> dict:
 
 
 def deny(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> dict:
-    common.require_active_coach(db, uid, coach_v)
+    common.require_active_coach(db, uid, coach_v, allow_hold=True)  # protects her clients, so it works on hold
     payment_id = common.text(data.get("paymentId"), max_len=128)
     reason = common.one_of(data.get("reasonCode"), ("sessions_delivered", "outside_terms", "other"))
     held = {}
@@ -91,7 +91,7 @@ def record(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> di
     Hub moves nothing and cannot see it, so the record is her word: the client
     can answer it with open_service_dispute (staff decide), and a refund that
     staff ordered must be at least the amount they named."""
-    common.require_active_coach(db, uid, coach_v)
+    common.require_active_coach(db, uid, coach_v, allow_hold=True)  # protects her clients, so it works on hold
     payment_id = common.text(data.get("paymentId"), max_len=128)
     txn = common.text(data.get("txnNumber"), max_len=40)
     key = proof.txn_key(txn)
@@ -144,6 +144,7 @@ def record(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> di
     out = common.run(db, body)
     if held:
         engine.notify_moves(notify, held["payment"], [(held["from"], "refunded")])
+        fees.refresh(db, payment_id, now, notify=notify)  # a refund lowers or closes the bill
     return out
 
 

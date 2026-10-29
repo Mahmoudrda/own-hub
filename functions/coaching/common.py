@@ -84,6 +84,18 @@ def read(reference, transaction) -> Optional[dict]:
     return (snapshot.to_dict() or {}) if snapshot.exists else None
 
 
+MIN_APP_BUILD = 433440
+"""The lowest app build (minutes since 1 Jan 2026 UTC, as tool/build_ios.sh and
+tool/build_release.sh number it) that has the payment screens: release 1.1.0,
+first built on 29 Oct 2026. Version 1.0.0 (builds up to 424738) sends no
+appBuild at all. Raise it only when a later build is required to pay."""
+
+
+def app_can_pay(build: Any) -> bool:
+    """True for a whole appBuild at or above MIN_APP_BUILD. A bool is not a build."""
+    return isinstance(build, int) and not isinstance(build, bool) and build >= MIN_APP_BUILD
+
+
 def _require_switch(live: bool) -> None:
     if not live:
         raise errors.CoachingError(errors.PRECONDITION, errors.COACH_APP_CLOSED)
@@ -116,7 +128,7 @@ def require_coach(coach_v: Any) -> None:
         raise errors.CoachingError(errors.PERMISSION, errors.NOT_A_COACH)
 
 
-def require_active_coach(db, uid: str, coach_v: Any) -> dict:
+def require_active_coach(db, uid: str, coach_v: Any, *, allow_hold: bool = False) -> dict:
     """The claim AND the server's own record. A token stays valid for up to an
     hour after a suspension, so the claim alone is not enough: coachPrivate
     says whether she is suspended now. Returns her coachPrivate row."""
@@ -127,7 +139,22 @@ def require_active_coach(db, uid: str, coach_v: Any) -> dict:
     row = snap.to_dict() or {}
     if row.get("suspended"):
         raise errors.CoachingError(errors.PERMISSION, errors.COACH_SUSPENDED)
+    if not allow_hold and row.get("hold"):
+        raise errors.CoachingError(errors.PERMISSION, errors.COACH_ON_HOLD)  # fee recording uses require_coach, not this
     return row
+
+
+def require_not_on_hold(db, uid: str, transaction=None) -> None:
+    """For the coach actions that carry no coach claim (leaving a coaching,
+    marking a session done, making an invite code): refused while on hold."""
+    if (db.collection("coachPrivate").document(uid).get(transaction=transaction).to_dict() or {}).get("hold"):
+        raise errors.CoachingError(errors.PERMISSION, errors.COACH_ON_HOLD)
+
+
+def coaches_on_hold(db) -> set:
+    """Uids of coaches whose account is on hold for an unpaid Own Hub fee
+    (`coachPrivate.hold`, server-only)."""
+    return {s.id for s in db.collection("coachPrivate").where("hold.reason", "==", "fee").stream()}
 
 
 def refuse_if_subject(actor_uid: str, *subjects: Any) -> None:

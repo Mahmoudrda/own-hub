@@ -37,10 +37,10 @@ def run(argv, auth):
 
 
 def test_granting_keeps_every_other_claim():
-    auth = FakeAuth({"verified": True, "coachV": "active", "admin": True})
+    auth = FakeAuth({"verified": True, "locale": "ar", "admin": True})
     code, lines = run(["--uid", "uFin"], auth)
     assert code == 0
-    assert auth.writes == [("uFin", {"verified": True, "coachV": "active", "admin": True, "finance": True})]
+    assert auth.writes == [("uFin", {"verified": True, "locale": "ar", "admin": True, "finance": True})]
     assert lines == ["uFin: finance granted"]
 
 

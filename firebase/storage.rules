@@ -190,7 +190,12 @@ service firebase.storage {
     // ------------------------------------------------ coach application files
     //
     // A coach's application files, under coach-docs/{coachUid}/{folder}/{file}.
-    // Six folders and no others (gallery holds portfolio photos). Written by her while the coach service is
+    // Eight folders and no others (gallery holds portfolio photos; agreement
+    // holds her signed Coach Agreement, which carries her national ID number:
+    // read by her, the admin and a woman reviewer only; promo holds her
+    // marketing videos for Own Hub, an mp4 or mov up to 200 MB, read by her and
+    // a woman reviewer only, never the admin claim). Written by her while
+    // the coach service is
     // live and her account is verified: an image up to 10 MB (jpeg, png or
     // webp), or a PDF for education and certificates only.
     //
@@ -211,6 +216,10 @@ service firebase.storage {
       return request.resource.contentType in ['image/jpeg', 'image/png', 'image/webp'];
     }
 
+    function isCoachVideo() {
+      return request.resource.contentType in ['video/mp4', 'video/quicktime'];
+    }
+
     function locked() {
       return resource != null && resource.metadata != null
           && resource.metadata.get('locked', 'false') == 'true';
@@ -220,30 +229,39 @@ service firebase.storage {
       return coachPortfolioLive()
           && isOwner(uid)
           && request.auth.token.get('verified', false) == true
-          && folder in ['photo', 'education', 'certificates',
-                        'testimonials', 'transformations', 'gallery']
-          && (isCoachImage()
-              || (isPdf() && folder in ['education', 'certificates']))
-          && request.resource.size <= 10 * 1024 * 1024;
+          && ((folder in ['photo', 'education', 'certificates',
+                          'testimonials', 'transformations', 'gallery', 'agreement']
+               && (isCoachImage()
+                   || (isPdf() && folder in ['education', 'certificates', 'agreement']))
+               && request.resource.size <= 10 * 1024 * 1024)
+              || (folder == 'promo'
+                  && request.auth.token.get('coachV', '') == 'active'
+                  && isCoachVideo()
+                  && request.resource.size <= 200 * 1024 * 1024));
     }
 
     match /coach-docs/{uid}/{folder}/{file} {
       allow read: if coachPortfolioLive()
                   && isOwner(uid)
                   && folder in ['photo', 'education', 'certificates',
-                                'testimonials', 'transformations', 'gallery'];
+                                'testimonials', 'transformations', 'gallery', 'agreement',
+                                'promo'];
       allow read: if coachPortfolioLive()
                   && (isAdmin() || isWomanReviewer())
-                  && folder in ['photo', 'education', 'certificates'];
+                  && folder in ['photo', 'education', 'certificates', 'agreement'];
       allow read: if coachPortfolioLive()
                   && isWomanReviewer()
-                  && folder in ['testimonials', 'transformations', 'gallery'];
-      allow create, update: if coachFileWrite(uid, folder) && !locked();
+                  && folder in ['testimonials', 'transformations', 'gallery', 'promo'];
+      // The signed agreement is evidence: written once, never replaced or
+      // deleted by the client (a new copy is a new file; the server deletes
+      // the one it replaces).
+      allow create, update: if coachFileWrite(uid, folder) && !locked()
+                            && (folder != 'agreement' || resource == null);
       // A file the service has attached to a portfolio item (the two photos
       // and the client's written release) carries the metadata locked=true, so
       // she cannot delete or replace the evidence. A draft she has not
       // submitted is not locked and she can still delete it.
-      allow delete: if isOwner(uid) && !locked();
+      allow delete: if isOwner(uid) && !locked() && folder != 'agreement';
     }
 
     // What the public coach page shows (her photo, checked and resized by the

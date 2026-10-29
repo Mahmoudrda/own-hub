@@ -187,3 +187,9 @@ def test_options_toggle_allow_long_first(db):
     # No profile
     db.document(f"coachPaymentProfiles/{COACH}").delete()
     assert refusal(lambda: address_mod.set_options(db, COACH, {"allowLongFirst": False}, coach_v="active", now=NOW)) == (errors.PRECONDITION, errors.COACH_NOT_READY)
+
+
+def test_a_phone_number_written_as_the_handle_is_refused(db, notes):
+    seed_world(db)
+    for local in ("01012345678", "x01012345678", "mona.010123456789"):
+        assert refusal(lambda l=local: go(db, notes, address=f"{l}@instapay")) == (c_errors.INVALID, errors.ADDRESS_NOT_HANDLE)

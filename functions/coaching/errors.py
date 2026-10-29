@@ -20,6 +20,13 @@ CERTIFICATE_NOT_UPLOADED = "certificate_not_uploaded"
 
 TOO_MANY_CERTIFICATES = "too_many_certificates"
 
+AGREEMENT_NEEDED = "agreement_needed"
+"""She has not accepted the Coach Agreement or its signed copy is not verified
+yet, so she cannot take a new client. Clients she already has are unaffected."""
+
+AGREEMENT_NOT_UPLOADED = "agreement_not_uploaded"
+"""The signed copy she named is not in the bucket under her own prefix."""
+
 INVITE_INVALID = "invite_invalid"
 """No such code, or it cannot be used by her. Deliberately one reason for
 every case, so a block or a closed coach page is never signalled."""
@@ -43,6 +50,16 @@ FILE_NOT_UPLOADED = "file_not_uploaded"
 APPLICATION_NOT_FOUND = "application_not_found"
 
 COACH_SUSPENDED = "coach_suspended"
+
+APP_UPDATE_NEEDED = "app_update_needed"
+"""Payments are live and her Own Hub is too old to show them (no appBuild, or
+below common.MIN_APP_BUILD). Refused before anything is written, so a request
+never reaches a payment she cannot make."""
+
+CLIENT_UPDATE_NEEDED = "client_update_needed"
+"""Coach side: payments are live and the member's Own Hub is too old to pay
+(her request carries no appBuild, or one below common.MIN_APP_BUILD). The
+request stays `requested`; she is pushed to update."""
 
 COACH_UNAVAILABLE = "coach_unavailable"
 """One reason for not published, not accepting, full, or a block either way,
@@ -125,3 +142,14 @@ MEDIA_NOT_FOUND = "media_not_found"
 
 TOO_MANY_MEDIA = "too_many_media"
 """She already has the most portfolio items the page holds."""
+
+CONTAINS_CONTACT = "contains_contact"
+"""A free-text field holds a phone number, email, handle, link or an outside
+app. Nothing was written."""
+
+STAFF_ACCOUNT = "staff_account"
+"""A staff account cannot also be a coach."""
+
+COACH_ON_HOLD = "coach_on_hold"
+"""Her account is on hold for an unpaid Own Hub fee: read-only except recording
+a fee payment."""

@@ -92,6 +92,9 @@ class FakeBackend:
         self._step("blocked_uids")
         return list(self.blocks.get(uid, []))
 
+    def retain_legal_hold(self, uid):
+        self._step("retain_legal_hold")
+
     def delete_blocked_by(self, other, uid):
         self._step("delete_blocked_by", other)
         self.users.get(other, {}).get("blockedBy", {}).pop(uid, None)

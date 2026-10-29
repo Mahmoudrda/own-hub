@@ -284,12 +284,31 @@ test("a fee is confirmed only after the confirm step, and leaves the list", asyn
   } });
   await t.desk.load("fees");
   const root = t.roots["fees-root"];
-  assert.deepEqual(all(root).filter((n) => n.attrs["aria-pressed"] !== undefined).map((n) => textOf(n).trim()), ["All", "Coach says she paid", "Not paid yet", "Paid"]);
+  assert.deepEqual(all(root).filter((n) => n.attrs["aria-pressed"] !== undefined).map((n) => textOf(n).trim()), ["Needs you", "All", "Coach says she paid", "Not paid yet", "Paid"]);
   await button(root, "Confirm the fee arrived").on.click({ currentTarget: button(root, "Confirm the fee arrived") });
   await tick();
   assert.deepEqual(sent, [{ statementId: "s1" }]);
   assert.equal(button(root, "Confirm the fee arrived"), undefined);
   assert.deepEqual(t.badges.at(-1), ["fees", 0]);
+});
+
+test("a fee claim is rejected only with a reason and then leaves the list", async () => {
+  const sent = [];
+  const t = harness({ claims: { finance: true }, tab: "fees", responses: {
+    list_fee_statements: () => ({ items: [{ statementId: "s1", coachUid: "c1", year: 2026, month: 9, status: "paid_claimed", totalDuePiasters: 12550, dueAt: "2026-10-01T00:00:00Z" }].filter((s) => !sent.length), next: null }),
+    reject_fee_claim: (body) => { sent.push(body); return { status: "open" }; },
+  } });
+  await t.desk.load("fees");
+  const root = t.roots["fees-root"];
+  await button(root, "Reject the claim").on.click({ currentTarget: button(root, "Reject the claim") });
+  await tick();
+  assert.equal(sent.length, 0);
+  assert.match(t.notices.at(-1)[0], /Write the reason/);
+  find(root, (n) => n.tag === "textarea").on.input({ target: { value: "Nothing arrived on the 3rd" } });
+  await button(root, "Reject the claim").on.click({ currentTarget: button(root, "Reject the claim") });
+  await tick();
+  assert.deepEqual(sent, [{ statementId: "s1", reason: "Nothing arrived on the 3rd" }]);
+  assert.equal(button(root, "Reject the claim"), undefined);
 });
 
 test("each tab loads only for the claims that may use it", async () => {

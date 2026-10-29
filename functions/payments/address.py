@@ -37,6 +37,8 @@ def check_address(raw, allowed: tuple) -> str:
     local, at, suffix = text.partition("@")
     if not at or suffix not in allowed or not _HANDLE_LOCAL.match(local):
         raise common.refuse(errors.INVALID, errors.ADDRESS_FORMAT)
+    if sum(ch.isdigit() for ch in local) >= 9:  # a phone number written as a handle
+        raise common.refuse(errors.INVALID, errors.ADDRESS_NOT_HANDLE)
     return text
 
 

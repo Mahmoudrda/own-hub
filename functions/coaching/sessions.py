@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 
 from google.cloud import firestore
 
-from . import common, errors, subscriptions
+from . import chat, common, errors, subscriptions
 
 LIMITS = common.LIMITS
 ENUMS = common.ENUMS
@@ -74,6 +74,8 @@ def check_link(link: Any) -> str:
         raise bad
     if not host_allowed(host):
         raise bad
+    if chat.has_contact_in_link(f"{parts.path} {parts.query} {parts.fragment}"):
+        raise common.bad(errors.CONTAINS_CONTACT)
     return link
 
 
@@ -246,6 +248,8 @@ def mark_done(db, uid: str, data: dict, *, live: bool, now: dt.datetime) -> dict
         coach_uid, client_uid = sub.get("coachUid"), sub.get("clientUid")
         if uid not in (coach_uid, client_uid):
             raise common.refuse(errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
+        if uid == coach_uid:
+            common.require_not_on_hold(db, uid, transaction)
         if sub.get("status") != "active" or _frozen(sub):
             raise common.refuse(errors.PRECONDITION, errors.WRONG_STATUS)
         session_ref = sub_ref.collection("sessions").document(session_id)

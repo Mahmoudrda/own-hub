@@ -57,11 +57,14 @@ before(async () => {
     // as the coach on the relationship above; this is what the seed was
     // missing rather than something the fix demands.
     await setDoc(doc(d, `coaches/${BLOCKER}`), { name: 'Coach Blocker' });
+    await setDoc(doc(d, `coachPrivate/${BLOCKER}`), { owedEgp: 0 });
     await setDoc(doc(d, `coaches/${uid.coach}`), { name: 'Coach' });
+    await setDoc(doc(d, `coachPrivate/${uid.coach}`), { owedEgp: 0 });
     // A SECOND coach, who has blocked BLOCKED. The relationship between them
     // does not exist yet, so a create against the canonical id is a real
     // create and the block check is genuinely the thing that refuses it.
     await setDoc(doc(d, `coaches/${uid.coach2}`), { name: 'Coach Two' });
+    await setDoc(doc(d, `coachPrivate/${uid.coach2}`), { owedEgp: 0 });
     await setDoc(doc(d, `users/${uid.coach2}/blocks/${BLOCKED}`), {
       createdAt: new Date(), source: 'message',
     });

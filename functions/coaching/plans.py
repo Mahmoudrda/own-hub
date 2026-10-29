@@ -24,7 +24,7 @@ from typing import Any, Optional
 
 from google.cloud import firestore
 
-from . import common, errors, subscriptions
+from . import chat, common, errors, subscriptions
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _IDS_PATH = os.path.join(_HERE, "content_ids.json")
@@ -122,6 +122,13 @@ def _string(value: Any, *, max_len: int, min_len: int = 0) -> str:
     return value
 
 
+def _text(value: Any, **bounds) -> str:
+    """A string a person typed: no phone number, handle or link."""
+    value = _string(value, **bounds)
+    chat.refuse_contact(value)
+    return value
+
+
 def _keys_within(row: Any, allowed) -> dict:
     _check(isinstance(row, dict))
     _check(all(isinstance(k, str) and k in allowed for k in row))
@@ -149,10 +156,10 @@ def _check_move(move: Any, exercises) -> None:
     _check(isinstance(move.get("exerciseId"), str) and move["exerciseId"] in exercises)
     for key in ("nameEn", "nameAr"):
         if key in move:
-            _string(move[key], max_len=MAX_MOVE_NAME)
+            _text(move[key], max_len=MAX_MOVE_NAME)
     for key in ("notesEn", "notesAr", "safetyEn", "safetyAr"):
         if key in move:
-            _string(move[key], max_len=MAX_TEXT)
+            _text(move[key], max_len=MAX_TEXT)
     _check(_is_int(move.get("sets")) and MIN_SETS <= move["sets"] <= MAX_SETS)
     reps, hold = move.get("reps"), move.get("holdSeconds")
     # Exactly one of reps and a hold.
@@ -178,7 +185,7 @@ def _check_day(day: Any, exercises, seen_sessions: set) -> None:
     _check(session_id not in seen_sessions)
     seen_sessions.add(session_id)
     for key in ("titleEn", "titleAr"):
-        _string(session.get(key, ""), max_len=MAX_DAY_TITLE)
+        _text(session.get(key, ""), max_len=MAX_DAY_TITLE)
     _check(
         _is_int(session.get("minutes")) and 1 <= session["minutes"] <= MAX_MINUTES
     )
@@ -200,7 +207,7 @@ def _check_workout(body: dict, ids: dict) -> None:
     if "source" in body:
         _string(body["source"], max_len=64)
     if "name" in body:
-        _string(body["name"], max_len=LIMITS["planNameMax"])
+        _text(body["name"], max_len=LIMITS["planNameMax"])
     if "revision" in body:
         _check(_is_int(body["revision"]) and body["revision"] > 0)
     days = body.get("days")
@@ -236,10 +243,10 @@ def _check_item(item: Any, ids: dict) -> None:
         _check(_in_range(item.get("grams"), *GRAMS))
     else:
         _keys_within(item, {"kind", "text", "note"})
-        text = _string(item.get("text"), min_len=1, max_len=MAX_FREE_TEXT)
+        text = _text(item.get("text"), min_len=1, max_len=MAX_FREE_TEXT)
         _check(text.strip() != "")
     if "note" in item:
-        _string(item["note"], max_len=MAX_ITEM_NOTE)
+        _text(item["note"], max_len=MAX_ITEM_NOTE)
 
 
 def _check_meal(body: dict, ids: dict) -> None:
@@ -248,7 +255,7 @@ def _check_meal(body: dict, ids: dict) -> None:
     _check(isinstance(days, list) and 1 <= len(days) <= LIMITS["planMaxDays"])
     for day in days:
         _keys_within(day, {"label", "slots"})
-        _string(day.get("label"), min_len=1, max_len=MAX_DAY_LABEL)
+        _text(day.get("label"), min_len=1, max_len=MAX_DAY_LABEL)
         slots = day.get("slots")
         _keys_within(slots, ENUMS["mealSlots"])
         for items in slots.values():
@@ -347,6 +354,7 @@ def publish(
     sub_id = common.text(data.get("subId"), max_len=128)
     kind = common.one_of(data.get("kind"), ENUMS["planKind"])
     name = common.text(data.get("name"), max_len=LIMITS["planNameMax"])
+    chat.refuse_contact(name)
     plan_id = data.get("planId")
     if plan_id is not None:
         plan_id = common.text(plan_id, max_len=128)

@@ -23,6 +23,7 @@ import datetime as dt
 from typing import Any, Callable, Optional
 
 from . import common, errors
+from .chat import AUTO_REPORTER
 
 ENUMS = common.ENUMS
 PAGE_SIZE = 25
@@ -73,6 +74,8 @@ def _party(kind: str, ids: list, reporter: Any, row: dict) -> bool:
         return True
     if not isinstance(reporter, str) or not reporter:
         return False
+    if reporter == AUTO_REPORTER:
+        return kind == "coachMessage"  # the hidden message holds no words
     if kind == "coachMessage":
         return reporter in (row.get("coachUid"), row.get("clientUid"))
     return reporter in (ids[0], row.get("coachUid"))
@@ -164,6 +167,8 @@ def on_report(db, report_id: str, report: dict, *, now: dt.datetime, per_day: in
     """A report was made: copy what it points at. A reporter past her daily
     limit is marked `throttled`, and her evidence is still copied: a real
     report is never dropped to a flood."""
+    if report.get("reporterUid") == AUTO_REPORTER:
+        return capture_evidence(db, report_id, report, now=now)
     since = now - dt.timedelta(hours=24)
     mine = db.collection("reports").where("reporterUid", "==", report.get("reporterUid")).where("createdAt", ">=", since)
     if sum(1 for _ in mine.stream()) > per_day:
@@ -203,6 +208,7 @@ def list_for_staff(db, actor_uid: str, data: dict, *, now: dt.datetime) -> dict:
                 "reportId": report_id,
                 "subjectKind": report.get("subjectKind"),
                 "reason": report.get("reason"),
+                **({"subjectRole": report["subjectRole"]} if report.get("subjectRole") in ("coach", "client") else {}),
                 "note": report.get("note") if isinstance(report.get("note"), str) else "",
                 "state": report.get("state"),
                 "createdAt": created.isoformat(),

@@ -14,7 +14,7 @@ from . import activation, coach, engine, errors, fees, model, profile, states
 def mark(db, uid: str, data: dict, *, coach_v, now: dt.datetime, notify) -> dict:
     """The coach received less than the amount. She may accept it in writing
     (acceptLower); the package never starts on a partial payment otherwise."""
-    common.require_active_coach(db, uid, coach_v)
+    common.require_active_coach(db, uid, coach_v, allow_hold=True)  # protects her clients, so it works on hold
     payment_id = common.text(data.get("paymentId"), max_len=128)
     received = common.whole(data.get("receivedPiasters"), low=1, high=10_000_000)
     accept = data.get("acceptLower")
@@ -75,7 +75,7 @@ def respond(db, uid: str, data: dict, *, now: dt.datetime, notify) -> dict:
         seen = activation.read_for_start(transaction, db, cur["subId"])
         prof_ref = profile.profile_ref(db, cur["coachUid"])
         prof = common.read(prof_ref, transaction) or {}
-        rel_source = (seen["rel"].to_dict() or {}).get("source") if seen["rel"].exists else None
+        rel_source = fees.source_of(seen)
         out = coach.apply_confirmation(transaction, db, ref, cur, seen, prof_ref, prof, cfg, now, states.CLIENT, uid,
                                        lower["differentAmountPiasters"])
         transaction.update(ref, fees.recompute(out, lower["differentAmountPiasters"], cfg, rel_source))
@@ -85,4 +85,5 @@ def respond(db, uid: str, data: dict, *, now: dt.datetime, notify) -> dict:
     out = common.run(db, body)
     if held:
         engine.notify_moves(notify, held["payment"], [("different_amount", held["to"])])
+        fees.refresh(db, payment_id, now, notify=notify)  # a lower accepted amount lowers the bill
     return out

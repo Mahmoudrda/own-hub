@@ -508,7 +508,7 @@ class FirestoreReader:
         private_rows = {}
         if private.get().exists:
             private_rows["account"] = private.get().to_dict() or {}
-        for name in ("prices", "ledger", "payouts", "mediaConsents"):
+        for name in ("prices", "ledger", "payouts", "mediaConsents", "promoVideos"):
             for key, value in rows(private.collection(name)).items():
                 private_rows[f"{name}/{key}"] = value
         return {

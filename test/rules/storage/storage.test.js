@@ -239,6 +239,95 @@ test('a coach file the service locked (attached to a portfolio item) cannot be d
   await assertSucceeds(put(her(), `coach-docs/${HER}/transformations/new.jpg`, 1024, 'image/jpeg'));
 });
 
+test('the signed agreement: an image or PDF written once by the coach, read by her, an admin and a reviewer, never replaced or deleted', async () => {
+  const path = `coach-docs/${HER}/agreement/signed.pdf`;
+  await assertSucceeds(put(her(), path, 1024, 'application/pdf'));
+  await assertSucceeds(put(her(), `coach-docs/${HER}/agreement/signed.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(her(), `coach-docs/${HER}/agreement/x.gif`, 1024, 'image/gif'));
+  await assertFails(put(her(), `coach-docs/${HER}/agreement/big.jpg`, 10 * MB + 1, 'image/jpeg'));
+  await assertFails(put(her(), path, 1024, 'application/pdf'));
+  await assertFails(put(other(), `coach-docs/${HER}/agreement/o.pdf`, 1024, 'application/pdf'));
+  await assertFails(put(admin(), `coach-docs/${HER}/agreement/a.pdf`, 1024, 'application/pdf'));
+  await assertFails(put(reviewer(), `coach-docs/${HER}/agreement/r.pdf`, 1024, 'application/pdf'));
+  await assertFails(put(her({}), `coach-docs/${HER}/agreement/u.pdf`, 1024, 'application/pdf'));
+  await assertSucceeds(getBytes(ref(her(), path)));
+  await assertSucceeds(getBytes(ref(admin(), path)));
+  await assertSucceeds(getBytes(ref(reviewer(), path)));
+  await assertFails(getBytes(ref(finance(), path)));
+  await assertFails(getBytes(ref(other(), path)));
+  await assertFails(getBytes(ref(anon(), path)));
+  await assertFails(deleteObject(ref(her(), path)));
+  await assertFails(deleteObject(ref(admin(), path)));
+});
+
+test('marketing videos: a verified active coach uploads an mp4 or mov up to 200 MB, nothing else', async () => {
+  const coach = () => her({ verified: true, coachV: 'active' });
+  await assertSucceeds(put(coach(), `coach-docs/${HER}/promo/a.mp4`, 60 * MB, 'video/mp4'));
+  await assertSucceeds(put(coach(), `coach-docs/${HER}/promo/b.mov`, 1024, 'video/quicktime'));
+  await assertFails(put(coach(), `coach-docs/${HER}/promo/x.jpg`, 1024, 'image/jpeg'));
+  await assertFails(put(coach(), `coach-docs/${HER}/promo/x.pdf`, 1024, 'application/pdf'));
+  await assertFails(put(coach(), `coach-docs/${HER}/promo/x.webm`, 1024, 'video/webm'));
+  await assertFails(put(coach(), `coach-docs/${HER}/promo/deep/x.mp4`, 1024, 'video/mp4'));
+  // A video goes nowhere else, and promo takes no image.
+  await assertFails(put(coach(), `coach-docs/${HER}/gallery/x.mp4`, 1024, 'video/mp4'));
+  // Verified but not a coach, someone else, a reviewer, an admin or no account: no.
+  await assertFails(put(her(), `coach-docs/${HER}/promo/n.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(her({ verified: true, coachV: 'suspended' }), `coach-docs/${HER}/promo/n.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(other({ verified: true, coachV: 'active' }), `coach-docs/${HER}/promo/o.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(her({ coachV: 'active' }), `coach-docs/${HER}/promo/u.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(reviewer(), `coach-docs/${HER}/promo/r.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(admin(), `coach-docs/${HER}/promo/a2.mp4`, 1024, 'video/mp4'));
+  await assertFails(put(anon(), `coach-docs/${HER}/promo/z.mp4`, 1024, 'video/mp4'));
+});
+
+test('the marketing video ceiling is the rule\'s own number (the emulator cannot take 200 MB, so it is lowered to 5 MB)', async () => {
+  const ceiling = "isCoachVideo()\n                  && request.resource.size <= 200 * 1024 * 1024";
+  const source = switchedOn(RULES);
+  if (!source.includes(ceiling)) throw new Error('the 200 MB figure is not in storage.rules');
+  await load(source.replace(ceiling, ceiling.replace('200', '5')));
+  try {
+    const coach = () => her({ verified: true, coachV: 'active' });
+    await assertSucceeds(put(coach(), `coach-docs/${HER}/promo/ok.mp4`, 5 * MB, 'video/mp4'));
+    await assertFails(put(coach(), `coach-docs/${HER}/promo/over.mp4`, 5 * MB + 1, 'video/mp4'));
+    await assertFails(put(coach(), `coach-docs/${HER}/gallery/over.jpg`, 10 * MB + 1, 'image/jpeg'));
+  } finally {
+    await load(switchedOn(RULES));
+  }
+});
+
+test('marketing videos are read by the owner and a woman reviewer, never the admin, finance or anyone else', async () => {
+  const path = `coach-docs/${HER}/promo/a.mp4`;
+  await seed(path, 'video/mp4');
+  await assertSucceeds(getBytes(ref(her(), path)));
+  await assertSucceeds(getBytes(ref(reviewer(), path)));
+  await assertFails(getBytes(ref(admin(), path)));
+  await assertFails(getBytes(ref(finance(), path)));
+  await assertFails(getBytes(ref(other(), path)));
+  await assertFails(getBytes(ref(anon(), path)));
+});
+
+test('a marketing video the service locked cannot be replaced or deleted, an unsent one can', async () => {
+  const coach = () => her({ verified: true, coachV: 'active' });
+  const locked = `coach-docs/${HER}/promo/sent.mp4`;
+  const draft = `coach-docs/${HER}/promo/draft.mp4`;
+  await seed(locked, 'video/mp4', { locked: 'true' });
+  await seed(draft, 'video/mp4');
+  await assertFails(deleteObject(ref(coach(), locked)));
+  await assertFails(put(coach(), locked, 1024, 'video/mp4'));
+  await assertFails(deleteObject(ref(other(), draft)));
+  await assertSucceeds(deleteObject(ref(coach(), draft)));
+});
+
+test('legal-hold files (a deleted coach\'s signed agreement) are closed to every client', async () => {
+  const path = `legal-hold/${HER}/agreement/signed.pdf`;
+  await seed(path, 'application/pdf');
+  for (const who of [her(), admin(), reviewer(), other(), anon()]) {
+    await assertFails(getBytes(ref(who, path)));
+    await assertFails(put(who, `legal-hold/${HER}/agreement/new.pdf`, 1024, 'application/pdf'));
+    await assertFails(deleteObject(ref(who, path)));
+  }
+});
+
 // ----------------------------------------------------------- coach-public
 
 test('the public coach photo is read by verified members and written by nobody', async () => {

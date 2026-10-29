@@ -298,7 +298,8 @@ def test_each_party_reads_her_own_payments_picture_through_the_server_only(db):
     blobs = FakeBlobs({SHOT: (b"abc", "image/jpeg"), f"payment-proofs/{PAY}/coach-1.jpg": (b"xyz", "image/jpeg"), "payment-proofs/other/x.jpg": (b"no", "image/jpeg")})
     assert staff.party_image(db, CLIENT, {"paymentId": PAY, "path": SHOT}, blobs=blobs) == {"imageB64": "YWJj"}
     assert staff.party_image(db, COACH, {"paymentId": PAY, "path": f"payment-proofs/{PAY}/coach-1.jpg"}, blobs=blobs) == {"imageB64": "eHl6"}
-    for who, path in ((CLIENT2, SHOT), (CLIENT, "payment-proofs/other/x.jpg"), (CLIENT, f"payment-proofs/{PAY}/client-gone.jpg")):
+    # The coach never gets her client's proof, nor the client the coach's bank statement.
+    for who, path in ((COACH, SHOT), (CLIENT, f"payment-proofs/{PAY}/coach-1.jpg"), (CLIENT2, SHOT), (CLIENT, "payment-proofs/other/x.jpg"), (CLIENT, f"payment-proofs/{PAY}/client-gone.jpg")):
         assert refusal(lambda: staff.party_image(db, who, {"paymentId": PAY, "path": path}, blobs=blobs)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
     assert refusal(lambda: staff.party_image(db, CLIENT, {"paymentId": "nope", "path": SHOT}, blobs=blobs)) == (errors.NOT_FOUND, errors.PAYMENT_NOT_FOUND)
 

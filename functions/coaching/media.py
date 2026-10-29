@@ -21,7 +21,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Optional
 
-from . import applications, common, errors
+from . import applications, chat, common, errors
 
 PAGE_SIZE = 25
 MAX_ITEMS = 30
@@ -125,6 +125,7 @@ def add(db, uid: str, data: dict, *, live: bool, coach_v, blobs, reencode, now: 
     common.require_portfolio_live(live)
     common.require_active_coach(db, uid, coach_v)
     row = _fields(uid, data, blobs)
+    chat.refuse_contact(row.get("note"), row.get("text"), row.get("from"), row.get("caption"))
     if row["kind"] == "transformation":
         row["consent"] = {"at": now, "termsVersion": TERMS_VERSION}
 

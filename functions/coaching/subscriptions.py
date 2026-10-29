@@ -18,7 +18,7 @@ from typing import Callable, Optional
 
 from google.cloud import firestore
 
-from . import common, errors, receiving
+from . import agreement, chat, common, errors, invites, receiving
 
 OPEN = tuple(common.ENUMS["subscriptionOpen"])
 LIMITS = common.LIMITS
@@ -96,6 +96,8 @@ def intake_of(raw) -> dict:
     flagged = any(health.values()) or life_stage in FLAGGED_STAGES or eating
     if flagged and not ack:
         raise common.bad()
+    note = common.optional_text(raw.get("note"), max_len=LIMITS["noteMax"])
+    chat.refuse_contact(allergies, life_stage, note)
     inbody = raw.get("inbody")
     out = {
         "goal": common.one_of(raw.get("goal"), common.ENUMS["goals"]),
@@ -107,7 +109,7 @@ def intake_of(raw) -> dict:
         "eatingHistory": eating,
         "health": {key: health[key] for key in HEALTH_KEYS},
         "doctorAck": ack,
-        "note": common.optional_text(raw.get("note"), max_len=LIMITS["noteMax"]),
+        "note": note,
     }
     if inbody is not None:
         out["inbody"] = inbody_of(inbody)
@@ -261,16 +263,27 @@ def free_start(package: dict, now: dt.datetime) -> dict:
     }
 
 
+def _has_coached(rel) -> bool:
+    """A renewal: this pair already had a coaching (existing clients are not affected by the agreement rule)."""
+    row = (rel.to_dict() or {}) if rel.exists else {}
+    return row.get("status") in ("active", "ended") or bool(row.get("activeSubId"))
+
+
 def begin(
     transaction, db, *, sub_id: str, coach_uid: str, client_uid: str, rel_id: str,
-    rel, coach_ref, coach, now: dt.datetime,
+    rel, coach_ref, coach, now: dt.datetime, source: Optional[str] = None, held: bool = False,
 ) -> None:
     """The relationship opens, her client count goes up and the chat says it
-    started. `rel` and `coach` are snapshots read before any write."""
+    started. `rel` and `coach` are snapshots read before any write. `source`
+    ('invite' or 'app') is written once, when the pair's first coaching begins."""
     first_time = not rel.exists or (rel.to_dict() or {}).get("status", "none") == "none"
     relation = {"status": "active", "chatOpen": True, "activeSubId": sub_id}
     if not rel.exists:
         relation.update(coachUid=coach_uid, clientUid=client_uid, createdAt=now)
+    if not (rel.to_dict() or {}).get("source"):  # the pair's fee rate is fixed by its first coaching
+        relation["source"] = source or "app"
+    if held:  # her account is on hold (coachPrivate, read by the caller before any write)
+        relation["coachAway"] = True
     transaction.set(db.collection("relationships").document(rel_id), relation, merge=True)
     if coach.exists:
         counters = {"activeClients": firestore.Increment(1)}
@@ -305,12 +318,15 @@ def request(
 ) -> dict:
     common.require_clients_live(live)
     common.require_verified(verified)
+    if (payments_live or instapay) and not common.app_can_pay(data.get("appBuild")):
+        raise common.refuse(errors.PRECONDITION, errors.APP_UPDATE_NEEDED)
     coach_uid = _id(data.get("coachUid"))
     package_id = _id(data.get("packageId"))
     intake = intake_of(data.get("intake"))
     locale = locale_of(data.get("locale"))
     raw_consent = data.get("consent")
     given_name = data.get("clientName")
+    chat.refuse_contact(given_name)
     unavailable = common.refuse(errors.PRECONDITION, errors.COACH_UNAVAILABLE)
     if coach_uid == uid:
         raise unavailable
@@ -322,6 +338,12 @@ def request(
     rel_id = common.rel_id(coach_uid, uid)
     rel_ref = db.collection("relationships").document(rel_id)
     sub_ref = db.collection("subscriptions").document()
+    source = "app"
+    if data.get("inviteCode") is not None:
+        try:  # her own code only; any other code is the same as none
+            source = "invite" if invites.coach_for_code(db, uid, data["inviteCode"], now) == coach_uid else "app"
+        except errors.CoachingError:
+            pass
 
     def body(transaction):
         coach = coach_ref.get(transaction=transaction)
@@ -330,6 +352,7 @@ def request(
         package = package_ref.get(transaction=transaction)
         price = price_ref.get(transaction=transaction)
         rel = rel_ref.get(transaction=transaction)
+        coach_private = db.collection("coachPrivate").document(coach_uid).get(transaction=transaction)
         open_pair = (
             db.collection("subscriptions")
             .where("clientUid", "==", uid)
@@ -360,8 +383,15 @@ def request(
         pack = package.to_dict() if package.exists else None
         if pack is None or pack.get("active") is not True or not price.exists:
             raise common.refuse(errors.NOT_FOUND, errors.PACKAGE_NOT_FOUND)
-        if existing:
+        stale = [
+            snap for snap in existing
+            if common.app_can_pay(data.get("appBuild"))
+            and (snap.to_dict() or {}).get("status") == "requested"
+            and not common.app_can_pay((snap.to_dict() or {}).get("appBuild"))
+        ]
+        if existing and len(stale) != len(existing):
             raise common.refuse(errors.PRECONDITION, errors.ALREADY_REQUESTED)
+        pair_source = (rel.to_dict() or {}).get("source") or source  # fixed once the pair's first coaching has begun
         accounts = None
         if payments_live:
             accounts = _accounts(db, transaction)
@@ -375,6 +405,8 @@ def request(
             "package": {key: pack.get(key) for key in PACKAGE_KEYS},
             "priceFinalEgp": pack["priceFinalEgp"],
             "clientName": client_name(given_name),
+            "source": pair_source,
+            "appBuild": data["appBuild"] if common.app_can_pay(data.get("appBuild")) else None,
             "status": "requested",
             "intake": intake,
             "sessionsIncluded": common.sessions_included(pack["liveSessionsPerMonth"], pack["durationDays"]),
@@ -384,6 +416,7 @@ def request(
         }
         auto = (
             row.get("autoAccept") is True
+            and (agreement.ready(coach_private.to_dict()) or _has_coached(rel))
             and not intake_flagged(intake)
             and held_places(db, transaction, coach_uid, payments_live or instapay, asked=True) < cap
         )
@@ -399,7 +432,7 @@ def request(
         if free:
             begin(
                 transaction, db, sub_id=sub_ref.id, coach_uid=coach_uid, client_uid=uid,
-                rel_id=rel_id, rel=rel, coach_ref=coach_ref, coach=coach, now=now,
+                rel_id=rel_id, rel=rel, coach_ref=coach_ref, coach=coach, now=now, source=pair_source,
             )
         elif not rel.exists:
             transaction.set(
@@ -412,6 +445,8 @@ def request(
                     "createdAt": now,
                 },
             )
+        for snap in stale:  # her old request from an app that cannot pay: replaced by this one
+            transaction.update(snap.reference, {"status": "cancelled", "endReason": "other", "statusAt": now})
         transaction.set(sub_ref, sub)
         transaction.set(
             sub_ref.collection("private").document("terms"),
@@ -476,9 +511,15 @@ def respond(
         if decision == "accept":
             coach_ref = db.collection("coaches").document(uid)
             coach = coach_ref.get(transaction=transaction)
+            renewal = _has_coached(db.collection("relationships").document(sub["relId"]).get(transaction=transaction))
+            if not (renewal or agreement.ready(db.collection("coachPrivate").document(uid).get(transaction=transaction).to_dict())):
+                raise common.refuse(errors.PRECONDITION, errors.AGREEMENT_NEEDED)
             cap = (coach.to_dict() or {}).get("maxActiveClients", LIMITS["maxActiveClientsDefault"])
             if held_places(db, transaction, uid, payments_live or instapay) >= cap:
                 raise common.refuse(errors.PRECONDITION, errors.COACH_UNAVAILABLE)
+            if (payments_live or instapay) and not common.app_can_pay(sub.get("appBuild")):
+                # shortcut: only the request's own build is checked; an app that updates later is accepted on a new request.
+                raise common.refuse(errors.PRECONDITION, errors.CLIENT_UPDATE_NEEDED)
             if instapay and not payments_live and (coach.to_dict() or {}).get("instapayReady") is not True:
                 from payments import errors as p_errors
                 raise common.refuse(errors.PRECONDITION, p_errors.COACH_NOT_READY)
@@ -494,7 +535,7 @@ def respond(
                 transaction.update(ref, changes)
                 begin(
                     transaction, db, sub_id=sub_id, coach_uid=uid, client_uid=sub["clientUid"],
-                    rel_id=sub["relId"], rel=rel, coach_ref=coach_ref, coach=coach, now=now,
+                    rel_id=sub["relId"], rel=rel, coach_ref=coach_ref, coach=coach, now=now, source=sub.get("source"),
                 )
                 return changes["status"]
         else:
@@ -502,7 +543,15 @@ def respond(
         transaction.update(ref, changes)
         return changes["status"]
 
-    status = common.run(db, body)
+    try:
+        status = common.run(db, body)
+    except errors.CoachingError as refused:
+        if refused.reason == errors.CLIENT_UPDATE_NEEDED:
+            ref = db.collection("subscriptions").document(sub_id)
+            if not (ref.get().to_dict() or {}).get("updateNudged"):  # once per request
+                ref.update({"updateNudged": True})
+                notify(holder["client"], "updateToContinue")
+        raise
     notify(holder["client"], "requestAnswered")
     if holder.get("started"):
         notify(holder["client"], "coachingStarted")
@@ -706,6 +755,8 @@ def end_mine(db, uid: str, data: dict, *, live: bool, now: dt.datetime, notify) 
         if sub is None or uid not in (sub.get("clientUid"), sub.get("coachUid")):
             raise common.refuse(errors.NOT_FOUND, errors.REQUEST_NOT_FOUND)
         by_client = uid == sub["clientUid"]
+        if not by_client:
+            common.require_not_on_hold(db, uid, transaction)
         other["uid"] = sub["coachUid"] if by_client else sub["clientUid"]
         return end_open(transaction, db, sub_id, sub, "client_left" if by_client else "coach_left", now)
 
@@ -813,6 +864,8 @@ def _finish(db, sub_id: str, now: dt.datetime):
             return None
         if (row.get("cancellation") or {}).get("state") == "requested":
             return None
+        if (common.read(db.collection("coachPrivate").document(row["coachUid"]), transaction) or {}).get("hold"):
+            return None  # her account went on hold since the sweep looked; release moves the end date
         seen = read_ending(transaction, db, sub_id, row, money=False)
         write_ending(transaction, db, sub_id, row, seen, changes={"status": "ended", "statusAt": now}, now=now)
         return row["coachUid"], row["clientUid"]
@@ -835,7 +888,7 @@ def _warn(db, sub_id: str, now: dt.datetime):
             return None
         transaction.update(ref, {"endsSoonSent": True})
         system_message(transaction, db, row["relId"], "endsSoon", now)
-        return row["clientUid"]
+        return row["clientUid"], row.get("coachUid")
 
     return common.run(db, body)
 
@@ -891,9 +944,12 @@ def sweep(
                 if lapsed.get("clientUid"):
                     notify(lapsed["clientUid"], "requestExpired")
 
+        on_hold = common.coaches_on_hold(db)  # their coachings neither end nor warn; the hold's release moves the end dates
         ending = subs.where("status", "==", "active").where("endsAt", "<=", now + common.days(LIMITS["endsSoonDays"]))
         for snap in list(ending.stream()):
             row = snap.to_dict()
+            if row.get("coachUid") in on_hold:
+                continue
             if (row.get("cancellation") or {}).get("state") == "requested":
                 continue  # staff decide the refund first
             if _due(row, now, "endsAt"):
@@ -902,10 +958,12 @@ def sweep(
                     counts["ended"] += 1
                     notify_ended(notify, done[1], done[0])
             elif not row.get("endsSoonSent"):
-                client = _warn(db, snap.id, now)
-                if client:
+                warned = _warn(db, snap.id, now)
+                if warned:
                     counts["endsSoon"] += 1
-                    notify(client, "endsSoon")
+                    notify(warned[0], "endsSoon")
+                    if warned[1]:
+                        notify(warned[1], "coachEndsSoon")
 
     if payments:
         unpaid = subs.where("status", "==", "awaiting_payment").where("payBy", "<=", now)

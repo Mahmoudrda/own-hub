@@ -69,7 +69,7 @@ def not_received(db, uid: str, data: dict, images: list, *, coach_v, now: dt.dat
     shows the payment, the claim is refused on the spot; otherwise both pictures
     go to staff. The claim never ends the client's access or cancels the fee:
     only a staff decision does (13.1)."""
-    common.require_active_coach(db, uid, coach_v)
+    common.require_active_coach(db, uid, coach_v, allow_hold=True)  # protects her clients, so it works on hold
     payment_id = common.text(data.get("paymentId"), max_len=128)
     reason = common.one_of(data.get("reasonCode"), REASONS)
     note = common.text(data.get("note"), max_len=500, reason=errors.REASON_REQUIRED)

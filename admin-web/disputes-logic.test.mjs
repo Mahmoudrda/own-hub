@@ -270,7 +270,24 @@ test("fee statements: late, claimed, and what can be confirmed", () => {
   assert.equal(paid.late, false);
   assert.equal(paid.canConfirm, false);
   assert.equal(D.feeBadge([{ status: "paid_claimed" }, { status: "open" }, { status: "paid_claimed" }]), 2);
-  assert.deepEqual(D.FEE_FILTERS, ["", "paid_claimed", "open", "paid"]);
+  assert.deepEqual(D.FEE_FILTERS, ["attention", "", "paid_claimed", "open", "paid"]);
+});
+
+test("fee statements: coaches on hold are listed first and marked", () => {
+  const a = { statementId: "a", status: "open", month: 10, year: 2026 };
+  const b = { statementId: "b", status: "open", overdueNotified: true, month: 10, year: 2026 };
+  const c = { statementId: "c", status: "paid", overdueNotified: true, month: 9, year: 2026 };
+  const d = { statementId: "d", status: "paid_claimed", overdueNotified: true, month: 9, year: 2026 };
+  assert.deepEqual(D.holdFirst([a, b, c, d]).map((s) => s.statementId), ["b", "d", "a", "c"]);
+  assert.equal(D.feeRow(b, NOW).status, "Account on hold");
+  assert.ok(D.feeRow(b, NOW).onHold && D.feeRow(b, NOW).late);
+  assert.ok(D.feeRow(b, NOW).lines.some(([k]) => k === "Her account"));
+  assert.equal(D.feeRow(d, NOW).status, "Coach says she paid");
+  assert.equal(D.feeRow(c, NOW).onHold, false);
+  assert.equal(D.feeRow(a, NOW).onHold, false);
+  const nothingOwed = { statementId: "e", status: "open", overdueNotified: true, totalDuePiasters: 0, month: 10, year: 2026 };
+  assert.equal(D.feeOnHold(nothingOwed), false, "a bill that owes nothing holds nobody");
+  assert.equal(D.feeRow(nothingOwed, NOW).status, "Open");
 });
 
 test("the switch text covers on, off and unknown", () => {
@@ -317,4 +334,19 @@ test("decided, takeover and notice texts", () => {
 test("evidenceImages never leaves a picture out", () => {
   const images = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`payment-proofs/p/client-t-${i}.jpg`, "AAAA"]));
   assert.equal(D.evidenceImages({ images }).length, 12);
+});
+
+test("rejecting a fee claim needs a reason and is offered only on a claimed bill", () => {
+  assert.deepEqual(D.rejectFeePayload("s1", "  Nothing arrived on the 3rd  "), { statementId: "s1", reason: "Nothing arrived on the 3rd" });
+  assert.throws(() => D.rejectFeePayload("s1", "short"), /at least 10/);
+  assert.throws(() => D.rejectFeePayload("", "a long enough reason"), /No statement/);
+  assert.equal(D.feeRow({ status: "paid_claimed" }, NOW).canReject, true);
+  assert.equal(D.feeRow({ status: "open" }, NOW).canReject, false);
+  assert.equal(D.feeRow({ status: "paid" }, NOW).canReject, false);
+  assert.equal(D.feeRow({ generatedAt: "2026-10-12T09:00:00Z", month: 10, year: 2026 }, NOW).title.startsWith("Fee bill of "), true);
+});
+
+test("the Needs you view counts claims to check and accounts on hold", () => {
+  assert.equal(D.feeBadge([{ status: "paid_claimed" }, { status: "open", overdueNotified: true }, { status: "open" }, { status: "paid", overdueNotified: true }]), 2);
+  assert.equal(D.FEE_FILTERS[0], "attention");
 });

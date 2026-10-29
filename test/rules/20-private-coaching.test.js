@@ -8,6 +8,7 @@
 // 16-dormant-features.
 
 import { test, before, after, describe } from 'node:test';
+import assert from 'node:assert/strict';
 import {
   getEnv, clearAll, seed, anon, unverified, unverifiedCoach, verified, verifiedCoach, admin, uid,
   assertSucceeds, assertFails, switchDormantFeaturesOn,
@@ -41,6 +42,8 @@ async function seedAll() {
     const d = ctx.firestore();
     await setDoc(doc(d, `coaches/${COACH}`), { displayName: 'Salma', published: true, acceptingClients: true });
     await setDoc(doc(d, `coaches/${COACH2}`), { displayName: 'Dina', published: false, acceptingClients: false });
+    await setDoc(doc(d, `coaches/${BLOCKER}`), { displayName: 'Blocker', published: false, acceptingClients: false });
+    await setDoc(doc(d, `coachPrivate/${BLOCKER}`), { owedEgp: 0 });
     await setDoc(doc(d, `coaches/${COACH}/packages/p_on`), { title: 'Eight weeks', priceFinalEgp: 2000, active: true });
     await setDoc(doc(d, `coaches/${COACH}/packages/p_off`), { title: 'Old', priceFinalEgp: 900, active: false });
     await setDoc(doc(d, `coaches/${COACH}/media/m_ok`), { status: 'approved', kind: 'photo' });
@@ -194,7 +197,7 @@ describe('coach drafts: hers alone, bounded', () => {
     const forty = Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`k${i}`, i]));
     await assertSucceeds(setDoc(at('b7ok'), { ...good(), body: forty }));
     await assertFails(setDoc(at('b8'), { ...good(), extra: 1 }));
-    await assertFails(setDoc(at('b9'), { ...good(), updatedAt: new Date() }));
+    await assertFails(setDoc(at('b9'), { ...good(), updatedAt: new Date(Date.now() - 60000) }));
     const { updatedAt, ...noStamp } = good();
     await assertFails(setDoc(at('b10'), noStamp));
   });
@@ -273,7 +276,7 @@ describe('chat messages', () => {
     await assertFails(setDoc(at(coach, REL, 'f_hidden'), { ...text(COACH), hidden: true }));
     await assertFails(setDoc(at(coach, REL, 'f_pub'), { ...text(COACH), published: true }));
     await assertFails(setDoc(at(coach, REL, 'f_who'), text(HER)));
-    await assertFails(setDoc(at(coach, REL, 'f_time'), { ...text(COACH), createdAt: new Date() }));
+    await assertFails(setDoc(at(coach, REL, 'f_time'), { ...text(COACH), createdAt: new Date(Date.now() - 60000) }));
     const { createdAt, ...noTime } = text(COACH);
     await assertFails(setDoc(at(coach, REL, 'f_notime'), noTime));
   });
@@ -307,6 +310,41 @@ describe('chat messages', () => {
     }));
     await assertSucceeds(setDoc(at(her, REL, 'n6'), text(HER, 'I did 123456789 steps')));
     await assertSucceeds(setDoc(at(her, REL, 'n7'), text(HER, '100 200 300 400')));
+  });
+
+  test('separated mobile numbers, emails and outside links are refused; workout numbers pass', async () => {
+    const her = await verified(HER);
+    const refused = [
+      '010,1234,5678', '(010) 1234 5678', '010/1234/5678', '+20 10 1234 5678',
+      '0020 10 1234 5678', '۰۱۰۱۲۳۴۵۶۷۸', 'mona@gmail.com', 'see wa.me/201012345678',
+      'T.me/monafit', 'instagram.com/mona',
+    ];
+    for (const [i, t] of refused.entries()) {
+      await assertFails(setDoc(at(her, REL, `s${i}`), text(HER, t)));
+    }
+    const fine = [
+      '3 x 12', '4 sets of 10 reps', '60 kg', 'rest 90 sec', '2026-10-28', '1,200 kcal',
+      '10:30', 'week 3 day 2', 'drink 2 litres', 'squat 3x8 @ 40kg', '24/10/2026 18:30',
+    ];
+    for (const [i, t] of fine.entries()) {
+      await assertSucceeds(setDoc(at(her, REL, `f${i}`), text(HER, t)));
+    }
+  });
+
+  test('the hidden-attempts counter is closed to both parties', async () => {
+    const her = await verified(HER);
+    const ref = doc(her, 'relationships', REL, 'private', 'contact');
+    await assertFails(getDoc(ref));
+    await assertFails(setDoc(ref, { [HER]: { count: 0 } }));
+  });
+
+  test('contact_sharing is an accepted report reason', async () => {
+    const her = await verified(HER);
+    await assertSucceeds(setDoc(doc(her, 'reports', 'cs1'), {
+      reporterUid: HER, subjectUid: COACH, subjectKind: 'coachMessage',
+      subjectRef: `relationships/${REL}/messages/m_seed`, reason: 'contact_sharing',
+      state: 'submitted', createdAt: serverTimestamp(),
+    }));
   });
 
   const media = (sender, type, extra = {}) => ({
@@ -376,6 +414,26 @@ describe('chat messages', () => {
     await assertSucceeds(getDoc(doc(await verified(HER), `relationships/${REL_ENDED}`)));
   });
 
+  test('a coach on hold cannot send; her client can still send and read, and sees the away flag', async () => {
+    const as = async (fn) => (await getEnv()).withSecurityRulesDisabled((c) => fn(c.firestore()));
+    await as((d) => setDoc(doc(d, `coachPrivate/${COACH}`), { owedEgp: 1700, hold: { reason: 'fee', since: new Date() } }));
+    await as((d) => updateDoc(doc(d, `relationships/${REL}`), { coachAway: true }));
+    try {
+      await assertFails(setDoc(at(await verifiedCoach(COACH), REL, 'h1'), text(COACH)));
+      await assertSucceeds(setDoc(at(await verified(HER), REL, 'h2'), text(HER)));
+      await assertSucceeds(getDocs(collection(await verifiedCoach(COACH), `relationships/${REL}/messages`)));
+      const rel = await assertSucceeds(getDoc(doc(await verified(HER), `relationships/${REL}`)));
+      assert.equal(rel.data().coachAway, true);
+      await assertFails(updateDoc(doc(await verified(HER), `relationships/${REL}`), { coachAway: false }));
+      await as((d) => setDoc(doc(d, `coachPrivate/${COACH}`), { owedEgp: 1700, hold: null }));
+      await assertFails(getDoc(doc(await verified(HER), `coachPrivate/${COACH}`)));        // members cannot read why
+      await assertSucceeds(setDoc(at(await verifiedCoach(COACH), REL, 'h3'), text(COACH)));
+    } finally {
+      await as((d) => setDoc(doc(d, `coachPrivate/${COACH}`), { owedEgp: 1700 }));
+      await as((d) => updateDoc(doc(d, `relationships/${REL}`), { coachAway: false }));
+    }
+  });
+
   test('a blocked party cannot write; the one who blocked still can', async () => {
     await assertFails(setDoc(at(await verified(BLOCKED), REL_BLOCK, 'b1'), text(BLOCKED)));
     await assertSucceeds(setDoc(at(await verifiedCoach(BLOCKER), REL_BLOCK, 'b2'), text(BLOCKER)));
@@ -396,7 +454,7 @@ describe('read markers', () => {
     await assertSucceeds(setDoc(mark(coach, REL, COACH), { at: serverTimestamp() }));
     await assertSucceeds(updateDoc(mark(her, REL, HER), { at: serverTimestamp() }));
     await assertFails(setDoc(mark(her, REL, COACH), { at: serverTimestamp() }));
-    await assertFails(setDoc(mark(her, REL, HER), { at: new Date() }));
+    await assertFails(setDoc(mark(her, REL, HER), { at: new Date(Date.now() - 60000) }));
     await assertFails(setDoc(mark(her, REL, HER), { at: serverTimestamp(), extra: 1 }));
     await assertFails(deleteDoc(mark(her, REL, HER)));
   });
@@ -572,6 +630,8 @@ describe('applications, the coach ledger and the payout account', () => {
     await assertFails(setDoc(doc(own, `coachApplications/${COACH}`), { status: 'approved' }));
     await assertFails(updateDoc(doc(own, `coachApplications/${COACH}`), { status: 'approved' }));
     await assertFails(setDoc(doc(own, `coachPrivate/${COACH}`), { owedEgp: 999999 }));
+    await assertFails(updateDoc(doc(own, `coachPrivate/${COACH}`), { agreement: { version: 2, status: 'verified' } }));
+    await assertFails(setDoc(doc(own, `users/${COACH}/consents/coach-terms-v2`), { version: 2, textHash: 'x' }));
     await assertFails(updateDoc(doc(own, `coachPrivate/${COACH}/ledger/s1`), { status: 'paid' }));
     await assertFails(setDoc(doc(own, `coachPrivate/${COACH}/payouts/po1`), { amountEgp: 1 }));
     await assertFails(setDoc(doc(own, `coachPrivate/${COACH}/prices/p_new`), { coachPriceEgp: 1 }));
@@ -646,7 +706,7 @@ describe('reports about coaching', () => {
   test('an unknown reason, a forged clock and a self-report are still refused', async () => {
     const her = await verified(HER);
     await assertFails(setDoc(doc(her, 'reports/r_bad_reason'), report({ reason: 'scam' })));
-    await assertFails(setDoc(doc(her, 'reports/r_bad_clock'), report({ createdAt: new Date() })));
+    await assertFails(setDoc(doc(her, 'reports/r_bad_clock'), report({ createdAt: new Date(Date.now() - 60000) })));
     await assertFails(setDoc(doc(her, 'reports/r_self'), report({ subjectUid: HER })));
     await assertFails(getDoc(doc(her, 'reports/r_coach_0')));
   });

@@ -12,7 +12,7 @@ from typing import Optional
 
 from google.cloud import firestore
 
-from . import applications, common, errors
+from . import applications, chat, common, errors
 
 
 def _coach_ref(db, uid: str):
@@ -39,6 +39,7 @@ def update(
     limits = common.LIMITS
 
     changes: dict = {}
+    chat.refuse_contact(data.get("headline"), data.get("approachText"))
     if data.get("headline") is not None:
         changes["headline"] = common.text(data["headline"], min_len=10, max_len=limits["headlineMax"])
     if data.get("approachText") is not None:

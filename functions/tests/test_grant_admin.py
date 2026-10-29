@@ -40,11 +40,11 @@ def run(argv, auth):
 
 
 def test_granting_keeps_every_other_claim():
-    auth = FakeAuth({"verified": True, "coachV": "active"})
+    auth = FakeAuth({"verified": True, "locale": "ar"})
     code, lines = run(["--uid", "uOwner"], auth)
     assert code == 0
     assert auth.writes == [
-        ("uOwner", {"verified": True, "coachV": "active", "admin": True})
+        ("uOwner", {"verified": True, "locale": "ar", "admin": True})
     ]
     assert lines == ["uOwner: admin granted"]
 
@@ -119,3 +119,20 @@ def test_without_owner_credentials_it_refuses(monkeypatch):
     with pytest.raises(SystemExit) as refused:
         grant_admin._require_adc()
     assert "refused" in str(refused.value)
+
+
+def test_a_coach_account_is_refused_a_staff_claim():
+    auth = FakeAuth({"verified": True, "coachV": "active"})
+    code, lines = run(["--uid", "uOwner"], auth)
+    assert code == 2 and auth.writes == []
+    assert lines[0].startswith("refused: this account is a coach")
+
+
+def test_an_account_with_a_coach_profile_or_application_is_refused_even_without_the_claim():
+    auth = FakeAuth({"verified": True})
+    with pytest.raises(grant_admin.CoachAccount):
+        grant_admin.apply(
+            "uOwner", True, get_user=auth.get_user, set_claims=auth.set_custom_user_claims,
+            coach_record=lambda uid: True,
+        )
+    assert auth.writes == []

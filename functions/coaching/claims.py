@@ -13,6 +13,9 @@ import logging
 from . import common, errors
 
 
+STAFF_CLAIMS = ("admin", "womanReviewer", "finance")
+
+
 def merge_claims(auth, uid: str, changes: dict) -> None:
     """Read her custom claims, merge `changes` in, write them back.
 
@@ -20,6 +23,8 @@ def merge_claims(auth, uid: str, changes: dict) -> None:
     would strip `verified` (see identity/store.py mint_claims)."""
     user = auth.get_user(uid)
     claims = dict(user.custom_claims or {})
+    if changes.get("coachV") == "active" and any(claims.get(c) for c in STAFF_CLAIMS):
+        raise common.refuse(errors.PERMISSION, errors.STAFF_ACCOUNT)
     claims.update(changes)
     auth.set_custom_user_claims(uid, claims)
 

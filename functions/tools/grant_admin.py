@@ -66,6 +66,24 @@ def _auth():
     return auth
 
 
+class CoachAccount(Exception):
+    """A staff claim was asked for an account that is a coach."""
+
+
+COACH_REFUSAL = (
+    "refused: this account is a coach. Staff and coaches stay on separate "
+    "accounts, so a coach never sees the other side of a payment or a report."
+)
+
+
+def _coach_record(uid: str) -> bool:
+    """Whether a coach profile or application exists for the account."""
+    from firebase_admin import firestore
+
+    db = firestore.client()
+    return any(db.collection(c).document(uid).get().exists for c in ("coaches", "coachApplications"))
+
+
 def apply(
     uid: str,
     want: Optional[bool],
@@ -73,6 +91,7 @@ def apply(
     get_user: Callable,
     set_claims: Callable,
     claim: str = "admin",
+    coach_record: Callable = lambda uid: False,
 ) -> Outcome:
     """Read her claims, change `claim` only if it differs from `want`.
 
@@ -83,6 +102,8 @@ def apply(
     phone = bool(getattr(user, "phone_number", None))
     if want is None or want == has:
         return Outcome(changed=False, has=has, phone_sign_in=phone)
+    if want and (claims.get("coachV") or coach_record(uid)):
+        raise CoachAccount(uid)
     if want:
         claims[claim] = True
     else:
@@ -123,8 +144,12 @@ def run(
     want = None if args.check else (not args.revoke)
     try:
         result = apply(
-            uid, want, get_user=a.get_user, set_claims=a.set_custom_user_claims, claim=claim
+            uid, want, get_user=a.get_user, set_claims=a.set_custom_user_claims, claim=claim,
+            coach_record=_coach_record if auth is None else (lambda uid: False),
         )
+    except CoachAccount:
+        out(COACH_REFUSAL)
+        return 2
     except a.UserNotFoundError:
         out(f"no account with uid {uid}")
         return 1
