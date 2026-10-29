@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/private_coaching_state.dart';
 import 'package:own_hub/features/private_coaching/data/coaching_repository.dart';
 import 'package:own_hub/features/private_coaching/domain/chat_message.dart';
+import 'package:own_hub/features/private_coaching/domain/coach_money.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_failure.dart';
@@ -43,6 +44,13 @@ class DeskRepo implements CoachingRepository {
 
   /// Every respond call: sub id, accept, reason.
   final _plans = _Feed<List<CoachPlan>>(const <CoachPlan>[]);
+  final _private = _Feed<CoachPrivateSummary?>(null);
+
+  /// Her private record, as the agreement gate reads it.
+  void setCoachPrivate(CoachPrivateSummary? value) => _private.set(value);
+
+  @override
+  Stream<CoachPrivateSummary?> watchCoachPrivate() => _private.watch();
   final List<String> ended = <String>[];
   CoachingFailure? failEnd;
 

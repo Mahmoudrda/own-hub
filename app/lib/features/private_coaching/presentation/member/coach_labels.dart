@@ -88,6 +88,7 @@ String reportReasonLabel(AppL10n l10n, String reason) => switch (reason) {
   'impersonation' => l10n.pretendingToBeSomeoneElse,
   'self_harm' => l10n.selfHarmOrDanger,
   'off_platform_payment' => l10n.askingForPaymentOutsideOwnHub,
+  'contact_sharing' => l10n.askingToTalkOutsideOwnHub,
   'unsafe_advice' => l10n.unsafeTrainingOrFoodAdvice,
   _ => l10n.somethingElse,
 };

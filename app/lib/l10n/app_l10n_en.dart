@@ -13351,10 +13351,6 @@ class AppL10nEn extends AppL10n {
       'Photos of clients are shared only with their written consent.';
 
   @override
-  String get clientsPayThroughOwnHubOnlyNever =>
-      'Clients pay through Own Hub only, never outside it.';
-
-  @override
   String get youCanWithdrawYourApplicationAtAny =>
       'You can withdraw your application at any time.';
 
@@ -13367,10 +13363,6 @@ class AppL10nEn extends AppL10n {
   @override
   String get iShareClientPhotosOnlyWithTheir =>
       'I share client photos only with their written consent';
-
-  @override
-  String get iWillNotTakePaymentFromClients =>
-      'I will not take payment from clients outside Own Hub';
 
   @override
   String get reviewYourApplication => 'Review your application';
@@ -16587,4 +16579,429 @@ class AppL10nEn extends AppL10n {
   String deletingYourAccountRemovesItFromOur_6oxgn(String years, String days) {
     return 'Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, a record that the deletion happened, and, if you paid a coach or a member paid you, the payment records, fee statements and strike records for $years years, with your account replaced by a random code. Check attempts that did not pass and a scrambled code for this installation, linked to no account, are deleted $days days after the last attempt, and the log of which reviewer opened your case after one year.';
   }
+
+  @override
+  String get askingToTalkOutsideOwnHub => 'Asking to talk outside Own Hub';
+
+  @override
+  String get thisCantIncludePhoneNumbersEmailsLinks =>
+      'This can\'t include phone numbers, emails, links or other apps. Please take them out and try again.';
+
+  @override
+  String get aStaffAccountCantApplyToBe =>
+      'A staff account can\'t apply to be a coach. Please use a different account.';
+
+  @override
+  String get contactDetailsAndOutsideAppsArentAllowed =>
+      'Contact details and outside apps aren\'t allowed in chat. It keeps you both safe, and Own Hub reviews repeats.';
+
+  @override
+  String get yourAccountIsOnHold => 'Your account is on hold';
+
+  @override
+  String get anOwnHubFeeIsOverdueYou =>
+      'An Own Hub fee is overdue. You can read everything and pay the fee. Everything else is paused until the fee is confirmed.';
+
+  @override
+  String get payMyFee => 'Pay my fee';
+
+  @override
+  String get yourCoachIsUnavailableForNowYour =>
+      'Your coach is unavailable for now. Your plans stay here.';
+
+  @override
+  String get yourAccountIsOnHoldUntilYour =>
+      'Your account is on hold until your Own Hub fee is confirmed.';
+
+  @override
+  String thisFeeIsLateYourAccountGoes(String date) {
+    return 'This fee is late. Your account goes on hold on $date if it is still unpaid.';
+  }
+
+  @override
+  String unpaidOnDateYourAccountGoesOn(String date) {
+    return 'Unpaid on $date, your account goes on hold. Your current clients keep their plans.';
+  }
+
+  @override
+  String get yourAccountIsOnHoldItEnds =>
+      'Your account is on hold. It ends when Own Hub confirms this fee.';
+
+  @override
+  String get feeBills => 'Fee bills';
+
+  @override
+  String feeBillOfDate(String date) {
+    return 'Fee bill of $date';
+  }
+
+  @override
+  String get noFeeBillYetOneIsMade =>
+      'No fee bill yet. One is made each time a client payment is confirmed.';
+
+  @override
+  String get oneBillForEachClientPayment => 'One bill for each client payment';
+
+  @override
+  String ownHubTakesFullOfThePackage(String full, String invite) {
+    return 'Own Hub takes $full of the package price for clients who find you in the app, and $invite for clients you bring with your own code.';
+  }
+
+  @override
+  String payOwnHubItsShareWithinDays(String days, String hold) {
+    return 'Pay Own Hub its share within $days days of your client\'s payment. If it stays unpaid for $hold days, your account is put on hold until Own Hub confirms the payment.';
+  }
+
+  @override
+  String makeVideosShortVideosForOwnHub(String videos) {
+    return 'Make $videos short videos for Own Hub every month. No client appears in them.';
+  }
+
+  @override
+  String get keepEveryChatInsideTheAppAnd =>
+      'Keep every chat inside the app, and never ask a client for her phone number or other contact details.';
+
+  @override
+  String doNotWorkWithAClientYou(String months) {
+    return 'Do not work with a client you met through Own Hub outside the app, during the coaching and for $months months after it.';
+  }
+
+  @override
+  String get readTheFullCoachAgreement => 'Read the full Coach Agreement';
+
+  @override
+  String get iHaveReadTheCoachAgreementAnd =>
+      'I have read the Coach Agreement and agree to it, including keeping my clients inside the app';
+
+  @override
+  String get yourSignedAgreement => 'Your signed agreement';
+
+  @override
+  String get readTheNewCoachAgreementAndAccept =>
+      'Read the new Coach Agreement and accept it. Until Own Hub verifies your signed copy you cannot accept new clients. Your current clients are not affected.';
+
+  @override
+  String get printTheAgreementAndSignItBy =>
+      'Print the agreement and sign it by hand with your full name, national ID number and date. Then upload a photo of the signed page.';
+
+  @override
+  String get ownHubIsCheckingYourSignedCopy =>
+      'Own Hub is checking your signed copy. We will let you know.';
+
+  @override
+  String get yourSignedAgreementIsVerifiedYouCan =>
+      'Your signed agreement is verified. You can accept new clients.';
+
+  @override
+  String ownHubNeedsANewSignedCopy(String reason) {
+    return 'Own Hub needs a new signed copy. Reason: $reason';
+  }
+
+  @override
+  String get readTheAgreement => 'Read the agreement';
+
+  @override
+  String get acceptTheAgreement => 'Accept the agreement';
+
+  @override
+  String get downloadThePdf => 'Download the PDF';
+
+  @override
+  String get uploadSignedCopy => 'Upload signed copy';
+
+  @override
+  String get uploadANewCopy => 'Upload a new copy';
+
+  @override
+  String get iHaveReadTheCoachAgreementAnd_egtgj =>
+      'I have read the Coach Agreement and I accept it';
+
+  @override
+  String get yourSignedCopyWasSentOwnHub =>
+      'Your signed copy was sent. Own Hub will check it.';
+
+  @override
+  String get youCannotAcceptNewRequestsYetAccept =>
+      'You cannot accept new requests yet. Accept the Coach Agreement and upload your signed copy in your coach space.';
+
+  @override
+  String get coachAgreement => 'Coach Agreement';
+
+  @override
+  String clientsPayYouDirectlyOwnHubTakes(
+    String full,
+    String invite,
+    String days,
+  ) {
+    return 'Clients pay you directly. Own Hub takes $full of each package price, or $invite for clients you bring with your own code. Pay it within $days days.';
+  }
+
+  @override
+  String get whereYourClientsPayYou => 'Where your clients pay you';
+
+  @override
+  String videosForOwnHubThisMonthCount(String count, String target) {
+    return 'Videos for Own Hub this month: $count of $target';
+  }
+
+  @override
+  String get addAVideo => 'Add a video';
+
+  @override
+  String eachVideoRunsFromMinSecondsTo(String min, String max) {
+    return 'Each video runs from $min seconds to $max minutes. Only women appear in it, no client is in it, and you own everything you show or play.';
+  }
+
+  @override
+  String get whatIsTheVideoAbout => 'What is the video about?';
+
+  @override
+  String get aWorkoutOrMovementTip => 'A workout or movement tip';
+
+  @override
+  String get aHealthyEatingIdea => 'A healthy eating idea';
+
+  @override
+  String get aTrainingMyth => 'A training myth';
+
+  @override
+  String get howCoachingWithMeWorks => 'How coaching with me works';
+
+  @override
+  String get aShortIntroductionOfMyself => 'A short introduction of myself';
+
+  @override
+  String get recordAVideo => 'Record a video';
+
+  @override
+  String get chooseFromYourVideos => 'Choose from your videos';
+
+  @override
+  String get waitingForOwnHub => 'Waiting for Own Hub';
+
+  @override
+  String get approvedByOwnHub => 'Approved by Own Hub';
+
+  @override
+  String needsChangesReason(String reason) {
+    return 'Needs changes: $reason';
+  }
+
+  @override
+  String get needsChanges => 'Needs changes';
+
+  @override
+  String theVideoIsShorterThanMinSeconds(String min) {
+    return 'The video is shorter than $min seconds.';
+  }
+
+  @override
+  String theVideoIsLongerThanMaxMinutes(String max) {
+    return 'The video is longer than $max minutes.';
+  }
+
+  @override
+  String get thatVideoFileIsTooBigTry =>
+      'That video file is too big. Try a shorter one.';
+
+  @override
+  String get onlyVideosInTheUsualPhoneFormat =>
+      'Only videos in the usual phone format can be used.';
+
+  @override
+  String get yourVideoWasSentOwnHubWill =>
+      'Your video was sent. Own Hub will watch it soon.';
+
+  @override
+  String get noVideosYetThisMonth => 'No videos yet this month.';
+
+  @override
+  String get youAreDoneForThisMonthThank =>
+      'You are done for this month. Thank you.';
+
+  @override
+  String get onlyOwnHubStaffSeeYourVideos =>
+      'Only Own Hub staff see your videos until one is approved. They are never on your public page.';
+
+  @override
+  String get yourWeightInKgOptional => 'Your weight in kg (optional)';
+
+  @override
+  String get shareMyWeightWithMyCoach => 'Share my weight with my coach';
+
+  @override
+  String get shareTheWorkoutsIFinishedThisWeek =>
+      'Share the workouts I finished this week';
+
+  @override
+  String workoutsFromYourCoachsPlanThisWeek(String count) {
+    return 'Workouts from your coach\'s plan this week: $count';
+  }
+
+  @override
+  String get onlyYourCoachSeesTheseAndOnly =>
+      'Only your coach sees these, and only what you tick.';
+
+  @override
+  String enterAWeightBetweenLowAndHigh(String low, String high) {
+    return 'Enter a weight between $low and $high kilograms.';
+  }
+
+  @override
+  String get whyStayInOwnHub => 'Why stay in Own Hub';
+
+  @override
+  String get yourPlansStayHereWithEverythingYou =>
+      'Your plans stay here, with everything you have done.';
+
+  @override
+  String get yourChatWithYourCoachIsPrivate =>
+      'Your chat with your coach is private.';
+
+  @override
+  String get yourCheckIns => 'Your check-ins';
+
+  @override
+  String get yourAnswersAndWhatYourCoachReplied =>
+      'Your answers and what your coach replied';
+
+  @override
+  String get checkInHistory => 'Check-in history';
+
+  @override
+  String checkInWeek(String week) {
+    return 'Check-in $week';
+  }
+
+  @override
+  String trainingValue(String value) {
+    return 'Training: $value';
+  }
+
+  @override
+  String energyValue(String value) {
+    return 'Energy: $value';
+  }
+
+  @override
+  String eatingValue(String value) {
+    return 'Eating: $value';
+  }
+
+  @override
+  String painOrInjuryValue(String value) {
+    return 'Pain or injury: $value';
+  }
+
+  @override
+  String weightValue(String value) {
+    return 'Weight: $value';
+  }
+
+  @override
+  String valueKg(String value) {
+    return '$value kg';
+  }
+
+  @override
+  String workoutsFromThePlanValue(String value) {
+    return 'Workouts from the plan: $value';
+  }
+
+  @override
+  String get yourCoachsReply => 'Your coach\'s reply';
+
+  @override
+  String get yourReply => 'Your reply';
+
+  @override
+  String get writeAReply => 'Write a reply';
+
+  @override
+  String get sendReply => 'Send reply';
+
+  @override
+  String get yourReplyWasSent => 'Your reply was sent.';
+
+  @override
+  String get noCheckInsYet => 'No check-ins yet.';
+
+  @override
+  String get whatOwnHubDoesForYou => 'What Own Hub does for you';
+
+  @override
+  String get clientsFindYouInFindACoach => 'Clients find you in Find a coach.';
+
+  @override
+  String get plansChatAndCheckInsLiveIn =>
+      'Plans, chat and check-ins live in one place.';
+
+  @override
+  String get contactDetailsStayProtectedYoursAndYour =>
+      'Contact details stay protected, yours and your clients\'.';
+
+  @override
+  String get ownHubStaffAreThereWhenYou =>
+      'Own Hub staff are there when you need help.';
+
+  @override
+  String get disagreementsAreHandledFairlyWithBothSides =>
+      'Disagreements are handled fairly, with both sides heard.';
+
+  @override
+  String get takeClientsSetYourPackagesAndGet =>
+      'Take clients, set your packages and get paid directly by your clients.';
+
+  @override
+  String checkInOfDate(String date) {
+    return 'Check-in of $date';
+  }
+
+  @override
+  String get takeClientsAndSetYourOwnPackages =>
+      'Take clients and set your own packages.';
+
+  @override
+  String get ownHubStaffAreHereToHelp =>
+      'Own Hub staff are here to help you any time.';
+
+  @override
+  String get ownHubNeverShowsYourNumberTo =>
+      'Own Hub never shows your number to your coach.';
+
+  @override
+  String get updateOwnHubToAskThisCoach => 'Update Own Hub to ask this coach';
+
+  @override
+  String countPluralOneCountLiveOneTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count live one-to-one video sessions a month',
+      one: '$count live one-to-one video session a month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get liveOneToOneVideoSessions => 'Live one-to-one video sessions';
+
+  @override
+  String get membersCanAskToJoinYourPackages_1gn5h =>
+      'Members can ask to join your packages. When you accept, they pay you by InstaPay.';
+
+  @override
+  String get anOwnHubFeeIsDueSoon => 'An Own Hub fee is due soon';
+
+  @override
+  String get anOwnHubFeeIsLate => 'An Own Hub fee is late';
+
+  @override
+  String yourAccountGoesOnHoldOnDate(String date) {
+    return 'Your account goes on hold on $date if it is still unpaid.';
+  }
+
+  @override
+  String get sheNeedsToUpdateOwnHubBefore =>
+      'She needs to update Own Hub before she can pay. She has been told.';
 }

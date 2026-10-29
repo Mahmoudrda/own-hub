@@ -68,7 +68,7 @@ void main() {
     expect(app.education, hasLength(2));
     expect(app.testimonials, hasLength(2));
     expect(app.specialties, containsAll(<String>['strength', 'fatLoss']));
-    expect(app.termsVersion, 1);
+    expect(app.termsVersion, 2);
   });
 
   test('the public coach page and her package', () {

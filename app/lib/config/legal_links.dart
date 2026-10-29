@@ -23,6 +23,14 @@ abstract final class LegalLinks {
   /// `https://…/coach-terms`, the terms a coach accepts when she applies.
   static const String coachTerms = 'https://own-hub.app/coach-terms';
 
+  /// `https://…/coach-agreement`, the agreement a coach accepts, prints,
+  /// signs by hand and uploads.
+  static const String coachAgreement = 'https://own-hub.app/coach-agreement';
+
+  /// `https://…/coach-agreement.pdf`, the same text ready to print.
+  static const String coachAgreementPdf =
+      'https://own-hub.app/coach-agreement.pdf';
+
   /// `https://…/support`
   static const String support = 'https://own-hub.app/support';
 

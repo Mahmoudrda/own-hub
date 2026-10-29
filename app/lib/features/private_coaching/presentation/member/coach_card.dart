@@ -123,6 +123,7 @@ class CoachCard extends StatelessWidget {
     final spoken = <String>[
       coach.displayName,
       if (coach.headline.isNotEmpty) coach.headline,
+      if (price != null) l10n.liveOneToOneVideoSessions,
       ?price,
     ].join('. ');
     return Semantics(
@@ -180,6 +181,11 @@ class CoachCard extends StatelessWidget {
               <String>[
                 for (final s in coach.specialties) specialtyLabel(l10n, s),
               ].join(' · '),
+              style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
+            ),
+          if (price != null)
+            Text(
+              l10n.liveOneToOneVideoSessions,
               style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
             ),
           if (price != null)

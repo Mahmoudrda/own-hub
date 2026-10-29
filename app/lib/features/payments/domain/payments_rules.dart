@@ -22,9 +22,9 @@ const int kCleanPaymentsForAutoConfirm = 3;
 /// (`LIMITS["autoConfirmFlagHours"]`).
 const int kAutoConfirmFlagHours = 48;
 
-/// A fee statement left unpaid this long stops new clients for that coach
-/// (`LIMITS["feeOverdueDays"]`).
-const int kFeeOverdueDays = 30;
+/// A fee left unpaid this many days after it became owed puts the coach's
+/// account on hold (`LIMITS["feeHoldDays"]`).
+const int kFeeHoldDays = 7;
 
 /// The refund numbers the screens state (`LIMITS` in
 /// `functions/payments/model.py`): how long after access began she may ask,

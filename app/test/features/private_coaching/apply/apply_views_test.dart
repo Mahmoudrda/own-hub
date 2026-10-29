@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/coach_application_draft.dart';
+import 'package:own_hub/features/private_coaching/domain/coach_agreement.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_application.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_failure.dart';
@@ -183,6 +184,27 @@ void main() {
       );
       await pumpFlow(tester, onReview: () => reviewed++);
       final l10n = l10nOf(tester);
+      // Agreement v2 in plain points: the commission, paying within days,
+      // the hold, the videos, chat only in the app and the keep-clients rule.
+      for (final point in [
+        l10n.ownHubTakesFullOfThePackage(
+          CoachAgreementFacts.marketplacePercent,
+          CoachAgreementFacts.invitePercent,
+        ),
+        l10n.payOwnHubItsShareWithinDays(
+          '${CoachAgreementFacts.payWithinDays}',
+          '${CoachAgreementFacts.holdAfterDays}',
+        ),
+        l10n.makeVideosShortVideosForOwnHub(
+          '${CoachAgreementFacts.videosPerMonth}',
+        ),
+        l10n.keepEveryChatInsideTheAppAnd,
+        l10n.doNotWorkWithAClientYou(
+          '${CoachAgreementFacts.keepClientsMonths}',
+        ),
+      ]) {
+        expect(find.text(point), findsOneWidget, reason: point);
+      }
       await tester.tap(find.text(l10n.saveAndContinue));
       await tester.pumpAndSettle();
       expect(reviewed, 0);
@@ -191,7 +213,7 @@ void main() {
       for (final label in [
         l10n.everythingIWroteIsAccurate,
         l10n.iShareClientPhotosOnlyWithTheir,
-        l10n.iWillNotTakePaymentFromClients,
+        l10n.iHaveReadTheCoachAgreementAnd,
       ]) {
         await tester.ensureVisible(find.text(label));
         await tester.tap(find.text(label));

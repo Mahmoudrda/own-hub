@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/features/payments/data/payments_repository.dart';
 import 'package:own_hub/features/payments/domain/payment_models.dart';
-import 'package:own_hub/features/payments/domain/payments_rules.dart';
 import 'package:own_hub/features/payments/presentation/fee_statement_view.dart';
 import 'package:own_hub/features/payments/presentation/payment_text.dart';
 import 'package:own_hub/l10n/app_l10n_ar.dart';
@@ -45,6 +44,8 @@ FeeStatement statement({
   ),
   String claimedTxn = '',
   DateTime? dueAt,
+  DateTime? holdAt,
+  bool onHold = false,
 }) {
   final ls = lines ?? [line('p1'), line('p2', fee: 4000)];
   return FeeStatement(
@@ -61,6 +62,8 @@ FeeStatement statement({
     payTo: payTo,
     claimedTxn: claimedTxn,
     dueAt: dueAt ?? now.add(const Duration(days: 20)),
+    holdAt: holdAt ?? now.add(const Duration(days: 24)),
+    onHold: onHold,
   );
 }
 
@@ -158,8 +161,8 @@ void main() {
       expect(textOf(tester, 'fee-holder'), 'Account name: Own Hub Ltd');
       expect(
         textOf(tester, 'fee-rule'),
-        'Fees unpaid for more than $kFeeOverdueDays days stop new clients. '
-        'Your current clients are never cut off.',
+        'Unpaid on 04/12/2026, your account goes on hold. '
+        'Your current clients keep their plans.',
       );
       expect(textOf(tester, 'fee-due'), 'Due by 30/11/2026');
       expect(markFee, findsOneWidget);
@@ -213,19 +216,38 @@ void main() {
       expect(find.byKey(const ValueKey('fee-holder')), findsNothing);
     });
 
-    testWidgets('past its due date it says it is late, and never cuts clients '
-        'off', (tester) async {
+    testWidgets('past its due date it says when the account goes on hold', (
+      tester,
+    ) async {
       await open(tester, [
         statement(dueAt: now.subtract(const Duration(days: 1))),
       ]);
       expect(
         textOf(tester, 'fee-late'),
-        'This fee is late. New clients cannot join you until it is paid. '
-        'Your current clients are not affected.',
+        'This fee is late. Your account goes on hold on 04/12/2026 '
+        'if it is still unpaid.',
       );
       expect(find.byKey(const ValueKey('fee-due')), findsNothing);
       expect(find.byKey(const ValueKey('fee-rule')), findsNothing);
       expect(markFee, findsOneWidget, reason: 'she can still pay it');
+    });
+
+    testWidgets('on hold it says so, and she can still record her payment', (
+      tester,
+    ) async {
+      await open(tester, [
+        statement(
+          dueAt: now.subtract(const Duration(days: 5)),
+          holdAt: now.subtract(const Duration(days: 1)),
+          onHold: true,
+        ),
+      ]);
+      expect(
+        textOf(tester, 'fee-hold'),
+        'Your account is on hold. It ends when Own Hub confirms this fee.',
+      );
+      expect(find.byKey(const ValueKey('fee-late')), findsNothing);
+      expect(markFee, findsOneWidget);
     });
 
     testWidgets('disputed, settled and waived fees are listed, not counted', (
@@ -416,7 +438,7 @@ void main() {
       await open(tester, const []);
       expect(
         find.text(
-          'No statement yet. The first one comes at the start of next month.',
+          'No fee bill yet. One is made each time a client payment is confirmed.',
         ),
         findsOneWidget,
       );
@@ -451,6 +473,125 @@ void main() {
       );
       expect(find.byKey(const ValueKey('statements-failure')), findsOneWidget);
       expect(find.textContaining('permission'), findsNothing);
+    });
+  });
+
+  test('the coach space notice: due within a day, late, or nothing', () {
+    FeeStatement bill({
+      required Duration due,
+      Duration hold = const Duration(days: 4),
+      bool onHold = false,
+      String status = 'open',
+      int total = 7500,
+    }) => FeeStatement(
+      id: 'x',
+      status: status,
+      totalDuePiasters: total,
+      dueAt: now.add(due),
+      holdAt: now.add(hold),
+      onHold: onHold,
+    );
+    expect(feeNoticeFor([bill(due: const Duration(days: 2))], now), isNull);
+    final soon = feeNoticeFor([bill(due: const Duration(hours: 20))], now)!;
+    expect(soon.late, isFalse);
+    expect(soon.holdOn, now.add(const Duration(days: 4)));
+    final late = feeNoticeFor([bill(due: const Duration(hours: -2))], now)!;
+    expect(late.late, isTrue);
+    expect(
+      feeNoticeFor([
+        bill(due: const Duration(hours: -2)),
+        bill(due: const Duration(days: -5), onHold: true),
+      ], now),
+      isNull,
+      reason: 'an account on hold has its own banner',
+    );
+    expect(
+      feeNoticeFor([bill(due: const Duration(hours: -2), total: 0)], now),
+      isNull,
+    );
+    expect(
+      feeNoticeFor([bill(due: const Duration(hours: -2), status: 'paid')], now),
+      isNull,
+    );
+  });
+
+  test('a bill that owes nothing is not an account on hold', () {
+    FeeStatement read(Map<String, Object?> m) => FeeStatement.fromMap(
+      'b',
+      <String, Object?>{'status': 'open', 'overdueNotified': true, ...m},
+    )!;
+    expect(read(<String, Object?>{'totalDuePiasters': 7500}).onHold, isTrue);
+    expect(read(<String, Object?>{'totalDuePiasters': 0}).onHold, isFalse);
+    expect(read(<String, Object?>{'status': 'paid'}).onHold, isFalse);
+  });
+
+  test('the coach space notice: due soon, late, and silent once held', () {
+    FeeStatement bill({
+      required Duration due,
+      bool onHold = false,
+      int total = 7500,
+    }) => FeeStatement(
+      id: 'b',
+      status: 'open',
+      totalDuePiasters: total,
+      dueAt: now.add(due),
+      holdAt: now.add(due + const Duration(days: 4)),
+      onHold: onHold,
+    );
+    expect(feeNoticeFor([bill(due: const Duration(days: 2))], now), isNull);
+    final soon = feeNoticeFor([bill(due: const Duration(hours: 20))], now)!;
+    expect(soon.late, isFalse);
+    final late = feeNoticeFor([bill(due: const Duration(hours: -1))], now)!;
+    expect(late.late, isTrue);
+    expect(
+      feeNoticeFor([bill(due: const Duration(hours: -1), onHold: true)], now),
+      isNull,
+    );
+    expect(
+      feeNoticeFor([bill(due: const Duration(hours: -1), total: 0)], now),
+      isNull,
+    );
+  });
+
+  group('a bill for one payment', () {
+    FeeStatement bill(String id, String pay, DateTime owed) => FeeStatement(
+      id: 'coach__$id',
+      year: 2026,
+      month: 10,
+      status: 'open',
+      totalDuePiasters: 7500,
+      lines: [
+        FeeLine(
+          paymentId: pay,
+          reference: 'OH-$pay',
+          basePiasters: 50000,
+          feePiasters: 7500,
+          feeState: 'owed',
+          owedAt: owed,
+        ),
+      ],
+      payTo: const FeePayTo(address: 'ownhub@instapay'),
+      dueAt: now.add(const Duration(days: 2)),
+      holdAt: now.add(const Duration(days: 6)),
+    );
+
+    testWidgets('is titled by the day the fee became owed, and a push opens '
+        'the exact one', (tester) async {
+      phone(tester);
+      final fake = FakePaymentsRepository(uid: 'coach')
+        ..statements = [
+          bill('pa', 'pa', DateTime.utc(2026, 10, 12, 9)),
+          bill('pb', 'pb', DateTime.utc(2026, 10, 20, 9)),
+        ];
+      await tester.pumpWidget(
+        host(
+          FeeStatementView(repository: fake, now: () => now, initialBill: 'pb'),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Fee bill of 20/10/2026'), findsOneWidget);
+      expect(find.text('12/10/2026'), findsOneWidget);
     });
   });
 

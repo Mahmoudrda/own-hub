@@ -6,6 +6,7 @@ import '../../../../../ui/app_button.dart';
 import '../../../../../ui/app_card.dart';
 import '../../../domain/coach_application.dart';
 import '../../../domain/coaching_contract.dart';
+import '../../coach_agreement_points.dart';
 import '../apply_labels.dart';
 import '../apply_rules.dart';
 import '../apply_widgets.dart';
@@ -29,10 +30,7 @@ class TermsStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final points = <String>[
-      l10n.ownHubReviewsEveryCoachBeforeShe,
-      l10n.everythingYouTellUsMustBeAccurate,
-      l10n.photosOfClientsAreSharedOnlyWith,
-      l10n.clientsPayThroughOwnHubOnlyNever,
+      ...coachAgreementPoints(l10n),
       l10n.youCanWithdrawYourApplicationAtAny,
     ];
     return Column(
@@ -65,7 +63,7 @@ class TermsStep extends StatelessWidget {
         ),
         if (onOpenTerms != null)
           AppButton(
-            l10n.readTheFullCoachTerms,
+            l10n.readTheFullCoachAgreement,
             variant: AppButtonVariant.text,
             height: 48,
             fontSize: 15,

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/payments/domain/payment_models.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_money.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_profile.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
@@ -11,6 +12,7 @@ import 'package:own_hub/features/private_coaching/domain/coaching_failure.dart';
 import 'package:own_hub/features/private_coaching/domain/pricing.dart';
 import 'package:own_hub/features/private_coaching/presentation/coach/coach_space_view.dart';
 import 'package:own_hub/features/private_coaching/presentation/coach/coach_text.dart';
+import 'package:own_hub/features/private_coaching/presentation/coach/coach_widgets.dart';
 import 'package:own_hub/l10n/app_l10n_ar.dart';
 import 'package:own_hub/l10n/app_l10n_en.dart';
 import 'package:own_hub/features/private_coaching/presentation/coach/coach_validation.dart';
@@ -56,8 +58,9 @@ Future<void> _open(
   double scale = 1,
   VoidCallback? onInviteClient,
   void Function(String coachUid)? onShareProfile,
+  VoidCallback? onOpenStatements,
 }) async {
-  tester.view.physicalSize = const Size(390, 3600);
+  tester.view.physicalSize = const Size(390, 5400);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
@@ -69,6 +72,7 @@ Future<void> _open(
         onOpenChats: () {},
         onInviteClient: onInviteClient,
         onShareProfile: onShareProfile,
+        onOpenStatements: onOpenStatements,
       ),
       locale: locale,
       scale: scale,
@@ -295,6 +299,67 @@ void main() {
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
       expect(find.text('Coach Sara'), findsOneWidget);
+    });
+
+    testWidgets(
+      'on hold: a banner with a way to her fee, no accepting switch',
+      (tester) async {
+        final repo = CoachRepo()
+          ..coaches.value = [_me(accepting: false)]
+          ..coachPrivate.value = const CoachPrivateSummary(onHold: true)
+          ..packages['me'] = Feed<List<CoachPackage>>([package('a')]);
+        var opened = 0;
+        await _open(tester, repo, onOpenStatements: () => opened++);
+        expect(find.byKey(const ValueKey('coach-on-hold')), findsOneWidget);
+        expect(find.text('Your account is on hold'), findsOneWidget);
+        await tester.tap(find.byKey(const ValueKey('coach-on-hold-pay')));
+        expect(opened, 1);
+        final accepting = tester.widget<CoachSwitchRow>(
+          find.byType(CoachSwitchRow),
+        );
+        expect(accepting.onChanged, isNull);
+      },
+    );
+
+    testWidgets('a bill due soon or late shows a notice with a way to it', (
+      tester,
+    ) async {
+      final repo = CoachRepo()
+        ..coaches.value = [_me()]
+        ..packages['me'] = Feed<List<CoachPackage>>([package('a')]);
+      final nowAt = DateTime.utc(2026, 11, 10, 12);
+      var opened = 0;
+      tester.view.physicalSize = const Size(390, 3600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        _host(
+          CoachSpaceView(
+            repository: repo,
+            now: () => nowAt,
+            onOpenStatements: () => opened++,
+            feeBills: Stream.value([
+              FeeStatement(
+                id: 'b',
+                status: 'open',
+                totalDuePiasters: 7500,
+                dueAt: nowAt.subtract(const Duration(hours: 3)),
+                holdAt: nowAt.add(const Duration(days: 4)),
+              ),
+            ]),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('An Own Hub fee is late'), findsOneWidget);
+      expect(
+        find.text(
+          'Your account goes on hold on 14/11/2026 if it is still unpaid.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(const ValueKey('coach-fee-notice-pay')));
+      expect(opened, 1);
     });
 
     testWidgets('K18 offers Invite a client first and calls back once', (

@@ -213,6 +213,18 @@ void main() {
           find.text('My InstaPay address'),
           on ? findsOneWidget : findsNothing,
         );
+        // With payments on the note must not say coaching is free.
+        expect(
+          find.textContaining('Coaching is free until'),
+          on ? findsNothing : findsOneWidget,
+        );
+        expect(
+          find.text(
+            'Members can ask to join your packages. When you accept, they pay '
+            'you by InstaPay.',
+          ),
+          on ? findsOneWidget : findsNothing,
+        );
         await tester.pumpWidget(const SizedBox());
       }
     });

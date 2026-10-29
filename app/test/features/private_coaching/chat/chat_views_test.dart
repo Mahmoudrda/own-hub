@@ -269,7 +269,9 @@ void main() {
         await tester.tap(find.byTooltip('Send'));
         await tester.pump();
         expect(
-          find.textContaining("Phone numbers can't be sent in the chat"),
+          find.textContaining(
+            "Contact details and outside apps aren't allowed in chat",
+          ),
           findsOneWidget,
         );
         expect(find.text('call 01012345678'), findsOneWidget);
@@ -277,7 +279,10 @@ void main() {
         // Editing the text clears the note.
         await tester.enterText(find.byType(TextField), 'call me');
         await tester.pump();
-        expect(find.textContaining("Phone numbers can't"), findsNothing);
+        expect(
+          find.textContaining("Contact details and outside apps aren't"),
+          findsNothing,
+        );
       },
     );
 
@@ -309,7 +314,7 @@ void main() {
       await tester.pump();
       await tester.tap(find.byTooltip(l10nFor('ar').send));
       await tester.pump();
-      expect(find.textContaining('مينفعش نبعت أرقام تليفون'), findsOneWidget);
+      expect(find.textContaining('مينفعش بيانات تواصل'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

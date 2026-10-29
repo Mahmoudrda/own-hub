@@ -10,7 +10,7 @@
 # Flutter, and the upload is one visible step.
 #
 #   bash tool/build_release.sh
-#   BUILD_NUMBER=412345 bash tool/build_release.sh    a build number of your own
+#   BUILD_NUMBER=433500 bash tool/build_release.sh    a build number of your own
 #
 # The build number. Play and App Store Connect refuse a build number they have
 # seen before, and a number typed by hand is the easiest thing to get wrong on
@@ -87,6 +87,13 @@ if [ -z "$NAME" ]; then
   exit 1
 fi
 BUILD="${BUILD_NUMBER:-$(( ($(date -u +%s) - 1767225600) / 60 ))}"
+# The server refuses coaching requests from a build below MIN_APP_BUILD.
+MIN_BUILD="$(grep -E '^MIN_APP_BUILD' ../functions/coaching/common.py | head -1 | tr -dc '0-9')"
+if [ -z "$MIN_BUILD" ] || [ "$BUILD" -lt "$MIN_BUILD" ]; then
+  echo "Build number $BUILD is below $MIN_BUILD, the lowest build the server accepts (functions/coaching/common.py MIN_APP_BUILD). Use a higher BUILD_NUMBER." >&2
+  exit 1
+fi
+
 VERSION="$NAME+$BUILD"
 SYMBOLS="build/symbols/$VERSION"
 

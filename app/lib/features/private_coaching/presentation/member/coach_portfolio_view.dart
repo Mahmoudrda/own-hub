@@ -490,6 +490,12 @@ class _PortfolioBody extends StatelessWidget {
       variant: picked ? AppCardVariant.selected : AppCardVariant.outlined,
       children: [
         Text(p.title, style: AppText.titleM.copyWith(color: AppColors.ink)),
+        // 3.1.3(d): the live one-to-one video sessions come before anything else.
+        Text(
+          l10n.countPluralOneCountLiveOneTo(p.liveSessionsPerMonth),
+          key: ValueKey('package-live-${p.id}'),
+          style: AppText.titleS.copyWith(color: AppColors.primary),
+        ),
         if (p.description.isNotEmpty) Text(p.description, style: AppText.bodyM),
         if (p.includes.isNotEmpty) ...[
           Text(
@@ -509,7 +515,6 @@ class _PortfolioBody extends StatelessWidget {
             ),
         ],
         _muted(l10n.durationDaysPluralOne1DayOther(p.durationDays)),
-        _muted(l10n.countPluralOne1LiveSessionA(p.liveSessionsPerMonth)),
         if (coachingPaymentsOn) ...[
           Text(
             l10n.egpPrice(formatEgp(p.priceFinalEgp)),

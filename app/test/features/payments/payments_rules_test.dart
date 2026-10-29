@@ -44,7 +44,7 @@ void main() {
         int.parse(RegExp('"$key": (\\d+)').firstMatch(model)!.group(1)!);
     expect(kAddressDelayHours, limit('addressDelayHours'));
     expect(kLateProofDays, limit('lateProofDays'));
-    expect(kFeeOverdueDays, limit('feeOverdueDays'));
+    expect(kFeeHoldDays, limit('feeHoldDays'));
   });
 
   test('the auto-confirm numbers the coach screens state match the server', () {

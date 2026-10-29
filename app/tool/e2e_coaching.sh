@@ -12,6 +12,7 @@
 #   app/tool/e2e_coaching.sh dump    like run, and also write every coaching
 #                                    document to app/test/fixtures/coaching_server_docs.json
 #                                    (E2E_DUMP=1 does the same with run or journey)
+#   app/tool/e2e_coaching.sh payments  the InstaPay payments walk (see app/tool/e2e_payments.sh)
 #   app/tool/e2e_coaching.sh journey run the journey against emulators already up
 #
 # The app, debug build only, against the emulators (Android emulator shown;
@@ -23,6 +24,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 CONFIG="${E2E_CONFIG:-$ROOT/firebase.e2e.json}"
 PY="$ROOT/functions/.venv/bin/python"
+# Always a demo project: the emulators can never reach production under it.
+export E2E_PROJECT="${E2E_PROJECT:-demo-own-hub}"
+export PYTHONPATH="$ROOT/functions/tools/e2e_shim${PYTHONPATH:+:$PYTHONPATH}"
 ONLY="auth,firestore,storage,functions"
 # The Firestore emulator needs a real Java; /usr/bin/java is only a stub here.
 if ! java -version >/dev/null 2>&1; then
@@ -38,12 +42,14 @@ fi
 TOKEN_PORT=9599
 WORK="$(mktemp -d)"
 export CLOUDSDK_CONFIG="$WORK/gcloud"
+# The payments walk writes the receipt text it drew here (functions/tools/e2e_shim: no Cloud Vision locally).
+export E2E_OCR_FILE="${E2E_OCR_FILE:-$WORK/ocr.txt}"
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$WORK/key.pem" 2>/dev/null
 "$PY" - "$WORK" "$TOKEN_PORT" <<'PYJSON'
 import json, sys
 work, port = sys.argv[1], sys.argv[2]
 json.dump({
-    "type": "service_account", "project_id": "own-hub", "private_key_id": "e2e",
+    "type": "service_account", "project_id": "demo-own-hub", "private_key_id": "e2e",
     "private_key": open(f"{work}/key.pem").read(),
     "client_email": "e2e@own-hub.iam.gserviceaccount.com", "client_id": "1",
     "token_uri": f"http://127.0.0.1:{port}/token",
@@ -60,7 +66,7 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 export NO_PROXY='*' no_proxy='*'
 # OpenCV's thread pool crashes (SIGSEGV in cv::resize) inside the forked worker.
 export OPENCV_FOR_THREADS_NUM=1 OMP_NUM_THREADS=1
-FB=(firebase --config "$CONFIG" --project own-hub)
+FB=(firebase --config "$CONFIG" --project "$E2E_PROJECT")
 
 py() { (cd "$ROOT/functions" && "$PY" -m "$@"); }
 
@@ -74,6 +80,11 @@ case "${1:-run}" in
     cd "$(dirname "$CONFIG")"
     "${FB[@]}" emulators:exec --only "$ONLY" \
       "cd '$ROOT/functions' && '$PY' -m tools.e2e_coaching $DUMP_ARGS"
+    ;;
+  payments)
+    cd "$(dirname "$CONFIG")"
+    "${FB[@]}" emulators:exec --only "$ONLY" \
+      "cd '$ROOT/functions' && '$PY' -m tools.e2e_payments"
     ;;
   start)
     cd "$(dirname "$CONFIG")"

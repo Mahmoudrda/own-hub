@@ -2200,14 +2200,28 @@ void Function()? _readCoach(Object? raw) {
 
 // The code her coach sent (R1-P18), waiting for her check to finish.
 Map<String, Object?>? _captureInvite() {
-  final code = CoachInviteState.instance.pendingCode;
-  return code == null ? null : <String, Object?>{'code': code};
+  final invite = CoachInviteState.instance;
+  if (invite.pendingCode == null && invite.usedCode == null) return null;
+  return <String, Object?>{
+    'code': ?invite.pendingCode,
+    'usedCode': ?invite.usedCode,
+    'usedFor': ?invite.usedFor,
+  };
 }
 
 void Function()? _readInvite(Object? raw) {
   final code = normaliseInviteCode(_str(_map(raw)?['code']) ?? '');
-  if (code == null) return null;
-  return () => CoachInviteState.instance.pendingCode = code;
+  final used = normaliseInviteCode(_str(_map(raw)?['usedCode']) ?? '');
+  final usedFor = _str(_map(raw)?['usedFor']);
+  if (code == null && used == null) return null;
+  return () {
+    final invite = CoachInviteState.instance;
+    invite.pendingCode = code;
+    if (used != null && usedFor != null) {
+      invite.usedCode = used;
+      invite.usedFor = usedFor;
+    }
+  };
 }
 
 // ---------------------------------------------------------------- readers ---

@@ -660,6 +660,31 @@ void main() {
       expect(await invite.redeem(store, allowed: true), isNull);
     });
 
+    test('the code she came with survives the page opening and a relaunch, '
+        'and is sent only for that coach', () async {
+      final invite = CoachInviteState.instance..pendingCode = 'ABCD2345';
+      await invite.redeem(
+        InMemoryCoachInviteStore(code: 'ABCD2345'),
+        allowed: true,
+      );
+      invite.clearPending();
+      expect(invite.pendingCode, isNull);
+      expect(invite.codeFor('coach1'), 'ABCD2345');
+      expect(invite.codeFor('someone-else'), isNull);
+
+      final raw = jsonEncode(AppSnapshot.capture());
+      invite.reset();
+      expect(invite.codeFor('coach1'), isNull);
+      AppSnapshot.restore(raw);
+      expect(invite.codeFor('coach1'), 'ABCD2345');
+
+      invite.spent('someone-else');
+      expect(invite.codeFor('coach1'), 'ABCD2345');
+      invite.spent('coach1');
+      expect(invite.codeFor('coach1'), isNull);
+      expect(AppSnapshot.capture()['invite'], isNull);
+    });
+
     test('no network keeps the code; a dead code is dropped', () async {
       final invite = CoachInviteState.instance..pendingCode = 'ABCD2345';
       expect(

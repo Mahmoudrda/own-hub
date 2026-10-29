@@ -23,6 +23,7 @@ Future<RecordingRepo> _open(
   SubscriptionStatus status, {
   RecordingRepo? repo,
   VoidCallback? onFind,
+  bool coachAway = false,
 }) async {
   _phone(t);
   final r = repo ?? RecordingRepo();
@@ -34,6 +35,7 @@ Future<RecordingRepo> _open(
         now: () => _now,
         onMessage: () {},
         onFind: onFind,
+        coachAway: coachAway,
       ),
     ),
   );
@@ -57,6 +59,24 @@ void main() {
     });
     expect(CoachingRequests.endMine('s', null), {'subId': 's'});
     expect(CoachingCallables.all, contains('end_my_coaching'));
+  });
+
+  group('a coach on hold', () {
+    testWidgets('shows one neutral line and still lets her read and message', (
+      t,
+    ) async {
+      await _open(t, SubscriptionStatus.active, coachAway: true);
+      expect(
+        find.text('Your coach is unavailable for now. Your plans stay here.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('coach-message')), findsOneWidget);
+    });
+
+    testWidgets('shows nothing when she is not away', (t) async {
+      await _open(t, SubscriptionStatus.active);
+      expect(find.byKey(const ValueKey('coach-away')), findsNothing);
+    });
   });
 
   group('End coaching', () {

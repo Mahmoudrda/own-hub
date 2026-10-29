@@ -9,7 +9,7 @@ import 'coaching_contract.dart';
 import 'parse.dart';
 
 /// The coach terms version the server accepts (`TERMS_VERSION`).
-const int kCoachTermsVersion = 1;
+const int kCoachTermsVersion = 2;
 
 /// File types a certificate or a degree may be.
 const List<String> kCertificateMimes = <String>[

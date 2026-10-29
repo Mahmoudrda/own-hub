@@ -23159,12 +23159,6 @@ abstract class AppL10n {
   /// **'Photos of clients are shared only with their written consent.'**
   String get photosOfClientsAreSharedOnlyWith;
 
-  /// No description provided for @clientsPayThroughOwnHubOnlyNever.
-  ///
-  /// In en, this message translates to:
-  /// **'Clients pay through Own Hub only, never outside it.'**
-  String get clientsPayThroughOwnHubOnlyNever;
-
   /// No description provided for @youCanWithdrawYourApplicationAtAny.
   ///
   /// In en, this message translates to:
@@ -23188,12 +23182,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'I share client photos only with their written consent'**
   String get iShareClientPhotosOnlyWithTheir;
-
-  /// No description provided for @iWillNotTakePaymentFromClients.
-  ///
-  /// In en, this message translates to:
-  /// **'I will not take payment from clients outside Own Hub'**
-  String get iWillNotTakePaymentFromClients;
 
   /// No description provided for @reviewYourApplication.
   ///
@@ -28417,6 +28405,658 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Deleting your account removes it from our servers and clears this phone. Some things are kept on purpose: a closed record that your ID card was used, so it cannot open another account, reports with your name taken out, a record that the deletion happened, and, if you paid a coach or a member paid you, the payment records, fee statements and strike records for {years} years, with your account replaced by a random code. Check attempts that did not pass and a scrambled code for this installation, linked to no account, are deleted {days} days after the last attempt, and the log of which reviewer opened your case after one year.'**
   String deletingYourAccountRemovesItFromOur_6oxgn(String years, String days);
+
+  /// No description provided for @askingToTalkOutsideOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Asking to talk outside Own Hub'**
+  String get askingToTalkOutsideOwnHub;
+
+  /// No description provided for @thisCantIncludePhoneNumbersEmailsLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t include phone numbers, emails, links or other apps. Please take them out and try again.'**
+  String get thisCantIncludePhoneNumbersEmailsLinks;
+
+  /// No description provided for @aStaffAccountCantApplyToBe.
+  ///
+  /// In en, this message translates to:
+  /// **'A staff account can\'t apply to be a coach. Please use a different account.'**
+  String get aStaffAccountCantApplyToBe;
+
+  /// No description provided for @contactDetailsAndOutsideAppsArentAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details and outside apps aren\'t allowed in chat. It keeps you both safe, and Own Hub reviews repeats.'**
+  String get contactDetailsAndOutsideAppsArentAllowed;
+
+  /// No description provided for @yourAccountIsOnHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is on hold'**
+  String get yourAccountIsOnHold;
+
+  /// No description provided for @anOwnHubFeeIsOverdueYou.
+  ///
+  /// In en, this message translates to:
+  /// **'An Own Hub fee is overdue. You can read everything and pay the fee. Everything else is paused until the fee is confirmed.'**
+  String get anOwnHubFeeIsOverdueYou;
+
+  /// No description provided for @payMyFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay my fee'**
+  String get payMyFee;
+
+  /// No description provided for @yourCoachIsUnavailableForNowYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach is unavailable for now. Your plans stay here.'**
+  String get yourCoachIsUnavailableForNowYour;
+
+  /// No description provided for @yourAccountIsOnHoldUntilYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is on hold until your Own Hub fee is confirmed.'**
+  String get yourAccountIsOnHoldUntilYour;
+
+  /// Fee screen, a bill past its due date. The date is the day the account goes on hold.
+  ///
+  /// In en, this message translates to:
+  /// **'This fee is late. Your account goes on hold on {date} if it is still unpaid.'**
+  String thisFeeIsLateYourAccountGoes(String date);
+
+  /// Fee screen, a bill not yet due. The date is the day the account goes on hold.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpaid on {date}, your account goes on hold. Your current clients keep their plans.'**
+  String unpaidOnDateYourAccountGoesOn(String date);
+
+  /// No description provided for @yourAccountIsOnHoldItEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is on hold. It ends when Own Hub confirms this fee.'**
+  String get yourAccountIsOnHoldItEnds;
+
+  /// No description provided for @feeBills.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee bills'**
+  String get feeBills;
+
+  /// Title of one commission bill; the date is the day the fee became owed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fee bill of {date}'**
+  String feeBillOfDate(String date);
+
+  /// No description provided for @noFeeBillYetOneIsMade.
+  ///
+  /// In en, this message translates to:
+  /// **'No fee bill yet. One is made each time a client payment is confirmed.'**
+  String get noFeeBillYetOneIsMade;
+
+  /// No description provided for @oneBillForEachClientPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'One bill for each client payment'**
+  String get oneBillForEachClientPayment;
+
+  /// Commission points in the coach terms.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub takes {full} of the package price for clients who find you in the app, and {invite} for clients you bring with your own code.'**
+  String ownHubTakesFullOfThePackage(String full, String invite);
+
+  /// Pay-in and hold rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Own Hub its share within {days} days of your client\'s payment. If it stays unpaid for {hold} days, your account is put on hold until Own Hub confirms the payment.'**
+  String payOwnHubItsShareWithinDays(String days, String hold);
+
+  /// Marketing videos rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Make {videos} short videos for Own Hub every month. No client appears in them.'**
+  String makeVideosShortVideosForOwnHub(String videos);
+
+  /// No description provided for @keepEveryChatInsideTheAppAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep every chat inside the app, and never ask a client for her phone number or other contact details.'**
+  String get keepEveryChatInsideTheAppAnd;
+
+  /// The no-circumvention rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not work with a client you met through Own Hub outside the app, during the coaching and for {months} months after it.'**
+  String doNotWorkWithAClientYou(String months);
+
+  /// No description provided for @readTheFullCoachAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the full Coach Agreement'**
+  String get readTheFullCoachAgreement;
+
+  /// No description provided for @iHaveReadTheCoachAgreementAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read the Coach Agreement and agree to it, including keeping my clients inside the app'**
+  String get iHaveReadTheCoachAgreementAnd;
+
+  /// No description provided for @yourSignedAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signed agreement'**
+  String get yourSignedAgreement;
+
+  /// No description provided for @readTheNewCoachAgreementAndAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the new Coach Agreement and accept it. Until Own Hub verifies your signed copy you cannot accept new clients. Your current clients are not affected.'**
+  String get readTheNewCoachAgreementAndAccept;
+
+  /// No description provided for @printTheAgreementAndSignItBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Print the agreement and sign it by hand with your full name, national ID number and date. Then upload a photo of the signed page.'**
+  String get printTheAgreementAndSignItBy;
+
+  /// No description provided for @ownHubIsCheckingYourSignedCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub is checking your signed copy. We will let you know.'**
+  String get ownHubIsCheckingYourSignedCopy;
+
+  /// No description provided for @yourSignedAgreementIsVerifiedYouCan.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signed agreement is verified. You can accept new clients.'**
+  String get yourSignedAgreementIsVerifiedYouCan;
+
+  /// Why staff rejected the signed copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub needs a new signed copy. Reason: {reason}'**
+  String ownHubNeedsANewSignedCopy(String reason);
+
+  /// No description provided for @readTheAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the agreement'**
+  String get readTheAgreement;
+
+  /// No description provided for @acceptTheAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept the agreement'**
+  String get acceptTheAgreement;
+
+  /// No description provided for @downloadThePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the PDF'**
+  String get downloadThePdf;
+
+  /// No description provided for @uploadSignedCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload signed copy'**
+  String get uploadSignedCopy;
+
+  /// No description provided for @uploadANewCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a new copy'**
+  String get uploadANewCopy;
+
+  /// No description provided for @iHaveReadTheCoachAgreementAnd_egtgj.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read the Coach Agreement and I accept it'**
+  String get iHaveReadTheCoachAgreementAnd_egtgj;
+
+  /// No description provided for @yourSignedCopyWasSentOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Your signed copy was sent. Own Hub will check it.'**
+  String get yourSignedCopyWasSentOwnHub;
+
+  /// No description provided for @youCannotAcceptNewRequestsYetAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot accept new requests yet. Accept the Coach Agreement and upload your signed copy in your coach space.'**
+  String get youCannotAcceptNewRequestsYetAccept;
+
+  /// No description provided for @coachAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'Coach Agreement'**
+  String get coachAgreement;
+
+  /// Earnings empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients pay you directly. Own Hub takes {full} of each package price, or {invite} for clients you bring with your own code. Pay it within {days} days.'**
+  String clientsPayYouDirectlyOwnHubTakes(
+    String full,
+    String invite,
+    String days,
+  );
+
+  /// No description provided for @whereYourClientsPayYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Where your clients pay you'**
+  String get whereYourClientsPayYou;
+
+  /// Title of the coach space card: videos approved this month and the monthly target.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos for Own Hub this month: {count} of {target}'**
+  String videosForOwnHubThisMonthCount(String count, String target);
+
+  /// No description provided for @addAVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a video'**
+  String get addAVideo;
+
+  /// Rules shown before a coach picks a marketing video; min is seconds, max is minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Each video runs from {min} seconds to {max} minutes. Only women appear in it, no client is in it, and you own everything you show or play.'**
+  String eachVideoRunsFromMinSecondsTo(String min, String max);
+
+  /// No description provided for @whatIsTheVideoAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'What is the video about?'**
+  String get whatIsTheVideoAbout;
+
+  /// No description provided for @aWorkoutOrMovementTip.
+  ///
+  /// In en, this message translates to:
+  /// **'A workout or movement tip'**
+  String get aWorkoutOrMovementTip;
+
+  /// No description provided for @aHealthyEatingIdea.
+  ///
+  /// In en, this message translates to:
+  /// **'A healthy eating idea'**
+  String get aHealthyEatingIdea;
+
+  /// No description provided for @aTrainingMyth.
+  ///
+  /// In en, this message translates to:
+  /// **'A training myth'**
+  String get aTrainingMyth;
+
+  /// No description provided for @howCoachingWithMeWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'How coaching with me works'**
+  String get howCoachingWithMeWorks;
+
+  /// No description provided for @aShortIntroductionOfMyself.
+  ///
+  /// In en, this message translates to:
+  /// **'A short introduction of myself'**
+  String get aShortIntroductionOfMyself;
+
+  /// No description provided for @recordAVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a video'**
+  String get recordAVideo;
+
+  /// No description provided for @chooseFromYourVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from your videos'**
+  String get chooseFromYourVideos;
+
+  /// No description provided for @waitingForOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Own Hub'**
+  String get waitingForOwnHub;
+
+  /// No description provided for @approvedByOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved by Own Hub'**
+  String get approvedByOwnHub;
+
+  /// A marketing video staff sent back, with their reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs changes: {reason}'**
+  String needsChangesReason(String reason);
+
+  /// No description provided for @needsChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs changes'**
+  String get needsChanges;
+
+  /// A picked marketing video is too short.
+  ///
+  /// In en, this message translates to:
+  /// **'The video is shorter than {min} seconds.'**
+  String theVideoIsShorterThanMinSeconds(String min);
+
+  /// A picked marketing video is too long.
+  ///
+  /// In en, this message translates to:
+  /// **'The video is longer than {max} minutes.'**
+  String theVideoIsLongerThanMaxMinutes(String max);
+
+  /// No description provided for @thatVideoFileIsTooBigTry.
+  ///
+  /// In en, this message translates to:
+  /// **'That video file is too big. Try a shorter one.'**
+  String get thatVideoFileIsTooBigTry;
+
+  /// No description provided for @onlyVideosInTheUsualPhoneFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Only videos in the usual phone format can be used.'**
+  String get onlyVideosInTheUsualPhoneFormat;
+
+  /// No description provided for @yourVideoWasSentOwnHubWill.
+  ///
+  /// In en, this message translates to:
+  /// **'Your video was sent. Own Hub will watch it soon.'**
+  String get yourVideoWasSentOwnHubWill;
+
+  /// No description provided for @noVideosYetThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No videos yet this month.'**
+  String get noVideosYetThisMonth;
+
+  /// No description provided for @youAreDoneForThisMonthThank.
+  ///
+  /// In en, this message translates to:
+  /// **'You are done for this month. Thank you.'**
+  String get youAreDoneForThisMonthThank;
+
+  /// No description provided for @onlyOwnHubStaffSeeYourVideos.
+  ///
+  /// In en, this message translates to:
+  /// **'Only Own Hub staff see your videos until one is approved. They are never on your public page.'**
+  String get onlyOwnHubStaffSeeYourVideos;
+
+  /// No description provided for @yourWeightInKgOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weight in kg (optional)'**
+  String get yourWeightInKgOptional;
+
+  /// No description provided for @shareMyWeightWithMyCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Share my weight with my coach'**
+  String get shareMyWeightWithMyCoach;
+
+  /// No description provided for @shareTheWorkoutsIFinishedThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the workouts I finished this week'**
+  String get shareTheWorkoutsIFinishedThisWeek;
+
+  /// In the check-in: how many workouts from the coach's plan she finished in the week.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts from your coach\'s plan this week: {count}'**
+  String workoutsFromYourCoachsPlanThisWeek(String count);
+
+  /// No description provided for @onlyYourCoachSeesTheseAndOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your coach sees these, and only what you tick.'**
+  String get onlyYourCoachSeesTheseAndOnly;
+
+  /// The check-in weight is outside what is accepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a weight between {low} and {high} kilograms.'**
+  String enterAWeightBetweenLowAndHigh(String low, String high);
+
+  /// No description provided for @whyStayInOwnHub.
+  ///
+  /// In en, this message translates to:
+  /// **'Why stay in Own Hub'**
+  String get whyStayInOwnHub;
+
+  /// No description provided for @yourPlansStayHereWithEverythingYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plans stay here, with everything you have done.'**
+  String get yourPlansStayHereWithEverythingYou;
+
+  /// No description provided for @yourChatWithYourCoachIsPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Your chat with your coach is private.'**
+  String get yourChatWithYourCoachIsPrivate;
+
+  /// No description provided for @yourCheckIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Your check-ins'**
+  String get yourCheckIns;
+
+  /// No description provided for @yourAnswersAndWhatYourCoachReplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answers and what your coach replied'**
+  String get yourAnswersAndWhatYourCoachReplied;
+
+  /// No description provided for @checkInHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in history'**
+  String get checkInHistory;
+
+  /// Heading of one week in the check-in history; week is like 2026-W44.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in {week}'**
+  String checkInWeek(String week);
+
+  /// One line of a check-in: how training went.
+  ///
+  /// In en, this message translates to:
+  /// **'Training: {value}'**
+  String trainingValue(String value);
+
+  /// One line of a check-in: energy from low to high.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy: {value}'**
+  String energyValue(String value);
+
+  /// One line of a check-in: how eating went.
+  ///
+  /// In en, this message translates to:
+  /// **'Eating: {value}'**
+  String eatingValue(String value);
+
+  /// One line of a check-in: yes or no.
+  ///
+  /// In en, this message translates to:
+  /// **'Pain or injury: {value}'**
+  String painOrInjuryValue(String value);
+
+  /// One line of a check-in: the weight she chose to share.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight: {value}'**
+  String weightValue(String value);
+
+  /// A weight in kilograms.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} kg'**
+  String valueKg(String value);
+
+  /// One line of a check-in: coach-plan workouts finished that week.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts from the plan: {value}'**
+  String workoutsFromThePlanValue(String value);
+
+  /// No description provided for @yourCoachsReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your coach\'s reply'**
+  String get yourCoachsReply;
+
+  /// No description provided for @yourReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply'**
+  String get yourReply;
+
+  /// No description provided for @writeAReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply'**
+  String get writeAReply;
+
+  /// No description provided for @sendReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reply'**
+  String get sendReply;
+
+  /// No description provided for @yourReplyWasSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reply was sent.'**
+  String get yourReplyWasSent;
+
+  /// No description provided for @noCheckInsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No check-ins yet.'**
+  String get noCheckInsYet;
+
+  /// No description provided for @whatOwnHubDoesForYou.
+  ///
+  /// In en, this message translates to:
+  /// **'What Own Hub does for you'**
+  String get whatOwnHubDoesForYou;
+
+  /// No description provided for @clientsFindYouInFindACoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Clients find you in Find a coach.'**
+  String get clientsFindYouInFindACoach;
+
+  /// No description provided for @plansChatAndCheckInsLiveIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans, chat and check-ins live in one place.'**
+  String get plansChatAndCheckInsLiveIn;
+
+  /// No description provided for @contactDetailsStayProtectedYoursAndYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact details stay protected, yours and your clients\'.'**
+  String get contactDetailsStayProtectedYoursAndYour;
+
+  /// No description provided for @ownHubStaffAreThereWhenYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub staff are there when you need help.'**
+  String get ownHubStaffAreThereWhenYou;
+
+  /// No description provided for @disagreementsAreHandledFairlyWithBothSides.
+  ///
+  /// In en, this message translates to:
+  /// **'Disagreements are handled fairly, with both sides heard.'**
+  String get disagreementsAreHandledFairlyWithBothSides;
+
+  /// No description provided for @takeClientsSetYourPackagesAndGet.
+  ///
+  /// In en, this message translates to:
+  /// **'Take clients, set your packages and get paid directly by your clients.'**
+  String get takeClientsSetYourPackagesAndGet;
+
+  /// Heading of one week in the check-in history; the date is the day she answered.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in of {date}'**
+  String checkInOfDate(String date);
+
+  /// No description provided for @takeClientsAndSetYourOwnPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'Take clients and set your own packages.'**
+  String get takeClientsAndSetYourOwnPackages;
+
+  /// No description provided for @ownHubStaffAreHereToHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub staff are here to help you any time.'**
+  String get ownHubStaffAreHereToHelp;
+
+  /// No description provided for @ownHubNeverShowsYourNumberTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Own Hub never shows your number to your coach.'**
+  String get ownHubNeverShowsYourNumberTo;
+
+  /// No description provided for @updateOwnHubToAskThisCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Own Hub to ask this coach'**
+  String get updateOwnHubToAskThisCoach;
+
+  /// The first line of a coaching package: the live one-to-one video sessions she gets each month, always shown before the price.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{{count} live one-to-one video session a month} other{{count} live one-to-one video sessions a month}}'**
+  String countPluralOneCountLiveOneTo(int count);
+
+  /// No description provided for @liveOneToOneVideoSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Live one-to-one video sessions'**
+  String get liveOneToOneVideoSessions;
+
+  /// No description provided for @membersCanAskToJoinYourPackages_1gn5h.
+  ///
+  /// In en, this message translates to:
+  /// **'Members can ask to join your packages. When you accept, they pay you by InstaPay.'**
+  String get membersCanAskToJoinYourPackages_1gn5h;
+
+  /// No description provided for @anOwnHubFeeIsDueSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'An Own Hub fee is due soon'**
+  String get anOwnHubFeeIsDueSoon;
+
+  /// No description provided for @anOwnHubFeeIsLate.
+  ///
+  /// In en, this message translates to:
+  /// **'An Own Hub fee is late'**
+  String get anOwnHubFeeIsLate;
+
+  /// Coach space, under a fee notice. The date is the day the account goes on hold.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account goes on hold on {date} if it is still unpaid.'**
+  String yourAccountGoesOnHoldOnDate(String date);
+
+  /// No description provided for @sheNeedsToUpdateOwnHubBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'She needs to update Own Hub before she can pay. She has been told.'**
+  String get sheNeedsToUpdateOwnHubBefore;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

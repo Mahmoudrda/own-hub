@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:own_hub/features/signup/domain/legal_acceptance.dart'
+    show kAppBuild;
 import 'package:own_hub/features/private_coaching/domain/chat_message.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_application.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_money.dart';
@@ -8,6 +10,7 @@ import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_profile.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
 import 'package:own_hub/features/private_coaching/domain/payments.dart';
+import 'package:own_hub/features/private_coaching/domain/requests.dart';
 import 'package:own_hub/features/private_coaching/domain/session_link.dart';
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
 import 'package:own_hub/features/private_coaching/presentation/plans/coach_plan_logic.dart';
@@ -99,7 +102,7 @@ void main() {
         ], reason: entry.key);
       }
       expect(
-        base.copyWith(termsVersion: 2).missingSections(now: kNow),
+        base.copyWith(termsVersion: 1).missingSections(now: kNow),
         <String>['terms'],
       );
     });
@@ -209,6 +212,27 @@ void main() {
         'Hi',
       );
     });
+
+    test(
+      'a hold is read from her private record, and a cleared one is not',
+      () {
+        expect(
+          CoachPrivateSummary.fromMap(<String, Object?>{'a': 1})!.onHold,
+          false,
+        );
+        expect(
+          CoachPrivateSummary.fromMap(<String, Object?>{
+            'hold': <String, Object?>{'reason': 'fee'},
+          })!.onHold,
+          true,
+        );
+        expect(
+          CoachPrivateSummary.fromMap(<String, Object?>{'hold': null, 'a': 1})!
+              .onHold,
+          false,
+        );
+      },
+    );
 
     test('empty and wrongly typed documents are not coaches', () {
       expect(CoachProfile.fromMap('c', null), isNull);
@@ -621,6 +645,43 @@ void main() {
       })!;
       expect(r.otherParty('c'), 'u');
       expect(r.otherParty('u'), 'c');
+      final away = Relationship.fromMap('c__u', <String, Object?>{
+        'status': 'active',
+        'coachUid': 'c',
+        'clientUid': 'u',
+        'coachAway': true,
+      })!;
+      expect(away.coachAway, isTrue);
+      expect(r.coachAway, isFalse);
+      expect(
+        CoachingRequests.requestCoaching(
+          coachUid: 'c',
+          packageId: 'p',
+          intake: validIntake(),
+          consent: const <String, Object?>{},
+          locale: 'en',
+          inviteCode: 'ABCD2345',
+          appBuild: 433440,
+        )['inviteCode'],
+        'ABCD2345',
+      );
+      // The server refuses an app that sends no build once payments are on.
+      expect(
+        CoachingRequests.requestCoaching(
+          coachUid: 'c',
+          packageId: 'p',
+          intake: validIntake(),
+          consent: const <String, Object?>{},
+          locale: 'en',
+          appBuild: 433440,
+        )['appBuild'],
+        433440,
+      );
+      expect(
+        kAppBuild,
+        0,
+        reason: 'a build without APP_VERSION knows no build',
+      );
       expect(
         Relationship.fromMap('x', <String, Object?>{'status': 'active'}),
         isNull,

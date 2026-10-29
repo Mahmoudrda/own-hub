@@ -146,11 +146,16 @@ abstract final class PaymentsNav {
 
   /// PAY9: what the coach owes Own Hub, month by month. [month] ("2026-10")
   /// opens that statement first.
-  static void coachStatements(NavigatorState nav, {String? month}) {
+  static void coachStatements(
+    NavigatorState nav, {
+    String? month,
+    String? billId,
+  }) {
     unawaited(
       nav.push<void>(
         MaterialPageRoute<void>(
-          builder: (_) => FeeStatementView(initialMonth: month),
+          builder: (_) =>
+              FeeStatementView(initialMonth: month, initialBill: billId),
         ),
       ),
     );

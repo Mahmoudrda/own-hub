@@ -165,6 +165,12 @@ class _CoachDeskViewState extends State<CoachDeskView> {
             style: AppText.body.copyWith(color: AppColors.textSecondary),
           ),
         if (intake != null) IntakeAnswersCard(intake),
+        if (_state.agreementMissing)
+          Text(
+            l10n.youCannotAcceptNewRequestsYetAccept,
+            key: const ValueKey('agreement-needed'),
+            style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
+          ),
         Row(
           children: [
             Expanded(
@@ -172,7 +178,9 @@ class _CoachDeskViewState extends State<CoachDeskView> {
                 l10n.accept,
                 height: 48,
                 fontSize: 16,
-                onPressed: () => Navigator.of(context).pop(true),
+                onPressed: _state.agreementMissing
+                    ? null
+                    : () => Navigator.of(context).pop(true),
               ),
             ),
             const SizedBox(width: 10),
@@ -278,6 +286,7 @@ class _CoachDeskViewState extends State<CoachDeskView> {
           _RequestCard(
             request: request,
             busy: _busy.contains(request.id),
+            agreementMissing: _state.agreementMissing,
             onAccept: () => (request.intake?.anyFlag ?? false)
                 ? _openRequest(request)
                 : _respond(request, accept: true),
@@ -415,6 +424,7 @@ class _RequestCard extends StatelessWidget {
   const _RequestCard({
     required this.request,
     required this.busy,
+    required this.agreementMissing,
     required this.onAccept,
     required this.onDecline,
     required this.onOpen,
@@ -422,6 +432,7 @@ class _RequestCard extends StatelessWidget {
 
   final Subscription request;
   final bool busy;
+  final bool agreementMissing;
   final VoidCallback onAccept;
   final VoidCallback onDecline;
   final VoidCallback onOpen;
@@ -518,6 +529,12 @@ class _RequestCard extends StatelessWidget {
               ),
             ),
           ),
+        if (agreementMissing)
+          Text(
+            l10n.youCannotAcceptNewRequestsYetAccept,
+            key: const ValueKey('agreement-needed'),
+            style: AppText.bodyM.copyWith(color: AppColors.textSecondary),
+          ),
         Row(
           children: [
             Expanded(
@@ -525,7 +542,7 @@ class _RequestCard extends StatelessWidget {
                 l10n.accept,
                 height: 48,
                 fontSize: 16,
-                onPressed: busy ? null : onAccept,
+                onPressed: busy || agreementMissing ? null : onAccept,
               ),
             ),
             const SizedBox(width: 10),

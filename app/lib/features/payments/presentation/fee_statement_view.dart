@@ -16,13 +16,20 @@ import '../../private_coaching/presentation/desk/desk_model.dart' show tagOf;
 import '../data/payments_hub.dart';
 import '../data/payments_repository.dart';
 import '../domain/payment_models.dart';
-import '../domain/payments_rules.dart';
 import 'fee_paid_sheet.dart';
 import 'payment_text.dart';
 
 /// "2026-10": the statement's month, the same in both languages.
 String feeMonthLabel(FeeStatement s) =>
     '${s.year}-${s.month.toString().padLeft(2, '0')}';
+
+/// The day a bill's fee became owed (its first line), else its month.
+String feeBillTitle(AppL10n l10n, FeeStatement s) {
+  final owed = s.lines.isEmpty ? null : s.lines.first.owedAt;
+  return owed == null
+      ? l10n.feeForMonth(feeMonthLabel(s))
+      : l10n.feeBillOfDate(cairoDate(owed));
+}
 
 /// PAY9: what the coach owes Own Hub for a month, one line per payment, where
 /// to pay it and the one thing she does after paying. The newest statement is
@@ -35,12 +42,16 @@ class FeeStatementView extends StatefulWidget {
     this.now,
     this.onBack,
     this.initialMonth,
+    this.initialBill,
   });
 
   final PaymentsRepository? repository;
 
   /// "2026-10": opens that month's statement first, as a push about it does.
   final String? initialMonth;
+
+  /// A payment id: opens the bill made for that payment first.
+  final String? initialBill;
   final DateTime Function()? now;
   final VoidCallback? onBack;
 
@@ -118,10 +129,7 @@ class _FeeStatementViewState extends State<FeeStatementView> {
       children: [
         Semantics(
           header: true,
-          child: Text(
-            l10n.feeForMonth(feeMonthLabel(s)),
-            style: AppText.titleM,
-          ),
+          child: Text(feeBillTitle(l10n, s), style: AppText.titleM),
         ),
         Text(l10n.totalDue, style: AppText.bodyM),
         Text(
@@ -168,11 +176,22 @@ class _FeeStatementViewState extends State<FeeStatementView> {
               textDirection: TextDirection.ltr,
               style: AppText.bodyM,
             ),
-        ] else if (_late(s))
+        ] else if (s.onHold)
           Semantics(
             liveRegion: true,
             child: Text(
-              l10n.thisFeeIsLateNewClientsCannot,
+              l10n.yourAccountIsOnHoldItEnds,
+              key: const ValueKey('fee-hold'),
+              style: AppText.bodyM.copyWith(color: AppColors.amber),
+            ),
+          )
+        else if (_late(s))
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              l10n.thisFeeIsLateYourAccountGoes(
+                cairoDate(s.holdAt ?? s.dueAt!),
+              ),
               key: const ValueKey('fee-late'),
               style: AppText.bodyM.copyWith(color: AppColors.amber),
             ),
@@ -222,9 +241,9 @@ class _FeeStatementViewState extends State<FeeStatementView> {
           ),
         ),
       ],
-      if (!_late(s))
+      if (!_late(s) && s.holdAt != null)
         Text(
-          l10n.feesUnpaidForMoreThanNDays(kFeeOverdueDays.toString()),
+          l10n.unpaidOnDateYourAccountGoesOn(cairoDate(s.holdAt!)),
           key: const ValueKey('fee-rule'),
           style: AppText.bodyM,
         ),
@@ -267,7 +286,9 @@ class _FeeStatementViewState extends State<FeeStatementView> {
         for (final o in others)
           AppListItem(
             key: ValueKey('month-${o.id}'),
-            title: feeMonthLabel(o),
+            title: o.lines.isEmpty || o.lines.first.owedAt == null
+                ? feeMonthLabel(o)
+                : cairoDate(o.lines.first.owedAt!),
             subtitle:
                 '${egpText(l10n, o.totalDuePiasters)} · ${_monthWord(l10n, o)}',
             onTap: () => setState(() => _picked = o.id),
@@ -288,8 +309,13 @@ class _FeeStatementViewState extends State<FeeStatementView> {
             : all.firstWhere(
                 (s) => s.id == _picked,
                 orElse: () => all.firstWhere(
-                  (s) => feeMonthLabel(s) == widget.initialMonth,
-                  orElse: () => all.first,
+                  (s) =>
+                      widget.initialBill != null &&
+                      s.id.endsWith('__${widget.initialBill}'),
+                  orElse: () => all.firstWhere(
+                    (s) => feeMonthLabel(s) == widget.initialMonth,
+                    orElse: () => all.first,
+                  ),
                 ),
               );
         final Widget top;
@@ -308,7 +334,7 @@ class _FeeStatementViewState extends State<FeeStatementView> {
         } else if (all == null) {
           top = const Center(child: CircularProgressIndicator());
         } else if (shown == null) {
-          top = AppSageNote(l10n.noStatementYetTheFirstOneComes);
+          top = AppSageNote(l10n.noFeeBillYetOneIsMade);
         } else {
           top = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -319,7 +345,7 @@ class _FeeStatementViewState extends State<FeeStatementView> {
         return AppScaffold(
           showArt: false,
           appBar: AppTopBar(
-            title: l10n.monthlyStatement,
+            title: l10n.feeBills,
             onBack: widget.onBack ?? () => Navigator.of(context).maybePop(),
           ),
           footer: [

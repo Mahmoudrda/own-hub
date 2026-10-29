@@ -35,6 +35,11 @@ String coachFailureText(
   CoachingRefusal.notACoach => l10n.thisAccountIsNotAnApprovedCoach,
   CoachingRefusal.coachSuspended => l10n.yourCoachSpaceIsPaused,
   CoachingRefusal.badRequest => l10n.somethingInThisFormNeedsAnotherLook,
+  CoachingRefusal.containsContact =>
+    l10n.thisCantIncludePhoneNumbersEmailsLinks,
+  CoachingRefusal.staffAccount => l10n.aStaffAccountCantApplyToBe,
+  CoachingRefusal.coachOnHold => l10n.yourAccountIsOnHoldUntilYour,
+  CoachingRefusal.clientUpdateNeeded => l10n.sheNeedsToUpdateOwnHubBefore,
   CoachingRefusal.priceOutOfRange => l10n.pickAPriceBetweenEgpLowAnd(
     countLabel(CoachingLimits.coachPriceMinEgp),
     countLabel(CoachingLimits.coachPriceMaxEgp),
@@ -51,6 +56,8 @@ String coachFailureText(
   ),
   CoachingRefusal.healthNotReviewed => l10n.readHerHealthAnswersFirstOpenHer,
   CoachingRefusal.eatingHistoryHold => l10n.thisClientsAnswersOnEatingMeanYou,
+  CoachingRefusal.agreementNeeded => l10n.youCannotAcceptNewRequestsYetAccept,
+  CoachingRefusal.agreementNotUploaded => l10n.thatPictureCouldNotBeUsedTry,
   _ => l10n.somethingWentWrongPleaseTryAgain,
 };
 

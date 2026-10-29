@@ -14,11 +14,13 @@ import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
 import '../../../../ui/app_empty_state.dart';
 import '../../../../ui/app_scaffold.dart';
+import '../../domain/check_in.dart' show CheckInStore;
 import '../../domain/coach_plan.dart';
 import '../../domain/coaching_contract.dart';
 import '../../domain/coaching_failure.dart';
 import '../../domain/health_review.dart';
 import '../../domain/subscription.dart';
+import '../chat/check_in_history.dart';
 import '../coach/coach_text.dart' show coachFailureText;
 import '../end_coaching_sheet.dart';
 import '../coaching_when.dart';
@@ -37,7 +39,11 @@ class ClientDetailView extends StatefulWidget {
     this.onShareWorkout,
     this.onShareMeal,
     this.onScheduleSession,
+    this.checkIns,
   });
+
+  /// Where her check-ins are read and replied to; the app's own by default.
+  final CheckInStore? checkIns;
 
   /// The client's subscription id.
   final String subId;
@@ -213,6 +219,12 @@ class _ClientDetailViewState extends State<ClientDetailView> {
               ),
             _actions(l10n, sub),
             if (sub.intake != null) IntakeAnswersCard(sub.intake!),
+            if (sub.relId.isNotEmpty)
+              CheckInHistory(
+                relId: sub.relId,
+                canReply: sub.status == SubscriptionStatus.active,
+                store: widget.checkIns,
+              ),
             _noteCard(l10n),
             if (_sessions != null) _sessionsCard(l10n),
             if (_plans != null) _plansCard(l10n),

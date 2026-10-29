@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../../../app_state/coach_invite_state.dart';
 import '../../../../domain/flags/feature_flags.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../routing/app_router.dart';
@@ -23,6 +24,7 @@ import '../../domain/requests.dart';
 import '../../domain/setup_prefill.dart';
 import '../../domain/subscription.dart';
 import '../client/inbody_scan_sheet.dart';
+import '../why_stay_note.dart';
 import 'coach_labels.dart';
 
 Future<void> showJoinCoachSheet({
@@ -72,6 +74,10 @@ String joinFailureText(AppL10n l10n, Object error) {
     switch (error.refusal) {
       case CoachingRefusal.alreadyRequested:
         return l10n.youAlreadyAskedToJoinThisCoach;
+      case CoachingRefusal.containsContact:
+        return l10n.thisCantIncludePhoneNumbersEmailsLinks;
+      case CoachingRefusal.appUpdateNeeded:
+        return l10n.updateOwnHubToAskThisCoach;
       case CoachingRefusal.coachUnavailable:
       case CoachingRefusal.coachSuspended:
         return l10n.thisCoachIsNotTakingNewClients;
@@ -203,7 +209,9 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
         ),
         locale: locale,
         clientName: _name.text.trim(),
+        inviteCode: CoachInviteState.instance.codeFor(widget.coach.uid),
       );
+      CoachInviteState.instance.spent(widget.coach.uid);
       if (mounted) setState(() => _sent = true);
     } catch (error) {
       if (mounted) {
@@ -305,6 +313,20 @@ class _JoinCoachFormState extends State<JoinCoachForm> {
               style: AppText.titleL.copyWith(color: AppColors.ink),
             ),
           ),
+          const SizedBox(height: 6),
+          Text(
+            widget.package.title,
+            style: AppText.titleS.copyWith(color: AppColors.ink),
+          ),
+          Text(
+            l10n.countPluralOneCountLiveOneTo(
+              widget.package.liveSessionsPerMonth,
+            ),
+            key: const ValueKey('join-live-sessions'),
+            style: AppText.bodyM.copyWith(color: AppColors.primary),
+          ),
+          const SizedBox(height: 10),
+          const WhyStayNote(),
           const SizedBox(height: 14),
           TextField(
             controller: _name,

@@ -64,7 +64,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('I coach women'), findsOneWidget);
-    expect(find.textContaining('keep 80%'), findsOneWidget);
+    expect(find.textContaining('set your own packages'), findsOneWidget);
     expect(find.text('I train and I coach'), findsOneWidget);
     expect(find.textContaining('Switch between them'), findsOneWidget);
   });

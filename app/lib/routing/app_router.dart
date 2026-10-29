@@ -422,6 +422,7 @@ import '../features/private_coaching/presentation/apply/apply_widgets.dart'
     show ApplyTools;
 import '../features/private_coaching/presentation/chat/chat_sheets.dart'
     show ShareChoices;
+import '../features/payments/data/payments_hub.dart';
 import '../features/payments/presentation/payment_alerts_card.dart'
     show PaymentAlertsAccess;
 import '../features/payments/presentation/payments_navigation.dart';
@@ -4977,7 +4978,7 @@ class AppRouter {
           openExternalLink(
             context,
             LegalLinks.localised(
-              LegalLinks.coachTerms,
+              LegalLinks.coachAgreement,
               Localizations.localeOf(context).languageCode,
             ),
           ),
@@ -5035,6 +5036,9 @@ class AppRouter {
         onOpenStatements: AppRouter.featureFlags.isOn(Feature.instapayPayments)
             ? () => PaymentsNav.coachStatements(Navigator.of(context))
             : null,
+        feeBills: AppRouter.featureFlags.isOn(Feature.instapayPayments)
+            ? PaymentsHub.repository?.watchMyStatements()
+            : null,
         onPreviewPortfolio: (coachUid) => unawaited(
           Navigator.of(context).pushNamed(
             appRoutes['H02']!.name,
@@ -5047,6 +5051,7 @@ class AppRouter {
         onShareProfile: (coachUid) =>
             unawaited(shareProfileLink(context, coachUid)),
         onBack: () => Navigator.of(context).maybePop(),
+        onOpenLink: (url) => unawaited(openExternalLink(context, url)),
       ),
     ),
     'K07': (context) => CoachTabFrame(
@@ -5171,6 +5176,7 @@ class AppRouter {
     'H06': (context) => CoachingThreadScreen(
       relId: _routeString(context),
       blocks: blockService,
+      trainSessions: () => trainRepository.sessions,
       recipeTitleOf: (id) => EatAppState.instance.recipeBook.byId(id)?.titleEn,
       onOpenRecipe: !screenIsOn('E06')
           ? null
@@ -5281,6 +5287,7 @@ class AppRouter {
         subscription: sub,
         plans: coaching.coachPlans,
         hasUnread: coaching.hasUnread(sub.relId),
+        coachAway: coaching.coachAway(sub.relId),
         payCard: PaymentsNav.payEntry(
           context,
           sub,

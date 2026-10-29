@@ -28,7 +28,7 @@ import '../domain/portfolio_media.dart';
 import '../domain/requests.dart';
 import '../domain/session_link.dart';
 import '../domain/subscription.dart';
-import '../../signup/domain/legal_acceptance.dart' show kAppVersion;
+import '../../signup/domain/legal_acceptance.dart' show kAppBuild, kAppVersion;
 import '../../train/domain/my_plan.dart';
 import 'chat_repository.dart';
 import 'coaching_repository.dart';
@@ -773,6 +773,7 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
     required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
+    String? inviteCode,
   }) async {
     final data = await _call(
       CoachingCallables.requestCoaching,
@@ -783,6 +784,8 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
         consent: consent,
         locale: locale,
         clientName: clientName,
+        inviteCode: inviteCode,
+        appBuild: kAppBuild,
       ),
     );
     final subId = readStringOrNull(data['subId']);
@@ -947,6 +950,21 @@ class FirestoreCoachingRepository implements ChatThreadRepository {
       CoachingCallables.recordSignupRole,
       CoachingRequests.signupRole(role),
     );
+  }
+
+  @override
+  Future<void> acceptCoachTerms({required String locale}) async {
+    await _call(CoachingCallables.acceptCoachTerms, <String, Object?>{
+      'version': kCoachTermsVersion,
+      'locale': locale,
+    });
+  }
+
+  @override
+  Future<void> submitCoachAgreement(String path) async {
+    await _call(CoachingCallables.submitCoachAgreement, <String, Object?>{
+      'mediaRef': path,
+    });
   }
 
   // ---------------------------------------------------------------- drafts

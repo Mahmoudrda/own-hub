@@ -345,10 +345,10 @@ void main() {
 
       expect(find.text('Earnings'), findsOneWidget);
       expect(find.text('Earnings this month'), findsOneWidget);
-      expect(
-        find.textContaining('The first payout lands on the 1st'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Clients pay you directly.'), findsOneWidget);
+      expect(find.textContaining('15%'), findsOneWidget);
+      expect(find.textContaining('7.5%'), findsOneWidget);
+      expect(find.textContaining('80%'), findsNothing);
     });
 
     testWidgets("none of the prototype's samples reach the screen", (

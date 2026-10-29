@@ -43,6 +43,12 @@ const String kAppVersion = String.fromEnvironment(
   defaultValue: '0.0.0',
 );
 
+/// The build number after the `+` in [kAppVersion] (minutes since 1 Jan 2026
+/// UTC, as `tool/build_ios.sh` numbers it), or 0 when unknown. Sent as
+/// `appBuild` with a coaching request so the server can refuse an app too old
+/// to show payments (`coaching.common.MIN_APP_BUILD`).
+int get kAppBuild => int.tryParse(kAppVersion.split('+').last) ?? 0;
+
 /// The callable that records an acceptance.
 const String kRecordLegalAcceptanceCallable = 'record_legal_acceptance';
 

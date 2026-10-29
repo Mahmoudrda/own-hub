@@ -10,6 +10,7 @@ library;
 import 'dart:async';
 
 import '../features/private_coaching/data/coaching_repository.dart';
+import '../features/private_coaching/domain/coach_agreement.dart';
 import '../features/private_coaching/domain/coach_plan.dart';
 import '../features/private_coaching/domain/coaching_contract.dart';
 import '../features/private_coaching/domain/coaching_failure.dart';
@@ -36,6 +37,8 @@ class PrivateCoachingState {
   List<Subscription> _coachSubs = const <Subscription>[];
   List<Relationship> _relationships = const <Relationship>[];
   List<CoachPlan> _plans = const <CoachPlan>[];
+  CoachAgreement? _agreement;
+  bool _hasPrivate = false;
 
   /// The repository in use, or null before [start].
   CoachingRepository? get repository => _repository;
@@ -95,7 +98,10 @@ class PrivateCoachingState {
       _startCoachStreams();
     } else {
       _cancel('coachSubs');
+      _cancel('coachPrivate');
       _coachSubs = const <Subscription>[];
+      _agreement = null;
+      _hasPrivate = false;
     }
     AppChanges.bump();
   }
@@ -117,6 +123,14 @@ class PrivateCoachingState {
       repository.watchMySubscriptionsAsCoach(),
       (value) => _coachSubs = value,
     );
+    // Not waited for: the desk works without it, and the server enforces the
+    // gate whatever this says.
+    _cancel('coachPrivate');
+    _streams['coachPrivate'] = repository.watchCoachPrivate().listen((value) {
+      _hasPrivate = value != null;
+      _agreement = value?.agreement;
+      AppChanges.bump();
+    }, onError: (Object _) {});
   }
 
   void _listen<T>(String key, Stream<T> stream, void Function(T) assign) {
@@ -159,6 +173,8 @@ class PrivateCoachingState {
     _coachSubs = const <Subscription>[];
     _relationships = const <Relationship>[];
     _plans = const <CoachPlan>[];
+    _agreement = null;
+    _hasPrivate = false;
   }
 
   // ------------------------------------------------------------ as a client
@@ -215,6 +231,11 @@ class PrivateCoachingState {
 
   List<Subscription> get coachSubscriptions => _coachSubs;
 
+  /// She has a private record and the agreement is not verified yet, so the
+  /// server will refuse to start a new client. False while it is unknown.
+  bool get agreementMissing =>
+      _hasPrivate && agreementStep(_agreement) != AgreementStep.verified;
+
   /// New requests, the oldest first.
   List<Subscription> get requests => _sorted(
     _coachSubs.where((s) => s.status == SubscriptionStatus.requested),
@@ -261,6 +282,11 @@ class PrivateCoachingState {
     }
     return false;
   }
+
+  /// Whether her coach is unavailable for now (the server marks the
+  /// relationship while the coach's account is on hold).
+  bool coachAway(String relId) =>
+      _relationships.any((r) => r.id == relId && r.coachAway);
 
   /// How many chats have something unread.
   int get unreadChats => <Relationship>[

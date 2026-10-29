@@ -126,12 +126,14 @@ class MemberRepo implements CoachingRepository {
     required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
+    String? inviteCode,
   }) async {
     lastConsent = consent;
     _record('requestCoaching', {
       'coachUid': coachUid,
       'packageId': packageId,
       'clientName': clientName,
+      'inviteCode': ?inviteCode,
     });
     lastIntake = intake;
     return (subId: 'sub1', status: SubscriptionStatus.requested);
@@ -320,6 +322,12 @@ Future<void> tickConsents(WidgetTester tester, {bool doctor = false}) async {
   }
 }
 
+/// Words Apple's 3.1.3(d) reading rules out of what a member sees.
+final RegExp _storeBannedWords = RegExp(
+  r'\b(buy|unlock|gift|wallet|subscribe|subscription|renews?)\b',
+  caseSensitive: false,
+);
+
 void main() {
   setUp(() => CoachImageBytes.lookup = (path) async => null);
   tearDown(CoachImageBytes.reset);
@@ -433,9 +441,28 @@ void main() {
     await tester.pumpWidget(portfolio(MemberRepo()));
     expect(find.text('EGP 2,000'), findsOneWidget);
     expect(find.textContaining('taxes and fees'), findsOneWidget);
+    // 3.1.3(d): the live one-to-one video sessions come before the price.
+    final live = find.byKey(const ValueKey('package-live-a'));
+    expect(
+      (tester.widget<Text>(live)).data,
+      '2 live one-to-one video sessions a month',
+    );
+    expect(
+      topOf(tester, live),
+      lessThan(topOf(tester, find.text('EGP 2,000'))),
+    );
+    expect(find.textContaining(_storeBannedWords), findsNothing);
     await openJoin(tester);
-    // The join sheet no longer promises it is free.
+    // The join sheet no longer promises it is free, and names the sessions.
     expect(find.text('Free while Own Hub opens coaching'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(JoinCoachForm),
+        matching: find.text('2 live one-to-one video sessions a month'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining(_storeBannedWords), findsNothing);
   });
 
   testWidgets('from line uses the cheapest package per 28 days', (
@@ -889,6 +916,7 @@ void main() {
         CoachingRefusal.coachUnavailable,
         'This coach is not taking new clients right now.',
       ),
+      (CoachingRefusal.appUpdateNeeded, 'Update Own Hub to ask this coach'),
       (
         CoachingRefusal.unreachable,
         'We could not send your request. Try again.',

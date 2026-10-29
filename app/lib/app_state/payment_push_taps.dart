@@ -50,7 +50,11 @@ abstract final class PaymentPushTaps {
       case PaymentPushScreen.coachAddress:
         PaymentsNav.coachAddress(navigator);
       case PaymentPushScreen.statements:
-        PaymentsNav.coachStatements(navigator, month: push.statementMonth);
+        PaymentsNav.coachStatements(
+          navigator,
+          month: push.statementMonth,
+          billId: push.billId,
+        );
     }
     return true;
   }

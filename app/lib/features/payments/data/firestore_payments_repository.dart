@@ -13,6 +13,7 @@ import '../../private_coaching/data/firestore_coaching_repository.dart'
     show kCoachingCallTimeout, kCoachingProofTimeout;
 import '../../private_coaching/data/firestore_plain.dart';
 import '../../private_coaching/domain/parse.dart';
+import '../../signup/domain/legal_acceptance.dart' show kAppBuild;
 import '../domain/payment_models.dart';
 import 'payments_repository.dart';
 
@@ -193,6 +194,7 @@ class FirestorePaymentsRepository implements PaymentsRepository {
       'subId': subId,
       'idempotencyKey': idempotencyKey,
       'topUpOf': ?topUpOf,
+      'appBuild': kAppBuild,
     });
     final id = readStringOrNull(d['paymentId']);
     if (id == null) throw const PaymentFailure('unreadable');

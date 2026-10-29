@@ -847,7 +847,7 @@
   "orSayItZumba40Minutes": "أو قوليها: «زومبا، 40 دقيقة»",
   "ovulation": "التبويض",
   "package": "الباقة",
-  "packages": "الاشتراكات",
+  "packages": "الباقات",
   "paidOutOnThe1stOfEach": "بيتحوّل يوم 1 من كل شهر.",
   "pasta500G": "مكرونة 500 جم",
   "pause": "وقّفي",
@@ -6971,12 +6971,10 @@
   "ownHubReviewsEveryCoachBeforeShe": "Own Hub بتراجع كل مدرّبة قبل ما تتعرض.",
   "everythingYouTellUsMustBeAccurate": "كل اللي بتقوليه لنا لازم يكون صح.",
   "photosOfClientsAreSharedOnlyWith": "صور العميلات بتتشارك بموافقتهم المكتوبة بس.",
-  "clientsPayThroughOwnHubOnlyNever": "العميلات بيدفعوا من خلال Own Hub بس، مش برّاها.",
   "youCanWithdrawYourApplicationAtAny": "تقدري تسحبي طلبك في أي وقت.",
   "readTheFullCoachTerms": "اقري شروط المدرّبات كاملة",
   "everythingIWroteIsAccurate": "كل اللي كتبته صح",
   "iShareClientPhotosOnlyWithTheir": "بشارك صور عميلاتي بموافقتهم المكتوبة بس",
-  "iWillNotTakePaymentFromClients": "مش هاخد فلوس من العميلات برّا Own Hub",
   "reviewYourApplication": "راجعي طلبك",
   "lookOverEachPartYouCanEdit": "بصّي على كل جزء. تقدري تعدّلي أي حاجة قبل ما تبعتي.",
   "stillNeeded": "لسه ناقص",
@@ -9223,5 +9221,384 @@
         "example": "180"
       }
     }
-  }
+  },
+  "askingToTalkOutsideOwnHub": "بتطلب الكلام برّه Own Hub",
+  "thisCantIncludePhoneNumbersEmailsLinks": "مينفعش تكتبي هنا أرقام تليفون ولا إيميلات ولا لينكات ولا تطبيقات تانية. شيليها وجرّبي تاني.",
+  "aStaffAccountCantApplyToBe": "حساب الفريق مينفعش يقدّم كمدرّبة. استخدمي حساب تاني.",
+  "contactDetailsAndOutsideAppsArentAllowed": "مينفعش بيانات تواصل ولا تطبيقات تانية في الشات. ده بيحمي الاتنين، وOwn Hub بتراجع التكرار.",
+  "yourAccountIsOnHold": "حسابك واقف دلوقتي",
+  "anOwnHubFeeIsOverdueYou": "فيه رسوم Own Hub متأخرة. تقدري تقري كل حاجة وتدفعي الرسوم. باقي الحاجات واقفة لحد ما الرسوم تتأكد.",
+  "payMyFee": "ادفعي رسومي",
+  "yourCoachIsUnavailableForNowYour": "المدربة بتاعتك مش متاحة دلوقتي. خططك فاضلة هنا.",
+  "yourAccountIsOnHoldUntilYour": "حسابك واقف لحد ما رسوم Own Hub تتأكد.",
+  "thisFeeIsLateYourAccountGoes": "الرسوم دي اتأخرت. حسابك هيقف يوم {date} لو لسه متدفعتش.",
+  "@thisFeeIsLateYourAccountGoes": {
+    "description": "Fee screen, a bill past its due date. The date is the day the account goes on hold.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "07/11/2026"
+      }
+    }
+  },
+  "unpaidOnDateYourAccountGoesOn": "لو الرسوم متدفعتش يوم {date}، حسابك هيقف. عميلاتك الحاليات بيفضلوا محتفظين بخططهم.",
+  "@unpaidOnDateYourAccountGoesOn": {
+    "description": "Fee screen, a bill not yet due. The date is the day the account goes on hold.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "07/11/2026"
+      }
+    }
+  },
+  "yourAccountIsOnHoldItEnds": "حسابك واقف. الوقف بيخلص لما Own Hub تأكد الرسوم دي.",
+  "feeBills": "فواتير الرسوم",
+  "feeBillOfDate": "فاتورة رسوم يوم {date}",
+  "@feeBillOfDate": {
+    "description": "Title of one commission bill; the date is the day the fee became owed.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/10/2026"
+      }
+    }
+  },
+  "noFeeBillYetOneIsMade": "لسه مفيش فاتورة رسوم. بتتعمل فاتورة كل ما دفع عميلة يتأكد.",
+  "oneBillForEachClientPayment": "فاتورة لكل دفعة من عميلاتك",
+  "ownHubTakesFullOfThePackage": "Own Hub بتاخد {full} من سعر الباقة من العميلات اللي بيلاقوكي في التطبيق، و{invite} من العميلات اللي بتجيبيهم بكودك.",
+  "@ownHubTakesFullOfThePackage": {
+    "description": "Commission points in the coach terms.",
+    "placeholders": {
+      "full": {
+        "type": "String",
+        "example": "15%"
+      },
+      "invite": {
+        "type": "String",
+        "example": "7.5%"
+      }
+    }
+  },
+  "payOwnHubItsShareWithinDays": "ادفعي نصيب Own Hub خلال {days} أيام من دفع عميلتك. لو فضل من غير دفع {hold} أيام، حسابك بيتوقف لحد ما Own Hub تأكد الدفع.",
+  "@payOwnHubItsShareWithinDays": {
+    "description": "Pay-in and hold rule.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "hold": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "makeVideosShortVideosForOwnHub": "كل شهر، فيديوهات قصيرة لـ Own Hub (العدد: {videos}). ومفيش أي عميلة بتظهر فيها.",
+  "@makeVideosShortVideosForOwnHub": {
+    "description": "Marketing videos rule.",
+    "placeholders": {
+      "videos": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "keepEveryChatInsideTheAppAnd": "خلّي كل الكلام جوّه التطبيق، وماتطلبيش من عميلة رقم تليفونها أو أي بيانات تواصل تانية.",
+  "doNotWorkWithAClientYou": "ماتشتغليش برّه التطبيق مع عميلة اتعرفتي عليها من خلال Own Hub، أثناء التدريب وبعده بـ {months} شهر.",
+  "@doNotWorkWithAClientYou": {
+    "description": "The no-circumvention rule.",
+    "placeholders": {
+      "months": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "readTheFullCoachAgreement": "اقري اتفاقية المدرّبة كاملة",
+  "iHaveReadTheCoachAgreementAnd": "قريت اتفاقية المدرّبة وموافقة عليها، ومنها إني أخلّي عميلاتي جوّه التطبيق",
+  "yourSignedAgreement": "اتفاقيتك الموقّعة",
+  "readTheNewCoachAgreementAndAccept": "اقري اتفاقية المدرّبة الجديدة ووافقي عليها. لحد ما Own Hub تتأكد من نسختك الموقّعة مش هتقدري تقبلي عميلات جداد. عميلاتك الحاليات مش متأثرين.",
+  "printTheAgreementAndSignItBy": "اطبعي الاتفاقية ووقّعيها بإيدك بإسمك الكامل ورقمك القومي والتاريخ. وبعدين ارفعي صورة للصفحة الموقّعة.",
+  "ownHubIsCheckingYourSignedCopy": "Own Hub بتراجع نسختك الموقّعة. هنبلغك لما تخلص.",
+  "yourSignedAgreementIsVerifiedYouCan": "اتفاقيتك الموقّعة اتأكدت. تقدري تقبلي عميلات جداد.",
+  "ownHubNeedsANewSignedCopy": "Own Hub محتاجة نسخة موقّعة جديدة. السبب: {reason}",
+  "@ownHubNeedsANewSignedCopy": {
+    "description": "Why staff rejected the signed copy.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "The signature is cut off."
+      }
+    }
+  },
+  "readTheAgreement": "اقري الاتفاقية",
+  "acceptTheAgreement": "وافقي على الاتفاقية",
+  "downloadThePdf": "نزّلي ملف PDF",
+  "uploadSignedCopy": "ارفعي النسخة الموقّعة",
+  "uploadANewCopy": "ارفعي نسخة جديدة",
+  "iHaveReadTheCoachAgreementAnd_egtgj": "قريت اتفاقية المدرّبة وموافقة عليها",
+  "yourSignedCopyWasSentOwnHub": "النسخة الموقّعة اتبعتت. Own Hub هتراجعها.",
+  "youCannotAcceptNewRequestsYetAccept": "لسه مش هتقدري تقبلي طلبات جديدة. وافقي على اتفاقية المدرّبة وارفعي نسختك الموقّعة من مساحة المدرّبة.",
+  "coachAgreement": "اتفاقية المدرّبة",
+  "clientsPayYouDirectlyOwnHubTakes": "العميلات بيدفعوا ليكي مباشرة. Own Hub بتاخد {full} من سعر كل باقة، أو {invite} من العميلات اللي بتجيبيهم بكودك. ادفعيها خلال {days} أيام.",
+  "@clientsPayYouDirectlyOwnHubTakes": {
+    "description": "Earnings empty state.",
+    "placeholders": {
+      "full": {
+        "type": "String",
+        "example": "15%"
+      },
+      "invite": {
+        "type": "String",
+        "example": "7.5%"
+      },
+      "days": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "whereYourClientsPayYou": "المكان اللي عميلاتك بيدفعوا ليكي فيه",
+  "videosForOwnHubThisMonthCount": "فيديوهات لـ Own Hub الشهر ده: {count} من {target}",
+  "@videosForOwnHubThisMonthCount": {
+    "description": "Title of the coach space card: videos approved this month and the monthly target.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      },
+      "target": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "addAVideo": "ضيفي فيديو",
+  "eachVideoRunsFromMinSecondsTo": "كل فيديو من {min} ثانية لـ {max} دقايق. الستات بس هم اللي يظهروا فيه، ومفيش عميلة فيه، وكل اللي بتعرضيه أو بتشغليه يكون ملكك.",
+  "@eachVideoRunsFromMinSecondsTo": {
+    "description": "Rules shown before a coach picks a marketing video; min is seconds, max is minutes.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "30"
+      },
+      "max": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "whatIsTheVideoAbout": "الفيديو عن إيه؟",
+  "aWorkoutOrMovementTip": "نصيحة تمرين أو حركة",
+  "aHealthyEatingIdea": "فكرة أكل صحي",
+  "aTrainingMyth": "خرافة شائعة في التمرين",
+  "howCoachingWithMeWorks": "التدريب معايا بيمشي إزاي",
+  "aShortIntroductionOfMyself": "تعريف قصير بنفسي",
+  "recordAVideo": "صوّري فيديو",
+  "chooseFromYourVideos": "اختاري من الفيديوهات بتاعتك",
+  "waitingForOwnHub": "مستني Own Hub",
+  "approvedByOwnHub": "Own Hub وافقت عليه",
+  "needsChangesReason": "محتاج تعديل: {reason}",
+  "@needsChangesReason": {
+    "description": "A marketing video staff sent back, with their reason.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "The sound is low."
+      }
+    }
+  },
+  "needsChanges": "محتاج تعديل",
+  "theVideoIsShorterThanMinSeconds": "الفيديو أقصر من {min} ثانية.",
+  "@theVideoIsShorterThanMinSeconds": {
+    "description": "A picked marketing video is too short.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "theVideoIsLongerThanMaxMinutes": "الفيديو أطول من {max} دقايق.",
+  "@theVideoIsLongerThanMaxMinutes": {
+    "description": "A picked marketing video is too long.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "thatVideoFileIsTooBigTry": "ملف الفيديو ده كبير أوي. جربي واحد أقصر.",
+  "onlyVideosInTheUsualPhoneFormat": "ينفع بس الفيديوهات بالصيغة العادية للموبايل.",
+  "yourVideoWasSentOwnHubWill": "الفيديو اتبعت. Own Hub هتشوفه قريب.",
+  "noVideosYetThisMonth": "لسه مفيش فيديوهات الشهر ده.",
+  "youAreDoneForThisMonthThank": "خلصتي الشهر ده. شكرًا ليكي.",
+  "onlyOwnHubStaffSeeYourVideos": "فريق Own Hub بس هو اللي بيشوف فيديوهاتك لحد ما واحد يتوافق عليه. ومش بتظهر أبدًا في صفحتك العامة.",
+  "yourWeightInKgOptional": "وزنك بالكيلو (اختياري)",
+  "shareMyWeightWithMyCoach": "عايزة أشارك وزني مع مدرّبتي",
+  "shareTheWorkoutsIFinishedThisWeek": "عايزة أشارك التمارين اللي خلصتها الأسبوع ده",
+  "workoutsFromYourCoachsPlanThisWeek": "تمارين خطة مدربتك الأسبوع ده: {count}",
+  "@workoutsFromYourCoachsPlanThisWeek": {
+    "description": "In the check-in: how many workouts from the coach's plan she finished in the week.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "onlyYourCoachSeesTheseAndOnly": "مدربتك بس هي اللي بتشوفهم، وبس اللي بتعلّمي عليه.",
+  "enterAWeightBetweenLowAndHigh": "اكتبي وزن بين {low} و{high} كيلو.",
+  "@enterAWeightBetweenLowAndHigh": {
+    "description": "The check-in weight is outside what is accepted.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "30"
+      },
+      "high": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "whyStayInOwnHub": "ليه تفضلي في Own Hub",
+  "yourPlansStayHereWithEverythingYou": "خططك فاضلة هنا، مع كل اللي عملتيه.",
+  "yourChatWithYourCoachIsPrivate": "الشات بينك وبين مدربتك خاص.",
+  "yourCheckIns": "متابعاتك",
+  "yourAnswersAndWhatYourCoachReplied": "إجاباتك وردّ مدربتك",
+  "checkInHistory": "سجل المتابعات",
+  "checkInWeek": "متابعة {week}",
+  "@checkInWeek": {
+    "description": "Heading of one week in the check-in history; week is like 2026-W44.",
+    "placeholders": {
+      "week": {
+        "type": "String",
+        "example": "2026-W44"
+      }
+    }
+  },
+  "trainingValue": "التمرين: {value}",
+  "@trainingValue": {
+    "description": "One line of a check-in: how training went.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "Most"
+      }
+    }
+  },
+  "energyValue": "الطاقة: {value}",
+  "@energyValue": {
+    "description": "One line of a check-in: energy from low to high.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "eatingValue": "الأكل: {value}",
+  "@eatingValue": {
+    "description": "One line of a check-in: how eating went.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "painOrInjuryValue": "ألم أو إصابة: {value}",
+  "@painOrInjuryValue": {
+    "description": "One line of a check-in: yes or no.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "No"
+      }
+    }
+  },
+  "weightValue": "الوزن: {value}",
+  "@weightValue": {
+    "description": "One line of a check-in: the weight she chose to share.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "61.5 kg"
+      }
+    }
+  },
+  "valueKg": "{value} كجم",
+  "@valueKg": {
+    "description": "A weight in kilograms.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "61.5"
+      }
+    }
+  },
+  "workoutsFromThePlanValue": "تمارين الخطة: {value}",
+  "@workoutsFromThePlanValue": {
+    "description": "One line of a check-in: coach-plan workouts finished that week.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourCoachsReply": "ردّ مدربتك",
+  "yourReply": "ردّك",
+  "writeAReply": "اكتبي ردّ",
+  "sendReply": "ابعتي الرد",
+  "yourReplyWasSent": "الرد اتبعت.",
+  "noCheckInsYet": "لسه مفيش متابعات.",
+  "whatOwnHubDoesForYou": "Own Hub بتعمل إيه علشانك",
+  "clientsFindYouInFindACoach": "العميلات بيلاقوكي من \"دوّري على مدرّبة\".",
+  "plansChatAndCheckInsLiveIn": "الخطط والشات والمتابعات في مكان واحد.",
+  "contactDetailsStayProtectedYoursAndYour": "بيانات التواصل متحمية، بياناتك وبيانات عميلاتك.",
+  "ownHubStaffAreThereWhenYou": "فريق Own Hub موجود لما تحتاجي مساعدة.",
+  "disagreementsAreHandledFairlyWithBothSides": "الخلافات بتتحل بعدل، وبنسمع الطرفين.",
+  "takeClientsSetYourPackagesAndGet": "خدي عميلات، وحددي باقاتك، واتحاسبي مباشرة من عميلاتك.",
+  "checkInOfDate": "متابعة {date}",
+  "@checkInOfDate": {
+    "description": "Heading of one week in the check-in history; the date is the day she answered.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "28 Oct"
+      }
+    }
+  },
+  "takeClientsAndSetYourOwnPackages": "خدي عميلات، وحددي باقاتك بنفسك.",
+  "ownHubStaffAreHereToHelp": "فريق Own Hub موجود يساعدك في أي وقت.",
+  "ownHubNeverShowsYourNumberTo": "Own Hub مابتوريش رقمك لمدرّبتك أبدًا.",
+  "updateOwnHubToAskThisCoach": "حدّثي Own Hub عشان تطلبي المدرّبة دي",
+  "countPluralOneCountLiveOneTo": "{count, plural, one{جلسة فيديو مباشرة فردية في الشهر} two{جلستين فيديو مباشرتين فرديتين في الشهر} few{{count} جلسات فيديو مباشرة فردية في الشهر} many{{count} جلسة فيديو مباشرة فردية في الشهر} other{{count} جلسة فيديو مباشرة فردية في الشهر}}",
+  "@countPluralOneCountLiveOneTo": {
+    "description": "The first line of a coaching package: the live one-to-one video sessions she gets each month, always shown before the price.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "liveOneToOneVideoSessions": "جلسات فيديو مباشرة فردية",
+  "membersCanAskToJoinYourPackages_1gn5h": "الأعضاء يقدروا يطلبوا ينضمّوا لباقاتك. لما تقبلي، بيدفعولك على إنستا باي.",
+  "anOwnHubFeeIsDueSoon": "فيه رسوم Own Hub مستحقة قريب",
+  "anOwnHubFeeIsLate": "فيه رسوم Own Hub متأخرة",
+  "yourAccountGoesOnHoldOnDate": "حسابك هيقف يوم {date} لو لسه متدفعتش.",
+  "@yourAccountGoesOnHoldOnDate": {
+    "description": "Coach space, under a fee notice. The date is the day the account goes on hold.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "07/11/2026"
+      }
+    }
+  },
+  "sheNeedsToUpdateOwnHubBefore": "لازم تحدّث Own Hub قبل ما تقدر تدفع. وإحنا بلّغناها."
 }

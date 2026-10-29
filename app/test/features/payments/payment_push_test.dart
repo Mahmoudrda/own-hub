@@ -76,6 +76,23 @@ void main() {
     expect(screen('instapayRefundRequested'), PaymentPushScreen.coachInbox);
     expect(screen('instapayStatementReady'), PaymentPushScreen.statements);
     expect(screen('instapayFeeOverdue'), PaymentPushScreen.statements);
+    expect(screen('instapayFeeClaimRejected'), PaymentPushScreen.statements);
+    expect(screen('instapayFeeDueSoon'), PaymentPushScreen.statements);
+    expect(screen('instapayFeeDueToday'), PaymentPushScreen.statements);
+    expect(screen('instapayAccountActive'), PaymentPushScreen.coachInbox);
+  });
+
+  test('a push about one bill names the payment it was made for', () {
+    final push = paymentPushFor({
+      'kind': 'instapayFeeDueSoon',
+      'billId': 'abcDEF123',
+    })!;
+    expect(push.billId, 'abcDEF123');
+    expect(push.statementMonth, isNull);
+    expect(
+      paymentPushFor({'kind': 'instapayFeeDueSoon', 'billId': 'a/b'})!.billId,
+      isNull,
+    );
   });
 
   test('the ids travel as the server sends them and odd ones are dropped', () {

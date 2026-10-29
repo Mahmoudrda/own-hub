@@ -31,7 +31,9 @@ void main() {
           !f.path.endsWith('founder_video_player.dart') &&
           !f.path.endsWith('chat_media_bubbles.dart') &&
           !f.path.endsWith('chat_thread_view.dart') &&
-          !f.path.endsWith('voice_bubble.dart')) {
+          !f.path.endsWith('voice_bubble.dart') &&
+          // Reads a chosen video's length before upload; no playback, no controls.
+          !f.path.endsWith('coach_promo_card.dart')) {
         offenders.add(f.path);
       }
       if (text.contains('VideoProgressIndicator') ||

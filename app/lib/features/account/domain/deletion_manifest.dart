@@ -201,7 +201,11 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     path: 'users/{uid}/consents/{purpose}_{version}',
     owner: 'G1',
     method: DeletionMethod.groupHook,
-    note: "performed by G1's onAccountDelete(uid); G7 asserts completion",
+    note:
+        "performed by G1's onAccountDelete(uid); G7 asserts completion. One "
+        'exception: a coach\'s coach-terms records (with the agreement text '
+        'hash) are first copied to the server-only legalHolds/{uid} and kept '
+        'while she coaches and 5 years after, as the privacy policy says',
   ),
   DeletionRow(
     number: 11,
@@ -296,7 +300,11 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     method: DeletionMethod.prefixDelete,
     note:
         'her media, and a coach\'s application files (certificates, education, '
-        'feedback, transformations, photo); exports are row 25',
+        'feedback, transformations, photo); exports are row 25. One exception: '
+        'a coach\'s signed Coach Agreement (coach-docs/{uid}/agreement/) is '
+        'first copied to the server-only legal-hold/{uid}/agreement/ and kept '
+        'while she coaches and 5 years after, as the privacy policy says; a '
+        'daily job deletes it when that time is up',
   ),
   DeletionRow(
     number: 25,
@@ -638,7 +646,11 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     note:
         'a coach\'s evidence that a client agreed in writing to her photos '
         'being shown (the picture of the release), deleted with her coach '
-        'space; the release file is row 24',
+        'space, as are her marketing video records under '
+        'coachPrivate/{uid}/promoVideos; the release and the videos are '
+        'files under row 24. Her agreement state (coachPrivate/{uid}.agreement) '
+        'is first copied to legalHolds/{uid} and kept for the policy\'s '
+        'period, then deleted by a daily job',
   ),
   DeletionRow(
     number: 62,
@@ -646,7 +658,9 @@ const List<DeletionRow> kDeletionManifest = <DeletionRow>[
     owner: 'G12, called by G7',
     method: DeletionMethod.groupHook,
     note:
-        'her weekly check-in answers, deleted with the coaching they belong to',
+        'her weekly check-in answers, with the weight and workout count she '
+        'chose to share and her coach\'s reply, deleted with the coaching they '
+        'belong to',
   ),
 ];
 

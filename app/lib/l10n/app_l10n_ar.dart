@@ -2708,7 +2708,7 @@ class AppL10nAr extends AppL10n {
   String get package => 'الباقة';
 
   @override
-  String get packages => 'الاشتراكات';
+  String get packages => 'الباقات';
 
   @override
   String get paidOutOnThe1stOfEach => 'بيتحوّل يوم 1 من كل شهر.';
@@ -13338,10 +13338,6 @@ class AppL10nAr extends AppL10n {
       'صور العميلات بتتشارك بموافقتهم المكتوبة بس.';
 
   @override
-  String get clientsPayThroughOwnHubOnlyNever =>
-      'العميلات بيدفعوا من خلال Own Hub بس، مش برّاها.';
-
-  @override
   String get youCanWithdrawYourApplicationAtAny =>
       'تقدري تسحبي طلبك في أي وقت.';
 
@@ -13354,10 +13350,6 @@ class AppL10nAr extends AppL10n {
   @override
   String get iShareClientPhotosOnlyWithTheir =>
       'بشارك صور عميلاتي بموافقتهم المكتوبة بس';
-
-  @override
-  String get iWillNotTakePaymentFromClients =>
-      'مش هاخد فلوس من العميلات برّا Own Hub';
 
   @override
   String get reviewYourApplication => 'راجعي طلبك';
@@ -16567,4 +16559,430 @@ class AppL10nAr extends AppL10n {
   String deletingYourAccountRemovesItFromOur_6oxgn(String years, String days) {
     return 'حذف حسابك بيشيله من سيرفراتنا وبيمسح الموبايل ده. وفيه حاجات بنحتفظ بيها عن قصد: سجل مقفول إن بطاقتك اتستخدمت، عشان مايتفتحش بيها حساب تاني، والبلاغات بعد ما نشيل اسمك منها، وسجل إن الحذف حصل، ولو دفعتي لمدرّبة أو عضوة دفعتلك، سجلات الدفع وكشوف الرسوم وسجلات الإنذارات لمدة $years سنين، ومعرّف حسابك متبدّل بكود عشوائي. أما محاولات التحقق اللي مانجحتش وكود متشفّر للتثبيت ده، ومش مربوطين بأي حساب، فبيتمسحوا بعد $days يوم من آخر محاولة، وسجل مين من المراجِعات فتحت حالتك بيتمسح بعد سنة.';
   }
+
+  @override
+  String get askingToTalkOutsideOwnHub => 'بتطلب الكلام برّه Own Hub';
+
+  @override
+  String get thisCantIncludePhoneNumbersEmailsLinks =>
+      'مينفعش تكتبي هنا أرقام تليفون ولا إيميلات ولا لينكات ولا تطبيقات تانية. شيليها وجرّبي تاني.';
+
+  @override
+  String get aStaffAccountCantApplyToBe =>
+      'حساب الفريق مينفعش يقدّم كمدرّبة. استخدمي حساب تاني.';
+
+  @override
+  String get contactDetailsAndOutsideAppsArentAllowed =>
+      'مينفعش بيانات تواصل ولا تطبيقات تانية في الشات. ده بيحمي الاتنين، وOwn Hub بتراجع التكرار.';
+
+  @override
+  String get yourAccountIsOnHold => 'حسابك واقف دلوقتي';
+
+  @override
+  String get anOwnHubFeeIsOverdueYou =>
+      'فيه رسوم Own Hub متأخرة. تقدري تقري كل حاجة وتدفعي الرسوم. باقي الحاجات واقفة لحد ما الرسوم تتأكد.';
+
+  @override
+  String get payMyFee => 'ادفعي رسومي';
+
+  @override
+  String get yourCoachIsUnavailableForNowYour =>
+      'المدربة بتاعتك مش متاحة دلوقتي. خططك فاضلة هنا.';
+
+  @override
+  String get yourAccountIsOnHoldUntilYour =>
+      'حسابك واقف لحد ما رسوم Own Hub تتأكد.';
+
+  @override
+  String thisFeeIsLateYourAccountGoes(String date) {
+    return 'الرسوم دي اتأخرت. حسابك هيقف يوم $date لو لسه متدفعتش.';
+  }
+
+  @override
+  String unpaidOnDateYourAccountGoesOn(String date) {
+    return 'لو الرسوم متدفعتش يوم $date، حسابك هيقف. عميلاتك الحاليات بيفضلوا محتفظين بخططهم.';
+  }
+
+  @override
+  String get yourAccountIsOnHoldItEnds =>
+      'حسابك واقف. الوقف بيخلص لما Own Hub تأكد الرسوم دي.';
+
+  @override
+  String get feeBills => 'فواتير الرسوم';
+
+  @override
+  String feeBillOfDate(String date) {
+    return 'فاتورة رسوم يوم $date';
+  }
+
+  @override
+  String get noFeeBillYetOneIsMade =>
+      'لسه مفيش فاتورة رسوم. بتتعمل فاتورة كل ما دفع عميلة يتأكد.';
+
+  @override
+  String get oneBillForEachClientPayment => 'فاتورة لكل دفعة من عميلاتك';
+
+  @override
+  String ownHubTakesFullOfThePackage(String full, String invite) {
+    return 'Own Hub بتاخد $full من سعر الباقة من العميلات اللي بيلاقوكي في التطبيق، و$invite من العميلات اللي بتجيبيهم بكودك.';
+  }
+
+  @override
+  String payOwnHubItsShareWithinDays(String days, String hold) {
+    return 'ادفعي نصيب Own Hub خلال $days أيام من دفع عميلتك. لو فضل من غير دفع $hold أيام، حسابك بيتوقف لحد ما Own Hub تأكد الدفع.';
+  }
+
+  @override
+  String makeVideosShortVideosForOwnHub(String videos) {
+    return 'كل شهر، فيديوهات قصيرة لـ Own Hub (العدد: $videos). ومفيش أي عميلة بتظهر فيها.';
+  }
+
+  @override
+  String get keepEveryChatInsideTheAppAnd =>
+      'خلّي كل الكلام جوّه التطبيق، وماتطلبيش من عميلة رقم تليفونها أو أي بيانات تواصل تانية.';
+
+  @override
+  String doNotWorkWithAClientYou(String months) {
+    return 'ماتشتغليش برّه التطبيق مع عميلة اتعرفتي عليها من خلال Own Hub، أثناء التدريب وبعده بـ $months شهر.';
+  }
+
+  @override
+  String get readTheFullCoachAgreement => 'اقري اتفاقية المدرّبة كاملة';
+
+  @override
+  String get iHaveReadTheCoachAgreementAnd =>
+      'قريت اتفاقية المدرّبة وموافقة عليها، ومنها إني أخلّي عميلاتي جوّه التطبيق';
+
+  @override
+  String get yourSignedAgreement => 'اتفاقيتك الموقّعة';
+
+  @override
+  String get readTheNewCoachAgreementAndAccept =>
+      'اقري اتفاقية المدرّبة الجديدة ووافقي عليها. لحد ما Own Hub تتأكد من نسختك الموقّعة مش هتقدري تقبلي عميلات جداد. عميلاتك الحاليات مش متأثرين.';
+
+  @override
+  String get printTheAgreementAndSignItBy =>
+      'اطبعي الاتفاقية ووقّعيها بإيدك بإسمك الكامل ورقمك القومي والتاريخ. وبعدين ارفعي صورة للصفحة الموقّعة.';
+
+  @override
+  String get ownHubIsCheckingYourSignedCopy =>
+      'Own Hub بتراجع نسختك الموقّعة. هنبلغك لما تخلص.';
+
+  @override
+  String get yourSignedAgreementIsVerifiedYouCan =>
+      'اتفاقيتك الموقّعة اتأكدت. تقدري تقبلي عميلات جداد.';
+
+  @override
+  String ownHubNeedsANewSignedCopy(String reason) {
+    return 'Own Hub محتاجة نسخة موقّعة جديدة. السبب: $reason';
+  }
+
+  @override
+  String get readTheAgreement => 'اقري الاتفاقية';
+
+  @override
+  String get acceptTheAgreement => 'وافقي على الاتفاقية';
+
+  @override
+  String get downloadThePdf => 'نزّلي ملف PDF';
+
+  @override
+  String get uploadSignedCopy => 'ارفعي النسخة الموقّعة';
+
+  @override
+  String get uploadANewCopy => 'ارفعي نسخة جديدة';
+
+  @override
+  String get iHaveReadTheCoachAgreementAnd_egtgj =>
+      'قريت اتفاقية المدرّبة وموافقة عليها';
+
+  @override
+  String get yourSignedCopyWasSentOwnHub =>
+      'النسخة الموقّعة اتبعتت. Own Hub هتراجعها.';
+
+  @override
+  String get youCannotAcceptNewRequestsYetAccept =>
+      'لسه مش هتقدري تقبلي طلبات جديدة. وافقي على اتفاقية المدرّبة وارفعي نسختك الموقّعة من مساحة المدرّبة.';
+
+  @override
+  String get coachAgreement => 'اتفاقية المدرّبة';
+
+  @override
+  String clientsPayYouDirectlyOwnHubTakes(
+    String full,
+    String invite,
+    String days,
+  ) {
+    return 'العميلات بيدفعوا ليكي مباشرة. Own Hub بتاخد $full من سعر كل باقة، أو $invite من العميلات اللي بتجيبيهم بكودك. ادفعيها خلال $days أيام.';
+  }
+
+  @override
+  String get whereYourClientsPayYou => 'المكان اللي عميلاتك بيدفعوا ليكي فيه';
+
+  @override
+  String videosForOwnHubThisMonthCount(String count, String target) {
+    return 'فيديوهات لـ Own Hub الشهر ده: $count من $target';
+  }
+
+  @override
+  String get addAVideo => 'ضيفي فيديو';
+
+  @override
+  String eachVideoRunsFromMinSecondsTo(String min, String max) {
+    return 'كل فيديو من $min ثانية لـ $max دقايق. الستات بس هم اللي يظهروا فيه، ومفيش عميلة فيه، وكل اللي بتعرضيه أو بتشغليه يكون ملكك.';
+  }
+
+  @override
+  String get whatIsTheVideoAbout => 'الفيديو عن إيه؟';
+
+  @override
+  String get aWorkoutOrMovementTip => 'نصيحة تمرين أو حركة';
+
+  @override
+  String get aHealthyEatingIdea => 'فكرة أكل صحي';
+
+  @override
+  String get aTrainingMyth => 'خرافة شائعة في التمرين';
+
+  @override
+  String get howCoachingWithMeWorks => 'التدريب معايا بيمشي إزاي';
+
+  @override
+  String get aShortIntroductionOfMyself => 'تعريف قصير بنفسي';
+
+  @override
+  String get recordAVideo => 'صوّري فيديو';
+
+  @override
+  String get chooseFromYourVideos => 'اختاري من الفيديوهات بتاعتك';
+
+  @override
+  String get waitingForOwnHub => 'مستني Own Hub';
+
+  @override
+  String get approvedByOwnHub => 'Own Hub وافقت عليه';
+
+  @override
+  String needsChangesReason(String reason) {
+    return 'محتاج تعديل: $reason';
+  }
+
+  @override
+  String get needsChanges => 'محتاج تعديل';
+
+  @override
+  String theVideoIsShorterThanMinSeconds(String min) {
+    return 'الفيديو أقصر من $min ثانية.';
+  }
+
+  @override
+  String theVideoIsLongerThanMaxMinutes(String max) {
+    return 'الفيديو أطول من $max دقايق.';
+  }
+
+  @override
+  String get thatVideoFileIsTooBigTry =>
+      'ملف الفيديو ده كبير أوي. جربي واحد أقصر.';
+
+  @override
+  String get onlyVideosInTheUsualPhoneFormat =>
+      'ينفع بس الفيديوهات بالصيغة العادية للموبايل.';
+
+  @override
+  String get yourVideoWasSentOwnHubWill =>
+      'الفيديو اتبعت. Own Hub هتشوفه قريب.';
+
+  @override
+  String get noVideosYetThisMonth => 'لسه مفيش فيديوهات الشهر ده.';
+
+  @override
+  String get youAreDoneForThisMonthThank => 'خلصتي الشهر ده. شكرًا ليكي.';
+
+  @override
+  String get onlyOwnHubStaffSeeYourVideos =>
+      'فريق Own Hub بس هو اللي بيشوف فيديوهاتك لحد ما واحد يتوافق عليه. ومش بتظهر أبدًا في صفحتك العامة.';
+
+  @override
+  String get yourWeightInKgOptional => 'وزنك بالكيلو (اختياري)';
+
+  @override
+  String get shareMyWeightWithMyCoach => 'عايزة أشارك وزني مع مدرّبتي';
+
+  @override
+  String get shareTheWorkoutsIFinishedThisWeek =>
+      'عايزة أشارك التمارين اللي خلصتها الأسبوع ده';
+
+  @override
+  String workoutsFromYourCoachsPlanThisWeek(String count) {
+    return 'تمارين خطة مدربتك الأسبوع ده: $count';
+  }
+
+  @override
+  String get onlyYourCoachSeesTheseAndOnly =>
+      'مدربتك بس هي اللي بتشوفهم، وبس اللي بتعلّمي عليه.';
+
+  @override
+  String enterAWeightBetweenLowAndHigh(String low, String high) {
+    return 'اكتبي وزن بين $low و$high كيلو.';
+  }
+
+  @override
+  String get whyStayInOwnHub => 'ليه تفضلي في Own Hub';
+
+  @override
+  String get yourPlansStayHereWithEverythingYou =>
+      'خططك فاضلة هنا، مع كل اللي عملتيه.';
+
+  @override
+  String get yourChatWithYourCoachIsPrivate => 'الشات بينك وبين مدربتك خاص.';
+
+  @override
+  String get yourCheckIns => 'متابعاتك';
+
+  @override
+  String get yourAnswersAndWhatYourCoachReplied => 'إجاباتك وردّ مدربتك';
+
+  @override
+  String get checkInHistory => 'سجل المتابعات';
+
+  @override
+  String checkInWeek(String week) {
+    return 'متابعة $week';
+  }
+
+  @override
+  String trainingValue(String value) {
+    return 'التمرين: $value';
+  }
+
+  @override
+  String energyValue(String value) {
+    return 'الطاقة: $value';
+  }
+
+  @override
+  String eatingValue(String value) {
+    return 'الأكل: $value';
+  }
+
+  @override
+  String painOrInjuryValue(String value) {
+    return 'ألم أو إصابة: $value';
+  }
+
+  @override
+  String weightValue(String value) {
+    return 'الوزن: $value';
+  }
+
+  @override
+  String valueKg(String value) {
+    return '$value كجم';
+  }
+
+  @override
+  String workoutsFromThePlanValue(String value) {
+    return 'تمارين الخطة: $value';
+  }
+
+  @override
+  String get yourCoachsReply => 'ردّ مدربتك';
+
+  @override
+  String get yourReply => 'ردّك';
+
+  @override
+  String get writeAReply => 'اكتبي ردّ';
+
+  @override
+  String get sendReply => 'ابعتي الرد';
+
+  @override
+  String get yourReplyWasSent => 'الرد اتبعت.';
+
+  @override
+  String get noCheckInsYet => 'لسه مفيش متابعات.';
+
+  @override
+  String get whatOwnHubDoesForYou => 'Own Hub بتعمل إيه علشانك';
+
+  @override
+  String get clientsFindYouInFindACoach =>
+      'العميلات بيلاقوكي من \"دوّري على مدرّبة\".';
+
+  @override
+  String get plansChatAndCheckInsLiveIn =>
+      'الخطط والشات والمتابعات في مكان واحد.';
+
+  @override
+  String get contactDetailsStayProtectedYoursAndYour =>
+      'بيانات التواصل متحمية، بياناتك وبيانات عميلاتك.';
+
+  @override
+  String get ownHubStaffAreThereWhenYou =>
+      'فريق Own Hub موجود لما تحتاجي مساعدة.';
+
+  @override
+  String get disagreementsAreHandledFairlyWithBothSides =>
+      'الخلافات بتتحل بعدل، وبنسمع الطرفين.';
+
+  @override
+  String get takeClientsSetYourPackagesAndGet =>
+      'خدي عميلات، وحددي باقاتك، واتحاسبي مباشرة من عميلاتك.';
+
+  @override
+  String checkInOfDate(String date) {
+    return 'متابعة $date';
+  }
+
+  @override
+  String get takeClientsAndSetYourOwnPackages =>
+      'خدي عميلات، وحددي باقاتك بنفسك.';
+
+  @override
+  String get ownHubStaffAreHereToHelp => 'فريق Own Hub موجود يساعدك في أي وقت.';
+
+  @override
+  String get ownHubNeverShowsYourNumberTo =>
+      'Own Hub مابتوريش رقمك لمدرّبتك أبدًا.';
+
+  @override
+  String get updateOwnHubToAskThisCoach =>
+      'حدّثي Own Hub عشان تطلبي المدرّبة دي';
+
+  @override
+  String countPluralOneCountLiveOneTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count جلسة فيديو مباشرة فردية في الشهر',
+      many: '$count جلسة فيديو مباشرة فردية في الشهر',
+      few: '$count جلسات فيديو مباشرة فردية في الشهر',
+      two: 'جلستين فيديو مباشرتين فرديتين في الشهر',
+      one: 'جلسة فيديو مباشرة فردية في الشهر',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get liveOneToOneVideoSessions => 'جلسات فيديو مباشرة فردية';
+
+  @override
+  String get membersCanAskToJoinYourPackages_1gn5h =>
+      'الأعضاء يقدروا يطلبوا ينضمّوا لباقاتك. لما تقبلي، بيدفعولك على إنستا باي.';
+
+  @override
+  String get anOwnHubFeeIsDueSoon => 'فيه رسوم Own Hub مستحقة قريب';
+
+  @override
+  String get anOwnHubFeeIsLate => 'فيه رسوم Own Hub متأخرة';
+
+  @override
+  String yourAccountGoesOnHoldOnDate(String date) {
+    return 'حسابك هيقف يوم $date لو لسه متدفعتش.';
+  }
+
+  @override
+  String get sheNeedsToUpdateOwnHubBefore =>
+      'لازم تحدّث Own Hub قبل ما تقدر تدفع. وإحنا بلّغناها.';
 }

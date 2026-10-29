@@ -38,6 +38,7 @@ import '../../../ui/app_list_item.dart';
 import '../../../ui/app_nav_bar.dart';
 import '../../../ui/app_scaffold.dart';
 import '../../../ui/app_split_row.dart';
+import '../../private_coaching/domain/coach_agreement.dart';
 import 'coach_setup_scaffold.dart';
 import 'coach_view_models.dart';
 
@@ -92,7 +93,11 @@ class CoachEarningsView extends StatelessWidget {
             AppEmptyState(
               icon: Icons.payments,
               title: l10n.earningsThisMonth,
-              body: l10n.youKeep80TheFirstPayoutLands,
+              body: l10n.clientsPayYouDirectlyOwnHubTakes(
+                CoachAgreementFacts.marketplacePercent,
+                CoachAgreementFacts.invitePercent,
+                '${CoachAgreementFacts.payWithinDays}',
+              ),
             ),
 
           // Where her money would go. `K05` is the screen that sets it — the
@@ -107,7 +112,7 @@ class CoachEarningsView extends StatelessWidget {
             title: l10n.payoutMethod,
             subtitle: model.knowsDestination
                 ? l10n.vodafoneCashChangeAnyTime
-                : l10n.paidOutOnThe1stOfEach,
+                : l10n.whereYourClientsPayYou,
             trailing: const Icon(
               Icons.chevron_right,
               size: 22,

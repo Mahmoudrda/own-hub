@@ -16,6 +16,7 @@ import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
 import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
+import '../../../../ui/app_chevron.dart';
 import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_overflow_menu.dart';
 import '../../../../ui/app_scaffold.dart';
@@ -28,10 +29,12 @@ import '../../domain/coaching_contract.dart';
 import '../../domain/coaching_failure.dart';
 import '../../domain/session_link.dart';
 import '../../domain/subscription.dart';
+import '../chat/check_in_history.dart';
 import '../coach/coach_text.dart';
 import '../end_coaching_sheet.dart';
 import '../member/coach_card.dart' show CoachPhoto;
 import '../member/report_coach_sheet.dart';
+import '../why_stay_note.dart';
 
 /// Whether the coaching is over and the screen is read only.
 bool coachingEnded(Subscription s) =>
@@ -69,6 +72,7 @@ class MyCoachView extends StatefulWidget {
     required this.subscription,
     this.plans = const <CoachPlan>[],
     this.hasUnread = false,
+    this.coachAway = false,
     this.now,
     this.onMessage,
     this.onOpenPlan,
@@ -85,6 +89,9 @@ class MyCoachView extends StatefulWidget {
   /// Every plan her coaches shared; the ones from this coach are listed.
   final List<CoachPlan> plans;
   final bool hasUnread;
+
+  /// Her coach's account is on hold: a neutral line, nothing more.
+  final bool coachAway;
   final DateTime Function()? now;
 
   /// Opens the chat. Null hides the button.
@@ -267,7 +274,10 @@ class _MyCoachViewState extends State<MyCoachView> {
               ),
               children: [
                 _header(l10n, coach, name),
-                if (widget.payCard != null && !_ended && !_requested && !_closed)
+                if (widget.payCard != null &&
+                    !_ended &&
+                    !_requested &&
+                    !_closed)
                   widget.payCard!,
                 if (_ended)
                   AppCard(
@@ -292,6 +302,17 @@ class _MyCoachViewState extends State<MyCoachView> {
                 else if (_closed)
                   ..._closedNote(l10n, name)
                 else if (_active) ...[
+                  if (widget.coachAway)
+                    AppCard(
+                      variant: AppCardVariant.filled,
+                      children: [
+                        Text(
+                          l10n.yourCoachIsUnavailableForNowYour,
+                          key: const ValueKey('coach-away'),
+                          style: AppText.bodyM,
+                        ),
+                      ],
+                    ),
                   if (widget.onMessage != null)
                     AppButton(
                       l10n.message,
@@ -316,6 +337,7 @@ class _MyCoachViewState extends State<MyCoachView> {
                     ),
                     for (final s in sessions) _sessionRow(l10n, s),
                   ],
+                  const WhyStayNote(),
                 ],
                 if (_error.isNotEmpty)
                   Semantics(
@@ -325,6 +347,16 @@ class _MyCoachViewState extends State<MyCoachView> {
                       key: const ValueKey('coach-error'),
                       style: AppText.bodyM.copyWith(color: AppColors.error),
                     ),
+                  ),
+                if ((_active || _ended) && widget.subscription.relId.isNotEmpty)
+                  AppListItem(
+                    key: const ValueKey('coach-check-ins'),
+                    variant: AppCardVariant.filled,
+                    title: l10n.yourCheckIns,
+                    subtitle: l10n.yourAnswersAndWhatYourCoachReplied,
+                    leading: const Icon(Icons.fact_check_outlined),
+                    trailing: const AppChevron(),
+                    onTap: _openCheckIns,
                   ),
                 if (_active || _ended) ...[
                   Semantics(
@@ -340,6 +372,21 @@ class _MyCoachViewState extends State<MyCoachView> {
       },
     );
   }
+
+  void _openCheckIns() => Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (context) => AppScaffold(
+        showArt: false,
+        appBar: AppTopBar(
+          title: AppL10n.of(context).yourCheckIns,
+          onBack: () => Navigator.of(context).maybePop(),
+        ),
+        children: [
+          CheckInHistory(relId: widget.subscription.relId, canReply: false),
+        ],
+      ),
+    ),
+  );
 
   List<Widget> _waiting(AppL10n l10n, String name) => [
     Text(

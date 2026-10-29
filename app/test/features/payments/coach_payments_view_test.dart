@@ -719,7 +719,7 @@ void main() {
       expect(find.text('How much did you receive?'), findsOneWidget);
     });
 
-    testWidgets('her proof is fetched only when asked, by its path', (
+    testWidgets('the coach never gets a button to see the client proof', (
       tester,
     ) async {
       final fake = await openInbox(tester, [
@@ -727,30 +727,13 @@ void main() {
       ]);
       fake.partyImageBytes = onePixel;
       await tester.pumpAndSettle();
-      expect(fake.names, isNot(contains('partyImage')));
-      await tester.tap(find.byKey(const ValueKey('see-proof')));
-      await tester.pumpAndSettle();
-      expect(fake.names.where((n) => n == 'partyImage'), hasLength(1));
-      expect(fake.calls.last.$2['path'], 'payment-proofs/p1/client-a-1.jpg');
-      expect(find.byKey(const ValueKey('proof-picture')), findsOneWidget);
-      expect(find.byKey(const ValueKey('proof-failed')), findsNothing);
-    });
-
-    testWidgets('an empty or refused picture says it could not be loaded', (
-      tester,
-    ) async {
-      final fake = await openInbox(tester, [
-        waitingPayment('p1', shots: ['a.jpg', 'b.jpg']),
-      ]);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('see-proof')));
-      await tester.pumpAndSettle();
-      expect(fake.names.where((n) => n == 'partyImage'), hasLength(2));
+      expect(find.byKey(const ValueKey('see-proof')), findsNothing);
       expect(find.byKey(const ValueKey('proof-picture')), findsNothing);
-      expect(find.byKey(const ValueKey('proof-failed')), findsOneWidget);
+      expect(fake.names, isNot(contains('partyImage')));
+      expect(find.byKey(const ValueKey('look-for')), findsOneWidget);
     });
 
-    testWidgets('no pictures on the payment: no button to see them', (
+    testWidgets('no pictures on the payment: still no button to see them', (
       tester,
     ) async {
       await openInbox(tester, [waitingPayment('p1')]);
@@ -976,14 +959,14 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.text('Payments'), given ? findsOneWidget : findsNothing);
           expect(
-            find.text('Fee statements'),
+            find.text('Fee bills'),
             given ? findsOneWidget : findsNothing,
           );
           expect(find.text('My InstaPay address'), findsNothing);
           if (given) {
             await tester.tap(find.text('Payments'));
             expect(opened, 1);
-            await tester.tap(find.text('Fee statements'));
+            await tester.tap(find.text('Fee bills'));
             expect(statements, 1);
           }
           await tester.pumpWidget(const SizedBox());

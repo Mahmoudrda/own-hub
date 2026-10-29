@@ -22,7 +22,11 @@
 // a real person's: no phone number, and the only names are Rahma's own on her
 // frame and the made-up coach. The coach, her plan and the chat are a
 // synthetic fixture behind the fake repository the coaching tests use.
-// Payments are off in the shipped build, and nothing here shows one.
+// Shots 10 to 14 show coaching with payments on, as the release ships: Find
+// a coach, a coach's profile (live sessions first), My coach with its Pay
+// button, the payment instructions and a coach's plan in Train. The payment is
+// a fake behind the fake payments repository, with a made-up InstaPay
+// address.
 //
 // In the normal suite it renders every set and fails on any exception or
 // overflow, writing nothing. To write the PNGs, give it a folder (docs/ lives
@@ -46,6 +50,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:own_hub/app_state/account_data.dart';
 import 'package:own_hub/app_state/eat_state.dart';
+import 'package:own_hub/app_state/payments_switch.dart';
 import 'package:own_hub/app_state/private_coaching_state.dart';
 import 'package:own_hub/app_state/workout_session_state.dart';
 import 'package:own_hub/domain/clock/app_clock.dart';
@@ -53,7 +58,10 @@ import 'package:own_hub/features/account/domain/dietary_profile.dart';
 import 'package:own_hub/features/eat/data/seeded_recipe_library.dart';
 import 'package:own_hub/features/eat/domain/meal_images.dart';
 import 'package:own_hub/features/eat/presentation/recipe_labels.dart';
+import 'package:own_hub/features/payments/data/payments_hub.dart';
+import 'package:own_hub/features/payments/domain/payment_models.dart';
 import 'package:own_hub/features/private_coaching/domain/chat_message.dart';
+import 'package:own_hub/features/private_coaching/domain/coach_profile.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
 import 'package:own_hub/features/private_coaching/domain/subscription.dart';
@@ -76,6 +84,8 @@ import '../features/private_coaching/chat/chat_support.dart' show line, rel;
 import '../features/private_coaching/support/fake_coaching_repository.dart'
     show FakeCoachingRepository, Feed;
 import '../features/private_coaching/support/fixtures.dart' show coach, sub;
+import '../features/payments/support/fake_payments_repository.dart'
+    show FakePaymentsRepository;
 import '../helpers/pause_menu.dart' show finishEarly;
 import '../qa/round1/font_harness.dart';
 
@@ -593,6 +603,89 @@ class _Coaching {
   }
 }
 
+/// The payments repository for the store pages: the fake the payment tests
+/// use, but with a made-up coach and a made-up InstaPay address.
+class _ShotPayments extends FakePaymentsRepository {
+  @override
+  Future<Payment> createPayment({
+    required String subId,
+    required String idempotencyKey,
+    String? topUpOf,
+  }) async => Payment(
+    id: 'p1',
+    clientUid: 'me',
+    coachUid: 'c1',
+    subId: subId,
+    status: PaymentStatus.awaitingPayment,
+    amountPiasters: 115037,
+    reference: 'OH-4821',
+    address: const CoachAddress(
+      address: 'coach.nour@instapay',
+      accountName: 'Coach Nour',
+    ),
+    createdAt: pinnedMorning.toUtc(),
+    expiresAt: pinnedMorning.toUtc().add(const Duration(hours: 24)),
+  );
+}
+
+/// Two made-up coaches with a package each, as the directory and a profile
+/// show them. The text is data, so each language gets its own.
+void _market(_Coaching c, String lang) {
+  final ar = lang == 'ar';
+  CoachProfile who(
+    String uid,
+    String name,
+    String headline,
+    int from,
+  ) => CoachProfile(
+    uid: uid,
+    displayName: name,
+    headline: headline,
+    languages: const <String>['en', 'ar'],
+    specialties: const <String>['strength', 'fatLoss'],
+    trainsWhere: const <String>['home'],
+    approach: ar
+        ? 'خطة بسيطة على قد أسبوعك، ومتابعة معاكي في الشات.'
+        : 'A simple plan around your week, and I check in with you in chat.',
+    yearsExperience: 6,
+    badges: const <String>['verifiedCoach'],
+    stats: const CoachStats(clientsCoached: 24),
+    fromMonthlyEgp: from,
+    published: true,
+    acceptingClients: true,
+    replyHours: 12,
+  );
+  c.repo.coaches.value = [
+    who(
+      'c1',
+      ar ? 'نور' : 'Coach Nour',
+      ar ? 'قوّة وثبات' : 'Strength, steady',
+      1150,
+    ),
+    who(
+      'c2',
+      ar ? 'سلمى' : 'Coach Salma',
+      ar ? 'نزول وزن بهدوء' : 'Gentle fat loss',
+      1500,
+    ),
+  ];
+  c.repo.packages['c1'] = Feed<List<CoachPackage>>(<CoachPackage>[
+    CoachPackage(
+      id: 'a',
+      title: ar ? 'أربع أسابيع معايا' : 'Four weeks with me',
+      description: ar
+          ? 'خطة تمرين على مقاسك ومتابعة أسبوعية وجلسات فيديو معايا.'
+          : 'A training plan made for you, weekly check-ins and video sessions with me.',
+      liveSessionsPerMonth: 4,
+      sessionMinutes: 45,
+      checkInsPerWeek: 2,
+      priceFinalEgp: 1150,
+      active: true,
+    ),
+  ]);
+  c.repo.packages['c2'] = Feed<List<CoachPackage>>(const <CoachPackage>[]);
+}
+
 Future<void> _render(
   WidgetTester tester,
   _DeviceSet set,
@@ -619,7 +712,9 @@ Future<void> _render(
     addTearDown(() => AppClock.debugNow = null);
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
 
-    SharedPreferences.setMockInitialValues(const <String, Object>{});
+    SharedPreferences.setMockInitialValues(const <String, Object>{
+      'payments.learnAsked': true,
+    });
     await const ThisPhoneWipe().clearPersistence();
     AppRouter.featureFlags = FeatureFlags.shipped.with_(const {
       // This harness only. The shipped flags keep it on.
@@ -785,8 +880,77 @@ Future<void> _render(
         await _settle(tester);
         await _shoot(tester, set, lang, '09-coach-plan');
       }
+      // 14. The coach's plan in Train.
+      await _open(tester, 'R01');
+      for (final lang in const ['en', 'ar']) {
+        locale.value = Locale(lang);
+        coaching.speak(lang);
+        await _settle(tester);
+        await _shoot(tester, set, lang, '14-coach-plan-train');
+      }
+      await _home(tester);
       locale.value = const Locale('en');
       PrivateCoachingState.instance.stop();
+      await _settle(tester);
+
+      // 10 to 13. Coaching with payments on: Find a coach, her profile with
+      // the live sessions first, My coach with its Pay button, then the
+      // payment instructions.
+      PaymentsSwitch.enabled = true;
+      PaymentsHub.override = _ShotPayments();
+      addTearDown(() {
+        PaymentsHub.override = null;
+        PaymentsSwitch.resetForTest();
+      });
+      final market = _Coaching();
+      _market(market, 'en');
+      market.repo.relationships.value = [];
+      PrivateCoachingState.instance.start(
+        market.repo,
+        now: () => pinnedMorning,
+      );
+      await _settle(tester);
+      Future<void> shootMarket(String name) async {
+        for (final lang in const ['en', 'ar']) {
+          locale.value = Locale(lang);
+          _market(market, lang);
+          await _settle(tester);
+          await _shoot(tester, set, lang, name);
+        }
+        locale.value = const Locale('en');
+        _market(market, 'en');
+        await _settle(tester);
+      }
+
+      await _open(tester, 'H01');
+      await shootMarket('10-find-a-coach');
+      await _home(tester);
+      await _open(tester, 'H02', arguments: 'c1');
+      await shootMarket('11-coach-profile');
+      await _home(tester);
+      market.repo.clientSubs.value = <Subscription>[
+        sub(
+          's2',
+          SubscriptionStatus.awaitingPayment,
+          coachUid: 'c1',
+          payBy: pinnedMorning.add(const Duration(days: 7)),
+          price: 1150,
+        ),
+      ];
+      await _open(tester, 'H05');
+      await shootMarket('12-my-coach');
+      await tester.tap(find.byKey(const ValueKey('pay-now')).hitTestable());
+      await _settle(tester);
+      for (final lang in const ['en', 'ar']) {
+        locale.value = Locale(lang);
+        await _settle(tester);
+        await _shoot(tester, set, lang, '13-payment-instructions');
+      }
+      locale.value = const Locale('en');
+      PrivateCoachingState.instance.stop();
+      PaymentsHub.override = null;
+      PaymentsSwitch.resetForTest();
+      await _home(tester);
       await _settle(tester);
 
       // 07. You, after the rest of her week's sessions, so it shows what she

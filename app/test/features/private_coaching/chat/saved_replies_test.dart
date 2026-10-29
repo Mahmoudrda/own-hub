@@ -162,7 +162,10 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(find.text(AppL10nEn().phoneNumbersCantBeSentInThe), findsOneWidget);
+    expect(
+      find.text(AppL10nEn().contactDetailsAndOutsideAppsArentAllowed),
+      findsOneWidget,
+    );
     expect(await store.load('me', const <String>[]), isEmpty);
   });
 

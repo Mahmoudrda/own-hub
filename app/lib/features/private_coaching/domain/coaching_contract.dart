@@ -401,6 +401,7 @@ abstract final class CoachingEnums {
     'impersonation',
     'self_harm',
     'off_platform_payment',
+    'contact_sharing',
     'unsafe_advice',
     'other',
   ];
@@ -417,6 +418,7 @@ abstract final class CoachingEnums {
     'coachingRequest',
     'requestAnswered',
     'requestExpired',
+    'updateToContinue',
     'paymentApproved',
     'paymentRejected',
     'coachingStarted',
@@ -427,8 +429,15 @@ abstract final class CoachingEnums {
     'checkInDue',
     'checkInFollowUp',
     'coachingEnded',
+    'coachBack',
     'payoutRecorded',
     'portfolioDecision',
+    'agreementDecision',
+    'coachEndsSoon',
+    'checkInAnswered',
+    'checkInReply',
+    'promoDecision',
+    'promoReminder',
   ];
   static const List<String> reportDecision = <String>[
     'dismiss',
@@ -550,6 +559,12 @@ abstract final class CoachingCallables {
   static const String decidePortfolioMedia = 'decide_portfolio_media';
   static const String submitCheckIn = 'submit_check_in';
   static const String coachNeedsAttention = 'coach_needs_attention';
+  static const String addPromoVideo = 'add_promo_video';
+  static const String myPromoVideos = 'my_promo_videos';
+  static const String listPromoVideos = 'list_promo_videos';
+  static const String decidePromoVideo = 'decide_promo_video';
+  static const String listCheckIns = 'list_check_ins';
+  static const String replyCheckIn = 'reply_check_in';
   static const String reviewClientHealth = 'review_client_health';
   static const String submitPaymentProof = 'submit_payment_proof';
   static const String listPaymentProofs = 'list_payment_proofs';
@@ -568,12 +583,20 @@ abstract final class CoachingCallables {
   static const String respondLiveSession = 'respond_live_session';
   static const String markSessionDone = 'mark_session_done';
   static const String recordSignupRole = 'record_signup_role';
+  static const String acceptCoachTerms = 'accept_coach_terms';
+  static const String submitCoachAgreement = 'submit_coach_agreement';
+  static const String listCoachAgreements = 'list_coach_agreements';
+  static const String decideCoachAgreement = 'decide_coach_agreement';
   static const String listCoachingReports = 'list_coaching_reports';
   static const String decideCoachingReport = 'decide_coaching_report';
   static const List<String> all = <String>[
     submitCoachApplication,
     listCoachApplications,
     decideCoachApplication,
+    acceptCoachTerms,
+    submitCoachAgreement,
+    listCoachAgreements,
+    decideCoachAgreement,
     suspendCoach,
     updateCoachProfile,
     requestPayoutAccountChange,
@@ -612,6 +635,12 @@ abstract final class CoachingCallables {
     submitCheckIn,
     reviewClientHealth,
     coachNeedsAttention,
+    addPromoVideo,
+    myPromoVideos,
+    listPromoVideos,
+    decidePromoVideo,
+    listCheckIns,
+    replyCheckIn,
   ];
 }
 
@@ -641,6 +670,8 @@ enum CoachingRefusal {
   badRequest('bad_request'),
   certificateNotUploaded('certificate_not_uploaded'),
   tooManyCertificates('too_many_certificates'),
+  agreementNeeded('agreement_needed'),
+  agreementNotUploaded('agreement_not_uploaded'),
   mediaNotFound('media_not_found'),
   tooManyMedia('too_many_media'),
   inviteInvalid('invite_invalid'),
@@ -652,6 +683,8 @@ enum CoachingRefusal {
   fileNotUploaded('file_not_uploaded'),
   applicationNotFound('application_not_found'),
   coachSuspended('coach_suspended'),
+  appUpdateNeeded('app_update_needed'),
+  clientUpdateNeeded('client_update_needed'),
   coachUnavailable('coach_unavailable'),
   packageNotFound('package_not_found'),
   tooManyPackages('too_many_packages'),
@@ -678,6 +711,9 @@ enum CoachingRefusal {
   sessionNotStarted('session_not_started'),
   reportNotFound('report_not_found'),
   staffIsSubject('staff_is_subject'),
+  containsContact('contains_contact'),
+  staffAccount('staff_account'),
+  coachOnHold('coach_on_hold'),
 
   /// Local: the text failed the chat screen before it was sent.
   messageBlocked('message_blocked'),

@@ -19,8 +19,8 @@ class PackagePreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final facts = <String>[
+      l10n.countPluralOneCountLiveOneTo(package.liveSessionsPerMonth),
       l10n.daysPluralOne1DayOtherDays(package.durationDays),
-      l10n.countPluralOne1LiveSessionA(package.liveSessionsPerMonth),
       l10n.countMin(countLabel(package.sessionMinutes)),
     ].join(' · ');
     return AppCard(

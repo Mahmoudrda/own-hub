@@ -30,6 +30,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/flags/feature_flags.dart';
 import '../../../domain/identity/user_roles.dart';
+import '../../../app_state/payments_switch.dart';
 import '../../../l10n/app_l10n.dart';
 import '../../../routing/app_router.dart';
 import '../../../theme/app_tokens.dart';
@@ -127,7 +128,9 @@ class _RoleViewState extends State<RoleView> {
           _RoleCard(
             icon: Icons.sports_gymnastics,
             title: l10n.iCoachWomen,
-            body: l10n.takeClientsSetYourPackagesKeep80,
+            body: PaymentsSwitch.live
+                ? l10n.takeClientsSetYourPackagesAndGet
+                : l10n.takeClientsAndSetYourOwnPackages,
             selected: _role == SignupRole.coach,
             onTap: () => setState(() => _role = SignupRole.coach),
           ),

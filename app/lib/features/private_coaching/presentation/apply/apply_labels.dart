@@ -72,7 +72,7 @@ String trainsWhereLabel(AppL10n l10n, String id) => switch (id) {
 String ruleLabel(AppL10n l10n, String id) => switch (id) {
   'accurateInfo' => l10n.everythingIWroteIsAccurate,
   'clientPhotoConsent' => l10n.iShareClientPhotosOnlyWithTheir,
-  'noOffPlatformPayment' => l10n.iWillNotTakePaymentFromClients,
+  'noOffPlatformPayment' => l10n.iHaveReadTheCoachAgreementAnd,
   _ => id,
 };
 

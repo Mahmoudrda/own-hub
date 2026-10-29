@@ -17,7 +17,9 @@ import 'package:own_hub/features/private_coaching/presentation/chat/chat_sheets.
 import 'package:own_hub/features/private_coaching/data/coaching_repository.dart';
 import 'package:own_hub/features/private_coaching/data/firestore_coaching_repository.dart';
 import 'package:own_hub/features/private_coaching/domain/chat_message.dart';
+import 'package:own_hub/features/private_coaching/domain/check_in.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_application.dart';
+import 'package:own_hub/features/private_coaching/domain/promo_video.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_plan.dart';
 import 'package:own_hub/features/private_coaching/domain/coach_profile.dart';
 import 'package:own_hub/features/private_coaching/domain/coaching_contract.dart';
@@ -191,6 +193,42 @@ void main() {
     List<dynamic> keysOf(String callable) =>
         callables[callable]['requestKeys'] as List<dynamic>;
 
+    test('add_promo_video, reply_check_in and the check-in answers', () {
+      expect(
+        promoRequest(
+          mediaRef: 'm',
+          topic: PromoTopic.introduction,
+          seconds: 60,
+        ).keys,
+        _sameKeys(keysOf('add_promo_video')),
+      );
+      expect(
+        replyRequest(relId: 'r', weekKey: 'w', text: 't').keys,
+        _sameKeys(keysOf('reply_check_in')),
+      );
+      expect(keysOf('list_check_ins'), <Object?>['relId']);
+      expect(keysOf('my_promo_videos'), isEmpty);
+      for (final topic in PromoTopic.values) {
+        expect(
+          (callables['add_promo_video']['note'] as String).contains(topic.wire),
+          isTrue,
+          reason: topic.wire,
+        );
+      }
+      const shared = CheckInAnswers(
+        training: TrainingAnswer.all,
+        energy: 3,
+        food: 3,
+        pain: false,
+        weightKg: 60,
+        workoutsDone: 1,
+      );
+      final note = callables['submit_check_in']['note'] as String;
+      for (final key in shared.toWire().keys) {
+        expect(note.contains(key), isTrue, reason: key);
+      }
+    });
+
     test('submit_coach_application', () {
       expect(
         CoachApplication().toRequest(locale: 'en').keys,
@@ -218,6 +256,8 @@ void main() {
           intake: const Intake(),
           consent: const <String, Object?>{},
           locale: 'en',
+          inviteCode: 'ABCD2345',
+          appBuild: 433440,
         ).keys,
         _sameKeys(keysOf('request_coaching')),
       );
@@ -509,6 +549,7 @@ void main() {
         'testimonials',
         'transformations',
         'gallery',
+        'agreement',
       });
       expect(
         coachDocPath(

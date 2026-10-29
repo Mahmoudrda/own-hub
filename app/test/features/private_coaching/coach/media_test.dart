@@ -40,7 +40,7 @@ Future<CoachRepo> _open(
   final repo = CoachRepo()
     ..coaches.value = [coach('me', 'Coach Sara')]
     ..media.value = media;
-  tester.view.physicalSize = const Size(390, 3600);
+  tester.view.physicalSize = const Size(390, 5400);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(

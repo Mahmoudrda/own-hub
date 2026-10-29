@@ -471,6 +471,7 @@ class Relationship {
     this.lastMessageAt,
     this.lastMessage,
     this.unreadFor = const <String, int>{},
+    this.coachAway = false,
   });
 
   final String id;
@@ -478,6 +479,10 @@ class Relationship {
   final String clientUid;
   final RelationshipStatus status;
   final bool chatOpen;
+
+  /// The server sets this while the coach's account is on hold (an unpaid
+  /// Own Hub fee). The client is told only that she is unavailable for now.
+  final bool coachAway;
   final String? activeSubId;
   final DateTime? lastMessageAt;
 
@@ -510,6 +515,7 @@ class Relationship {
       lastMessageAt: readTime(map['lastMessageAt']),
       lastMessage: LastMessage.fromMap(map['lastMessage']),
       unreadFor: _readCounts(map['unreadFor']),
+      coachAway: readBool(map['coachAway']),
     );
   }
 

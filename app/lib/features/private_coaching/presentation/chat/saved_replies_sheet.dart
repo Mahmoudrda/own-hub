@@ -55,7 +55,8 @@ class _ReplyEditorState extends State<_ReplyEditor> {
 
   String _refusalText(AppL10n l10n, ChatScreenReason reason) =>
       switch (reason) {
-        ChatScreenReason.contact => l10n.phoneNumbersCantBeSentInThe,
+        ChatScreenReason.contact =>
+          l10n.contactDetailsAndOutsideAppsArentAllowed,
         ChatScreenReason.payment => l10n.paymentDetailsCantBeSharedInThe,
         ChatScreenReason.link => l10n.linksCantBeSentInTheChat,
         ChatScreenReason.abuse => l10n.someWordsInThisMessageArentAllowed,

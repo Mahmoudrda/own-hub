@@ -2,6 +2,8 @@
 /// way into her dashboard, portfolio, packages and application.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../app_state/app_changes.dart';
@@ -9,20 +11,26 @@ import '../../../../app_state/private_coaching_state.dart';
 import '../../../../domain/format/number_label.dart';
 import '../../../../l10n/app_l10n.dart';
 import '../../../../theme/app_tokens.dart';
+import '../../../../ui/app_button.dart';
 import '../../../../ui/app_card.dart';
 import '../../../../ui/app_chevron.dart';
 import '../../../../ui/app_list_item.dart';
 import '../../../../ui/app_pill.dart';
 import '../../../../ui/app_sage_note.dart';
+import '../../../payments/domain/payment_models.dart';
+import '../../../payments/presentation/payment_text.dart' show cairoDate;
 import '../../../../ui/app_scaffold.dart';
 import '../../../payments/presentation/payment_address_view.dart';
 import '../../data/coaching_repository.dart';
 import '../../domain/coaching_failure.dart';
+import 'coach_agreement_card.dart';
 import 'coach_application_view.dart';
 import 'coach_data.dart';
+import 'coach_promo_card.dart';
 import 'coach_photo.dart';
 import 'coach_text.dart';
 import 'coach_widgets.dart';
+import 'own_hub_for_you_card.dart';
 import 'packages_view.dart';
 import 'portfolio_edit_view.dart';
 import 'portfolio_media_view.dart';
@@ -38,11 +46,15 @@ class CoachSpaceView extends StatefulWidget {
     this.onInviteClient,
     this.onShareProfile,
     this.onBack,
+    this.onOpenLink,
     this.instapayOn = false,
     this.onOpenPayments,
     this.onOpenStatements,
+    this.feeBills,
+    this.now,
     this.photoChooser = chooseCoachPhoto,
     this.imageChooser = chooseCoachImage,
+    this.videoChooser = chooseCoachVideo,
   });
 
   final CoachingRepository repository;
@@ -62,6 +74,9 @@ class CoachSpaceView extends StatefulWidget {
   final void Function(String coachUid)? onShareProfile;
   final VoidCallback? onBack;
 
+  /// Opens an address outside the app (the agreement page and its PDF).
+  final ValueChanged<String>? onOpenLink;
+
   /// InstaPay payments are on (the flag and the server switch): shows the
   /// rows that belong to them.
   final bool instapayOn;
@@ -73,8 +88,13 @@ class CoachSpaceView extends StatefulWidget {
   /// Opens her monthly fee statements. Given with the payments flag, like
   /// [onOpenPayments].
   final VoidCallback? onOpenStatements;
+
+  /// Her commission bills, for the due-soon and late notice before a hold.
+  final Stream<List<FeeStatement>>? feeBills;
+  final DateTime Function()? now;
   final CoachPhotoChooser photoChooser;
   final CoachImageChooser imageChooser;
+  final CoachVideoChooser videoChooser;
 
   @override
   State<CoachSpaceView> createState() => _CoachSpaceViewState();
@@ -84,9 +104,23 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
   late final CoachSpaceData _data = CoachSpaceData(widget.repository);
   bool? _accepting;
   String _error = '';
+  ({bool late, DateTime holdOn})? _notice;
+  StreamSubscription<List<FeeStatement>>? _bills;
+
+  @override
+  void initState() {
+    super.initState();
+    _bills = widget.feeBills?.listen((bills) {
+      if (!mounted) return;
+      setState(
+        () => _notice = feeNoticeFor(bills, (widget.now ?? DateTime.now)()),
+      );
+    }, onError: (Object _) {});
+  }
 
   @override
   void dispose() {
+    unawaited(_bills?.cancel());
     _data.dispose();
     super.dispose();
   }
@@ -129,8 +163,70 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
             final hasPackage = _data.packages.any((p) => p.active);
             final live = profile.published && hasPackage;
             final accepting = _accepting ?? profile.acceptingClients;
+            final onHold = _data.private?.onHold ?? false;
             final coaching = widget.coaching ?? PrivateCoachingState.instance;
             return <Widget>[
+              if (onHold)
+                AppCard(
+                  variant: AppCardVariant.filled,
+                  children: [
+                    Semantics(
+                      header: true,
+                      liveRegion: true,
+                      child: Text(
+                        l10n.yourAccountIsOnHold,
+                        key: const ValueKey('coach-on-hold'),
+                        style: AppText.titleM,
+                      ),
+                    ),
+                    Text(l10n.anOwnHubFeeIsOverdueYou, style: AppText.bodyM),
+                    if (widget.onOpenStatements != null)
+                      AppButton(
+                        l10n.payMyFee,
+                        key: const ValueKey('coach-on-hold-pay'),
+                        onPressed: widget.onOpenStatements,
+                      ),
+                  ],
+                ),
+              if (!onHold && _notice != null)
+                AppCard(
+                  variant: AppCardVariant.filled,
+                  children: [
+                    Semantics(
+                      header: true,
+                      liveRegion: true,
+                      child: Text(
+                        _notice!.late
+                            ? l10n.anOwnHubFeeIsLate
+                            : l10n.anOwnHubFeeIsDueSoon,
+                        key: const ValueKey('coach-fee-notice'),
+                        style: AppText.titleM,
+                      ),
+                    ),
+                    Text(
+                      l10n.yourAccountGoesOnHoldOnDate(
+                        cairoDate(_notice!.holdOn),
+                      ),
+                      style: AppText.bodyM,
+                    ),
+                    if (widget.onOpenStatements != null)
+                      AppButton(
+                        l10n.payMyFee,
+                        key: const ValueKey('coach-fee-notice-pay'),
+                        onPressed: widget.onOpenStatements,
+                      ),
+                  ],
+                ),
+              if (_data.private != null)
+                CoachAgreementCard(
+                  repository: widget.repository,
+                  agreement: _data.private?.agreement,
+                  imageChooser: widget.imageChooser,
+                  onOpenLink: widget.onOpenLink,
+                  urgent: !onHold && _notice == null,
+                ),
+              CoachPromoCard(videoChooser: widget.videoChooser),
+              const OwnHubForYouCard(),
               AppCard(
                 children: [
                   Row(
@@ -176,7 +272,7 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
                     title: l10n.acceptingNewClients,
                     value: accepting && hasPackage,
                     subtitle: hasPackage ? '' : l10n.notVisibleYetAddAPackage,
-                    onChanged: _accepting == null && hasPackage
+                    onChanged: _accepting == null && hasPackage && !onHold
                         ? _setAccepting
                         : null,
                   ),
@@ -230,8 +326,8 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
                 ),
               if (widget.onOpenStatements != null)
                 _nav(
-                  title: l10n.feeStatements,
-                  subtitle: l10n.whatYouOweOwnHubEachMonth,
+                  title: l10n.feeBills,
+                  subtitle: l10n.oneBillForEachClientPayment,
                   icon: Icons.receipt_long_outlined,
                   onTap: widget.onOpenStatements!,
                 ),
@@ -266,7 +362,11 @@ class _CoachSpaceViewState extends State<CoachSpaceView> {
                 icon: Icons.verified_outlined,
                 onTap: () => _push(CoachApplicationView(data: _data)),
               ),
-              AppSageNote(l10n.membersCanAskToJoinYourPackages),
+              AppSageNote(
+                widget.instapayOn
+                    ? l10n.membersCanAskToJoinYourPackages_1gn5h
+                    : l10n.membersCanAskToJoinYourPackages,
+              ),
             ];
           },
         ),

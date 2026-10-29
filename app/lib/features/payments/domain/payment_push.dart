@@ -46,12 +46,21 @@ const Map<String, PaymentPushScreen> kPaymentPushScreens = {
   'instapaySuspended': PaymentPushScreen.coachInbox,
   'instapayAddressChangedCoach': PaymentPushScreen.coachAddress,
   'instapayStatementReady': PaymentPushScreen.statements,
+  'instapayFeeDueSoon': PaymentPushScreen.statements,
+  'instapayFeeDueToday': PaymentPushScreen.statements,
   'instapayFeeOverdue': PaymentPushScreen.statements,
+  'instapayFeeClaimRejected': PaymentPushScreen.statements,
+  'instapayAccountActive': PaymentPushScreen.coachInbox,
 };
 
 /// A payments push read from its data.
 class PaymentPush {
-  const PaymentPush(this.screen, {this.paymentId, this.statementMonth});
+  const PaymentPush(
+    this.screen, {
+    this.paymentId,
+    this.statementMonth,
+    this.billId,
+  });
 
   final PaymentPushScreen screen;
 
@@ -61,6 +70,10 @@ class PaymentPush {
 
   /// "2026-10", for [PaymentPushScreen.statements] when the push carried one.
   final String? statementMonth;
+
+  /// For [PaymentPushScreen.statements]: the payment whose commission bill to
+  /// open (an auto id, no uid).
+  final String? billId;
 
   /// Whether this is a screen of her coach's side.
   bool get forCoach => screen != PaymentPushScreen.status;
@@ -78,11 +91,13 @@ PaymentPush? paymentPushFor(Map<String, Object?> data) {
   if (screen == null) return null;
   final id = data['paymentId'];
   final month = data['statementMonth'];
+  final bill = data['billId'];
   return PaymentPush(
     screen,
     paymentId: id is String && _idShape.hasMatch(id) ? id : null,
     statementMonth: month is String && _monthShape.hasMatch(month)
         ? month
         : null,
+    billId: bill is String && _idShape.hasMatch(bill) ? bill : null,
   );
 }

@@ -122,6 +122,14 @@ class CoachRepo implements CoachingRepository {
   }
 
   @override
+  Future<void> acceptCoachTerms({required String locale}) async =>
+      _record('acceptCoachTerms', {'locale': locale});
+
+  @override
+  Future<void> submitCoachAgreement(String path) async =>
+      _record('submitCoachAgreement', {'path': path});
+
+  @override
   Future<String> uploadCoachDoc(
     CoachDocFolder folder,
     Uint8List bytes,

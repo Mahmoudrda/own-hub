@@ -27,6 +27,7 @@ enum CoachDocFolder {
   testimonials,
   transformations,
   gallery,
+  agreement,
 }
 
 abstract class CoachingRepository {
@@ -135,6 +136,7 @@ abstract class CoachingRepository {
     required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
+    String? inviteCode,
   });
 
   Future<SubscriptionStatus> respondCoachingRequest({
@@ -189,6 +191,12 @@ abstract class CoachingRepository {
 
   /// `coach` or `both`, only when she holds the coach claim.
   Future<void> recordSignupRole(String role);
+
+  /// An approved coach accepts Coach Agreement v2.
+  Future<void> acceptCoachTerms({required String locale});
+
+  /// Her signed copy is in the bucket at [path]; Own Hub checks it.
+  Future<void> submitCoachAgreement(String path);
 
   // ---- Direct writes (the rules fix the keys)
 

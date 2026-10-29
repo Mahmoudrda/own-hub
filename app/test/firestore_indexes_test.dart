@@ -137,10 +137,15 @@ void main() {
 
     test('every exemption actually disables indexing', () {
       // A fieldOverride with a non-empty indexes array exempts nothing.
-      // The one exception is the payout run's collection-group index on
-      // ledger.status, which switches an index ON for a query.
+      // The exceptions switch a collection-group index ON for a query: the
+      // payout run on ledger.status, and the staff month view and the 20th
+      // reminder on promoVideos.month and promoVideos.status.
       for (final o in overrides) {
         if (o['collectionGroup'] == 'ledger' && o['fieldPath'] == 'status') {
+          continue;
+        }
+        if (o['collectionGroup'] == 'promoVideos' &&
+            (o['fieldPath'] == 'month' || o['fieldPath'] == 'status')) {
           continue;
         }
         expect(

@@ -327,6 +327,10 @@ String applyFailureText(
     kUploadMaxMb,
   ),
   CoachingRefusal.badRequest => l10n.someOfYourAnswersWereNotAccepted,
+  CoachingRefusal.containsContact =>
+    l10n.thisCantIncludePhoneNumbersEmailsLinks,
+  CoachingRefusal.staffAccount => l10n.aStaffAccountCantApplyToBe,
+  CoachingRefusal.coachOnHold => l10n.yourAccountIsOnHoldUntilYour,
   CoachingRefusal.unreachable => l10n.noConnectionYourAnswersAreSavedSo,
   CoachingRefusal.signedOut => l10n.signInToSendYourApplication,
   CoachingRefusal.notACoach ||
@@ -335,6 +339,8 @@ String applyFailureText(
   CoachingRefusal.inviteOwn ||
   CoachingRefusal.applicationNotFound ||
   CoachingRefusal.coachUnavailable ||
+  CoachingRefusal.appUpdateNeeded ||
+  CoachingRefusal.clientUpdateNeeded ||
   CoachingRefusal.packageNotFound ||
   CoachingRefusal.tooManyPackages ||
   CoachingRefusal.priceOutOfRange ||
@@ -361,6 +367,8 @@ String applyFailureText(
   CoachingRefusal.staffIsSubject ||
   CoachingRefusal.mediaNotFound ||
   CoachingRefusal.tooManyMedia ||
+  CoachingRefusal.agreementNeeded ||
+  CoachingRefusal.agreementNotUploaded ||
   CoachingRefusal.messageBlocked ||
   CoachingRefusal.unknown => l10n.somethingWentWrongYourAnswersAreSaved,
 };

@@ -17,6 +17,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:own_hub/app_state/payments_switch.dart';
 import 'package:own_hub/domain/flags/feature_flags.dart';
 import 'package:own_hub/features/signup/domain/auth_repository.dart';
 import 'package:own_hub/features/progress/presentation/you_view.dart';
@@ -291,6 +292,29 @@ void main() {
     testWidgets('community on: the community returns', (tester) async {
       await _pump(tester, const RoleView(offerCoach: false), on: _community);
       expect(find.text(en.workoutsRecipesAndTheCommunityFree), findsOneWidget);
+    });
+
+    testWidgets('the coach card promises payment only while payments are on', (
+      tester,
+    ) async {
+      PaymentsSwitch.enabled = true;
+      addTearDown(PaymentsSwitch.resetForTest);
+      await _pump(
+        tester,
+        const RoleView(offerCoach: true),
+        on: const {Feature.marketplace: true, Feature.instapayPayments: true},
+      );
+      expect(find.text(en.takeClientsSetYourPackagesAndGet), findsOneWidget);
+      expect(find.text(en.takeClientsAndSetYourOwnPackages), findsNothing);
+
+      PaymentsSwitch.enabled = false;
+      await _pump(
+        tester,
+        const RoleView(offerCoach: true),
+        on: const {Feature.marketplace: true, Feature.instapayPayments: true},
+      );
+      expect(find.text(en.takeClientsSetYourPackagesAndGet), findsNothing);
+      expect(find.text(en.takeClientsAndSetYourOwnPackages), findsOneWidget);
     });
   });
 

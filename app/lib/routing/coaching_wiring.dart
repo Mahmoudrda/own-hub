@@ -25,6 +25,7 @@ import '../features/onboarding/domain/intake.dart' show LifeStage;
 import '../features/private_coaching/presentation/client/coach_plan_view.dart';
 import '../features/private_coaching/presentation/client/coach_today.dart';
 import '../features/train/domain/my_plan.dart' show slotForPlanDay;
+import '../features/train/domain/train_repository.dart' show TrainSession;
 import '../app_state/custom_workout_state.dart' show CustomWorkoutState;
 import '../features/private_coaching/presentation/client/my_coach_view.dart'
     show coachingEnded, requestClosed;
@@ -44,6 +45,7 @@ import '../features/private_coaching/data/chat_repository.dart';
 import '../features/private_coaching/data/coaching_repository.dart';
 import '../features/private_coaching/data/firestore_coaching_repository.dart';
 import '../features/private_coaching/domain/chat_message.dart';
+import '../features/private_coaching/domain/check_in.dart' show coachWorkoutsInWeek;
 import '../features/private_coaching/domain/coach_plan.dart';
 import '../features/private_coaching/domain/coach_profile.dart';
 import '../features/private_coaching/domain/subscription.dart';
@@ -156,10 +158,14 @@ class CoachingThreadScreen extends StatelessWidget {
     this.onOpenPlan,
     this.onOpenRecipe,
     this.onBack,
+    this.trainSessions,
   });
 
   final String relId;
   final BlockService? blocks;
+
+  /// Her finished sessions, for the workout count in a check-in (client only).
+  final Iterable<TrainSession> Function()? trainSessions;
 
   /// The coach's "+" choices for this relationship; none for a client.
   final ShareChoices Function(Relationship relationship)? shareOf;
@@ -194,6 +200,9 @@ class CoachingThreadScreen extends StatelessWidget {
           ? const ShareChoices()
           : (shareOf?.call(rel) ?? const ShareChoices()),
       starterReplies: iAmClient ? const <String>[] : starterRepliesOf(l10n),
+      checkInWorkouts: iAmClient && trainSessions != null
+          ? (week) => coachWorkoutsForCheckIn(week, trainSessions!())
+          : null,
       recipeTitleOf: recipeTitleOf,
       onOpenPlan: onOpenPlan,
       onOpenRecipe: onOpenRecipe,
@@ -471,6 +480,15 @@ CoachPlan? activeCoachWorkoutPlan() {
   }
   return best;
 }
+
+/// Her coach-plan workouts finished in the check-in week [weekKey]; null when
+/// her coach has shared no workout plan, so the check-in has nothing to offer.
+int? coachWorkoutsForCheckIn(
+  String weekKey,
+  Iterable<TrainSession> sessions,
+) => activeCoachWorkoutPlan() == null
+    ? null
+    : coachWorkoutsInWeek(sessions, weekKey);
 
 /// Opens day [dayIndex] of [plan] as the next workout. False when that day is
 /// not offered at her life stage.

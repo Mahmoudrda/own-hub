@@ -248,12 +248,14 @@ class FakeCoachingRepository implements ChatThreadRepository {
     required Map<String, Object?> consent,
     required String locale,
     String clientName = '',
+    String? inviteCode,
   }) async {
     lastConsent = consent;
     _record('requestCoaching', {
       'coachUid': coachUid,
       'packageId': packageId,
       'clientName': clientName,
+      'inviteCode': ?inviteCode,
     });
     final id = _next('sub');
     clientSubs.value = <Subscription>[
@@ -362,6 +364,14 @@ class FakeCoachingRepository implements ChatThreadRepository {
   @override
   Future<void> recordSignupRole(String role) async =>
       _record('recordSignupRole', {'role': role});
+
+  @override
+  Future<void> acceptCoachTerms({required String locale}) async =>
+      _record('acceptCoachTerms', {'locale': locale});
+
+  @override
+  Future<void> submitCoachAgreement(String path) async =>
+      _record('submitCoachAgreement', {'path': path});
 
   @override
   Future<void> sendText(String relId, String text) async {

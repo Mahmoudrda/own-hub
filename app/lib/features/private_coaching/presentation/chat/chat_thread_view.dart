@@ -60,6 +60,7 @@ class ChatThreadView extends StatefulWidget {
     this.recorderBuilder,
     this.savedReplyStore,
     this.starterReplies = const <String>[],
+    this.checkInWorkouts,
   });
 
   final ChatThreadRepository repository;
@@ -96,6 +97,10 @@ class ChatThreadView extends StatefulWidget {
   final VoiceRecorder Function()? recorderBuilder;
   final SavedReplyStore? savedReplyStore;
   final List<String> starterReplies;
+
+  /// The coach-plan workouts she finished in an ISO week (`2026-W44`), for
+  /// the check-in she is answering; null when she has no coach plan.
+  final int? Function(String weekKey)? checkInWorkouts;
 
   @override
   State<ChatThreadView> createState() => _ChatThreadViewState();
@@ -505,7 +510,8 @@ class _ChatThreadViewState extends State<ChatThreadView>
 
   String _refusalText(AppL10n l10n, ChatScreenReason reason) =>
       switch (reason) {
-        ChatScreenReason.contact => l10n.phoneNumbersCantBeSentInThe,
+        ChatScreenReason.contact =>
+          l10n.contactDetailsAndOutsideAppsArentAllowed,
         ChatScreenReason.payment => l10n.paymentDetailsCantBeSharedInThe,
         ChatScreenReason.link => l10n.linksCantBeSentInTheChat,
         ChatScreenReason.abuse => l10n.someWordsInThisMessageArentAllowed,
@@ -738,8 +744,11 @@ class _ChatThreadViewState extends State<ChatThreadView>
               weekKey: week,
               onAnswer: () => Navigator.of(context).push<void>(
                 MaterialPageRoute<void>(
-                  builder: (_) =>
-                      CheckInView(relId: widget.relId, weekKey: week),
+                  builder: (_) => CheckInView(
+                    relId: widget.relId,
+                    weekKey: week,
+                    workoutsDone: widget.checkInWorkouts?.call(week),
+                  ),
                 ),
               ),
             );

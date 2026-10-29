@@ -2,7 +2,7 @@
 # The one way the iPhone app is built for TestFlight and the App Store.
 #
 #   bash tool/build_ios.sh
-#   BUILD_NUMBER=412345 bash tool/build_ios.sh    a build number of your own
+#   BUILD_NUMBER=433500 bash tool/build_ios.sh    a build number of your own
 #
 # Run it on the Mac, from anywhere. It stops before building, with a sentence
 # saying what to fix, when something an App Store build needs is missing:
@@ -48,6 +48,10 @@ grep -q 'DEVELOPMENT_TEAM = ' ios/Runner.xcodeproj/project.pbxproj || stop "no A
 NAME="$(awk '/^version: / {print $2; exit}' pubspec.yaml | cut -d+ -f1)"
 [ -n "$NAME" ] || stop "no version line in pubspec.yaml."
 BUILD="${BUILD_NUMBER:-$(( ($(date -u +%s) - 1767225600) / 60 ))}"
+# The server refuses coaching requests from a build below MIN_APP_BUILD.
+MIN_BUILD="$(grep -E '^MIN_APP_BUILD' ../functions/coaching/common.py | head -1 | tr -dc '0-9')"
+[ -n "$MIN_BUILD" ] && [ "$BUILD" -ge "$MIN_BUILD" ] || stop "build number $BUILD is below $MIN_BUILD, the lowest build the server accepts (functions/coaching/common.py MIN_APP_BUILD). Use a higher BUILD_NUMBER."
+
 VERSION="$NAME+$BUILD"
 SYMBOLS="build/symbols/$VERSION-ios"
 [ ! -d "$SYMBOLS" ] || stop "$SYMBOLS already exists. Wait a minute or set BUILD_NUMBER to a higher number."

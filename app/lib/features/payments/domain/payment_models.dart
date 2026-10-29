@@ -454,6 +454,8 @@ class FeeStatement {
     this.payTo = const FeePayTo(),
     this.claimedTxn = '',
     this.dueAt,
+    this.holdAt,
+    this.onHold = false,
     this.paidAt,
   });
   final String id;
@@ -473,6 +475,13 @@ class FeeStatement {
   /// The transaction number the coach gave when she marked the fee as paid.
   final String claimedTxn;
   final DateTime? dueAt;
+
+  /// When an unpaid bill puts her account on hold (7 days after it became
+  /// owed). Null on a statement made before that rule.
+  final DateTime? holdAt;
+
+  /// The server has put her account on hold for this bill.
+  final bool onHold;
   final DateTime? paidAt;
 
   int get paymentCount => lines.length;
@@ -506,6 +515,11 @@ class FeeStatement {
       ),
       claimedTxn: readString(m['claimedTxn']),
       dueAt: readTime(m['dueAt']),
+      holdAt: readTime(m['holdAt']),
+      onHold:
+          readBool(m['overdueNotified']) &&
+          readString(m['status']) != 'paid' &&
+          (m['totalDuePiasters'] == null || readInt(m['totalDuePiasters']) > 0),
       paidAt: readTime(m['paidAt']),
     );
   }
@@ -517,4 +531,32 @@ String egpPlain(int piasters) {
   return rest == 0
       ? '${piasters ~/ 100}'
       : '${piasters ~/ 100}.${rest.toString().padLeft(2, '0')}';
+}
+
+/// What the coach space says before a hold: a bill due within 24 hours or
+/// already past due but not yet held. Null when nothing needs saying (an
+/// account already on hold has its own banner).
+({bool late, DateTime holdOn})? feeNoticeFor(
+  List<FeeStatement> bills,
+  DateTime now,
+) {
+  final open = [
+    for (final b in bills)
+      if (b.status == 'open' && b.totalDuePiasters > 0 && b.dueAt != null) b,
+  ];
+  if (open.any((b) => b.onHold)) return null;
+  FeeStatement? pick(bool Function(FeeStatement) test) {
+    final hits = open.where(test).toList()
+      ..sort((a, b) => (a.holdAt ?? a.dueAt!).compareTo(b.holdAt ?? b.dueAt!));
+    return hits.isEmpty ? null : hits.first;
+  }
+
+  final late = pick((b) => !b.dueAt!.isAfter(now));
+  if (late != null) return (late: true, holdOn: late.holdAt ?? late.dueAt!);
+  final soon = pick(
+    (b) => !b.dueAt!.subtract(const Duration(hours: 24)).isAfter(now),
+  );
+  return soon == null
+      ? null
+      : (late: false, holdOn: soon.holdAt ?? soon.dueAt!);
 }

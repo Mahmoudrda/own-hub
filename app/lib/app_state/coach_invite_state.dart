@@ -25,6 +25,22 @@ class CoachInviteState {
   /// code is kept until then, so a page that could not open yet is not lost.
   String? pendingCoach;
 
+  /// The code a coach's page was opened with, and for which coach. Kept after
+  /// the page opens until she has asked that coach, so the server can record
+  /// that she came with the coach's own code (the fee follows it).
+  String? usedCode;
+  String? usedFor;
+
+  /// The code to send when she asks [coachUid], or null.
+  String? codeFor(String coachUid) => usedFor == coachUid ? usedCode : null;
+
+  void spent(String coachUid) {
+    if (usedFor != coachUid) return;
+    usedCode = null;
+    usedFor = null;
+    AppChanges.bump();
+  }
+
   void keepPending(String code) {
     pendingCode = code;
     AppChanges.bump();
@@ -41,6 +57,8 @@ class CoachInviteState {
   void reset() {
     pendingCode = null;
     pendingCoach = null;
+    usedCode = null;
+    usedFor = null;
     _redeeming = false;
   }
 
@@ -66,6 +84,8 @@ class CoachInviteState {
           clearPending();
         case InviteRedemption.linked:
           pendingCoach = result.coachUid;
+          usedCode = code;
+          usedFor = result.coachUid;
         case InviteRedemption.unreachable:
           break;
       }

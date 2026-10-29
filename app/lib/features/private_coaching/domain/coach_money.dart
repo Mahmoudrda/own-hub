@@ -1,6 +1,7 @@
 /// What a coach sees of her money. Only she reads these (`coachPrivate/`).
 library;
 
+import 'coach_agreement.dart';
 import 'coaching_contract.dart';
 import 'parse.dart';
 
@@ -110,6 +111,8 @@ class CoachPrivateSummary {
     this.suspendReason = '',
     this.suspendedAt,
     this.claimPending = false,
+    this.onHold = false,
+    this.agreement,
   });
 
   final String fullName;
@@ -133,6 +136,13 @@ class CoachPrivateSummary {
   /// A change to her coach status is still being applied to her sign-in.
   final bool claimPending;
 
+  /// Her account is on hold for an unpaid Own Hub fee (`coachPrivate.hold`,
+  /// readable by her alone).
+  final bool onHold;
+
+  /// Coach Agreement v2: accepted, signed copy, Own Hub's check.
+  final CoachAgreement? agreement;
+
   bool get hasPendingChange => pendingPayout != null;
 
   static CoachPrivateSummary? fromMap(Object? raw) {
@@ -155,6 +165,8 @@ class CoachPrivateSummary {
       suspendReason: readString(map['suspendReason']),
       suspendedAt: readTime(map['suspendedAt']),
       claimPending: readBool(map['claimPending']),
+      onHold: map['hold'] is Map,
+      agreement: CoachAgreement.fromMap(map['agreement']),
     );
   }
 }

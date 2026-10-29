@@ -1,7 +1,6 @@
 library;
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -53,11 +52,7 @@ class _DecisionBody extends StatefulWidget {
 
 class _DecisionBodyState extends State<_DecisionBody> {
   bool _busy = false;
-  bool _loadingProof = false;
-  bool _proofShown = false;
-  bool _proofFailed = false;
   String _error = '';
-  final List<Uint8List> _pictures = <Uint8List>[];
 
   Future<void> _confirm() async {
     final l10n = AppL10n.of(context);
@@ -76,37 +71,6 @@ class _DecisionBodyState extends State<_DecisionBody> {
         });
       }
     }
-  }
-
-  /// Her pictures come through the server one by one, only when asked for.
-  Future<void> _showProof() async {
-    setState(() => _loadingProof = true);
-    final got = <Uint8List>[];
-    var failed = false;
-    for (final path in widget.payment.screenshotPaths) {
-      try {
-        final bytes = await widget.repository.partyImage(
-          paymentId: widget.payment.id,
-          path: path,
-        );
-        if (bytes.isEmpty) {
-          failed = true;
-        } else {
-          got.add(bytes);
-        }
-      } on PaymentFailure {
-        failed = true;
-      }
-    }
-    if (!mounted) return;
-    setState(() {
-      _loadingProof = false;
-      _proofShown = true;
-      _proofFailed = failed;
-      _pictures
-        ..clear()
-        ..addAll(got);
-    });
   }
 
   @override
@@ -161,32 +125,6 @@ class _DecisionBodyState extends State<_DecisionBody> {
               ),
             ],
           ),
-          if (p.screenshotPaths.isNotEmpty && !_proofShown)
-            AppButton(
-              l10n.seeHerProof,
-              key: const ValueKey('see-proof'),
-              variant: AppButtonVariant.outlined,
-              height: 48,
-              onPressed: _loadingProof ? null : () => unawaited(_showProof()),
-            ),
-          for (final bytes in _pictures)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              child: Image.memory(
-                bytes,
-                key: const ValueKey('proof-picture'),
-                fit: BoxFit.fitWidth,
-                semanticLabel: l10n.seeHerProof,
-                errorBuilder: (_, _, _) =>
-                    Text(l10n.weCouldNotLoadThisPicture, style: AppText.bodyM),
-              ),
-            ),
-          if (_proofFailed)
-            Text(
-              l10n.weCouldNotLoadThisPicture,
-              key: const ValueKey('proof-failed'),
-              style: AppText.bodyM,
-            ),
           if (_error.isNotEmpty)
             Semantics(
               liveRegion: true,

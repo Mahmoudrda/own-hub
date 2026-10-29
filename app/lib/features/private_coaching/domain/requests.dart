@@ -67,13 +67,17 @@ abstract final class CoachingRequests {
     required Json consent,
     required String locale,
     String clientName = '',
+    String? inviteCode,
+    required int appBuild,
   }) => <String, Object?>{
+    'appBuild': appBuild,
     'coachUid': coachUid,
     'packageId': packageId,
     'intake': intake.toRequest(),
     'consent': consent,
     'locale': locale,
     'clientName': clientName,
+    'inviteCode': ?inviteCode,
   };
 
   static Json respond({

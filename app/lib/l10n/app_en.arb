@@ -6971,12 +6971,10 @@
   "ownHubReviewsEveryCoachBeforeShe": "Own Hub reviews every coach before she is listed.",
   "everythingYouTellUsMustBeAccurate": "Everything you tell us must be accurate.",
   "photosOfClientsAreSharedOnlyWith": "Photos of clients are shared only with their written consent.",
-  "clientsPayThroughOwnHubOnlyNever": "Clients pay through Own Hub only, never outside it.",
   "youCanWithdrawYourApplicationAtAny": "You can withdraw your application at any time.",
   "readTheFullCoachTerms": "Read the full coach terms",
   "everythingIWroteIsAccurate": "Everything I wrote is accurate",
   "iShareClientPhotosOnlyWithTheir": "I share client photos only with their written consent",
-  "iWillNotTakePaymentFromClients": "I will not take payment from clients outside Own Hub",
   "reviewYourApplication": "Review your application",
   "lookOverEachPartYouCanEdit": "Look over each part. You can edit any of it before you send.",
   "stillNeeded": "Still needed",
@@ -9223,5 +9221,384 @@
         "example": "180"
       }
     }
-  }
+  },
+  "askingToTalkOutsideOwnHub": "Asking to talk outside Own Hub",
+  "thisCantIncludePhoneNumbersEmailsLinks": "This can't include phone numbers, emails, links or other apps. Please take them out and try again.",
+  "aStaffAccountCantApplyToBe": "A staff account can't apply to be a coach. Please use a different account.",
+  "contactDetailsAndOutsideAppsArentAllowed": "Contact details and outside apps aren't allowed in chat. It keeps you both safe, and Own Hub reviews repeats.",
+  "yourAccountIsOnHold": "Your account is on hold",
+  "anOwnHubFeeIsOverdueYou": "An Own Hub fee is overdue. You can read everything and pay the fee. Everything else is paused until the fee is confirmed.",
+  "payMyFee": "Pay my fee",
+  "yourCoachIsUnavailableForNowYour": "Your coach is unavailable for now. Your plans stay here.",
+  "yourAccountIsOnHoldUntilYour": "Your account is on hold until your Own Hub fee is confirmed.",
+  "thisFeeIsLateYourAccountGoes": "This fee is late. Your account goes on hold on {date} if it is still unpaid.",
+  "@thisFeeIsLateYourAccountGoes": {
+    "description": "Fee screen, a bill past its due date. The date is the day the account goes on hold.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "07/11/2026"
+      }
+    }
+  },
+  "unpaidOnDateYourAccountGoesOn": "Unpaid on {date}, your account goes on hold. Your current clients keep their plans.",
+  "@unpaidOnDateYourAccountGoesOn": {
+    "description": "Fee screen, a bill not yet due. The date is the day the account goes on hold.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "07/11/2026"
+      }
+    }
+  },
+  "yourAccountIsOnHoldItEnds": "Your account is on hold. It ends when Own Hub confirms this fee.",
+  "feeBills": "Fee bills",
+  "feeBillOfDate": "Fee bill of {date}",
+  "@feeBillOfDate": {
+    "description": "Title of one commission bill; the date is the day the fee became owed.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "12/10/2026"
+      }
+    }
+  },
+  "noFeeBillYetOneIsMade": "No fee bill yet. One is made each time a client payment is confirmed.",
+  "oneBillForEachClientPayment": "One bill for each client payment",
+  "ownHubTakesFullOfThePackage": "Own Hub takes {full} of the package price for clients who find you in the app, and {invite} for clients you bring with your own code.",
+  "@ownHubTakesFullOfThePackage": {
+    "description": "Commission points in the coach terms.",
+    "placeholders": {
+      "full": {
+        "type": "String",
+        "example": "15%"
+      },
+      "invite": {
+        "type": "String",
+        "example": "7.5%"
+      }
+    }
+  },
+  "payOwnHubItsShareWithinDays": "Pay Own Hub its share within {days} days of your client's payment. If it stays unpaid for {hold} days, your account is put on hold until Own Hub confirms the payment.",
+  "@payOwnHubItsShareWithinDays": {
+    "description": "Pay-in and hold rule.",
+    "placeholders": {
+      "days": {
+        "type": "String",
+        "example": "3"
+      },
+      "hold": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "makeVideosShortVideosForOwnHub": "Make {videos} short videos for Own Hub every month. No client appears in them.",
+  "@makeVideosShortVideosForOwnHub": {
+    "description": "Marketing videos rule.",
+    "placeholders": {
+      "videos": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "keepEveryChatInsideTheAppAnd": "Keep every chat inside the app, and never ask a client for her phone number or other contact details.",
+  "doNotWorkWithAClientYou": "Do not work with a client you met through Own Hub outside the app, during the coaching and for {months} months after it.",
+  "@doNotWorkWithAClientYou": {
+    "description": "The no-circumvention rule.",
+    "placeholders": {
+      "months": {
+        "type": "String",
+        "example": "12"
+      }
+    }
+  },
+  "readTheFullCoachAgreement": "Read the full Coach Agreement",
+  "iHaveReadTheCoachAgreementAnd": "I have read the Coach Agreement and agree to it, including keeping my clients inside the app",
+  "yourSignedAgreement": "Your signed agreement",
+  "readTheNewCoachAgreementAndAccept": "Read the new Coach Agreement and accept it. Until Own Hub verifies your signed copy you cannot accept new clients. Your current clients are not affected.",
+  "printTheAgreementAndSignItBy": "Print the agreement and sign it by hand with your full name, national ID number and date. Then upload a photo of the signed page.",
+  "ownHubIsCheckingYourSignedCopy": "Own Hub is checking your signed copy. We will let you know.",
+  "yourSignedAgreementIsVerifiedYouCan": "Your signed agreement is verified. You can accept new clients.",
+  "ownHubNeedsANewSignedCopy": "Own Hub needs a new signed copy. Reason: {reason}",
+  "@ownHubNeedsANewSignedCopy": {
+    "description": "Why staff rejected the signed copy.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "The signature is cut off."
+      }
+    }
+  },
+  "readTheAgreement": "Read the agreement",
+  "acceptTheAgreement": "Accept the agreement",
+  "downloadThePdf": "Download the PDF",
+  "uploadSignedCopy": "Upload signed copy",
+  "uploadANewCopy": "Upload a new copy",
+  "iHaveReadTheCoachAgreementAnd_egtgj": "I have read the Coach Agreement and I accept it",
+  "yourSignedCopyWasSentOwnHub": "Your signed copy was sent. Own Hub will check it.",
+  "youCannotAcceptNewRequestsYetAccept": "You cannot accept new requests yet. Accept the Coach Agreement and upload your signed copy in your coach space.",
+  "coachAgreement": "Coach Agreement",
+  "clientsPayYouDirectlyOwnHubTakes": "Clients pay you directly. Own Hub takes {full} of each package price, or {invite} for clients you bring with your own code. Pay it within {days} days.",
+  "@clientsPayYouDirectlyOwnHubTakes": {
+    "description": "Earnings empty state.",
+    "placeholders": {
+      "full": {
+        "type": "String",
+        "example": "15%"
+      },
+      "invite": {
+        "type": "String",
+        "example": "7.5%"
+      },
+      "days": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "whereYourClientsPayYou": "Where your clients pay you",
+  "videosForOwnHubThisMonthCount": "Videos for Own Hub this month: {count} of {target}",
+  "@videosForOwnHubThisMonthCount": {
+    "description": "Title of the coach space card: videos approved this month and the monthly target.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "1"
+      },
+      "target": {
+        "type": "String",
+        "example": "2"
+      }
+    }
+  },
+  "addAVideo": "Add a video",
+  "eachVideoRunsFromMinSecondsTo": "Each video runs from {min} seconds to {max} minutes. Only women appear in it, no client is in it, and you own everything you show or play.",
+  "@eachVideoRunsFromMinSecondsTo": {
+    "description": "Rules shown before a coach picks a marketing video; min is seconds, max is minutes.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "30"
+      },
+      "max": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "whatIsTheVideoAbout": "What is the video about?",
+  "aWorkoutOrMovementTip": "A workout or movement tip",
+  "aHealthyEatingIdea": "A healthy eating idea",
+  "aTrainingMyth": "A training myth",
+  "howCoachingWithMeWorks": "How coaching with me works",
+  "aShortIntroductionOfMyself": "A short introduction of myself",
+  "recordAVideo": "Record a video",
+  "chooseFromYourVideos": "Choose from your videos",
+  "waitingForOwnHub": "Waiting for Own Hub",
+  "approvedByOwnHub": "Approved by Own Hub",
+  "needsChangesReason": "Needs changes: {reason}",
+  "@needsChangesReason": {
+    "description": "A marketing video staff sent back, with their reason.",
+    "placeholders": {
+      "reason": {
+        "type": "String",
+        "example": "The sound is low."
+      }
+    }
+  },
+  "needsChanges": "Needs changes",
+  "theVideoIsShorterThanMinSeconds": "The video is shorter than {min} seconds.",
+  "@theVideoIsShorterThanMinSeconds": {
+    "description": "A picked marketing video is too short.",
+    "placeholders": {
+      "min": {
+        "type": "String",
+        "example": "30"
+      }
+    }
+  },
+  "theVideoIsLongerThanMaxMinutes": "The video is longer than {max} minutes.",
+  "@theVideoIsLongerThanMaxMinutes": {
+    "description": "A picked marketing video is too long.",
+    "placeholders": {
+      "max": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "thatVideoFileIsTooBigTry": "That video file is too big. Try a shorter one.",
+  "onlyVideosInTheUsualPhoneFormat": "Only videos in the usual phone format can be used.",
+  "yourVideoWasSentOwnHubWill": "Your video was sent. Own Hub will watch it soon.",
+  "noVideosYetThisMonth": "No videos yet this month.",
+  "youAreDoneForThisMonthThank": "You are done for this month. Thank you.",
+  "onlyOwnHubStaffSeeYourVideos": "Only Own Hub staff see your videos until one is approved. They are never on your public page.",
+  "yourWeightInKgOptional": "Your weight in kg (optional)",
+  "shareMyWeightWithMyCoach": "Share my weight with my coach",
+  "shareTheWorkoutsIFinishedThisWeek": "Share the workouts I finished this week",
+  "workoutsFromYourCoachsPlanThisWeek": "Workouts from your coach's plan this week: {count}",
+  "@workoutsFromYourCoachsPlanThisWeek": {
+    "description": "In the check-in: how many workouts from the coach's plan she finished in the week.",
+    "placeholders": {
+      "count": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "onlyYourCoachSeesTheseAndOnly": "Only your coach sees these, and only what you tick.",
+  "enterAWeightBetweenLowAndHigh": "Enter a weight between {low} and {high} kilograms.",
+  "@enterAWeightBetweenLowAndHigh": {
+    "description": "The check-in weight is outside what is accepted.",
+    "placeholders": {
+      "low": {
+        "type": "String",
+        "example": "30"
+      },
+      "high": {
+        "type": "String",
+        "example": "300"
+      }
+    }
+  },
+  "whyStayInOwnHub": "Why stay in Own Hub",
+  "yourPlansStayHereWithEverythingYou": "Your plans stay here, with everything you have done.",
+  "yourChatWithYourCoachIsPrivate": "Your chat with your coach is private.",
+  "yourCheckIns": "Your check-ins",
+  "yourAnswersAndWhatYourCoachReplied": "Your answers and what your coach replied",
+  "checkInHistory": "Check-in history",
+  "checkInWeek": "Check-in {week}",
+  "@checkInWeek": {
+    "description": "Heading of one week in the check-in history; week is like 2026-W44.",
+    "placeholders": {
+      "week": {
+        "type": "String",
+        "example": "2026-W44"
+      }
+    }
+  },
+  "trainingValue": "Training: {value}",
+  "@trainingValue": {
+    "description": "One line of a check-in: how training went.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "Most"
+      }
+    }
+  },
+  "energyValue": "Energy: {value}",
+  "@energyValue": {
+    "description": "One line of a check-in: energy from low to high.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "eatingValue": "Eating: {value}",
+  "@eatingValue": {
+    "description": "One line of a check-in: how eating went.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "painOrInjuryValue": "Pain or injury: {value}",
+  "@painOrInjuryValue": {
+    "description": "One line of a check-in: yes or no.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "No"
+      }
+    }
+  },
+  "weightValue": "Weight: {value}",
+  "@weightValue": {
+    "description": "One line of a check-in: the weight she chose to share.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "61.5 kg"
+      }
+    }
+  },
+  "valueKg": "{value} kg",
+  "@valueKg": {
+    "description": "A weight in kilograms.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "61.5"
+      }
+    }
+  },
+  "workoutsFromThePlanValue": "Workouts from the plan: {value}",
+  "@workoutsFromThePlanValue": {
+    "description": "One line of a check-in: coach-plan workouts finished that week.",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "3"
+      }
+    }
+  },
+  "yourCoachsReply": "Your coach's reply",
+  "yourReply": "Your reply",
+  "writeAReply": "Write a reply",
+  "sendReply": "Send reply",
+  "yourReplyWasSent": "Your reply was sent.",
+  "noCheckInsYet": "No check-ins yet.",
+  "whatOwnHubDoesForYou": "What Own Hub does for you",
+  "clientsFindYouInFindACoach": "Clients find you in Find a coach.",
+  "plansChatAndCheckInsLiveIn": "Plans, chat and check-ins live in one place.",
+  "contactDetailsStayProtectedYoursAndYour": "Contact details stay protected, yours and your clients'.",
+  "ownHubStaffAreThereWhenYou": "Own Hub staff are there when you need help.",
+  "disagreementsAreHandledFairlyWithBothSides": "Disagreements are handled fairly, with both sides heard.",
+  "takeClientsSetYourPackagesAndGet": "Take clients, set your packages and get paid directly by your clients.",
+  "checkInOfDate": "Check-in of {date}",
+  "@checkInOfDate": {
+    "description": "Heading of one week in the check-in history; the date is the day she answered.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "28 Oct"
+      }
+    }
+  },
+  "takeClientsAndSetYourOwnPackages": "Take clients and set your own packages.",
+  "ownHubStaffAreHereToHelp": "Own Hub staff are here to help you any time.",
+  "ownHubNeverShowsYourNumberTo": "Own Hub never shows your number to your coach.",
+  "updateOwnHubToAskThisCoach": "Update Own Hub to ask this coach",
+  "countPluralOneCountLiveOneTo": "{count, plural, one{{count} live one-to-one video session a month} other{{count} live one-to-one video sessions a month}}",
+  "@countPluralOneCountLiveOneTo": {
+    "description": "The first line of a coaching package: the live one-to-one video sessions she gets each month, always shown before the price.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "liveOneToOneVideoSessions": "Live one-to-one video sessions",
+  "membersCanAskToJoinYourPackages_1gn5h": "Members can ask to join your packages. When you accept, they pay you by InstaPay.",
+  "anOwnHubFeeIsDueSoon": "An Own Hub fee is due soon",
+  "anOwnHubFeeIsLate": "An Own Hub fee is late",
+  "yourAccountGoesOnHoldOnDate": "Your account goes on hold on {date} if it is still unpaid.",
+  "@yourAccountGoesOnHoldOnDate": {
+    "description": "Coach space, under a fee notice. The date is the day the account goes on hold.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "07/11/2026"
+      }
+    }
+  },
+  "sheNeedsToUpdateOwnHubBefore": "She needs to update Own Hub before she can pay. She has been told."
 }
