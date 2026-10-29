@@ -70,6 +70,7 @@ PATHS = {
     "privacy": ("/privacy", "/ar/privacy"),
     "terms": ("/terms", "/ar/terms"),
     "coach-terms": ("/coach-terms", "/ar/coach-terms"),
+    "coach-agreement": ("/coach-agreement", "/ar/coach-agreement"),
     "support": ("/support", "/ar/support"),
     "delete-account": ("/delete-account", "/ar/delete-account"),
     "waitlist": ("/waitlist", "/ar/waitlist"),
@@ -94,6 +95,7 @@ FILES = {
     "privacy": ("privacy.html", "ar/privacy.html"),
     "terms": ("terms.html", "ar/terms.html"),
     "coach-terms": ("coach-terms.html", "ar/coach-terms.html"),
+    "coach-agreement": ("coach-agreement.html", "ar/coach-agreement.html"),
     "support": ("support.html", "ar/support.html"),
     "delete-account": ("delete-account.html", "ar/delete-account.html"),
     "waitlist": ("waitlist.html", "ar/waitlist.html"),
@@ -778,12 +780,14 @@ def build_art() -> None:
 
 # The files, besides the pages, that a host serves. Everything else in
 # site/ (the generator, config.json) stays out of a publishable copy.
-STATIC = ("assets", "_headers", "_redirects", ".well-known")
+STATIC = ("assets", "_headers", "_redirects", ".well-known",
+          "coach-agreement.pdf", "ar/coach-agreement.pdf")
 
 
 def copy_static() -> None:
     for name in STATIC:
         src, dst = os.path.join(ROOT, name), os.path.join(OUT, name)
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
         if os.path.isdir(src):
             shutil.copytree(src, dst, dirs_exist_ok=True)
         else:

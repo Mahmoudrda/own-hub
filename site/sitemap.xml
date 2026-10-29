@@ -58,6 +58,20 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/coach-terms"/>
   </url>
   <url>
+    <loc>https://own-hub.app/coach-agreement</loc>
+    <lastmod>2026-10-28</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/coach-agreement"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/coach-agreement"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/coach-agreement"/>
+  </url>
+  <url>
+    <loc>https://own-hub.app/ar/coach-agreement</loc>
+    <lastmod>2026-10-28</lastmod>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://own-hub.app/ar/coach-agreement"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/coach-agreement"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://own-hub.app/coach-agreement"/>
+  </url>
+  <url>
     <loc>https://own-hub.app/support</loc>
     <lastmod>2026-10-28</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://own-hub.app/support"/>

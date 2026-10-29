@@ -1454,21 +1454,83 @@ html[dir="rtl"] .hl-query svg {
   }
 }
 
+/* ---------- Signature block (coach agreement) ---------- */
+.sign-block {
+  margin-top: 2.5rem;
+  break-inside: avoid;
+}
+.sign-line {
+  border-top: 1px solid currentColor;
+  margin: 3rem 0 0;
+  padding-top: 0.25rem;
+}
+.sign-line.tall {
+  margin-top: 4.5rem;
+}
+.sign-line span {
+  display: block;
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+.sign-note {
+  margin-top: 1.5rem;
+  font-size: 0.9em;
+}
+
 /* ---------- Print ---------- */
+@page {
+  size: A4;
+  margin: 20mm;
+}
 @media print {
   .site-head,
   .site-foot,
   .skip,
   .toc,
-  .badges {
-    display: none;
+  .badges,
+  .noprint,
+  .anchor {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
   }
   body {
-    background: #fff;
-    color: #000;
     font-size: 11pt;
+    line-height: 1.5;
+  }
+  main .wrap,
+  .prose {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
+  h1,
+  h2,
+  h3,
+  p,
+  li,
+  dt,
+  dd,
+  a,
+  .meta {
+    color: #000 !important;
   }
   a {
-    color: #000;
+    text-decoration: none;
+  }
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  li,
+  .kv > div {
+    break-inside: avoid;
+  }
+  .callout {
+    border: 0;
+    background: none;
   }
 }

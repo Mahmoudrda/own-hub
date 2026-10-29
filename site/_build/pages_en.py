@@ -343,10 +343,17 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             (sections 3.16 and 3.17).</li>
             <li><b>If you pay a coach, you pay her directly by InstaPay, from
             your own bank app.</b> Own Hub never holds, routes, initiates or
-            accesses that money. We keep a record of each payment, the
-            transaction number you give and the screenshots you send, so your
-            coach can confirm it and our team can decide a dispute (section
-            3.18).</li>
+            accesses that money. We keep a record of each payment and the
+            transaction number you give, so your coach can confirm it. The
+            screenshots you send go only to our team, never to your coach, so
+            that our team can decide a dispute (section 3.18).</li>
+            <li>Messages in a coaching chat that contain a phone number, an
+            email address, a social media handle or a link are blocked, and a
+            count of blocked messages is kept so that repeated attempts reach
+            our team (section 3.16).</li>
+            <li>If you are a coach, you also hand-sign your coach agreement and
+            upload a photo of it. It shows your national ID number. Only the
+            staff who check it can open it (section 3.15).</li>
             <li>To send your sign-in code, your phone number goes to Google
             Firebase in the United States.</li>
             <li>We do not sell your data. There are no adverts and no tracking.
@@ -917,6 +924,54 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           them in the last step, and the <a href="/coach-terms">Coach Terms</a>
           are published on this site.</li>
         </ul>
+        <p><b>The coach agreement and your signed copy.</b> Before you can take
+        new clients you also agree to the <a href="/coach-agreement">Coach
+        Agreement</a> in the app, then print it, write your full name, your
+        national ID number and the date on it, sign it by hand, and upload a
+        photo or scan of it in the app.</p>
+        <ul>
+          <li><b>What we keep.</b> The version you agreed to, the time, your
+          language and a fingerprint of the text; the photo or scan of your
+          signed copy, which shows your full name, your national ID number, the
+          date and your signature; and whether our staff verified it, who, and
+          when. Your national ID number is only on the signed copy: the app has
+          no field for it and does not read it.</li>
+          <li><b>Why.</b> To prove the agreement later if there is a dispute,
+          and to check that the woman who signed is the coach who applied.</li>
+          <li><b>Who sees it.</b> Only the Own Hub staff who verify agreements.
+          No member and no other coach can open it. Send the signed copy only
+          through the app, never by email or chat.</li>
+          <li><b>How long.</b> While you coach and for 5 years after, as the
+          Coach Agreement says, so that Own Hub can prove it. Deleting your
+          account does not remove it before then: it goes into a closed legal
+          hold for those 5 years and is then deleted (section 7).</li>
+          <li><b>Basis:</b> carrying out the agreement you signed, and Own
+          Hub&rsquo;s legitimate interest in being able to prove it, which the
+          law allows (Law 151/2020, Article 6, point 4).</li>
+        </ul>
+        <p><b>Marketing videos from coaches.</b> The Coach Agreement asks you for
+        2 short videos a month, which you upload in the app.</p>
+        <ul>
+          <li><b>What we keep.</b> The video, its topic and length, its status,
+          and the decision of our staff with the reason. Videos are stored on
+          Google Cloud Storage in Frankfurt, Germany.</li>
+          <li><b>Who sees it.</b> Before it is approved, only Own Hub&rsquo;s
+          women reviewers can watch it. The administrator cannot. A video is
+          never shown on your public portfolio page. No client may appear in
+          one.</li>
+          <li><b>Use.</b> Once approved, Own Hub may use it on its app, website
+          and social accounts under the licence in the Coach Agreement. If you
+          ask in writing, Own Hub stops new use of a video within 30 days;
+          copies already published or paid for in an advertisement may stay
+          until they end.</li>
+          <li><b>How long.</b> Every video record and file, whether it is
+          waiting, needs changes or is approved, stays in Own Hub&rsquo;s
+          storage until you delete it or delete your account, and is deleted
+          with your account. A video Own Hub has already published on its own
+          channels under the licence may stay there until you ask Own Hub in
+          writing to take it down; new use stops within 30 days of that
+          request.</li>
+        </ul>
         <p>Until you send it, your draft stays on your phone, and <b>Delete
         everything</b> erases it. You pick each picture with the camera or your
         phone&rsquo;s own picker, and Own Hub receives only the pictures you
@@ -960,7 +1015,8 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         the portfolio you build. Nothing from an application is used for
         advertising or to train AI.</p>
         <p><b>How long:</b> your application and its files are kept while you
-        are a coach, or until you delete your account. If an application is
+        are a coach, or until you delete your account (the signed agreement
+        copy follows the longer period above). If an application is
         not approved, or the reviewer asks for changes, it and its files are
         kept on our server with no automatic deletion date, so that we can tell
         you why and so that you can apply again after 30 days. Deleting your
@@ -995,10 +1051,34 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           of you reports it. When the coaching ends the chat closes, and the
           messages stay until either of you deletes her account, which deletes
           the coaching and its messages (a reported message is kept as section
-          3.17 describes). Messages that contain a phone number,
-          payment details, a link or abusive words are blocked: the app stops
-          them before they are sent, and if one reaches our server, the server
-          hides it and erases its text.</li>
+          3.17 describes).</li>
+          <li><b>Contact details are blocked.</b> Members and coaches talk only
+          in the app. A message that contains a phone number, an email address,
+          a social media handle, a link, the name of another messaging app
+          followed by a way to reach someone, payment details or abusive words
+          is blocked: the app stops it before it is sent and tells the sender
+          why, and if one reaches our server, the server hides it and erases
+          its text. The same screening applies to the free text you write in
+          the coaching form, check-ins, plans, packages and a coach&rsquo;s
+          profile. Own Hub does not show your coach your phone number or your
+          email.</li>
+          <li><b>The attempt record.</b> Each time a message of yours is hidden
+          for this reason, our server adds it to a count and a list of times for
+          your account in that coaching, on a record only our server and our
+          team can read. The third hidden message within 30 days opens a report
+          for our team, with a copy of the hidden text, so that the team can
+          warn you or, if it keeps happening, suspend an account (Terms of Use,
+          section 8). The record stays with the coaching until you delete your
+          account; a report is kept as section 3.17 describes.</li>
+          <li><b>The weekly check-in.</b> Each week you can send your coach a
+          short check-in. It can carry your weight and the number of
+          coach-plan workouts you finished that week, <b>each only if you tick
+          to share it</b>. It also holds your coach&rsquo;s reply. Only your
+          coach reads it, and only while the coaching is active; Own Hub staff
+          read it only inside a report. It is stored on our server in
+          Frankfurt, Germany, kept with the coaching, deleted with it or with
+          your account, and included in the copy of your data you can ask
+          for.</li>
           <li><b>Plans a coach shares.</b> A workout plan or meal plan she
           shares with you is stored under your account, so you can follow it
           in the app.</li>
@@ -1065,8 +1145,9 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         coach to confirm that it arrived, and a person at Own Hub decides a
         dispute if there is one. The coach is the seller of the coaching and
         is responsible for her service and for refunds. Own Hub is not a bank
-        or a payment provider. Separately, a coach pays Own Hub&rsquo;s own
-        monthly fee to Own Hub by InstaPay.</p>
+        or a payment provider. Separately, a coach pays Own Hub a
+        commission on each payment she receives, to Own Hub&rsquo;s own
+        InstaPay account, within 3 days.</p>
         <ul>
           <li><b>What we keep about a payment.</b> The member and the coach, by
           account identifier; the package; the amount, which has a few extra
@@ -1080,7 +1161,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           receipt, the app reads the text on your phone to fill in the form.
           You can hide lines (card numbers, balances) and crop before anything
           is sent: only that copy leaves your phone, never the original. Our
-          server stores the copy privately, reads it again with Google Cloud
+          server stores the copy privately, so that no coach can open it, reads it again with Google Cloud
           Vision in the European Union, and keeps a fingerprint of the picture
           so that the same picture cannot be used twice. The text it reads is
           used for the checks and is not stored. What stays is the result of
@@ -1105,15 +1186,23 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           the exact amount or the transaction number, is rejected
           automatically. These are automated decisions. If you want a person to
           look at one again, write to {{mailto:contactSupport}}.</li>
-          <li><b>Who sees it.</b> The member and her coach. Own Hub&rsquo;s team
-          opens a payment when it is in dispute or flagged, and looks at a
-          coach&rsquo;s first few payments, her address changes and her fee
-          statements to keep payments safe. Only a woman reviewer opens or
-          decides a payment dispute. Another coach
-          never sees it. A coach does not see your phone number. Your own
-          InstaPay address, if you use one, is shown on the receipt your bank
-          makes, so we suggest an address with an @ rather than your phone
-          number.</li>
+          <li><b>Who sees what.</b> The member and her coach both see the
+          payment: the package, the amount, the reference, the status, the time
+          and the transaction number. <b>Your coach never sees the screenshot
+          you send.</b> Only you, and Own Hub&rsquo;s team when the payment is
+          in dispute or flagged, can open it. The same is true the other way: a
+          client does not see the bank list a coach attaches when she says a
+          payment did not arrive. Own Hub&rsquo;s team looks at a
+          coach&rsquo;s first few payments, her address changes and her
+          commission bills to keep payments safe. Only a woman reviewer opens or
+          decides a payment dispute. Another coach never sees any of it.
+          Own Hub does not show your coach your phone number. <b>But your
+          coach&rsquo;s own bank app shows who paid her,</b> the way any bank
+          does: the name on your InstaPay account and sometimes the number or
+          address you pay from. Own Hub cannot hide that. We suggest an
+          InstaPay address with an @ rather than your phone number. The
+          screenshots are deleted after the payment is settled, as section 6
+          says.</li>
           <li><b>Why.</b> So the coach can confirm a payment, our team can
           decide a dispute, we can prevent fraud, and we meet our legal
           duties. <b>No check can prove a payment</b>: only the coach&rsquo;s
@@ -1135,10 +1224,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           three a month. The request, the coach&rsquo;s answer, the notes and
           the decision are kept with the payment.</li>
           <li><b>If you are a coach.</b> Your InstaPay address and account name,
-          your payments and your monthly fee statement (what you owe Own Hub,
-          and when you say you paid it) are kept. You pay Own Hub&rsquo;s fee
-          to Own Hub by InstaPay; it is the only money you pay Own Hub, and
-          Own Hub never touches the member&rsquo;s payment to you. A new
+          your payments and your commission bills (one for each payment: what
+          you owe Own Hub, the due date 3 days after the payment, and when you
+          say you paid it) are kept. If a bill is unpaid 7 days after it became
+          owed, your account goes on hold, which means you can read it but not
+          take new clients or write to clients, until our staff confirm the
+          payment; your clients are told only that you are unavailable for now.
+          You pay Own Hub&rsquo;s commission to Own Hub by InstaPay; it is the
+          only money you pay Own Hub, and Own Hub never touches the
+          member&rsquo;s payment to you. A new
           address takes effect after 24 hours, and the members with a payment
           waiting are told.</li>
           <li><b>Not in statistics.</b> No amount, reference, transaction number
@@ -1191,7 +1285,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
                             "session records and shared "
                             "plans (section 3.16). Reports and blocks "
                             "(section 3.17). If you pay a coach: payment "
-                            "records, fee statements, strikes and the "
+                            "records, commission bills, strikes and the "
                             "screenshots you send as proof (section 3.18)"),
                 ("Where", "Frankfurt, Germany (europe-west3)"),
             ]),
@@ -1310,7 +1404,15 @@ def build(cfg, lang, mailto_link, store_badges, shot):
 """ + h2("retention", "6. How long we keep it") + """
 """ + kv([
             ("ID card photographs, selfie, name and date of birth from the card, your raw ID number",
-             "Never stored. Discarded from memory when the check ends, whatever the result."),
+             "Never stored. Discarded from memory when the check ends, whatever the result. (A coach&rsquo;s signed agreement copy, which she writes her ID number on by hand, is a separate record: see the row below.)"),
+            ("A coach&rsquo;s signed agreement copy (a photo or scan showing her name, national ID number, date and signature) and the record of its verification (section 3.15)",
+             "While she coaches, then 5 years in a closed legal hold after her last coaching or after she deletes her account, as the Coach Agreement says, then deleted. Her acceptance record and the state of the agreement follow the same period. Only the staff who verify agreements can open it."),
+            ("The weekly check-in you send your coach, with the weight and workout count if you ticked to share them, and her reply (section 3.16)",
+             "Kept with the coaching, deleted with it or with your account, and included in your data copy"),
+            ("Marketing videos a coach uploads, with topic, length, status and the staff decision and reason (section 3.15)",
+             "Every video record and file (waiting, needs changes or approved) stays in Own Hub&rsquo;s storage until the coach deletes it or deletes her account, and is deleted with her account. A video already published on Own Hub&rsquo;s own channels under the licence may stay there until she asks in writing for it to be taken down; new use stops within 30 days of the request."),
+            ("The count and times of messages hidden because they held contact details, kept on a record only our server and team read (section 3.16)",
+             "Kept with the coaching, and deleted with it when either of you deletes her account. A report it opens is kept as section 3.17 describes."),
             ("The single-use selfie session", "5 minutes, then deleted automatically"),
             ("Meal photos",
              "Not kept. The camera&rsquo;s temporary copy on your phone exists "
@@ -1389,7 +1491,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
             ("Waitlist contact",
              "180 days at most. The proof that you agreed is kept for 3 years "
              "after the last message we send you (section 3.10)."),
-            ("Payment records (amount, reference, transaction number, status, steps, notes), a coach's fee statements and strike records",
+            ("Payment records (amount, reference, transaction number, status, steps, notes), a coach's commission bills and strike records",
              "5 years. When you delete your account the record stays, with your account identifier replaced by a random code and the names you typed removed, and the words you or the coach wrote in a dispute deleted. Nothing deletes a record automatically when the 5 years end yet (section 3.18)."),
             ("Payment screenshots",
              "Deleted 90 days after the payment is settled or the dispute about it is closed, and at once with your account. A payment whose refund was refused, with no later dispute, is not covered by that clean-up yet: its pictures stay until you delete your account. The text read from a picture is never stored."),
@@ -1428,7 +1530,11 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           <li>reports you made or that are about you, as section 3.17
           describes (the copy of what was reported is deleted if you made the
           report, and kept without your name if it is about you);</li>
-          <li>payment records, a coach&rsquo;s fee statements and strike
+          <li>for a coach, the signed agreement copy, the state of the
+          agreement and the record of her acceptance, kept for 5 years in a
+          closed legal hold that no one uses for anything else, and then
+          deleted (sections 3.15 and 6);</li>
+          <li>payment records, a coach&rsquo;s commission bills and strike
           records, if you paid a coach or a member paid you, for 5 years, with
           your account identifier replaced by a random code, together with the
           results of the receipt checks, the fingerprints of the pictures and
@@ -1559,6 +1665,31 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         </ul>
         <p>Version history:</p>
         <ul>
+          <li><b>29 October 2026, check-ins, marketing videos and the legal
+          hold:</b> section 3.16 now describes the weekly check-in, with the
+          weight and workout count you may choose to share and your
+          coach&rsquo;s reply. Section 3.15 now describes marketing videos from
+          coaches, who sees them and how long they are kept. Sections 6 and 7
+          now say that a coach&rsquo;s signed agreement copy, the state of the
+          agreement and her acceptance record are kept for 5 years in a closed
+          legal hold and then deleted. Section 3.18 says plainly that a
+          coach&rsquo;s bank app shows who paid her. This adds nothing members
+          must accept again.</li>
+          <li><b>29 October 2026, coaches, payments and chat screening:</b>
+          section 3.15 now describes the coach agreement you sign by hand and
+          upload, which shows your national ID number, who can open it and how
+          long it is kept (while you coach and 5 years after), and the
+          marketing videos. Section 3.16 now says that messages with contact
+          details, emails, social handles or links to other apps are blocked,
+          that the same screening covers the free text you write, and that a
+          count of hidden messages is kept and a third one in 30 days opens a
+          report for our team. Section 3.18 now says that your coach never
+          sees the screenshot you send and that her own bank app shows who paid
+          her, and it describes the coach&rsquo;s commission bills (due in 3
+          days, a hold at 7 days) in place of the monthly statement. Sections
+          6 and 7 name the new records. It collects something new only from a
+          woman who becomes a coach, who agrees to the Coach Agreement in the app
+          at that moment, so members are not asked to accept again.</li>
           <li><b>28 October 2026, payments, corrected:</b> section 3.18 now
           says exactly how paying a coach works: what the checks do and when
           they confirm or send a payment to a person, how refunds, service
@@ -2094,7 +2225,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
       <div class="prose">
         <h1>Coach Terms</h1>
         <p class="meta">
-          <b>Version:</b> 1 (coach-terms-v1)<br>
+          <b>Version:</b> 2 (coach-terms-v2)<br>
           <b>Effective date:</b> {{policyEffectiveDate}}<br>
           <b>Last updated:</b> {{lastUpdated}}<br>
           <b>Applies to:</b> women who apply to coach on Own Hub, in the app.
@@ -2105,6 +2236,13 @@ def build(cfg, lang, mailto_link, store_badges, shot):
         application. They sit beside the <a href="/terms">Terms of Use</a> and
         the <a href="/privacy#c-coach">Privacy Policy</a>, which still apply to
         you as a member.</p>
+        <p>The money and client-contact rules, the two marketing videos a
+        month and the hold on an account are set out in full in the
+        <a href="/coach-agreement">Coach Agreement</a>. You agree to it in the
+        app, print it, sign it by hand and upload a photo or scan of it. Own
+        Hub staff check the signed copy before you can take new clients.
+        Where this page and the Coach Agreement differ on those points, the
+        Coach Agreement applies.</p>
 
 """ + h2("k1", "1. Reviewed coaches only", "no-rule") + """
         <ul>
@@ -2167,6 +2305,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           InstaPay steps, to avoid Own Hub&rsquo;s rules or its fee. A client
           you brought with your own invite code is covered by section 9, Stay
           on Own Hub, in the same way: it does not apply to her.</li>
+          <li>Never ask a client for, or collect, her phone number, email or
+          social media accounts, and keep your chat with clients inside Own
+          Hub. The <a href="/coach-agreement">Coach Agreement</a> has the
+          detail.</li>
         </ul>
 
 """ + h2("k6", "6. What members see, and prices") + """
@@ -2180,7 +2322,7 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           added on top except a few piasters that make the amount match only
           that payment; those go to you. Members pay you directly by InstaPay.
           Own Hub charges you a fee, currently 15 percent of the package price
-          for a client who found you in the app, and 8 percent for a client you
+          for a client who found you in the app, and 7.5 percent for a client you
           brought with your own invite code. The rate in force when a
           payment&rsquo;s access starts is the rate for that payment (section
           9).</li>
@@ -2243,18 +2385,25 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           a person to look again.</li>
           <li><b>The fee.</b> The rate is read when a payment&rsquo;s access
           starts and then kept on that payment: currently 15 percent for a
-          client who found you in the app and 8 percent for a client you
+          client who found you in the app and 7.5 percent for a client you
           brought with your own invite code. It is worked out on the package
           price, not on the extra piasters, and rounded down. It is lowered if
           you accept a lower amount in writing in the app (at most 20 percent
           lower) and after a refund, and it is waived if the payment turns out
           not to have been paid. It is owed from the moment the client&rsquo;s
           access starts, which can be short access before you confirm, not when
-          you tap confirm. You get a monthly statement for the month before. If
-          a statement is still unpaid 30 days after it is made, you cannot take
-          new clients; current clients are not touched. You pay Own Hub by
-          InstaPay and record the transfer; nothing is debited automatically.
-          Own Hub keeps the statements for 5 years.</li>
+          you tap confirm. Each payment gets its own bill in the app, and you pay
+          Own Hub by InstaPay within 3 days of receiving the client&rsquo;s
+          payment; the bill shows the due date, and the app sends you
+          reminders. If a bill is still unpaid 7 days after it became owed,
+          your coach account goes on hold: you can read everything, but you
+          cannot take new clients, send messages, share plans or schedule
+          sessions. Your clients keep their plans and their coaching end dates
+          move later by the length of the hold. The hold ends by itself when Own
+          Hub staff confirm the payment. You record the transfer in the app;
+          nothing is debited automatically. Own Hub keeps the bills for 5
+          years. The <a href="/coach-agreement">Coach Agreement</a>, sections 3
+          and 4, has the detail.</li>
           <li><b>Refunds.</b> A member can ask for a refund in the app, once
           for a payment, within 14 days of when her access began (when you
           confirmed the payment, or Own Hub decided it). You have 3 days to
@@ -2272,7 +2421,10 @@ def build(cfg, lang, mailto_link, store_badges, shot):
           does not apply to clients you brought with your own invite code. For
           a confirmed breach Own Hub may warn you and charge 3 months of Own
           Hub&rsquo;s share, a fair estimate of the fee it lost; for a second
-          breach it may suspend you.</li>
+          breach it may suspend you. The same 3 months of Own Hub&rsquo;s share
+          is the conversion fee that lets you move a client off Own Hub with
+          Own Hub&rsquo;s written agreement. The <a href="/coach-agreement">Coach
+          Agreement</a>, section 7, has the detail.</li>
           <li><b>Tax.</b> You are responsible for your own tax status and for
           any invoice you need to issue. A payment record from Own Hub is not a
           tax invoice.</li>
@@ -2313,7 +2465,303 @@ def build(cfg, lang, mailto_link, store_badges, shot):
              "refund, how a claim your own bank list contradicts is refused, "
              "that a strike comes only from a staff decision, how the fee is "
              "worked out and owed, and what the 12-month rule may lead to."),
+            ("28 October 2026 (version 2)",
+             "Version 2. New: the <a href=\"/coach-agreement\">Coach "
+             "Agreement</a>, which you agree to in the app and then sign by hand "
+             "and upload. The fee for a client you brought with your own invite "
+             "code is 7.5 percent, not 8. Each payment now has its own bill, due "
+             "3 days after the client&rsquo;s payment, instead of a monthly "
+             "statement, and an unpaid bill puts your account on hold after 7 "
+             "days instead of stopping new clients after 30. Section 5 now says "
+             "never to collect a client&rsquo;s contact details. Section 9 says "
+             "the 3-month charge is also the conversion fee."),
         ]) + """
+      </div>
+    </div>
+""",
+    }
+
+    # ---------------------------------------------------- coach agreement ----
+    pages["coach-agreement"] = {
+        "title": "Coach Agreement · Own Hub",
+        "description": (
+            "The agreement between Own Hub and a coach: Own Hub's commission, "
+            "paying it within 3 days, the hold on an account, two marketing "
+            "videos a month, keeping clients inside the app, and how to sign "
+            "and upload the printed copy."
+        ),
+        "body": """
+    <div class="wrap">
+      <div class="prose agreement">
+        <h1>Coach Agreement</h1>
+        <p class="meta">
+          <b>Version:</b> Coach agreement version 2, 28 October 2026<br>
+          <b>Applies to:</b> every woman who coaches on Own Hub.<br>
+          <b>Sits beside:</b> the <a href="/coach-terms">Coach Terms</a>
+          (version 2).
+        </p>
+        <p>If the English and Arabic versions of this agreement differ, the
+        Arabic version applies.</p>
+        <p class="lede">This is the agreement between Own Hub and you, the
+        coach. You agree to it in the app. Then you print it, sign it by hand
+        with your full name, national ID number and date, and upload a photo or
+        scan of the signed copy in the app. Own Hub staff check the signed copy
+        before you can take new clients.</p>
+        <div class="callout noprint">
+          <p><b>To print this page or save it as a PDF,</b> use your
+          browser&rsquo;s Print command. The header, footer and menus are left
+          out of the printed copy, and the last page has the signature block.
+          A PDF of this page is also published at <a
+          href="/coach-agreement.pdf">/coach-agreement.pdf</a>.</p>
+        </div>
+
+""" + h2("a1", "1. Who the parties are", "no-rule") + """
+        <ul>
+          <li><b>Own Hub</b> is the app and service published by
+          {{legalEntity}}, {{legalAddress}} (&ldquo;Own Hub&rdquo;).</li>
+          <li><b>The coach</b> is the woman whose name, national ID number and
+          signature are in the signature block at the end (&ldquo;you&rdquo;).</li>
+          <li>You coach as an independent professional. You are not Own
+          Hub&rsquo;s employee, partner or agent, and you cannot make a promise
+          or sign a contract in Own Hub&rsquo;s name. Own Hub does not act as
+          your agent or represent you in your dealings with clients.</li>
+          <li>This agreement works together with the <a
+          href="/coach-terms">Coach Terms</a>. If they differ on the commission,
+          bills and the hold, the marketing videos, contact with clients or the
+          12-month rule, this agreement applies.</li>
+        </ul>
+
+""" + h2("a2", "2. Own Hub&rsquo;s commission") + """
+        <ul>
+          <li>For each payment a client makes to you for a package, you owe Own
+          Hub a commission on the package price you receive: <b>15 percent</b>
+          for a client who found you through the app, and <b>7.5 percent</b> for
+          a client you brought with your own invite code.</li>
+          <li>Which rate applies is set once, when the coaching between you and
+          that client first starts, and it does not change afterwards, also
+          when she renews.</li>
+          <li>The commission is worked out on the package price, not on the few
+          extra piasters that make the amount match one payment, and it is
+          rounded down. After a refund it is worked out on what you kept. It
+          is waived if a payment turns out not to have been paid, and it is
+          lowered if you accept a lower amount in writing in the app, as the
+          Coach Terms explain.</li>
+          <li>The commission is owed from the moment the client&rsquo;s access
+          starts, which can be short access before you confirm her payment.</li>
+          <li>If the law requires a tax to be added to Own Hub&rsquo;s
+          commission, Own Hub shows it on the bill. You are responsible for your
+          own tax status and for any invoice you must issue to a client.</li>
+        </ul>
+
+""" + h2("a3", "3. Paying the commission") + """
+        <ul>
+          <li>You pay the commission to Own Hub&rsquo;s InstaPay account within
+          <b>3 days</b> of receiving the client&rsquo;s payment. The account is
+          shown on the bill in the app.</li>
+          <li>The app bills each payment separately, shows the amount and the due
+          date, and sends you reminders before and on the due date.</li>
+          <li>After you pay, record the transfer in the app. Own Hub staff
+          confirm it. Nothing is debited from you automatically, and you may not
+          subtract the commission from anything else you owe or are owed.</li>
+          <li>The bill is a record that you owe the commission. It is not a
+          tax invoice.</li>
+        </ul>
+
+""" + h2("a4", "4. If a bill is not paid: the hold") + """
+        <ul>
+          <li>If a bill is still unpaid <b>7 days</b> after it became owed, your
+          coach account goes on hold. A hold is not a deletion.</li>
+          <li>While your account is on hold you can read everything in it, and
+          you can record a payment of a bill. You cannot take new clients, send
+          messages, share plans or schedule sessions. You are not shown in Find a
+          coach.</li>
+          <li>Your clients keep their plans and can still read their chat. They
+          see a neutral line that you are unavailable for now. Their coaching end
+          dates move later by the length of the hold, so they do not lose days
+          they paid for.</li>
+          <li>The hold ends automatically when Own Hub staff confirm the payment
+          of the unpaid bill. If more than one bill is past its 7 days, all of
+          them must be confirmed.</li>
+          <li>A hold does not cancel what you owe, and it does not stop the
+          other duties in this agreement.</li>
+        </ul>
+
+""" + h2("a5", "5. Two marketing videos a month") + """
+        <ul>
+          <li><b>The duty.</b> Each calendar month you make 2 short videos for
+          Own Hub and upload them in the app.</li>
+          <li><b>Length.</b> Each video is at least 30 seconds and at most 3
+          minutes, filmed in good light with clear sound, in Egyptian Arabic or
+          English.</li>
+          <li><b>Topics.</b> A short workout or movement tip, a general healthy
+          eating idea, a common myth about training, how coaching with you
+          works, or a short introduction of yourself. General fitness and
+          healthy eating only, as in the Coach Terms: no diagnosing, no medical
+          diet, no supplements.</li>
+          <li><b>No client in any video.</b> No client may appear, speak or be
+          named, and you may not show a client&rsquo;s message, photo, plan or
+          result.</li>
+          <li><b>Women-only.</b> Only women appear in your videos, and
+          everyone who appears is an adult who agreed to be filmed. Film in a
+          private or women-only place. Nobody films or uploads a video of a
+          woman who did not agree.</li>
+          <li><b>Own rights.</b> The video is yours. It must not use music,
+          pictures or other things you have no right to use, and it may not
+          advertise another brand or service.</li>
+          <li><b>Staff approval.</b> Own Hub staff watch each video before it is
+          used. They approve it or tell you why not, and you may send a new one.
+          Only approved videos count towards the 2. Own Hub counts the videos
+          each month. If fewer than 2 are approved in a month, Own Hub may remind
+          you, and if it keeps happening Own Hub may treat it as a breach after
+          written notice (section 11).</li>
+          <li><b>Licence.</b> You give Own Hub a free, non-exclusive licence to
+          use each approved video, with your name, voice and image in it, on
+          Own Hub&rsquo;s app, website and social media accounts and in its
+          advertising. Own Hub may cut it, add captions, translate it and add
+          its own branding, but may not change what you say or mean. Own Hub
+          does not sell your videos to others. If you ask in writing, Own Hub
+          stops new use of a video within 30 days; copies already published or
+          paid for in an advertisement may stay until they end.</li>
+          <li><b>You keep your videos.</b> The licence is non-exclusive. You
+          keep your rights and may go on using your own videos, including the
+          same ones, anywhere you like.</li>
+        </ul>
+
+""" + h2("a6", "6. Clients stay inside Own Hub") + """
+        <ul>
+          <li><b>Never ask for contact details.</b> You never collect, and never
+          ask a client for, her phone number, email address or social media
+          accounts, or any other way to reach her outside Own Hub. If she offers
+          them, do not take them, tell her to use the app, and tell Own Hub.</li>
+          <li><b>Chat only in the app.</b> You talk to clients only in Own
+          Hub&rsquo;s in-app chat. Do not put ways to reach you outside Own Hub
+          in a message, a plan, a video or your portfolio.</li>
+          <li><b>Confidentiality.</b> What a client tells you or sends you
+          (her answers, her health answers, her photos and measurements, her
+          messages) is confidential. Use it only to coach her through Own Hub. Do
+          not share it with anyone, post it, or keep it after her coaching ends.
+          This duty does not end when the agreement ends.</li>
+          <li>Follow the personal data protection law, Law 151 of 2020, in
+          everything you do with a client&rsquo;s data.</li>
+        </ul>
+
+""" + h2("a7", "7. No dealing outside Own Hub for 12 months") + """
+        <ul>
+          <li><b>The rule.</b> For a client you met through Own Hub, while you
+          coach her and for <b>12 months</b> after the last coaching between you
+          on Own Hub ends, you may not coach her, contact her to coach her, or
+          take payment from her outside Own Hub.</li>
+          <li><b>Who it does not cover.</b> A client you brought with your own
+          invite code is not covered by this section. Nothing here stops you
+          coaching or charging anyone else, anywhere.</li>
+          <li><b>The way out: a conversion fee.</b> If you and a client want to
+          continue outside Own Hub, ask Own Hub in writing first. If Own Hub
+          agrees in writing, you pay a conversion fee equal to 3 months of Own
+          Hub&rsquo;s commission on that client: the commission rate that applied
+          to her, on her last monthly package price, times 3. Once you have paid
+          it, the 12-month rule no longer applies to her.</li>
+          <li><b>If you break the rule.</b> If you deal with a client outside Own
+          Hub without paying the conversion fee first, you owe Own Hub the same
+          amount as agreed compensation. You and Own Hub agree this is a fair
+          estimate of the commission Own Hub loses, and that Own Hub does not
+          have to prove its loss.</li>
+          <li><b>How it is decided.</b> Own Hub staff decide, from evidence such
+          as a client&rsquo;s report, chat content or your own statement, after
+          you have had a chance to answer, and give you a written reason.</li>
+          <li><b>Suspension.</b> For a confirmed breach Own Hub may warn you; for
+          a second breach, or for refusing to pay what you owe under this
+          section, Own Hub may suspend your account.</li>
+        </ul>
+
+""" + h2("a8", "8. Your account and the signed copy") + """
+        <ul>
+          <li>You agree to this agreement in the app. The app records the
+          version, the time and the language you agreed in.</li>
+          <li>Then print this page, write your full name, your national ID
+          number and the date, sign it by hand, and upload a photo or scan of it
+          in the app. Send it only through the app, not by email or chat.</li>
+          <li>Own Hub staff check that the signed copy is readable and matches
+          this version. Until they have verified it you cannot take new clients.
+          Clients you already coach are not affected.</li>
+          <li>Own Hub uses your national ID number and the signed copy only to
+          check this agreement and to prove it later. Only the staff who check
+          it can see them. Own Hub keeps the signed copy while you coach and for
+          5 years after, and the Privacy Policy explains your rights over it.</li>
+        </ul>
+
+""" + h2("a9", "9. Term and ending the agreement") + """
+        <ul>
+          <li>This agreement starts when you agree to it in the app and has no
+          end date.</li>
+          <li>Either of us may end it by giving the other <b>30 days&rsquo;
+          written notice</b>: you through the app or at
+          {{mailto:contactSupport}}, Own Hub through the app or by email.</li>
+          <li>Own Hub may end it at once, or suspend your account, if you give
+          false information, put a client&rsquo;s safety at risk, break section
+          6 or 7, or break this agreement and do not put it right within 14 days
+          of a written notice.</li>
+          <li>Coachings a client has already paid for continue until the end of
+          the period she paid for, unless Own Hub decides otherwise to protect
+          her. The commission stays due on them.</li>
+        </ul>
+
+""" + h2("a10", "10. What continues after it ends") + """
+        <ul>
+          <li>Commissions and bills for payments received before or after the
+          end, and for coachings still running.</li>
+          <li>Confidentiality and the ban on contact details (section 6).</li>
+          <li>The 12-month rule, the conversion fee and the agreed compensation
+          (section 7).</li>
+          <li>The licence for videos already approved, as set out in section 5.</li>
+          <li>The Governing law and courts section (section 12), and Own
+          Hub&rsquo;s right to keep records the law requires.</li>
+        </ul>
+
+""" + h2("a11", "11. Breach and notice") + """
+        <ul>
+          <li>If either of us breaks this agreement, the other may send a written
+          notice saying what is wrong. The one who broke it has 14 days to put it
+          right, unless the breach cannot be put right.</li>
+          <li>The rights in sections 4 and 7 apply without waiting for that
+          notice.</li>
+        </ul>
+
+""" + h2("a12", "12. Governing law and courts") + """
+        <ul>
+          <li>This agreement is governed by the laws of the Arab Republic of
+          Egypt, and disputes go to {{courtVenue}}.</li>
+        </ul>
+
+""" + h2("a13", "13. Changes, language and contact") + """
+        <ul>
+          <li>If we change this agreement in a way that matters, there is a new
+          version number. You accept it in the app, and Own Hub may ask for a
+          new signed copy.</li>
+          <li>This agreement is written in English and Egyptian Arabic. If they
+          differ, the Arabic applies.</li>
+          <li>Contact: {{mailto:contactSupport}} &middot; {{legalEntity}},
+          {{legalAddress}}</li>
+        </ul>
+""" + kv([
+            ("28 October 2026",
+             "Coach agreement version 2. First publication: the commission "
+             "(15 and 7.5 percent), paying it within 3 days, the hold at 7 "
+             "days, two marketing videos a month, keeping clients inside Own "
+             "Hub, the 12-month rule and its conversion fee, and the signed "
+             "copy."),
+        ]) + """
+
+      <div class="sign-block">
+        <h2 id="signature">Signature</h2>
+        <p>I have read Coach agreement version 2, 28 October 2026, I understand
+        it and I agree to it.</p>
+        <p class="sign-line"><span>Full name</span></p>
+        <p class="sign-line"><span>National ID number</span></p>
+        <p class="sign-line"><span>Date</span></p>
+        <p class="sign-line tall"><span>Signature</span></p>
+        <p class="sign-note">Own Hub agrees to this agreement by publishing it
+        and by verifying your signed copy.</p>
+      </div>
       </div>
     </div>
 """,

@@ -1,6 +1,6 @@
 # Own Hub: what you need to do
 
-Updated 28 October 2026. Only steps you do yourself are listed; everything the coding agent builds is in [docs/plan/RELEASE-2-PLAN.md](../plan/RELEASE-2-PLAN.md). Full reference (every command and App Store Connect input): [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md).
+Updated 29 October 2026. Only steps you do yourself are listed; everything the coding agent builds is in [docs/plan/RELEASE-2-PLAN.md](../plan/RELEASE-2-PLAN.md). Full reference (every command and App Store Connect input): [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md).
 
 ## Already done
 
@@ -11,9 +11,82 @@ Updated 28 October 2026. Only steps you do yourself are listed; everything the c
 - [x] Code committed and pushed on `feat/motivation-2026-10-13`. The 1.1.0 code is commit `3d186f4`, pushed.
 - [x] Decisions D62 (guest first workout), D63 (coach pays: 15%, 8% for invited clients), D64 (12-month rule for app clients) recorded in `DECISIONS.md` and the release 2 plan.
 
-## Release 1.1.0: do these in order (28 Oct 2026)
+## Release 1.1.0 with payments ON (owner decision 28 Oct 2026, written 29 Oct 2026)
 
-Each command is in [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md), section "Release 1.1.0". Payments are built into this release and stay off.
+**This section replaces the order in "Release 1.1.0: do these in order" and the "stays OFF" gates in "Payments by InstaPay" below.** You decided on 28 October that the next release ships with InstaPay payments and online coaching ON. Do these steps in this exact order, from `~/ownhub`. Tick a step only when it is done. The code is written for this plan; nothing here is deployed yet.
+
+**Two dates first.**
+- [ ] **Before 31 October 2026 (the day after tomorrow): the PDPC filing.** Controller licence, sensitive-data licence, transfer-abroad permit. Say in it that Own Hub now keeps payment records, receipt screenshots, a coach's national ID number and signed agreement copy, and that Google Cloud Vision (EU) reads receipts. A lawyer can file for you; filing in time is what counts. Details: step 1 of "This week (1.0 items)" below and `docs/owner/INSTAPAY-TERMS-DRAFTS.md` section G.
+- [ ] **Before the first coach signs: a lawyer reads the Coach Agreement** (`site/coach-agreement.html`, PDFs `site/coach-agreement.pdf` and `site/ar/coach-agreement.pdf`, questions in `docs/owner/LAWYER-PACK.md` section 11). The conversion fee, the agreed compensation, the hold and the commission wording are `[COUNSEL]` items. You can ship the app first; no coach should accept the agreement in production until the lawyer has read it.
+
+**Release timing.** After the functions deploy, apps older than this build cannot submit a coach application (the server now refuses coach terms version 1). Release the app close to the functions deploy. Also new in this deploy: the daily job `purge_legal_holds`, the `legalHolds` collection and `legal-hold/` storage prefix (server-only, a deleted coach's signed agreement kept 5 years), and a new Firestore index (coachPrivate: agreement.status, agreement.uploadedAt); wait for it to show Enabled.
+
+**Ask Apple first (recommended).** In App Store Connect (Contact Us, or a pre-submission question) send questions 1 to 5 of `docs/owner/PAYMENTS-STORE-POLICY.md` section 5. A rejection on guideline 3.1.3(d) is the main risk of this release. It costs days, not a build (see the last step).
+
+**Steps, in order**
+1. [ ] **Check the repo is the release code.** Commit and tests are done by the coding agent; the build must contain the 1.1.0 payment, hold, agreement and chat-screening work. Do not deploy anything from a dirty tree you have not looked at.
+2. [ ] **Indexes.** Wait until the console shows all of them Enabled before the next step.
+```bash
+firebase deploy --only firestore:indexes --project own-hub
+```
+3. [ ] **Expiry policies.**
+```bash
+bash firebase/ops/ttl-policies.sh
+```
+4. [ ] **Firestore rules and storage rules.** Answer yes if the CLI asks to let the Storage rules service read Firestore. If you are not sure, run the IAM grant in LAUNCH-GUIDE step 6.
+```bash
+firebase deploy --only firestore:rules,storage --project own-hub
+```
+5. [ ] **Functions.** This is BEFORE the app, not after Apple approves (the order in LAUNCH-GUIDE step 13 is replaced), because the reviewer's account needs the payment code on the server. Side effect, accepted: build 1.0.0 users get the weekly check-in cards that their app hides (LAUNCH-GUIDE step 13 note). Deploy the functions and the rules within minutes of each other.
+```bash
+firebase deploy --only functions --project own-hub
+```
+6. [ ] **Staff dashboard** (the switch, the commission and hold views, the agreement check, and the contact-sharing reports are in it). Then re-add the pre-approved numbers with the 18+ tick.
+```bash
+npx wrangler pages deploy admin-web --project-name ownhub-reviewers
+```
+7. [ ] **Website.** The corrected privacy page (29 Oct entry: coach ID number, signed copy, receipts, chat screening), the coach terms and the Coach Agreement must be live BEFORE you submit and before the switch goes on, because Apple reads the privacy URL during review. Dry run first, then the real deploy.
+```bash
+bash site/_build/deploy.sh https://own-hub.app --dry-run
+```
+```bash
+bash site/_build/deploy.sh https://own-hub.app
+```
+8. [ ] **Own Hub's receiving InstaPay account.** Firebase console, Firestore, collection `coachingConfig`, document `receivingAccounts`: set the map field `instapay` to `{ address: <Own Hub's InstaPay address>, holderName: <the name on that account> }`. Without it a coach's commission bill shows no pay-to address. Then open `coachingConfig/instapay` (if the document exists) and make sure it does not set `feeBpsInvite` to 800: the invite rate is 750 (7.5%) in the code, and a leftover override would silently charge 8%.
+9. [ ] **Seed the App Review demo coach and a coaching waiting for payment.** The script is `functions/tools/seed_review_coaching.py`. Order: (a) after the functions deploy, sign in once in the app with the review phone number so the account exists, and read its uid in Firebase console, Authentication; (b) run `cd functions && GOOGLE_CLOUD_PROJECT=own-hub .venv/bin/python -m tools.seed_review_coaching --client-uid <the review account's uid> --project own-hub --i-am-the-owner`. It prints every document, then writes: the demo coach "Own Hub Review Coach" (published but not accepting clients, so members can see her profile and cannot ask to join), a package with 2 live sessions, and a request accepted and waiting for payment for that uid. It creates no payment: the reviewer's Pay now creates it. The demo InstaPay address is `ownhub-review-demo@instapay`, which cannot receive money. Payments must be on (step 10) for the Pay button. The request waits 30 days: seed within a day of submitting, and seed again if review has not started after 3 weeks (or if the review account is deleted and signs up again, with its new uid).
+10. [ ] **Turn payments on.** In the staff dashboard, use the payments switch (it writes `config/payments.enabled` = true). Do this before you submit, so the reviewer sees the payment screens. Build 1.0.0 has no payment screens; this is closed in the server: with the switch on, a 1.0.0 member who asks a coach gets `app_update_needed` ("Update Own Hub to ask this coach"), and when a coach accepts an old request from a 1.0.0 member she gets `client_update_needed` and the member gets a push to update. Such a request stays open and lapses after 72 hours. The minimum build is `MIN_APP_BUILD` in `functions/coaching/common.py`.
+    - **Note, coach agreement gate.** After the functions deploy, every coach's NEW (non-renewal) requests are refused until she accepts agreement v2 in 1.1.0 and staff verify her signed copy (a 1.0.0 coach sees a generic error). With the counsel-first rule (top of this file) new-client coaching is closed from the deploy until both happen.
+    - **Note, the site first.** The site (coach-agreement page and PDFs, privacy page) must be deployed before you submit and before the switch goes on. `own-hub.app/coach-agreement` is a 404 today.
+    - **Note, testing from `flutter run`.** A debug build sends appBuild 0 and is refused while payments are on. For an Android or iOS smoke run pass `--dart-define=APP_VERSION=1.1.0+999999`.
+11. [ ] **Build the iPhone app.** Version 1.1.0. It runs every check and stops if one fails. First tick Associated Domains for `com.ownhub.fitness` and regenerate the store profile (LAUNCH-GUIDE step 8), and listen to the sound preview (step 2).
+```bash
+cd ~/ownhub/app && export PATH="$HOME/development/flutter/bin:$PATH" && RELEASE_BASE_URL=https://own-hub.app bash tool/release_preflight.sh && bash tool/build_ios.sh
+```
+12. [ ] **Upload** `app/build/ios/ipa/own_hub.ipa` with Transporter, then run the Crashlytics symbols command that the build script prints.
+13. [ ] **Check on TestFlight, on a real iPhone, with the switch on.** Only a phone proves these.
+   - Sign in with the review account. Profile > My coach: the demo coach is waiting for payment; the payment instructions (InstaPay address, exact amount, reference) and the receipt upload open. Fix the screen names in `docs/release/review-notes.md` if they differ.
+   - The pay screen says "Pay [coach]" and never "buy", "unlock", "subscribe", "wallet", "balance".
+   - The two-phone test (P12): a small real InstaPay transfer from one team phone to a coach phone, with the reference in the note; upload the receipt; the coach confirms; the coach pays the 15% (or 7.5%) bill and records it; staff confirm in the dashboard. Also let one bill pass 7 days in a test account (or move the clock on the emulator) and check the hold and its release.
+   - Chat: a phone number, an email, "whatsapp 0100..." and an Instagram handle are blocked with a reason; a workout line such as "3 x 12, 60 kg, rest 90 sec" is not.
+   - The coach sheet shows no "See her proof"; the coach never sees the client's receipt.
+   - Eat voice logging, sounds, the InBody reader, the guest first workout (LAUNCH-GUIDE step 11).
+14. [ ] **App Store Connect, version 1.1.0, manual release.** Build from step 12. Paste: the description, promotional text, subtitle, keywords and What's New from `docs/release/appstore-listing.md` (English and Arabic; have a native Egyptian speaker read the coaching and payment lines); the review-notes box from `docs/release/review-notes.md` with the real test number and code (under 4,000 characters); the screenshots regenerated for the final build (nine per language, including the payment instructions); the App Privacy answers from `docs/release/launch-pack/app-store-privacy-answers.md` (18 types, tick Payment Info, Other Financial Info and Purchase History now). Age rating: Messaging or chat Yes, limited (`appstore-listing.md` section 6).
+15. [ ] **Submit.**
+16. [ ] **Press Release only after Apple approves.** The server side is already live from steps 2 to 10.
+
+**If Apple rejects (guideline 3.1.1 or 3.1.3 on the payment flow).** You do not need a new build.
+1. Reply in the Resolution Center with the 3.1.3(d) reading (`PAYMENTS-STORE-POLICY.md` sections 2 and 4) and ask for a call if needed; or accept the rejection and use the fallback.
+2. Fallback: in the staff dashboard turn the payments switch OFF (`config/payments.enabled` = false). The app then shows "Free for now" on coach cards and the pay entry disappears. Coaching itself, chat and plans keep working free. Before you flip it, open the dashboard and confirm or resolve the payments that are waiting, so no member has paid a coach whose access then looks free; the commission bills already issued stay owed.
+3. Resubmit the same build with new review notes (`review-notes.md`, delete the PAYMENTS and TO SEE IT lines). If Apple also objects to the InstaPay sentences in the description, delete those two lines in App Store Connect (no build needed).
+4. Then ask Apple the questions in `PAYMENTS-STORE-POLICY.md` section 5 before you turn the switch on again.
+
+**After release.** Re-run the checks in `docs/release/release-checklist.md`; watch the dashboard Fees tab for coaches on hold; empty the `store-reviewer-phones` secret when the review closes; send Google the three Play questions (6 to 8) before any Android payments release.
+
+**Known gaps to remember (as of 29 Oct).** The live-session minimum, the coach-agreement gate, the marketing-video card, the commission bills and the hold are built. What is still open is in the steps above and in the owner tracks.
+
+## Release 1.1.0: do these in order (28 Oct 2026) (SUPERSEDED by the section above)
+
+Each command is in [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md), section "Release 1.1.0". Payments were planned to stay off; the 28 Oct decision puts them ON (section above).
 
 - [ ] **Check the status of 1.0.** Build 424738 is not recorded as approved here. Check App Store Connect before you submit 1.1.0.
 - [ ] **Decide the website** (see below).
@@ -21,7 +94,7 @@ Each command is in [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md), section "Release 1.1.0". 
 - [ ] **Deploy Firebase and the dashboard** (LAUNCH-GUIDE steps 3 to 7). Deploy the rules even if you did it earlier today.
 - [ ] **Tick Associated Domains** for `com.ownhub.fitness` and regenerate the store profile, before the build (step 8).
 - [ ] **Build, upload and check on TestFlight** (steps 9 to 11).
-- [ ] **Get the 1.1.0 description and review notes written.** Neither is ready (see below).
+- [ ] **1.1.0 description and review notes: written 29 Oct** (`docs/release/appstore-listing.md`, `docs/release/review-notes.md`), for payments ON. Read the OWNER TO CONFIRM list in the review notes before pasting.
 - [ ] **Submit** in App Store Connect with manual release (step 12).
 - [ ] **After Apple approves and before Release**, deploy the functions (step 13). Then press Release (step 14).
 - [ ] **Deploy the website** in the same window as Release (step 15).
@@ -35,7 +108,7 @@ Counsel has not signed the payment texts. The privacy page must go live with 1.1
 
 Either way the website and the app release go out together, never one without the other. The privacy page that is live today has no InstaPay text, so the corrected privacy page, terms and coach terms must be live before `config/payments.enabled` is ever set to true.
 
-### Description and review notes: not ready for 1.1.0
+### Description and review notes: SUPERSEDED, written 29 Oct for payments ON (the two lines below describe the old state)
 
 - [ ] **App Store description.** The 1.1.0 screenshots include coach chat and coach plan, so the description must mention coaching. `docs/release/appstore-listing.md` says "no coaching", and `docs/release/launch-pack/store-listing-copy.md` predates voice logging, the InBody reader and payments. Ask the coding agent for the 1.1.0 description before you paste.
 - [ ] **Review notes.** `docs/release/review-notes.md` is still the 23 Oct text. It says there are no payments and that payments cannot be turned on remotely. Ask the coding agent to update it for 1.1.0 (under 4,000 characters).
@@ -115,13 +188,13 @@ cd ~/ownhub/app && firebase crashlytics:symbols:upload --app=1:681714989950:ios:
 - [ ] Then follow "Google Play, step by step" in [LAUNCH-GUIDE.md](LAUNCH-GUIDE.md) (create the app, internal test, Firebase fingerprints, App content, listing, closed test, production in Egypt).
 - [ ] Reviewer account: Google needs it working at all times, so keep the reviewer number in the `store-reviewer-phones` secret and use a number and code that are hard to guess (not 0001 or 123456).
 
-## Payments by InstaPay: built in 1.1.0, OFF
+## Payments by InstaPay: built in 1.1.0 (the "OFF" gates here are SUPERSEDED on 28 Oct 2026: payments ship ON; P2 counsel sign-off, P5, P6, P7 and P12 are still the right checklist, now before the first real payment, not before the switch)
 
 Payments are built into 1.1.0 but stay off. The member pays the coach's own InstaPay address; Own Hub never holds the money. Your off-switch is `config/payments.enabled` on the server (the document `config/payments`; if it is missing, payments are off). While it is off, the app shows "Free for now". The full rules are in `docs/plan/INSTAPAY-PAYMENTS-SPEC.md` section 12. Do not set the switch until P2, P5, P6, P7 and P12 are done.
 
 - [ ] **P1. Before 31 October 2026: PDPC filing.** See step 1 above (payment data and Google Cloud Vision added).
 - [ ] **P2. Counsel sign-off.** Give counsel `docs/owner/INSTAPAY-TERMS-DRAFTS.md` (clauses, questions, and the table of claims that must match the build), and the six built pages: `site/privacy.html`, `terms.html`, `coach-terms.html` and their `ar/` twins. Counsel also decides whether existing members and coaches must accept the new terms again (the app's terms and privacy version numbers are 3 and are not changed yet). The payment texts are not signed, so the website decision above applies.
-- [ ] **P3. Decide the numbers** (spec 12.4 to 12.6): how long payment records and screenshots are kept (the site says 90 days for screenshots), the fee rates (the site says 15 and 8 percent), whether a coach silent for 48 hours gives the member short access (default yes), the staff review target (default two working days), and which women review disputes.
+- [ ] **P3. Decide the numbers** (spec 12.4 to 12.6): how long payment records and screenshots are kept (the site says 90 days for screenshots), the fee rates (the site says 15% and 7.5%), whether a coach silent for 48 hours gives the member short access (default yes), the staff review target (default two working days), and which women review disputes.
 - [ ] **P4. InstaPay limits.** Look up the current InstaPay per-transfer and daily limits and set the maximum package price below them (the code has a placeholder of 20,000 EGP).
 - [ ] **P5. Apple and Google payment rules.** Read `docs/owner/PAYMENTS-STORE-POLICY.md`. Recommended: ask Apple in a pre-submission question (questions 1 to 5) before you submit; ask Google (questions 6 to 8) before the Play release. Check the review-notes paragraph there against the real build, and make the cuts it lists.
 - [ ] **P6. Store privacy answers, and a new build.** The app's privacy file and the Play data safety file do not declare payment data yet. So turning payments on needs a new build with those changes (the coding agent's work order WO-10j3), then the store answers. In App Store Connect add Payment Info, Other Financial Info and Purchase History. In Google Play add the Financial info block. Exact lists: `docs/owner/PAYMENTS-STORE-ANSWERS.md`. With the switch off, tick nothing for payments.
